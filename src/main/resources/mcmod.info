@@ -1,0 +1,16 @@
+[
+{
+  "modid": "morecommands",
+  "name": "MoreCommands",
+  "description": "Adds a lot of commands.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["PlanetTeamSpeak", "PTSMods"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
