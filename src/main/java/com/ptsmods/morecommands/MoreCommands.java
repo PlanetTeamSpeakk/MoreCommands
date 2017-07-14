@@ -1,7 +1,5 @@
 package com.ptsmods.morecommands;
 
-import com.ptsmods.morecommands.init.Initialize;
-
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -15,20 +13,21 @@ public class MoreCommands {
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
 		Initialize.register(event);
+		Reference.setServerStartingEvent(event);
 	}
 	
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		
-	}
+//	@EventHandler
+//	public void preInit(FMLPreInitializationEvent event) {
 	
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		
-	}
+//	}
 	
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
+//	@EventHandler
+//	public void init(FMLInitializationEvent event) {
 		
-	}
+//	}
+	
+//	@EventHandler
+//	public void postInit(FMLPostInitializationEvent event) {
+		
+//	}
 }
