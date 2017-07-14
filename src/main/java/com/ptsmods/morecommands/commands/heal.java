@@ -3,8 +3,10 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,8 +15,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class heal {
@@ -25,7 +25,7 @@ public class heal {
 	}
 
 	public static class Commandheal extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -38,7 +38,11 @@ public class heal {
 		}
 
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return new ArrayList();
+			if (args.length == 1) {
+				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			} else {
+				return new ArrayList();
+			}
 		}
 
 		public boolean isUsernameIndex(String[] string, int index) {
@@ -49,37 +53,38 @@ public class heal {
 			return "heal";
 		}
 
-		public String getUsage(ICommandSender var1) {
-			return "/heal Heals and feeds you.";
+		public String getUsage(ICommandSender sender) {
+			return "/heal [player] Heals and feeds you or someone else, be nice for once...";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			int i = var1.getPosition().getX();
-			int j = var1.getPosition().getY();
-			int k = var1.getPosition().getZ();
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			EntityPlayer player = (EntityPlayer) sender;
 
-			int x = i;
-			int y = j;
-			int z = k;
-
-			World world = null;
-			WorldServer[] list = server.worlds;
-			for (WorldServer ins : list) {
-				if (ins.provider.getDimension() == entity.world.provider.getDimension())
-					world = ins;
-			}
-			if (world == null)
-				world = list[0];
-
-			if (entity instanceof EntityPlayerMP) {
+			if (player instanceof EntityPlayerMP) {
 				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
 				if (minecraftserver != null) {
-					if (entity instanceof EntityLivingBase) {
-						((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SATURATION, 10, 255, false, false));
-						((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.REGENERATION, 10, 255, false, false));
-						var1.sendMessage(new TextComponentString("You're now healed and fed."));
+					if (args.length == 0) {
+						player.setHealth(20F);
+						player.getFoodStats().setFoodLevel(20);
+						player.getFoodStats().setFoodSaturationLevel(20F);
+						sender.sendMessage(new TextComponentString("You're now healed and fed."));
+					} else {
+						try {
+							EntityPlayer victim = getPlayer(server, sender, args[0]);
+							victim.setHealth(20F);
+							victim.getFoodStats().setFoodLevel(20);
+							victim.getFoodStats().setFoodSaturationLevel(20F);
+							if (victim != player) {
+								victim.sendMessage(new TextComponentString(sender.getName() + " healed and fed you."));
+								sender.sendMessage(new TextComponentString(victim.getName() + " has been healed and fed."));
+							} else {
+								sender.sendMessage(new TextComponentString("You're now healed and fed."));
+							}
+						} catch (PlayerNotFoundException e) {
+							sender.sendMessage(new TextComponentString("The given player does not exist."));
+							return;
+						}
 					}
 				}
 

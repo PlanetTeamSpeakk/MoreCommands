@@ -19,7 +19,7 @@ public class clearInv {
 	}
 
 	public static class CommandclearInv extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -47,17 +47,17 @@ public class clearInv {
 			return "ci";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/ci Clears your inventory.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] args) throws NumberInvalidException {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException {
+			EntityPlayer entity = (EntityPlayer) sender;
 						
 			if (entity instanceof EntityPlayer) {
 				((EntityPlayer) entity).inventory.clear();
-				var1.sendMessage(new TextComponentString("Your inventory was successfully cleared."));
+				sender.sendMessage(new TextComponentString("Your inventory was successfully cleared."));
 			}
 		}
 		

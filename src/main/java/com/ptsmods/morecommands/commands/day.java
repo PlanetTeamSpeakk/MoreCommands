@@ -26,7 +26,7 @@ public class day {
 	}
 
 	public static class Commandday extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -50,13 +50,13 @@ public class day {
 			return "day";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/day Sets time to day.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
+			EntityPlayer entity = (EntityPlayer) sender;
 
 			World world = null;
 			WorldServer[] list = server.worlds;
@@ -71,7 +71,7 @@ public class day {
 				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
 				if (minecraftserver != null) {
 					world.setWorldTime(1000);
-					var1.sendMessage(new TextComponentString("The time has been changed to 1000 ticks, aka day-time."));
+					sender.sendMessage(new TextComponentString("The time has been changed to 1000 ticks, aka day-time."));
 				}
 			}
 

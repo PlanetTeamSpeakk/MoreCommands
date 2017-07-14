@@ -5,20 +5,22 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-public class dummyCommand {
+public class consoleCommand {
 
 	public static Object instance;
 
-	public dummyCommand() {
+	public consoleCommand() {
 	}
 
-	public static class CommandCOMMANDNAME extends CommandBase {
+	public static class CommandconsoleCommand extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -29,6 +31,7 @@ public class dummyCommand {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("ccmd");
 			return aliases;
 		}
 
@@ -37,7 +40,7 @@ public class dummyCommand {
 		}
 
 		public String getName() {
-			return "COMMAND NAME";
+			return "consolecommand";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -46,11 +49,21 @@ public class dummyCommand {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			//CODE HERE
+			if (args.length == 0) {
+				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+			} else {
+				String command = "";
+				for (Integer length = 0; length < args.length; length += 1) {
+					command += args[length];
+					if ((length + 1) != args.length) command += " ";
+				}
+				server.getCommandManager().executeCommand((ICommandSender) server, command);
+				Reference.sendMessage(sender, "Successfully ran command " + Reference.GRAY + Reference.ITALIC + command + Reference.RESET + " from the console. Some commands may give errors, or not work at all when ran by the console.");
+			}
 
 		}
 		
-		protected String usage = "COMMAND USAGE";
+		protected String usage = "/consolecommand <command> Runs a command from the console.";
 
 	}
 

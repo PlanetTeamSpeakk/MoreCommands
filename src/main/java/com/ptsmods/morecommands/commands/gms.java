@@ -19,7 +19,7 @@ public class gms {
 	}
 
 	public static class Commandgms extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -44,17 +44,17 @@ public class gms {
 			return "gms";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/gms Puts you in survival mode.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
+			EntityPlayer entity = (EntityPlayer) sender;
 			
 			if (entity instanceof EntityPlayerMP) {
 				((EntityPlayer) entity).setGameType(GameType.SURVIVAL);
-				var1.sendMessage(new TextComponentString("Your gamemode has been updated to survival mode."));
+				sender.sendMessage(new TextComponentString("Your gamemode has been updated to survival mode."));
 			}
 
 		}

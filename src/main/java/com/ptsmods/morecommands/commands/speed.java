@@ -2,18 +2,16 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class speed {
 
@@ -23,7 +21,7 @@ public class speed {
 	}
 	
 	public static class Commandspeed extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -51,30 +49,26 @@ public class speed {
 			return "speed";
 		}
 
-		public String getUsage(ICommandSender var1) {
-			return "/speed <number>";
+		public String getUsage(ICommandSender sender) {
+			return usage;
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] argString) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			EntityPlayer player = (EntityPlayer) sender;
 
-               if ((argString.length == 0) || (Integer.parseInt(argString[0]) > 256) || (Integer.parseInt(argString[0]) < 1)) {
-                    var1.sendMessage(new TextComponentString("Please fill in a number from 1 to 256."));
-                    var1.sendMessage(new TextComponentString("Correct usage: /speed <number>"));
-               } else {
-     				if (entity instanceof EntityPlayerMP) {
-     					MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
-     					if (minecraftserver != null) {
-                             argString[0] = new Integer(Integer.parseInt(argString[0]) - 1).toString();
-							 if (entity instanceof EntityLivingBase) {
-								 ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SPEED, 20000000, Integer.parseInt(argString[0]), false, false));
-								 var1.sendMessage(new TextComponentString("Look at him go! To remove the speed effect or to lower it type /ce or /cleareffects."));
-							 }
-					     }
-     				}
-               }
+			if ((Integer.parseInt(args[0]) > 10) || (Integer.parseInt(args[0]) < 0)) {
+				Reference.sendMessage(player, Reference.RED + "Usage:" + usage);
+			} else {
+				float speed = (float) Integer.parseInt(args[0]) / 10;
+				player.capabilities.setFlySpeed(speed);
+				player.capabilities.setPlayerWalkSpeed(speed);
+				player.sendPlayerAbilities();
+				Reference.sendMessage(sender, "Your move speed has been set to " + Float.toString(speed) + ".");
+			}
 		}
+		
+		protected String usage = "/speed <number> Makes you go faster, number should be a number between 0 and 10.";
 
 	}
 

@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.commands;
 
-import java.awt.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -9,6 +8,7 @@ import com.ptsmods.morecommands.Reference;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
@@ -27,7 +27,7 @@ public class item {
 	}
 
 	public static class Commanditem extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -53,55 +53,58 @@ public class item {
 			return "item";
 		}
 
-		public String getUsage(ICommandSender var1) {
-			return "/item <item> [amount] [player] Gives you an item.";
+		public String getUsage(ICommandSender sender) {
+			return usage;
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] args) throws CommandException {
-			EntityPlayer player = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			EntityPlayer player = (EntityPlayer) sender;
 			ItemStack itemstack = new ItemStack(Items.AIR, 0);
 			Integer amount = 64;
 			if (args.length == 0) {
-				var1.sendMessage(new TextComponentString("Please put in an item."));
+				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
 				return;
 			} else if (args.length == 1) {
-				Item item = getItemByText(var1, args[0]);
+				Item item = getItemByText(sender, args[0]);
 				itemstack = new ItemStack(item, 64);
 			} else if (args.length == 2) {
 				if (Reference.isInteger(args[1])) {
-					Item item = getItemByText(var1, args[0]);
+					Item item = getItemByText(sender, args[0]);
 					itemstack = new ItemStack(item, Integer.parseInt(args[1]));
 				} else {
-					var1.sendMessage(new TextComponentString("The second parameter should be the amount you would like."));
+					Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
 					return;
 				}
 			} else if (args.length == 3) {
 				if (Reference.isInteger(args[1])) {
-					Item item = getItemByText(var1, args[0]);
+					Item item = getItemByText(sender, args[0]);
 					itemstack = new ItemStack(item, Integer.parseInt(args[1]));
 					amount = Integer.parseInt(args[1]);
-					player = getPlayer(server, var1, args[2]);
-					if (player == null) {
-						var1.sendMessage(new TextComponentString("The given player does not exist."));
+					try {
+						player = getPlayer(server, sender, args[2]);
+					} catch (PlayerNotFoundException e) {
+						sender.sendMessage(new TextComponentString("The given player does not exist."));
 						return;
-					} 
+					}
 				} else {
-					var1.sendMessage(new TextComponentString("The second parameter should be the amount you would like to give."));
+					Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
 					return;
 				}
 			}
 			
 			player.inventory.addItemStackToInventory(itemstack);
-			if (player != (EntityPlayer) var1) {
-				player.sendMessage(new TextComponentString(var1.getName() + " has given you " + amount.toString() + " " + args[0] + "."));
+			if (player != (EntityPlayer) sender) {
+				player.sendMessage(new TextComponentString(sender.getName() + " has given you " + amount.toString() + " " + args[0] + "."));
 			} else {
-				var1.sendMessage(new TextComponentString("Your items have arrived."));
+				sender.sendMessage(new TextComponentString("Your items have arrived."));
 			}
 			player.world.playSound((EntityPlayer)null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             player.inventoryContainer.detectAndSendChanges();
 
 		}
+		
+		protected static String usage = "/item <item> [amount] [player] Gives you an item.";
 
 	}
 

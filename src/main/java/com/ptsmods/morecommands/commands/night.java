@@ -22,7 +22,7 @@ public class night {
 	}
 
 	public static class Commandnight extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -46,13 +46,13 @@ public class night {
 			return "night";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/night Sets time to night.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
+			EntityPlayer entity = (EntityPlayer) sender;
 
 			World world = null;
 			WorldServer[] list = server.worlds;
@@ -67,7 +67,7 @@ public class night {
 				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
 				if (minecraftserver != null) {
 					world.setWorldTime(16000);
-					var1.sendMessage(new TextComponentString("The time has been changed to 16000 ticks, aka night-time."));
+					sender.sendMessage(new TextComponentString("The time has been changed to 16000 ticks, aka night-time."));
 				}
 			}
 

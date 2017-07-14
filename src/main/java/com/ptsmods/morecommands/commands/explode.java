@@ -22,7 +22,7 @@ public class explode {
 	}
 
 	public static class Commandexplode extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -46,33 +46,25 @@ public class explode {
 			return "explode";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/explode [power] Explode yourself with the set amount of power, power should be a number.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] args) {
-			int x = var1.getPosition().getX();
-			int y = var1.getPosition().getY();
-			int z = var1.getPosition().getZ();
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			int x = sender.getPosition().getX();
+			int y = sender.getPosition().getY();
+			int z = sender.getPosition().getZ();
+			EntityPlayer player = (EntityPlayer) sender;
 			Float power = 4F;
 			
-			World world = null;
-			WorldServer[] list = server.worlds;
-			for (WorldServer ins : list) {
-				if (ins.provider.getDimension() == entity.world.provider.getDimension())
-					world = ins;
-			}
-
-			if (world == null)
-				world = list[0];
+			World world = Reference.getWorld(server, player);
 			
 			if (args.length != 0) {
 				if (Reference.isInteger(args[0])) {
 					power = (float) Integer.parseInt(args[0]);
 				} else {
-					var1.sendMessage(new TextComponentString("Power should be a number."));
+					sender.sendMessage(new TextComponentString("Power should be a number."));
 					return;
 				}
 			}

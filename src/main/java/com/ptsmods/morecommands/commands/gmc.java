@@ -19,7 +19,7 @@ public class gmc {
 	}
 
 	public static class Commandgmc extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -44,17 +44,17 @@ public class gmc {
 			return "gmc";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/gmc Puts you in creative mode.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
+			EntityPlayer entity = (EntityPlayer) sender;
 			
 			if (entity instanceof EntityPlayerMP) {
 				((EntityPlayer) entity).setGameType(GameType.CREATIVE);
-				var1.sendMessage(new TextComponentString("Your gamemode has been updated to creative mode."));
+				sender.sendMessage(new TextComponentString("Your gamemode has been updated to creative mode."));
 			}
 
 		}

@@ -2,29 +2,29 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.GameType;
+import net.minecraft.world.World;
 
-public class gma {
+public class save {
 
 	public static Object instance;
 
-	public gma() {
+	public save() {
 	}
 
-	public static class Commandgma extends CommandBase {
+	public static class Commandsave extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -41,23 +41,23 @@ public class gma {
 		}
 
 		public String getName() {
-			return "gma";
+			return "save";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/gma Puts you in adventure mode.";
+			return this.usage;
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.ADVENTURE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
-			}
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			Reference.sendServerMessage(server, sender.getName() + " requested the worlds to be saved, expect lag.");
+			server.saveAllWorlds(false);
+			Reference.sendServerMessage(server, "The worlds have been saved.");
+			World world = ((EntityPlayer) sender).getEntityWorld();
 
 		}
+		
+		protected String usage = "/save Saves all the worlds.";
 
 	}
 

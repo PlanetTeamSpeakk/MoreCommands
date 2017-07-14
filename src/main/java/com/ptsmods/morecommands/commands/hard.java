@@ -3,28 +3,28 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.command.NumberInvalidException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.GameType;
+import net.minecraft.world.EnumDifficulty;
 
-public class gma {
+public class hard {
 
 	public static Object instance;
 
-	public gma() {
+	public hard() {
 	}
 
-	public static class Commandgma extends CommandBase {
+	public static class Commandhard extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -41,21 +41,17 @@ public class gma {
 		}
 
 		public String getName() {
-			return "gma";
+			return "hard";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/gma Puts you in adventure mode.";
+			return "/hard Sets difficulty to hard.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.ADVENTURE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
-			}
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
+            server.setDifficultyForAllWorlds(EnumDifficulty.HARD);
+            sender.sendMessage(new TextComponentString("The difficulty has been set to hard."));
 
 		}
 

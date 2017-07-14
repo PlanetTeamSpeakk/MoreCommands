@@ -5,26 +5,28 @@ import java.util.ArrayList;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.GameType;
 
-public class gma {
+public class cmdBlock {
 
 	public static Object instance;
 
-	public gma() {
+	public cmdBlock() {
 	}
 
-	public static class Commandgma extends CommandBase {
+	public static class Commandcmdblock extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -41,22 +43,21 @@ public class gma {
 		}
 
 		public String getName() {
-			return "gma";
+			return "cmdblock";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/gma Puts you in adventure mode.";
+			return "/cmdblock Gives you a command block.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.ADVENTURE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
-			}
-
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			EntityPlayer player = (EntityPlayer) sender;
+			ItemStack cmdblock = new ItemStack(Blocks.COMMAND_BLOCK, 1);
+			player.inventory.addItemStackToInventory(cmdblock);
+			player.world.playSound((EntityPlayer)null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            player.inventoryContainer.detectAndSendChanges();
+			sender.sendMessage(new TextComponentString("Your command block has arrived."));
 		}
 
 	}

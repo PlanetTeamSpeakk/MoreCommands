@@ -19,7 +19,7 @@ public class gmsp {
 	}
 
 	public static class Commandgmsp extends CommandBase {
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -44,17 +44,17 @@ public class gmsp {
 			return "gmsp";
 		}
 
-		public String getUsage(ICommandSender var1) {
+		public String getUsage(ICommandSender sender) {
 			return "/gmsp Puts you in spectator mode.";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) var1;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
+			EntityPlayer entity = (EntityPlayer) sender;
 			
 			if (entity instanceof EntityPlayerMP) {
 				((EntityPlayer) entity).setGameType(GameType.SPECTATOR);
-				var1.sendMessage(new TextComponentString("Your gamemode has been updated to spectator mode."));
+				sender.sendMessage(new TextComponentString("Your gamemode has been updated to spectator mode."));
 			}
 
 		}

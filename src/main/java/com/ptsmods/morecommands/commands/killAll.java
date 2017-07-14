@@ -2,9 +2,12 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -21,7 +24,7 @@ public class killAll {
 
 	public static class CommandkillAll extends CommandBase {
 
-		public boolean isUsernameIndex(int var1) {
+		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
@@ -34,7 +37,11 @@ public class killAll {
 		}
 
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return new ArrayList();
+			if (args.length == 1) {
+				return getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
+			} else {
+				return new ArrayList();
+			}
 		}
 
 		public boolean isUsernameIndex(String[] string, int index) {
@@ -45,33 +52,28 @@ public class killAll {
 			return "killall";
 		}
 
-		public String getUsage(ICommandSender var1) {
-			return "/killall <entity> Kills all of the given entity in the world.";
+		public String getUsage(ICommandSender sender) {
+			return this.usage;
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender var1, String[] args) {
-			EntityPlayer entity = (EntityPlayer) var1;
-
-			if (entity instanceof EntityPlayerMP) {
-				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
-				if (minecraftserver != null) {
-					if (args.length == 1) {
-						if (args[0].equals("help")) {
-							var1.sendMessage(new TextComponentString("For vanilla mobs you can just put in their name, e.g. creeper."));
-							var1.sendMessage(new TextComponentString("But for modded mobs you must put the mod id, a :, and the mob name, e.g. thaumcraft:wisp."));
-							var1.sendMessage(new TextComponentString("You can also just put in Player."));
-							var1.sendMessage(new TextComponentString("Putting an exclamation mark in front of the mob will kill everything but that mob, e.g. !Player."));
-						} else {
-							minecraftserver.getCommandManager().executeCommand((EntityPlayerMP) entity, "kill @e[type=" + args[0] + "]");
-						}
-					} else {
-						var1.sendMessage(new TextComponentString("You didn't give an entity, for help type /killall help."));
-					}
-				}
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			EntityPlayer player = (EntityPlayer) sender;
+			if (args.length == 1) {
+				if (args[0].equals("all")) args[0] = "!player";
+				boolean sendCommandFeedback = player.getEntityWorld().getGameRules().getBoolean("sendCommandFeedback");
+				player.getEntityWorld().getGameRules().setOrCreateGameRule("sendCommandFeedback", "false");
+				server.getCommandManager().executeCommand((ICommandSender) server, "tp @e[type=" + args[0] + "] ~ -128 ~");
+				server.getCommandManager().executeCommand((ICommandSender) server, "kill @e[type=" + args[0] + "]");
+				player.getEntityWorld().getGameRules().setOrCreateGameRule("sendCommandFeedback", Boolean.toString(sendCommandFeedback));
+				Reference.sendMessage(player, "Successfully killed all entities of type " + args[0] + ".");
+			} else {
+				Reference.sendMessage(player, Reference.RED + this.usage);
 			}
 
 		}
+		
+		protected String usage = "/killall <entity> Kills all of the given entity in the world.";
 
 	}
 

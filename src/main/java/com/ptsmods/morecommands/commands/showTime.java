@@ -2,23 +2,22 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.GameType;
 
-public class gma {
+public class showTime {
 
 	public static Object instance;
 
-	public gma() {
+	public showTime() {
 	}
 
-	public static class Commandgma extends CommandBase {
+	public static class CommandshowTime extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -41,22 +40,17 @@ public class gma {
 		}
 
 		public String getName() {
-			return "gma";
+			return "showtime";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/gma Puts you in adventure mode.";
+			return "/showtime Shows the time";
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.ADVENTURE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
-			}
-
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			Integer time = (int)(sender.getEntityWorld().getWorldTime() % 24000L);
+			sender.sendMessage(new TextComponentString("The server time is " + time.toString() + " ticks, " + Reference.parseTime(time, true) + " or " + Reference.parseTime(time, false) + "."));
 		}
 
 	}
