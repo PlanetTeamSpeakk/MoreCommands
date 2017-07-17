@@ -1,18 +1,20 @@
 package com.ptsmods.morecommands;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.7.2";
+	public static final String VERSION = "1.10";
 	
 	public static boolean isInteger(String s) {
 	    try { 
@@ -24,19 +26,6 @@ public class Reference {
 	    }
 
 	    return true;
-	}
-	
-	public static World getWorld(MinecraftServer server, EntityPlayer player) {
-		World world = null;
-		WorldServer[] list = server.worlds;
-		for (WorldServer ins : list) {
-			if (ins.provider.getDimension() == player.world.provider.getDimension())
-				world = ins;
-		}
-	
-		if (world == null)
-			world = list[0];
-		return world;
 	}
 	
 	public static String parseTime(long time, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
@@ -88,7 +77,54 @@ public class Reference {
 		sendMessage(player, RED + "Usage: " + usage);
 	}
 	
-	protected static FMLServerStartingEvent serverStartingEvent = null;
+	public static void teleportSafely(EntityPlayer player) {
+		World world = player.getEntityWorld();
+		float x = player.getPosition().getX();
+		float z = player.getPosition().getZ();
+		boolean found = false;
+		if (!world.isRemote) {
+			while (!found) {
+				for (Integer y = 256; y != player.getPosition().getY(); y -= 1) {
+					Block block = world.getBlockState(new BlockPos(x, y-1, z)).getBlock();
+					Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
+					if (!getBlockBlacklist().contains(block) && getBlockWhitelist().contains(tpblock)) {
+						player.setPositionAndUpdate(x+0.5, y, z+0.5);
+						found = true;
+						break;
+					}
+				}
+				x -= 1;
+				z -= 1;
+			}
+		}
+	}
+	
+	private static ArrayList blockBlacklist = new ArrayList();
+	
+	public static ArrayList getBlockBlacklist() {
+		return blockBlacklist;
+	}
+
+	public static boolean addBlockToBlacklist(Block block) {
+		return blockBlacklist.add(block);
+	}
+	
+	public static void resetBlockBlackAndWhitelist() {
+		blockBlacklist = new ArrayList();
+		blockWhitelist = new ArrayList();
+	}
+	
+	private static ArrayList blockWhitelist = new ArrayList();
+	
+	public static ArrayList getBlockWhitelist() {
+		return blockWhitelist;
+	}
+
+	public static boolean addBlockToWhitelist(Block block) {
+		return blockWhitelist.add(block);
+	}
+	
+	private static FMLServerStartingEvent serverStartingEvent = null;
 	public static String BLACK = "§0";
 	public static String DARK_BLUE = "§1";
 	public static String DARK_GREEN = "§2";
@@ -111,7 +147,6 @@ public class Reference {
 	public static String UNDERLINED = "§n";
 	public static String ITALIC = "§o";
 	public static String RESET = "§r";
-	public static ArrayList tpRequesters = new ArrayList();
-	public static ArrayList tpRequested = new ArrayList();
+	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
 	
 }
