@@ -1,33 +1,33 @@
+// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
+// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
+
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.Reference;
 
-import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
-public class top {
+public class breakBlock {
 
 	public static Object instance;
 
-	public top() {
+	public breakBlock() {
 	}
-	
-	public static class Commandtop extends CommandBase {
+
+	public static class Commandbreak extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -39,27 +39,25 @@ public class top {
 			return new ArrayList();
 		}
 
-		public boolean isUsernameIndex(String[] string, int index) {
-			return true;
-		}
-
 		public String getName() {
-			return "top";
+			return "break";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.teleportSafely((EntityPlayer) sender);
-			Reference.sendMessage(sender, "You have been teleported to a safe location.");
+			BlockPos block = Minecraft.getMinecraft().objectMouseOver.getBlockPos();
+			EntityPlayer player = (EntityPlayer) sender;
+			player.getEntityWorld().setBlockToAir(block);
+			Reference.sendMessage(player, "The block at X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + " has been broken.");
 
 		}
 		
-		protected String usage = "/top Teleports you to a safe location.";
-		
+		protected String usage = "/break Breaks the block you're looking at.";
+
 	}
 
 }

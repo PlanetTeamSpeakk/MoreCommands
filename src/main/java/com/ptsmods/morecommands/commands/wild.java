@@ -4,24 +4,22 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.Reference;
 
-import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import scala.concurrent.forkjoin.ThreadLocalRandom;
+import scala.util.Random;
 
-public class top {
+public class wild {
 
 	public static Object instance;
 
-	public top() {
+	public wild() {
 	}
-	
-	public static class Commandtop extends CommandBase {
+
+	public static class Commandwild extends CommandBase {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -39,27 +37,29 @@ public class top {
 			return new ArrayList();
 		}
 
-		public boolean isUsernameIndex(String[] string, int index) {
-			return true;
-		}
-
 		public String getName() {
-			return "top";
+			return "wild";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.teleportSafely((EntityPlayer) sender);
-			Reference.sendMessage(sender, "You have been teleported to a safe location.");
+			EntityPlayer player = (EntityPlayer) sender;
+			player.setPosition(ThreadLocalRandom.current().nextDouble(0, 100000), 0, ThreadLocalRandom.current().nextDouble(0, 100000));
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {}
+			Reference.teleportSafely(player);
+			Reference.sendMessage(player, "You have been randomly teleported, your new coords are\nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
+					", Biome: " + player.getEntityWorld().getBiome(new BlockPos(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ())).getBiomeName() + ".");
 
 		}
 		
-		protected String usage = "/top Teleports you to a safe location.";
-		
+		protected String usage = "/wild Teleports you somewhere random.";
+
 	}
 
 }
