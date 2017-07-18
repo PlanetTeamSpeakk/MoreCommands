@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands;
 
 import com.ptsmods.morecommands.commands.barrier.Commandbarrier;
+import com.ptsmods.morecommands.commands.breakBlock.Commandbreak;
 import com.ptsmods.morecommands.commands.clearEffects.CommandclearEffects;
 import com.ptsmods.morecommands.commands.clearInv.CommandclearInv;
 import com.ptsmods.morecommands.commands.cmdBlock.Commandcmdblock;
@@ -26,24 +27,36 @@ import com.ptsmods.morecommands.commands.noHunger.CommandnoHunger;
 import com.ptsmods.morecommands.commands.noRain.CommandnoRain;
 import com.ptsmods.morecommands.commands.normal.Commandnormal;
 import com.ptsmods.morecommands.commands.peaceful.Commandpeaceful;
+import com.ptsmods.morecommands.commands.ping.Commandping;
+import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import com.ptsmods.morecommands.commands.reloadMoreCommands.CommandreloadMoreCommands;
 import com.ptsmods.morecommands.commands.save.Commandsave;
 import com.ptsmods.morecommands.commands.setBuildLimit.CommandsetBuildLimit;
 import com.ptsmods.morecommands.commands.showTime.CommandshowTime;
+import com.ptsmods.morecommands.commands.smite.Commandsmite;
+import com.ptsmods.morecommands.commands.spawn.Commandspawn;
 import com.ptsmods.morecommands.commands.spawnClientEntity.CommandspawnClientEntity;
 import com.ptsmods.morecommands.commands.speed.Commandspeed;
 import com.ptsmods.morecommands.commands.sudo.Commandsudo;
-import com.ptsmods.morecommands.commands.top;
+import com.ptsmods.morecommands.commands.through.Commandthrough;
 import com.ptsmods.morecommands.commands.top.Commandtop;
+import com.ptsmods.morecommands.commands.tpa.Commandtpa;
+import com.ptsmods.morecommands.commands.tpaccept.Commandtpaccept;
+import com.ptsmods.morecommands.commands.tpdeny.Commandtpdeny;
+import com.ptsmods.morecommands.commands.wild.Commandwild;
 
 import net.minecraft.init.Blocks;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Initialize {
 
-	public static void register(FMLServerStartingEvent event) {
+	public static void registerCommands(FMLServerStartingEvent event) {
 		System.out.println("Registering MoreCommands commands...");
+		
 		event.registerServerCommand(new Commandday());
 		event.registerServerCommand(new Commandnight());
 		event.registerServerCommand(new Commandexplode());
@@ -69,7 +82,6 @@ public class Initialize {
 		event.registerServerCommand(new Commandkys());
 		event.registerServerCommand(new CommandnoHunger());
 		event.registerServerCommand(new Commandgod());
-		event.registerServerCommand(new CommandspawnClientEntity());
 		event.registerServerCommand(new Commandsudo());
 		event.registerServerCommand(new CommandsetBuildLimit());
 		event.registerServerCommand(new Commandsave());
@@ -77,51 +89,78 @@ public class Initialize {
 		event.registerServerCommand(new CommandconsoleCommand());
 		event.registerServerCommand(new CommandreloadMoreCommands());
 		event.registerServerCommand(new Commandfly());
-		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
-		top.addBlockToBlacklist(Blocks.AIR);
-		top.addBlockToBlacklist(Blocks.LAVA);
-		top.addBlockToBlacklist(Blocks.CACTUS);
-		top.addBlockToBlacklist(Blocks.MAGMA);
-		top.addBlockToBlacklist(Blocks.ACACIA_FENCE);
-		top.addBlockToBlacklist(Blocks.ACACIA_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.BIRCH_FENCE);
-		top.addBlockToBlacklist(Blocks.BIRCH_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.DARK_OAK_FENCE);
-		top.addBlockToBlacklist(Blocks.DARK_OAK_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.JUNGLE_FENCE);
-		top.addBlockToBlacklist(Blocks.JUNGLE_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.NETHER_BRICK_FENCE);
-		top.addBlockToBlacklist(Blocks.OAK_FENCE);
-		top.addBlockToBlacklist(Blocks.OAK_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.SPRUCE_FENCE);
-		top.addBlockToBlacklist(Blocks.SPRUCE_FENCE_GATE);
-		top.addBlockToBlacklist(Blocks.FIRE);
-		top.addBlockToBlacklist(Blocks.WEB);
-		top.addBlockToBlacklist(Blocks.MOB_SPAWNER);
-		top.addBlockToBlacklist(Blocks.END_PORTAL);
-		top.addBlockToBlacklist(Blocks.TNT);
-		top.addBlockToBlacklist(Blocks.IRON_TRAPDOOR);
-		top.addBlockToBlacklist(Blocks.TRAPDOOR);
-		top.addBlockToBlacklist(Blocks.BREWING_STAND);
+		event.registerServerCommand(new Commandtpa());
+		event.registerServerCommand(new Commandtpaccept());
+		event.registerServerCommand(new Commandtpdeny());
+		event.registerServerCommand(new Commandwild());
+		event.registerServerCommand(new Commandspawn());
+		event.registerServerCommand(new Commandbreak());
+		event.registerServerCommand(new Commandsmite());
+		event.registerServerCommand(new Commandthrough());
 		
-		top.addBlockToWhitelist(Blocks.AIR);
-		top.addBlockToWhitelist(Blocks.DEADBUSH);
-		top.addBlockToWhitelist(Blocks.VINE);
-		top.addBlockToWhitelist(Blocks.TALLGRASS);
-		top.addBlockToWhitelist(Blocks.ACACIA_DOOR);
-		top.addBlockToWhitelist(Blocks.BIRCH_DOOR);
-		top.addBlockToWhitelist(Blocks.DARK_OAK_DOOR);
-		top.addBlockToWhitelist(Blocks.IRON_DOOR);
-		top.addBlockToWhitelist(Blocks.JUNGLE_DOOR);
-		top.addBlockToWhitelist(Blocks.OAK_DOOR);
-		top.addBlockToWhitelist(Blocks.SPRUCE_DOOR);
-		top.addBlockToWhitelist(Blocks.DOUBLE_PLANT);
-		top.addBlockToWhitelist(Blocks.RED_FLOWER);
-		top.addBlockToWhitelist(Blocks.YELLOW_FLOWER);
-		top.addBlockToWhitelist(Blocks.BROWN_MUSHROOM);
-		top.addBlockToWhitelist(Blocks.RED_MUSHROOM);
-		top.addBlockToWhitelist(Blocks.WATERLILY);
+		Reference.addBlockToBlacklist(Blocks.AIR);
+		Reference.addBlockToBlacklist(Blocks.LAVA);
+		Reference.addBlockToBlacklist(Blocks.CACTUS);
+		Reference.addBlockToBlacklist(Blocks.MAGMA);
+		Reference.addBlockToBlacklist(Blocks.ACACIA_FENCE);
+		Reference.addBlockToBlacklist(Blocks.ACACIA_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.BIRCH_FENCE);
+		Reference.addBlockToBlacklist(Blocks.BIRCH_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.DARK_OAK_FENCE);
+		Reference.addBlockToBlacklist(Blocks.DARK_OAK_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.JUNGLE_FENCE);
+		Reference.addBlockToBlacklist(Blocks.JUNGLE_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.NETHER_BRICK_FENCE);
+		Reference.addBlockToBlacklist(Blocks.OAK_FENCE);
+		Reference.addBlockToBlacklist(Blocks.OAK_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.SPRUCE_FENCE);
+		Reference.addBlockToBlacklist(Blocks.SPRUCE_FENCE_GATE);
+		Reference.addBlockToBlacklist(Blocks.FIRE);
+		Reference.addBlockToBlacklist(Blocks.WEB);
+		Reference.addBlockToBlacklist(Blocks.MOB_SPAWNER);
+		Reference.addBlockToBlacklist(Blocks.END_PORTAL);
+		Reference.addBlockToBlacklist(Blocks.END_PORTAL_FRAME);
+		Reference.addBlockToBlacklist(Blocks.TNT);
+		Reference.addBlockToBlacklist(Blocks.IRON_TRAPDOOR);
+		Reference.addBlockToBlacklist(Blocks.TRAPDOOR);
+		Reference.addBlockToBlacklist(Blocks.BREWING_STAND);
+		
+		Reference.addBlockToWhitelist(Blocks.AIR);
+		Reference.addBlockToWhitelist(Blocks.DEADBUSH);
+		Reference.addBlockToWhitelist(Blocks.VINE);
+		Reference.addBlockToWhitelist(Blocks.TALLGRASS);
+		Reference.addBlockToWhitelist(Blocks.ACACIA_DOOR);
+		Reference.addBlockToWhitelist(Blocks.BIRCH_DOOR);
+		Reference.addBlockToWhitelist(Blocks.DARK_OAK_DOOR);
+		Reference.addBlockToWhitelist(Blocks.IRON_DOOR);
+		Reference.addBlockToWhitelist(Blocks.JUNGLE_DOOR);
+		Reference.addBlockToWhitelist(Blocks.OAK_DOOR);
+		Reference.addBlockToWhitelist(Blocks.SPRUCE_DOOR);
+		Reference.addBlockToWhitelist(Blocks.DOUBLE_PLANT);
+		Reference.addBlockToWhitelist(Blocks.RED_FLOWER);
+		Reference.addBlockToWhitelist(Blocks.YELLOW_FLOWER);
+		Reference.addBlockToWhitelist(Blocks.BROWN_MUSHROOM);
+		Reference.addBlockToWhitelist(Blocks.RED_MUSHROOM);
+		Reference.addBlockToWhitelist(Blocks.WATERLILY);
+		Reference.addBlockToWhitelist(Blocks.BEETROOTS);
+		Reference.addBlockToWhitelist(Blocks.CARROTS);
+		Reference.addBlockToWhitelist(Blocks.WHEAT);
+		Reference.addBlockToWhitelist(Blocks.POTATOES);
+		Reference.addBlockToWhitelist(Blocks.PUMPKIN_STEM);
+		Reference.addBlockToWhitelist(Blocks.MELON_STEM);
+		Reference.addBlockToWhitelist(Blocks.SNOW_LAYER);
+		
 		System.out.println("MoreCommands commands have successfully been registered.");
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerClientCommands() {
+		ClientCommandHandler.instance.registerCommand(new CommandspawnClientEntity());
+		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
+		ClientCommandHandler.instance.registerCommand(new Commandping());
+		ClientCommandHandler.instance.registerCommand(new Commandptime());
+		
+		MinecraftForge.EVENT_BUS.register(new TickHandler());
 	}
 	
 }

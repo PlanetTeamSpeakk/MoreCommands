@@ -2,11 +2,13 @@ package com.ptsmods.morecommands;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -14,7 +16,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.10";
+	public static final String VERSION = "1.11";
 	
 	public static boolean isInteger(String s) {
 	    try { 
@@ -97,6 +99,35 @@ public class Reference {
 				z -= 1;
 			}
 		}
+	}
+	
+	public static String getLookDirectionFromLookVec(Vec3d lookvec) {
+		String direction = "unknown";
+		Integer x = (int) Math.round(lookvec.x);
+		Integer y = (int) Math.round(lookvec.y);
+		Integer z = (int) Math.round(lookvec.z);
+		if (y == 1) {
+			direction = "up";
+		} else if (y == -1) {
+			direction = "down";
+		} else if (x == 0 && z == 1) {
+			direction = "south";
+		} else if (x == 0 && z == -1) {
+			direction = "north";
+		} else if (x == 1 && z == 0) {
+			direction = "east";
+		} else if (x == -1 && z == 0) {
+			direction = "west";
+		} else if (x == 1 && z == 1) {
+			direction = "south-east";
+		} else if (x == -1 && z == -1) {
+			direction = "north-west";
+		} else if (x == 1 && z == -1) {
+			direction = "north-east";
+		} else if (x == -1 && z == 1) {
+			direction = "south-west";
+		}
+		return direction;
 	}
 	
 	private static ArrayList blockBlacklist = new ArrayList();
