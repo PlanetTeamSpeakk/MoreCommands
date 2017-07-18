@@ -6,6 +6,7 @@ import com.ptsmods.morecommands.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,7 +20,7 @@ public class tpaccept {
 	public tpaccept() {
 	}
 
-	public static class Commandtpaccept extends CommandBase {
+	public static class Commandtpaccept implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -51,8 +52,7 @@ public class tpaccept {
 				Reference.sendMessage(sender, "You do not have a tpa request open.");
 			} else {
 				try {
-					EntityPlayer requester = getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
-					System.out.println(requester.getName());
+					EntityPlayer requester = CommandBase.getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
 					Reference.sendMessage(requester, sender.getName() + " has accepted your tpa request.");
 					EntityPlayer player = (EntityPlayer) sender;
 					requester.setPositionAndUpdate(player.getPosition().getX() + 0.5, player.getPosition().getY(), player.getPosition().getZ() + 0.5);
@@ -66,6 +66,21 @@ public class tpaccept {
 		}
 		
 		protected String usage = "/tpaccept Accept a tpa request.";
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
+		}
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
 
 	}
 

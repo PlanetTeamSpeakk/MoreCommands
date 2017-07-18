@@ -6,12 +6,12 @@ import com.ptsmods.morecommands.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class tpdeny {
 
@@ -20,7 +20,7 @@ public class tpdeny {
 	public tpdeny() {
 	}
 
-	public static class Commandtpdeny extends CommandBase {
+	public static class Commandtpdeny implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -52,7 +52,7 @@ public class tpdeny {
 				Reference.sendMessage(sender, "You do not have a tpa request open.");
 			} else {
 				try {
-					EntityPlayer requester = getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
+					EntityPlayer requester = CommandBase.getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
 					Reference.sendMessage(requester, sender.getName() + " has denied your tpa request.");
 					Reference.tpRequests.remove(sender.getName());
 					Reference.sendMessage(sender, "You have denied " + requester.getName() + "'s tpa request.");
@@ -64,6 +64,21 @@ public class tpdeny {
 		}
 		
 		protected String usage = "/tpdeny Deny a tpa request.";
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
+		}
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
 
 	}
 

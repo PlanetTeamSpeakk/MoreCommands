@@ -4,13 +4,12 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.Reference;
 
-import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import scala.concurrent.forkjoin.ThreadLocalRandom;
-import scala.util.Random;
 
 public class wild {
 
@@ -19,7 +18,7 @@ public class wild {
 	public wild() {
 	}
 
-	public static class Commandwild extends CommandBase {
+	public static class Commandwild implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -59,6 +58,21 @@ public class wild {
 		}
 		
 		protected String usage = "/wild Teleports you somewhere random.";
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
+		}
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
 
 	}
 

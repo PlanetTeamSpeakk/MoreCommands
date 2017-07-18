@@ -52,7 +52,7 @@ public class ptime {
 			if (args.length == 0) {
 				Reference.sendCommandUsage(sender, usage);
 			} else {
-				Integer time = 0;
+				Integer time = -1;
 				Boolean fixed = false;
 				if (args[0].toLowerCase().equals("day")) {
 					time = 1000;
@@ -77,7 +77,9 @@ public class ptime {
 				} else if (args[0].startsWith("@") && Reference.isInteger(args[0].substring(1))) {
 					time = Integer.parseInt(args[0].substring(1));
 					fixed = true;
-					Reference.sendMessage(sender, "The time has been fixed to " + args[0] + " ticks.");
+					Reference.sendMessage(sender, "The time has been fixed to " + args[0].substring(1) + " ticks.");
+				} else {
+					Reference.sendCommandUsage(sender, usage);
 				}
 				
 				this.time = time;

@@ -13,8 +13,6 @@ import net.minecraft.world.GameType;
 
 public class gms {
 
-	public static Object instance;
-
 	public gms() {
 	}
 
@@ -24,7 +22,7 @@ public class gms {
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -50,12 +48,9 @@ public class gms {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.SURVIVAL);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to survival mode."));
-			}
+			EntityPlayer player = (EntityPlayer) sender;
+			player.setGameType(GameType.SURVIVAL);
+			sender.sendMessage(new TextComponentString("Your gamemode has been updated to survival mode."));
 
 		}
 

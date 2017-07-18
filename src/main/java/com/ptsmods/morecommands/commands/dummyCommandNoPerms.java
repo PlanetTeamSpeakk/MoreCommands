@@ -1,28 +1,21 @@
+// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
+// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
+
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
-
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-public class top {
+public class dummyCommandNoPerms {
 
-	public top() {
+	public dummyCommandNoPerms() {
 	}
-	
-	public static class Commandtop implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
 
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+	public static class CommandCOMMANDNAME implements ICommand {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -33,26 +26,21 @@ public class top {
 			return new ArrayList();
 		}
 
-		public boolean isUsernameIndex(String[] string, int index) {
-			return true;
-		}
-
 		public String getName() {
-			return "top";
+			return "COMMAND NAME";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.teleportSafely((EntityPlayer) sender);
-			Reference.sendMessage(sender, "You have been teleported to a safe location.");
+			//CODE HERE
 
 		}
 		
-		protected String usage = "/top Teleports you to a safe location.";
+		protected String usage = "COMMAND USAGE";
 
 		@Override
 		public int compareTo(ICommand o) {
@@ -63,7 +51,12 @@ public class top {
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
 		}
-		
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
+
 	}
 
 }

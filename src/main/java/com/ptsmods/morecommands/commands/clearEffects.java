@@ -6,12 +6,12 @@ import com.ptsmods.morecommands.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 public class clearEffects {
@@ -21,7 +21,7 @@ public class clearEffects {
 	public clearEffects() {
 	}
 	
-	public static class CommandclearEffects extends CommandBase {
+	public static class CommandclearEffects implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -55,23 +55,39 @@ public class clearEffects {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			EntityPlayer player = (EntityPlayer) sender;
-			World world = Reference.getWorld(server, player);
+			World world = player.getEntityWorld();
 			 if (!world.isRemote) {
 				 if (args.length == 0) {
 					 if (player.getActivePotionEffects().isEmpty()) {
-						 sender.sendMessage(new TextComponentString("You do not have any effects on."));
+						 Reference.sendMessage(sender, "You do not have any effects on.");
 					 } else {
 						 player.clearActivePotions();
-						 sender.sendMessage(new TextComponentString("All your effects have been cleared."));
+						 Reference.sendMessage(sender, "All your effects have been cleared.");
 				     }
 				 } else {
 					 try {
-						EntityPlayer victim = getPlayer(server, sender, args[0]);
+						EntityPlayer victim = CommandBase.getPlayer(server, sender, args[0]);
+						if (victim.getActivePotionEffects().isEmpty()) {
+							Reference.sendMessage(sender, victim.getName() + " does not have any potion effects.");
+						} else {
+							victim.clearActivePotions();
+							Reference.sendMessage(sender, victim.getName() + "'s potion effects have been cleared.");
+						}
 					} catch (PlayerNotFoundException e) {
-						sender.sendMessage(new TextComponentString("The given player does not exist."));
+						Reference.sendMessage(sender, "The given player does not exist.");
 					}
 				 }
 			}
+		}
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
 		}
 
 	}

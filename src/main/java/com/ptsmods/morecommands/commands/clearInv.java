@@ -2,14 +2,14 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import net.minecraft.command.CommandBase;
+import com.ptsmods.morecommands.Reference;
+
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class clearInv {
 
@@ -18,7 +18,7 @@ public class clearInv {
 	public clearInv() {
 	}
 
-	public static class CommandclearInv extends CommandBase {
+	public static class CommandclearInv implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -53,12 +53,19 @@ public class clearInv {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException {
-			EntityPlayer entity = (EntityPlayer) sender;
-						
-			if (entity instanceof EntityPlayer) {
-				((EntityPlayer) entity).inventory.clear();
-				sender.sendMessage(new TextComponentString("Your inventory was successfully cleared."));
-			}
+			EntityPlayer player = (EntityPlayer) sender;
+			player.inventory.clear();
+			Reference.sendMessage(sender, "Your inventory was successfully cleared.");
+		}
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
 		}
 		
 	}

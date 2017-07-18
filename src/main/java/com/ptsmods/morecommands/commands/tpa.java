@@ -6,6 +6,7 @@ import com.ptsmods.morecommands.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,10 +18,7 @@ public class tpa {
 	public tpa() {
 	}
 
-	public static class Commandtpa extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandtpa implements ICommand {
 
 	    public int getRequiredPermissionLevel() {
 	        return 0;
@@ -32,7 +30,8 @@ public class tpa {
 		}
 
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames()); else return new ArrayList();
+			if (args.length == 1) return CommandBase.getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			else return new ArrayList();
 		}
 
 		public String getName() {
@@ -51,7 +50,7 @@ public class tpa {
 				Reference.sendMessage(sender, "You cannot send a tpa request to yourself.");
 			} else {
 				try {
-					EntityPlayer victim = getPlayer(server, sender, args[0]);
+					EntityPlayer victim = CommandBase.getPlayer(server, sender, args[0]);
 					Reference.tpRequests.put(victim.getName(), sender.getName());
 					Reference.sendMessage(victim, sender.getName() + " has sent you a tpa request, to accept type /tpaccept.");
 					Reference.sendMessage(sender, "A tpa request has been sent to " + victim.getName() + ".");
@@ -63,6 +62,21 @@ public class tpa {
 		}
 		
 		protected String usage = "/tpa <player> Send someone a request to teleport to them.";
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
+		}
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
 
 	}
 

@@ -9,16 +9,16 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-public class top {
+public class spawn {
 
-	public top() {
+	public static Object instance;
+
+	public spawn() {
 	}
-	
-	public static class Commandtop implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+
+	public static class Commandspawn implements ICommand {
 
 	    public int getRequiredPermissionLevel() {
 	        return 0;
@@ -33,26 +33,26 @@ public class top {
 			return new ArrayList();
 		}
 
-		public boolean isUsernameIndex(String[] string, int index) {
-			return true;
-		}
-
 		public String getName() {
-			return "top";
+			return "spawn";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.teleportSafely((EntityPlayer) sender);
-			Reference.sendMessage(sender, "You have been teleported to a safe location.");
+			EntityPlayer player = (EntityPlayer) sender;
+			World world = player.getEntityWorld();
+			BlockPos spawnpoint = world.getSpawnPoint();
+			player.setPositionAndUpdate(spawnpoint.getX(), spawnpoint.getY(), spawnpoint.getZ());
+			Reference.teleportSafely(player);
+			Reference.sendMessage(player, "You have been teleported to spawn.");
 
 		}
 		
-		protected String usage = "/top Teleports you to a safe location.";
+		protected String usage = "/spawn Teleports you to spawn.";
 
 		@Override
 		public int compareTo(ICommand o) {
@@ -63,7 +63,12 @@ public class top {
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
 		}
-		
+
+		@Override
+		public boolean isUsernameIndex(String[] args, int index) {
+			return false;
+		}
+
 	}
 
 }

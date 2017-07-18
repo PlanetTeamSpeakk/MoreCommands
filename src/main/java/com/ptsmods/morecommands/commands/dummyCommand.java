@@ -13,15 +13,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class dummyCommand {
 
-	public static Object instance;
-
 	public dummyCommand() {
 	}
 
 	public static class CommandCOMMANDNAME extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
