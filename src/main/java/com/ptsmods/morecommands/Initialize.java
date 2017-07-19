@@ -18,6 +18,7 @@ import com.ptsmods.morecommands.commands.gms.Commandgms;
 import com.ptsmods.morecommands.commands.gmsp.Commandgmsp;
 import com.ptsmods.morecommands.commands.god.Commandgod;
 import com.ptsmods.morecommands.commands.hard.Commandhard;
+import com.ptsmods.morecommands.commands.hat.Commandhat;
 import com.ptsmods.morecommands.commands.heal.Commandheal;
 import com.ptsmods.morecommands.commands.item.Commanditem;
 import com.ptsmods.morecommands.commands.killAll.CommandkillAll;
@@ -30,6 +31,8 @@ import com.ptsmods.morecommands.commands.peaceful.Commandpeaceful;
 import com.ptsmods.morecommands.commands.ping.Commandping;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import com.ptsmods.morecommands.commands.reloadMoreCommands.CommandreloadMoreCommands;
+import com.ptsmods.morecommands.commands.rename.Commandrename;
+import com.ptsmods.morecommands.commands.repair.Commandrepair;
 import com.ptsmods.morecommands.commands.save.Commandsave;
 import com.ptsmods.morecommands.commands.setBuildLimit.CommandsetBuildLimit;
 import com.ptsmods.morecommands.commands.showTime.CommandshowTime;
@@ -97,6 +100,10 @@ public class Initialize {
 		event.registerServerCommand(new Commandbreak());
 		event.registerServerCommand(new Commandsmite());
 		event.registerServerCommand(new Commandthrough());
+		event.registerServerCommand(new Commandping());
+		event.registerServerCommand(new Commandrepair());
+		event.registerServerCommand(new Commandrename());
+		event.registerServerCommand(new Commandhat());
 		
 		Reference.addBlockToBlacklist(Blocks.AIR);
 		Reference.addBlockToBlacklist(Blocks.LAVA);
@@ -157,7 +164,6 @@ public class Initialize {
 	public static void registerClientCommands() {
 		ClientCommandHandler.instance.registerCommand(new CommandspawnClientEntity());
 		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
-		ClientCommandHandler.instance.registerCommand(new Commandping());
 		ClientCommandHandler.instance.registerCommand(new Commandptime());
 		
 		MinecraftForge.EVENT_BUS.register(new TickHandler());
