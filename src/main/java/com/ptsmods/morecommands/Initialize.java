@@ -29,12 +29,15 @@ import com.ptsmods.morecommands.commands.noRain.CommandnoRain;
 import com.ptsmods.morecommands.commands.normal.Commandnormal;
 import com.ptsmods.morecommands.commands.peaceful.Commandpeaceful;
 import com.ptsmods.morecommands.commands.ping.Commandping;
+import com.ptsmods.morecommands.commands.powerTool.CommandpowerTool;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import com.ptsmods.morecommands.commands.reloadMoreCommands.CommandreloadMoreCommands;
 import com.ptsmods.morecommands.commands.rename.Commandrename;
 import com.ptsmods.morecommands.commands.repair.Commandrepair;
+import com.ptsmods.morecommands.commands.resetNBT.CommandresetNBT;
 import com.ptsmods.morecommands.commands.save.Commandsave;
 import com.ptsmods.morecommands.commands.setBuildLimit.CommandsetBuildLimit;
+import com.ptsmods.morecommands.commands.showNBT.CommandshowNBT;
 import com.ptsmods.morecommands.commands.showTime.CommandshowTime;
 import com.ptsmods.morecommands.commands.smite.Commandsmite;
 import com.ptsmods.morecommands.commands.spawn.Commandspawn;
@@ -47,6 +50,8 @@ import com.ptsmods.morecommands.commands.tpa.Commandtpa;
 import com.ptsmods.morecommands.commands.tpaccept.Commandtpaccept;
 import com.ptsmods.morecommands.commands.tpdeny.Commandtpdeny;
 import com.ptsmods.morecommands.commands.wild.Commandwild;
+import com.ptsmods.morecommands.miscellaneous.EventHandler;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.init.Blocks;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -104,6 +109,9 @@ public class Initialize {
 		event.registerServerCommand(new Commandrepair());
 		event.registerServerCommand(new Commandrename());
 		event.registerServerCommand(new Commandhat());
+		event.registerServerCommand(new CommandpowerTool());
+		event.registerServerCommand(new CommandresetNBT());
+		event.registerServerCommand(new CommandshowNBT());
 		
 		Reference.addBlockToBlacklist(Blocks.AIR);
 		Reference.addBlockToBlacklist(Blocks.LAVA);
@@ -166,7 +174,7 @@ public class Initialize {
 		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
 		ClientCommandHandler.instance.registerCommand(new Commandptime());
 		
-		MinecraftForge.EVENT_BUS.register(new TickHandler());
+		MinecraftForge.EVENT_BUS.register(new EventHandler());
 	}
 	
 }

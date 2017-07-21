@@ -1,13 +1,15 @@
 package com.ptsmods.morecommands;
 
+import com.ptsmods.morecommands.miscellaneous.Reference;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@Mod(modid=Reference.MOD_ID, name=Reference.MOD_NAME, version=Reference.VERSION)
+@Mod(modid=Reference.MOD_ID, name=Reference.MOD_NAME, version=Reference.VERSION, acceptedMinecraftVersions=Reference.MC_VERSIONS, updateJSON=Reference.UPDATE_URL)
 public class MoreCommands {
 	
 	@EventHandler
@@ -18,7 +20,7 @@ public class MoreCommands {
 	
 	@EventHandler
 	@SideOnly(Side.CLIENT)
-	public void preInit(FMLPreInitializationEvent event) {
+	public void postInit(FMLPostInitializationEvent event) {
         try {
         	Initialize.registerClientCommands();
         } catch (NoClassDefFoundError e) {
@@ -26,14 +28,5 @@ public class MoreCommands {
         	System.out.println(e.getStackTrace());
         }
 	}
-	
-//	@EventHandler
-//	public void init(FMLInitializationEvent event) {
 
-//	}
-	
-//	@EventHandler
-//	public void postInit(FMLPostInitializationEvent event) {
-		
-//	}
 }
