@@ -2,11 +2,16 @@
     "1.12": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
         "1.11": "Added:\n/smite <player> Strikes someone with lightning.\n/through Teleports you through a wall.\n\nFixed:\nAll commands which you were supposed to be able to use on singleplayer or modded server not being able to use.\nTL;DR a lot of permission issues.",
-        "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc."
+        "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.",
+        "1.13": "Added:\n/powertool <command> Assigns a command to the item you're holding using NBT.\n/resetnbt Resets the NBT data of the item you're holding.\n/shownbt Shows the NBT data of the item you're holding.\n\nChanges:\nThe mod is now usable for any Minecraft version ranging from 1.11 to 1.12."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12-latest": "1.12",
-        "1.12-recommended": "1.12"
+        "1.12-latest": "1.13",
+        "1.12-recommended": "1.13",
+        "1.11.2-latest": "1.13",
+        "1.11.2-recommended": "1.13",
+        "1.11-latest": "1.13",
+        "1.11-recommended": "1.13"
     }
 }
