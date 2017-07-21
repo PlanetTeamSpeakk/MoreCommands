@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -62,19 +62,19 @@ public class god {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws PlayerNotFoundException, CommandException {
 			if ((args.length == 0) || ((!args[0].equals("on")) && (!args[0].equals("off")))) {
-				sender.sendMessage(new TextComponentString(Reference.RED + "Usage: " + this.usage));
+				Reference.sendCommandUsage(sender, usage);
 			} else if (args.length == 1) { 
 				if (args[0].equals("on")) {
 					EntityPlayer player = (EntityPlayer) sender;
 					player.setEntityInvulnerable(true);
 					player.getFoodStats().setFoodLevel(20);
 					player.getFoodStats().setFoodSaturationLevel(20000000F);
-					sender.sendMessage(new TextComponentString("You're now invulnerable and will no longer be hungry."));
+					Reference.sendMessage(sender, "You're now invulnerable and will no longer be hungry.");
 				} else {
 					EntityPlayer player = (EntityPlayer) sender;
 					player.setEntityInvulnerable(false);
 					player.getFoodStats().setFoodSaturationLevel(5F);
-					sender.sendMessage(new TextComponentString("You're no longer invulnerable and can be hungry."));
+					Reference.sendMessage(sender, "You're no longer invulnerable and can be hungry.");
 				}
 			} else {
 				if (args[0].equals("on")) {
@@ -85,11 +85,11 @@ public class god {
 						victim.getFoodStats().setFoodSaturationLevel(20000000F);
 						if (victim == (EntityPlayer) sender) {
 							EntityPlayer player = (EntityPlayer) sender;
-							player.sendMessage(new TextComponentString("You're now invulnerable and will no longer be hungry."));
+							Reference.sendMessage(player, "You're now invulnerable and will no longer be hungry.");
 						} else {
 							EntityPlayer player = (EntityPlayer) sender;
-							victim.sendMessage(new TextComponentString(player.getName() + " made you invulnerable and you'll no longer be hungry."));
-							player.sendMessage(new TextComponentString("You have made " + victim.getName() + " invulnerable."));
+							Reference.sendMessage(victim, player.getName() + " made you invulnerable and you'll no longer be hungry.");
+							Reference.sendMessage(player, "You have made " + victim.getName() + " invulnerable.");
 						}
 					} else {
 						sender.sendMessage(new TextComponentString("The given player does not exist."));
@@ -101,14 +101,14 @@ public class god {
 						victim.getFoodStats().setFoodSaturationLevel(5F);
 						if (victim == (EntityPlayer) sender) {
 							EntityPlayer player = (EntityPlayer) sender;
-							player.sendMessage(new TextComponentString("You're now invulrnerable and will no longer be hungry."));
+							Reference.sendMessage(player, "You're now invulrnerable and will no longer be hungry.");
 						} else {
 							EntityPlayer player = (EntityPlayer) sender;
-							victim.sendMessage(new TextComponentString(player.getName() + " made you invulnerable and you'll no longer be hungry."));
-							player.sendMessage(new TextComponentString("You have made " + victim.getName() + " vulnerable."));
+							Reference.sendMessage(victim, player.getName() + " made you invulnerable and you'll no longer be hungry.");
+							Reference.sendMessage(player, "You have made " + victim.getName() + " vulnerable.");
 						}
 					} else {
-						sender.sendMessage(new TextComponentString("The given player does not exist."));
+						Reference.sendMessage(sender, "The given player does not exist.");
 					}
 				}
 			}

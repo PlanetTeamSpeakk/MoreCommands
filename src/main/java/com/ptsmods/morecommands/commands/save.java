@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -12,8 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class save {
-
-	public static Object instance;
 
 	public save() {
 	}
@@ -50,9 +48,9 @@ public class save {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.sendServerMessage(server, sender.getName() + " requested the worlds to be saved, expect lag.");
+			Reference.sendServerMessage(server, sender, sender.getName() + " requested the worlds to be saved, expect lag.");
 			server.saveAllWorlds(false);
-			Reference.sendServerMessage(server, "The worlds have been saved.");
+			Reference.sendServerMessage(server, sender, "The worlds have been saved.");
 			World world = ((EntityPlayer) sender).getEntityWorld();
 
 		}

@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -68,7 +68,7 @@ public class killAll {
 				player.getEntityWorld().getGameRules().setOrCreateGameRule("sendCommandFeedback", Boolean.toString(sendCommandFeedback));
 				Reference.sendMessage(player, "Successfully killed all entities of type " + args[0] + ".");
 			} else {
-				Reference.sendMessage(player, Reference.RED + this.usage);
+				Reference.sendCommandUsage(sender, usage);
 			}
 
 		}

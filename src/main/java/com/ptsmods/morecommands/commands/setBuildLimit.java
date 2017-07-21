@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -50,7 +50,7 @@ public class setBuildLimit {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length == 0) {
-				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+				Reference.sendCommandUsage(sender, usage);
 			} else if (Integer.parseInt(args[0]) > 256 || Integer.parseInt(args[0]) < 0) {
 				Reference.sendMessage(sender, "The limit should be anything between 0 and 256.");
 			}

@@ -2,13 +2,14 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 
 public class repair {
 
@@ -42,7 +43,7 @@ public class repair {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
 			player.getHeldItemMainhand().setItemDamage((player.getHeldItemMainhand().getMaxDamage()) * -1);
-			Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getDisplayName() + Reference.RESET + " has been repaired.");
+			Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getDisplayName() + TextFormatting.RESET + " has been repaired.");
 
 		}
 		

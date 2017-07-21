@@ -2,13 +2,13 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 
 public class ptime {
 
@@ -92,7 +92,7 @@ public class ptime {
 		public static boolean fixed = false;
 		
 		protected String usage = "/ptime <day/night/normal/6900> Sets your personal time, putting an @ in front of the time will make it fixed, e.g. /ptime @day. Works the same as with Essentials but without the colors,"
-				+ Reference.AQUA + " and" + Reference.BLACK + " not" + Reference.BLUE + " because" + Reference.DARK_AQUA + " I" + Reference.DARK_BLUE + " can't" + Reference.DARK_GRAY + ".";
+				+ TextFormatting.AQUA + " and" + TextFormatting.BLACK + " not" + TextFormatting.BLUE + " because" + TextFormatting.DARK_AQUA + " I" + TextFormatting.DARK_BLUE + " can't" + TextFormatting.DARK_GRAY + ".";
 
 		@Override
 		public int compareTo(ICommand arg0) {

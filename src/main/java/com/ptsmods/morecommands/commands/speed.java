@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -58,7 +58,7 @@ public class speed {
 			EntityPlayer player = (EntityPlayer) sender;
 
 			if ((Integer.parseInt(args[0]) > 10) || (Integer.parseInt(args[0]) < 0)) {
-				Reference.sendMessage(player, Reference.RED + "Usage:" + usage);
+				Reference.sendCommandUsage(player, usage);
 			} else {
 				float speed = (float) Integer.parseInt(args[0]) / 10;
 				player.capabilities.setFlySpeed(speed);

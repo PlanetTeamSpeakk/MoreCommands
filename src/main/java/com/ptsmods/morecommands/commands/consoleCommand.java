@@ -5,13 +5,13 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraft.util.text.TextFormatting;
 
 public class consoleCommand {
 
@@ -50,7 +50,7 @@ public class consoleCommand {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length == 0) {
-				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+				Reference.sendCommandUsage(sender, usage);
 			} else {
 				String command = "";
 				for (Integer length = 0; length < args.length; length += 1) {
@@ -58,7 +58,7 @@ public class consoleCommand {
 					if ((length + 1) != args.length) command += " ";
 				}
 				server.getCommandManager().executeCommand((ICommandSender) server, command);
-				Reference.sendMessage(sender, "Successfully ran command " + Reference.GRAY + Reference.ITALIC + command + Reference.RESET + " from the console. Some commands may give errors, or not work at all when ran by the console.");
+				Reference.sendMessage(sender, "Successfully ran command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " from the console. Some commands may give errors, or not work at all when ran by the console.");
 			}
 
 		}

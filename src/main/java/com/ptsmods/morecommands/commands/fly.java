@@ -1,11 +1,8 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -51,7 +48,7 @@ public class fly {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if (args.length == 0 ) {
-				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+				Reference.sendCommandUsage(sender, usage);
 			} else if (args.length == 1) {
 				if (args[0].equals("on")) {
 					EntityPlayer player = (EntityPlayer) sender;

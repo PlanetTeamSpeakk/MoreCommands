@@ -4,11 +4,10 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -18,6 +17,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 public class sudo {
 
@@ -61,7 +61,7 @@ public class sudo {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if (args.length == 0) {
-				sender.sendMessage(new TextComponentString(Reference.RED + "Usage: " + this.usage));
+				Reference.sendCommandUsage(sender, usage);
 			} else {
 				try {
 					EntityPlayer victim = getPlayer(server, sender, args[0]);
@@ -75,9 +75,9 @@ public class sudo {
 						command += args[x];
 					}
 					server.getCommandManager().executeCommand(victim, command);
-					sender.sendMessage(new TextComponentString("The command " + Reference.GRAY + Reference.ITALIC + command + Reference.RESET + " has been executed as " + victim.getName() + "."));
+					Reference.sendMessage(sender, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " has been executed as " + victim.getName() + ".");
 				} catch (PlayerNotFoundException e) {
-					sender.sendMessage(new TextComponentString("The given player could not be found."));
+					Reference.sendMessage(sender, "The given player could not be found.");
 				}
 				
 			}

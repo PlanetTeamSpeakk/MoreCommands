@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -76,7 +76,7 @@ public class gm {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 			EntityPlayer player = (EntityPlayer) sender;
 			if (args.length == 0) {
-				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+				Reference.sendCommandUsage(player, usage);
 			} else if (args.length == 1) {
 				GameType gametype = this.getGameModeFromCommand(sender, args[0]);
 				player.setGameType(gametype);

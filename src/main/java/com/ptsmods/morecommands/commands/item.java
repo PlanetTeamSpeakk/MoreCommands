@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -63,7 +63,7 @@ public class item {
 			ItemStack itemstack = new ItemStack(Items.AIR, 0);
 			Integer amount = 64;
 			if (args.length == 0) {
-				Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+				Reference.sendCommandUsage(player, usage);
 				return;
 			} else if (args.length == 1) {
 				Item item = getItemByText(sender, args[0]);
@@ -73,7 +73,7 @@ public class item {
 					Item item = getItemByText(sender, args[0]);
 					itemstack = new ItemStack(item, Integer.parseInt(args[1]));
 				} else {
-					Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+					Reference.sendCommandUsage(player, usage);
 					return;
 				}
 			} else if (args.length == 3) {
@@ -84,20 +84,20 @@ public class item {
 					try {
 						player = getPlayer(server, sender, args[2]);
 					} catch (PlayerNotFoundException e) {
-						sender.sendMessage(new TextComponentString("The given player does not exist."));
+						Reference.sendMessage(player, "The given player does not exist.");
 						return;
 					}
 				} else {
-					Reference.sendMessage(sender, Reference.RED + "Usage: " + usage);
+					Reference.sendCommandUsage(player, usage);
 					return;
 				}
 			}
 			
 			player.inventory.addItemStackToInventory(itemstack);
 			if (player != (EntityPlayer) sender) {
-				player.sendMessage(new TextComponentString(sender.getName() + " has given you " + amount.toString() + " " + args[0] + "."));
+				Reference.sendMessage(player, sender.getName() + " has given you " + amount.toString() + " " + args[0] + ".");
 			} else {
-				sender.sendMessage(new TextComponentString("Your items have arrived."));
+				Reference.sendMessage(player, "Your items have arrived.");
 			}
 			player.world.playSound((EntityPlayer)null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             player.inventoryContainer.detectAndSendChanges();
