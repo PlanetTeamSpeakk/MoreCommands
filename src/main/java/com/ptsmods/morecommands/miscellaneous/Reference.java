@@ -27,7 +27,7 @@ public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
 	public static final String VERSION = "1.13";
-	public static final String MC_VERSIONS = "[1.11,1.11.2,1.12)";
+	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
 	public static boolean isInteger(String s) {
@@ -52,8 +52,8 @@ public class Reference {
 	            hours -= 12; ampm = "PM"; 
 	        }
 	 
-	        if (hours >= 12) {
-	            hours -= 12; ampm = "AM"; 
+	        if (hours < 12) {
+	            ampm = "AM";
 	        }
 	 
 	        if (hours == 0) hours = 12;
