@@ -1,13 +1,16 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 
@@ -52,7 +55,7 @@ public class rename {
 				}
 				name = name.replaceAll("&", "§");
 				player.getHeldItemMainhand().setStackDisplayName(name);
-				Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getItem().getRegistryName() + " has been renamed to " + name + TextFormatting.RESET + ".");
+				Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getItem().getRegistryName().toString().split(":")[1] + " has been renamed to " + name + TextFormatting.RESET + ".");
 			} else {
 				Reference.sendCommandUsage(sender, usage);
 			}
