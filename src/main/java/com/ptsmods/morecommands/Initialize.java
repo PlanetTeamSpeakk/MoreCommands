@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands;
 
+import com.ptsmods.morecommands.commands.ascend.Commandascend;
 import com.ptsmods.morecommands.commands.barrier.Commandbarrier;
 import com.ptsmods.morecommands.commands.breakBlock.Commandbreak;
 import com.ptsmods.morecommands.commands.clearEffects.CommandclearEffects;
@@ -7,6 +8,7 @@ import com.ptsmods.morecommands.commands.clearInv.CommandclearInv;
 import com.ptsmods.morecommands.commands.cmdBlock.Commandcmdblock;
 import com.ptsmods.morecommands.commands.consoleCommand.CommandconsoleCommand;
 import com.ptsmods.morecommands.commands.day.Commandday;
+import com.ptsmods.morecommands.commands.descend.Commanddescend;
 import com.ptsmods.morecommands.commands.easy.Commandeasy;
 import com.ptsmods.morecommands.commands.explode.Commandexplode;
 import com.ptsmods.morecommands.commands.fly.Commandfly;
@@ -27,6 +29,7 @@ import com.ptsmods.morecommands.commands.night.Commandnight;
 import com.ptsmods.morecommands.commands.noHunger.CommandnoHunger;
 import com.ptsmods.morecommands.commands.noRain.CommandnoRain;
 import com.ptsmods.morecommands.commands.normal.Commandnormal;
+import com.ptsmods.morecommands.commands.opTool.CommandopTool;
 import com.ptsmods.morecommands.commands.peaceful.Commandpeaceful;
 import com.ptsmods.morecommands.commands.ping.Commandping;
 import com.ptsmods.morecommands.commands.powerTool.CommandpowerTool;
@@ -35,8 +38,11 @@ import com.ptsmods.morecommands.commands.reloadMoreCommands.CommandreloadMoreCom
 import com.ptsmods.morecommands.commands.rename.Commandrename;
 import com.ptsmods.morecommands.commands.repair.Commandrepair;
 import com.ptsmods.morecommands.commands.resetNBT.CommandresetNBT;
+import com.ptsmods.morecommands.commands.runcmd.Commandruncmd;
 import com.ptsmods.morecommands.commands.save.Commandsave;
 import com.ptsmods.morecommands.commands.setBuildLimit.CommandsetBuildLimit;
+import com.ptsmods.morecommands.commands.setFOV.CommandsetFOV;
+import com.ptsmods.morecommands.commands.setRenderDistance.CommandsetRenderDistance;
 import com.ptsmods.morecommands.commands.showNBT.CommandshowNBT;
 import com.ptsmods.morecommands.commands.showTime.CommandshowTime;
 import com.ptsmods.morecommands.commands.smite.Commandsmite;
@@ -44,11 +50,13 @@ import com.ptsmods.morecommands.commands.spawn.Commandspawn;
 import com.ptsmods.morecommands.commands.spawnClientEntity.CommandspawnClientEntity;
 import com.ptsmods.morecommands.commands.speed.Commandspeed;
 import com.ptsmods.morecommands.commands.sudo.Commandsudo;
+import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 import com.ptsmods.morecommands.commands.through.Commandthrough;
 import com.ptsmods.morecommands.commands.top.Commandtop;
 import com.ptsmods.morecommands.commands.tpa.Commandtpa;
 import com.ptsmods.morecommands.commands.tpaccept.Commandtpaccept;
 import com.ptsmods.morecommands.commands.tpdeny.Commandtpdeny;
+import com.ptsmods.morecommands.commands.vanish.Commandvanish;
 import com.ptsmods.morecommands.commands.wild.Commandwild;
 import com.ptsmods.morecommands.miscellaneous.EventHandler;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -112,6 +120,11 @@ public class Initialize {
 		event.registerServerCommand(new CommandpowerTool());
 		event.registerServerCommand(new CommandresetNBT());
 		event.registerServerCommand(new CommandshowNBT());
+		event.registerServerCommand(new Commandvanish());
+		event.registerServerCommand(new Commanddescend());
+		event.registerServerCommand(new Commandascend());
+		event.registerServerCommand(new CommandopTool());
+		event.registerServerCommand(new CommandsuperPickaxe());
 		
 		Reference.addBlockToBlacklist(Blocks.AIR);
 		Reference.addBlockToBlacklist(Blocks.LAVA);
@@ -173,6 +186,9 @@ public class Initialize {
 		ClientCommandHandler.instance.registerCommand(new CommandspawnClientEntity());
 		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
 		ClientCommandHandler.instance.registerCommand(new Commandptime());
+		ClientCommandHandler.instance.registerCommand(new Commandruncmd());
+		ClientCommandHandler.instance.registerCommand(new CommandsetFOV());
+		ClientCommandHandler.instance.registerCommand(new CommandsetRenderDistance());
 		
 		MinecraftForge.EVENT_BUS.register(new EventHandler());
 	}
