@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.miscellaneous;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.CommandException;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -28,6 +29,7 @@ public class EventHandler {
 	@SubscribeEvent
 	public void onPlayerUseItem(PlayerInteractEvent.LeftClickBlock event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
+		Reference.superPickaxeBreak(event.getEntityPlayer(), event.getHand());
 	}
 	
 	@SubscribeEvent

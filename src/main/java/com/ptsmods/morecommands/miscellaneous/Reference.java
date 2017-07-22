@@ -3,14 +3,18 @@ package com.ptsmods.morecommands.miscellaneous;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -22,11 +26,13 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.13";
+	public static final String VERSION = "1.14";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -40,6 +46,10 @@ public class Reference {
 	    }
 
 	    return true;
+	}
+	
+	public static boolean isBoolean(String s) {
+		return s.toLowerCase().equals("true") || s.toLowerCase().equals("false");
 	}
 	
 	public static String parseTime(int time, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
@@ -172,6 +182,7 @@ public class Reference {
 		return blockWhitelist.add(block);
 	}
 	
+	@SideOnly(Side.CLIENT)
 	public static void powerToolCommand(EntityPlayer player, EnumHand hand, Event event, Boolean isLeftClick) throws CommandException {
 		ItemStack holding = player.getHeldItem(hand);
 		if (holding.getItem() == Items.AIR) return;
@@ -199,6 +210,21 @@ public class Reference {
 				}
 			}
 		}
+	}
+	
+	public static void superPickaxeBreak(EntityPlayer player, EnumHand hand) throws CommandException {
+		MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
+		EntityPlayer player2;
+		try {
+			player2 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
+		} catch (PlayerNotFoundException e) {
+			Reference.sendMessage(player, "You could not be found, what kind of black magic are you using that makes code unable to target you?");
+			return;
+		}
+		server = player2.getServer();
+		World world = server.getWorld(player2.dimension);
+		BlockPos lookingAt = Minecraft.getMinecraft().objectMouseOver.getBlockPos();
+		if (CommandsuperPickaxe.enabled && player.getHeldItem(hand).getItem() instanceof ItemPickaxe) world.destroyBlock(lookingAt, true);
 	}
 	
 	private static FMLServerStartingEvent serverStartingEvent = null;
