@@ -38,7 +38,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.15";
+	public static final String VERSION = "1.15.1";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -88,7 +88,11 @@ public class Reference {
     }
 	
 	public static void sendMessage(Object player, String message) {
-		((EntityPlayer) player).sendMessage(new TextComponentString(message));
+		try {
+			((EntityPlayer) player).sendMessage(new TextComponentString(message));
+		} catch (NullPointerException e) {
+			Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+		}
 	}
 	
 	public static void sendServerMessage(MinecraftServer server, ICommandSender sender, String message) {
@@ -200,7 +204,6 @@ public class Reference {
 				try {
 					player1 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
 				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(player, "You could not be found, what kind of black magic are you using that makes code unable to target you?");
 					return;
 				}
 				ICommandSender sender = (ICommandSender) player1;
@@ -224,9 +227,8 @@ public class Reference {
 		try {
 			player2 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
 		} catch (PlayerNotFoundException e) {
-			Reference.sendMessage(player, "You could not be found, what kind of black magic are you using that makes code unable to target you?");
 			return;
-		}
+		} catch (NullPointerException e) {return;} // why do these even occur?
 		server = player2.getServer();
 		World world = server.getWorld(player2.dimension);
 		BlockPos lookingAt = Minecraft.getMinecraft().objectMouseOver.getBlockPos();
