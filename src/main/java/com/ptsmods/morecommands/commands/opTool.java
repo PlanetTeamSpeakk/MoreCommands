@@ -48,7 +48,7 @@ public class opTool {
 			NBTTagCompound nbt = new NBTTagCompound();
 			String nbtData = "{ench:[";
 			for (int x = 0; x <= 10000; x += 1) {
-				if (Enchantment.getEnchantmentByID(x) != null) nbtData += "{lvl:16384s,id:" + Integer.toString(x) + "s},";
+				if (Enchantment.getEnchantmentByID(x) != null && x != 71) nbtData += "{lvl:16384s,id:" + Integer.toString(x) + "s},"; // enchantment 71 is curse of vanishing.
 			}
 			nbtData = nbtData.substring(0, nbtData.length()-1) + "]}";
 			try {
@@ -59,7 +59,7 @@ public class opTool {
 				return;
 			}
 			player.getHeldItemMainhand().setTagCompound(nbt);
-			Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getItem().getRegistryName().toString().split(":")[1] + " has been made OP.");
+			Reference.sendMessage(player, "Your " + Reference.getLocalizedName(player.getHeldItemMainhand().getItem()) + " has been made OP.");
 
 		}
 		
