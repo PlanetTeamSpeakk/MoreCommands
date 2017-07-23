@@ -3,6 +3,7 @@ package com.ptsmods.morecommands;
 import com.ptsmods.morecommands.commands.ascend.Commandascend;
 import com.ptsmods.morecommands.commands.barrier.Commandbarrier;
 import com.ptsmods.morecommands.commands.breakBlock.Commandbreak;
+import com.ptsmods.morecommands.commands.calc.Commandcalc;
 import com.ptsmods.morecommands.commands.clearEffects.CommandclearEffects;
 import com.ptsmods.morecommands.commands.clearInv.CommandclearInv;
 import com.ptsmods.morecommands.commands.cmdBlock.Commandcmdblock;
@@ -61,6 +62,8 @@ import com.ptsmods.morecommands.commands.wild.Commandwild;
 import com.ptsmods.morecommands.miscellaneous.EventHandler;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.block.Block;
+import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -71,124 +74,73 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Initialize {
 
 	public static void registerCommands(FMLServerStartingEvent event) {
-		System.out.println("Registering MoreCommands commands...");
+		System.out.println("Registering MoreCommands commands.");
 		
-		event.registerServerCommand(new Commandday());
-		event.registerServerCommand(new Commandnight());
-		event.registerServerCommand(new Commandexplode());
-		event.registerServerCommand(new CommandkillAll());
-		event.registerServerCommand(new CommandclearInv());
-		event.registerServerCommand(new Commandspeed());
-		event.registerServerCommand(new CommandclearEffects());
-		event.registerServerCommand(new Commandheal());
-		event.registerServerCommand(new Commandgma());
-		event.registerServerCommand(new Commandgms());
-		event.registerServerCommand(new Commandgmc());
-		event.registerServerCommand(new Commandgmsp());
-		event.registerServerCommand(new Commanditem());
-		event.registerServerCommand(new Commandgm());
-		event.registerServerCommand(new Commandhard());
-		event.registerServerCommand(new Commandnormal());
-		event.registerServerCommand(new Commandeasy());
-		event.registerServerCommand(new Commandpeaceful());
-		event.registerServerCommand(new CommandshowTime());
-		event.registerServerCommand(new Commandcmdblock());
-		event.registerServerCommand(new Commandbarrier());
-		event.registerServerCommand(new CommandnoRain());
-		event.registerServerCommand(new Commandkys());
-		event.registerServerCommand(new CommandnoHunger());
-		event.registerServerCommand(new Commandgod());
-		event.registerServerCommand(new Commandsudo());
-		event.registerServerCommand(new CommandsetBuildLimit());
-		event.registerServerCommand(new Commandsave());
-		event.registerServerCommand(new Commandtop());
-		event.registerServerCommand(new CommandconsoleCommand());
-		event.registerServerCommand(new CommandreloadMoreCommands());
-		event.registerServerCommand(new Commandfly());
-		event.registerServerCommand(new Commandtpa());
-		event.registerServerCommand(new Commandtpaccept());
-		event.registerServerCommand(new Commandtpdeny());
-		event.registerServerCommand(new Commandwild());
-		event.registerServerCommand(new Commandspawn());
-		event.registerServerCommand(new Commandbreak());
-		event.registerServerCommand(new Commandsmite());
-		event.registerServerCommand(new Commandthrough());
-		event.registerServerCommand(new Commandping());
-		event.registerServerCommand(new Commandrepair());
-		event.registerServerCommand(new Commandrename());
-		event.registerServerCommand(new Commandhat());
-		event.registerServerCommand(new CommandpowerTool());
-		event.registerServerCommand(new CommandresetNBT());
-		event.registerServerCommand(new CommandshowNBT());
-		event.registerServerCommand(new Commandvanish());
-		event.registerServerCommand(new Commanddescend());
-		event.registerServerCommand(new Commandascend());
-		event.registerServerCommand(new CommandopTool());
-		event.registerServerCommand(new CommandsuperPickaxe());
+		ICommand[] commands = {new Commandday(), new Commandnight(), new Commandexplode(), new CommandkillAll(), new CommandclearInv(), new Commandspeed(), new CommandclearEffects(), new Commandheal(), new Commandgma(),
+				new Commandgms(), new Commandgmc(), new Commandgmsp(), new Commanditem(), new Commandgm(), new Commandhard(), new Commandnormal(), new Commandeasy(), new Commandpeaceful(), new CommandshowTime(),
+				new Commandcmdblock(), new Commandbarrier(), new CommandnoRain(), new Commandkys(), new CommandnoHunger(), new Commandgod(), new Commandsudo(), new CommandsetBuildLimit(), new Commandsave(), new Commandtop(),
+				new CommandconsoleCommand(), new CommandreloadMoreCommands(), new Commandfly(), new Commandtpa(), new Commandtpaccept(), new Commandtpdeny(), new Commandwild(), new Commandspawn(), new Commandbreak(),
+				new Commandsmite(), new Commandthrough(), new Commandping(), new Commandrepair(), new Commandrename(), new Commandhat(), new CommandpowerTool(), new CommandresetNBT(), new CommandshowNBT(),
+				new Commandvanish(), new Commanddescend(), new Commandascend(), new CommandopTool(), new CommandsuperPickaxe()};
 		
-		Reference.addBlockToBlacklist(Blocks.AIR);
-		Reference.addBlockToBlacklist(Blocks.LAVA);
-		Reference.addBlockToBlacklist(Blocks.CACTUS);
-		Reference.addBlockToBlacklist(Blocks.MAGMA);
-		Reference.addBlockToBlacklist(Blocks.ACACIA_FENCE);
-		Reference.addBlockToBlacklist(Blocks.ACACIA_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.BIRCH_FENCE);
-		Reference.addBlockToBlacklist(Blocks.BIRCH_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.DARK_OAK_FENCE);
-		Reference.addBlockToBlacklist(Blocks.DARK_OAK_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.JUNGLE_FENCE);
-		Reference.addBlockToBlacklist(Blocks.JUNGLE_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.NETHER_BRICK_FENCE);
-		Reference.addBlockToBlacklist(Blocks.OAK_FENCE);
-		Reference.addBlockToBlacklist(Blocks.OAK_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.SPRUCE_FENCE);
-		Reference.addBlockToBlacklist(Blocks.SPRUCE_FENCE_GATE);
-		Reference.addBlockToBlacklist(Blocks.FIRE);
-		Reference.addBlockToBlacklist(Blocks.WEB);
-		Reference.addBlockToBlacklist(Blocks.MOB_SPAWNER);
-		Reference.addBlockToBlacklist(Blocks.END_PORTAL);
-		Reference.addBlockToBlacklist(Blocks.END_PORTAL_FRAME);
-		Reference.addBlockToBlacklist(Blocks.TNT);
-		Reference.addBlockToBlacklist(Blocks.IRON_TRAPDOOR);
-		Reference.addBlockToBlacklist(Blocks.TRAPDOOR);
-		Reference.addBlockToBlacklist(Blocks.BREWING_STAND);
+		Integer counter = 0;
+		Integer failed = 0;
 		
-		Reference.addBlockToWhitelist(Blocks.AIR);
-		Reference.addBlockToWhitelist(Blocks.DEADBUSH);
-		Reference.addBlockToWhitelist(Blocks.VINE);
-		Reference.addBlockToWhitelist(Blocks.TALLGRASS);
-		Reference.addBlockToWhitelist(Blocks.ACACIA_DOOR);
-		Reference.addBlockToWhitelist(Blocks.BIRCH_DOOR);
-		Reference.addBlockToWhitelist(Blocks.DARK_OAK_DOOR);
-		Reference.addBlockToWhitelist(Blocks.IRON_DOOR);
-		Reference.addBlockToWhitelist(Blocks.JUNGLE_DOOR);
-		Reference.addBlockToWhitelist(Blocks.OAK_DOOR);
-		Reference.addBlockToWhitelist(Blocks.SPRUCE_DOOR);
-		Reference.addBlockToWhitelist(Blocks.DOUBLE_PLANT);
-		Reference.addBlockToWhitelist(Blocks.RED_FLOWER);
-		Reference.addBlockToWhitelist(Blocks.YELLOW_FLOWER);
-		Reference.addBlockToWhitelist(Blocks.BROWN_MUSHROOM);
-		Reference.addBlockToWhitelist(Blocks.RED_MUSHROOM);
-		Reference.addBlockToWhitelist(Blocks.WATERLILY);
-		Reference.addBlockToWhitelist(Blocks.BEETROOTS);
-		Reference.addBlockToWhitelist(Blocks.CARROTS);
-		Reference.addBlockToWhitelist(Blocks.WHEAT);
-		Reference.addBlockToWhitelist(Blocks.POTATOES);
-		Reference.addBlockToWhitelist(Blocks.PUMPKIN_STEM);
-		Reference.addBlockToWhitelist(Blocks.MELON_STEM);
-		Reference.addBlockToWhitelist(Blocks.SNOW_LAYER);
+		for (int x = 0; x < commands.length; x += 1) {
+			try {
+				event.registerServerCommand(commands[x]);
+			} catch (Exception e) {failed += 1; continue;}
+			counter += 1;
+		}
 		
-		System.out.println("MoreCommands commands have successfully been registered.");
+		System.out.println("Successfully registered " + counter.toString() + " MoreCommands commands and failed to register " + failed.toString() + " commands.");
+		System.out.println("Setting up the MoreCommands block blacklist.");
+		
+		Block[] blacklist = {Blocks.AIR, Blocks.LAVA, Blocks.CACTUS, Blocks.MAGMA, Blocks.ACACIA_FENCE, Blocks.ACACIA_FENCE_GATE, Blocks.BIRCH_FENCE, Blocks.BIRCH_FENCE_GATE, Blocks.DARK_OAK_FENCE, Blocks.DARK_OAK_FENCE_GATE,
+				Blocks.JUNGLE_FENCE, Blocks.JUNGLE_FENCE_GATE, Blocks.NETHER_BRICK_FENCE, Blocks.OAK_FENCE, Blocks.OAK_FENCE_GATE, Blocks.SPRUCE_FENCE, Blocks.SPRUCE_FENCE_GATE, Blocks.FIRE, Blocks.WEB, Blocks.MOB_SPAWNER,
+				Blocks.END_PORTAL, Blocks.END_PORTAL_FRAME, Blocks.TNT, Blocks.IRON_TRAPDOOR, Blocks.TRAPDOOR, Blocks.BREWING_STAND};
+
+		counter = 0;
+		
+		for (int x = 0; x < blacklist.length; x += 1) {
+			Reference.addBlockToBlacklist(blacklist[x]);
+			counter += 1;
+		}
+		
+		System.out.println("Successfully set up the block blacklist and added " + counter.toString() + " blocks.");
+		System.out.println("Setting up the MoreCommands block whitelist.");
+		
+		Block[] whitelist = {Blocks.AIR, Blocks.DEADBUSH, Blocks.VINE, Blocks.TALLGRASS, Blocks.ACACIA_DOOR, Blocks.BIRCH_DOOR, Blocks.DARK_OAK_DOOR, Blocks.IRON_DOOR, Blocks.JUNGLE_DOOR, Blocks.OAK_DOOR, Blocks.SPRUCE_DOOR,
+				Blocks.DOUBLE_PLANT, Blocks.RED_FLOWER, Blocks.YELLOW_FLOWER, Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.WATERLILY, Blocks.BEETROOTS, Blocks.CARROTS, Blocks.WHEAT, Blocks.POTATOES, Blocks.PUMPKIN_STEM,
+				Blocks.MELON_STEM, Blocks.SNOW_LAYER};
+		
+		counter = 0;
+		
+		for (int x = 0; x < whitelist.length; x += 1) {
+			Reference.addBlockToWhitelist(whitelist[x]);
+			counter += 1;
+		}
+		
+		System.out.println("Successfully set up the block whitelist and added " + counter.toString() + " blocks.");
+				
 	}
 	
 	@SideOnly(Side.CLIENT)
 	public static void registerClientCommands() {
-		ClientCommandHandler.instance.registerCommand(new CommandspawnClientEntity());
-		ClientCommandHandler.instance.registerCommand(new Commandfullbright());
-		ClientCommandHandler.instance.registerCommand(new Commandptime());
-		ClientCommandHandler.instance.registerCommand(new Commandruncmd());
-		ClientCommandHandler.instance.registerCommand(new CommandsetFOV());
-		ClientCommandHandler.instance.registerCommand(new CommandsetRenderDistance());
+		System.out.println("Registering MoreCommands client sided commands.");
+		ICommand[] commands = {new CommandspawnClientEntity(), new Commandfullbright(), new Commandptime(), new Commandruncmd(), new CommandsetFOV(), new CommandsetRenderDistance(), new Commandcalc()};
+
+		Integer counter = 0;
+		Integer fails = 0;
+		
+		for (int x = 0; x < commands.length; x += 1) {
+			try {
+				ClientCommandHandler.instance.registerCommand(commands[x]);
+				counter += 1;
+			} catch (Exception e) {fails += 1; continue;}
+		}
+		
+		System.out.println("Successfully registered " + counter.toString() + " client sided commands, with " + fails.toString() + " fails.");
 		
 		MinecraftForge.EVENT_BUS.register(new EventHandler());
 	}
