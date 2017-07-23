@@ -3,17 +3,23 @@ package com.ptsmods.morecommands.miscellaneous;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+import org.lwjgl.input.Keyboard;
+
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -32,7 +38,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.14";
+	public static final String VERSION = "1.15";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -227,6 +233,14 @@ public class Reference {
 		if (CommandsuperPickaxe.enabled && player.getHeldItem(hand).getItem() instanceof ItemPickaxe) world.destroyBlock(lookingAt, true);
 	}
 	
+	public static String getLocalizedName(Item item) {
+		return item.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
+	}
+	
+	public static String evalJavaScript(String equation) throws ScriptException {
+		return new ScriptEngineManager(null).getEngineByName("nashorn").eval(equation).toString();
+	}
+
 	private static FMLServerStartingEvent serverStartingEvent = null;
 	private static int powerToolCounter = 0; // every event gets called twice except for leftclickempty.
 	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
