@@ -5,7 +5,8 @@
         "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.",
         "1.13": "Added:\n/powertool <command> Assigns a command to the item you're holding using NBT.\n/resetnbt Resets the NBT data of the item you're holding.\n/shownbt Shows the NBT data of the item you're holding.\n\nChanges:\nThe mod is now usable for any Minecraft version ranging from 1.11 to 1.12.",
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
-        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game."
+        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
+        "1.15.1": "Fixed:\nGame crashing when trying to break a block."
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -13,7 +14,8 @@
         "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.",
         "1.13": "Added:\n/powertool <command> Assigns a command to the item you're holding using NBT.\n/resetnbt Resets the NBT data of the item you're holding.\n/shownbt Shows the NBT data of the item you're holding.\n\nChanges:\nThe mod is now usable for any Minecraft version ranging from 1.11 to 1.12.",
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
-        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game."
+        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
+        "1.15.1": "Fixed:\nGame crashing when trying to break a block."
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -21,15 +23,16 @@
         "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.",
         "1.13": "Added:\n/powertool <command> Assigns a command to the item you're holding using NBT.\n/resetnbt Resets the NBT data of the item you're holding.\n/shownbt Shows the NBT data of the item you're holding.\n\nChanges:\nThe mod is now usable for any Minecraft version ranging from 1.11 to 1.12.",
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
-        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game."
+        "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
+        "1.15.1": "Fixed:\nGame crashing when trying to break a block."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12-latest": "1.15",
-        "1.12-recommended": "1.15",
-        "1.11.2-latest": "1.15",
-        "1.11.2-recommended": "1.15",
-        "1.11-latest": "1.15",
-        "1.11-recommended": "1.15"
+        "1.12-latest": "1.15.1",
+        "1.12-recommended": "1.15.1",
+        "1.11.2-latest": "1.15.1",
+        "1.11.2-recommended": "1.15.1",
+        "1.11-latest": "1.15.1",
+        "1.11-recommended": "1.15.1"
     }
 }
