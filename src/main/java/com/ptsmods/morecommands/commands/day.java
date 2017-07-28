@@ -2,17 +2,13 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.Reference;
+
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class day {
@@ -56,24 +52,9 @@ public class day {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-
-			World world = null;
-			WorldServer[] list = server.worlds;
-			for (WorldServer ins : list) {
-				if (ins.provider.getDimension() == entity.world.provider.getDimension())
-					world = ins;
-			}
-			if (world == null)
-				world = list[0];
-			
-			if (entity instanceof EntityPlayerMP) {
-				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
-				if (minecraftserver != null) {
-					world.setWorldTime(1000);
-					sender.sendMessage(new TextComponentString("The time has been changed to 1000 ticks, aka day-time."));
-				}
-			}
+			EntityPlayer player = (EntityPlayer) sender;
+			Reference.setAllWorldTimes(server, 1000);
+			Reference.sendMessage(sender, "The time has been changed to 1000 ticks, aka day-time.");
 
 		}
 

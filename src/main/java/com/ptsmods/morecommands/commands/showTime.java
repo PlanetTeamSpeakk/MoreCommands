@@ -2,9 +2,9 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -17,7 +17,7 @@ public class showTime {
 	public showTime() {
 	}
 
-	public static class CommandshowTime extends CommandBase {
+	public static class CommandshowTime implements ICommand {
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -50,7 +50,17 @@ public class showTime {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			Integer time = (int)(sender.getEntityWorld().getWorldTime() % 24000L);
-			sender.sendMessage(new TextComponentString("The server time is " + time.toString() + " ticks, " + Reference.parseTime(time, true) + " or " + Reference.parseTime(time, false) + "."));
+			Reference.sendMessage(sender, "The server time is " + time.toString() + " ticks, " + Reference.parseTime(time, true) + " or " + Reference.parseTime(time, false) + ".");
+		}
+
+		@Override
+		public int compareTo(ICommand o) {
+			return 0;
+		}
+
+		@Override
+		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+			return true;
 		}
 
 	}

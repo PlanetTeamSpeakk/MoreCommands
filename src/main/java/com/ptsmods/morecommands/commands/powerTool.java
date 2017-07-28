@@ -6,8 +6,13 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnumEnchantmentType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -57,6 +62,8 @@ public class powerTool {
 							nbt.removeTag("ptcmd");
 							nbt.removeTag("ptownerLeast");
 							nbt.removeTag("ptownerMost");
+							System.out.println(nbt.getTag("ench").toString());
+							if (nbt.getTag("ench").toString().equals("[{lvl:0s,id:69s}]")) nbt.removeTag("ench");
 							holding.setTagCompound(holding.getTagCompound());
 							Reference.sendMessage(player, "The command " + command + " has been unassigned.");
 						} else {
@@ -86,6 +93,11 @@ public class powerTool {
 				}
 				nbt.setString("ptcmd", command);
 				nbt.setUniqueId("ptowner", player.getUniqueID());
+				if (!nbt.hasKey("ench")) {
+					try {
+						nbt.setTag("ench", JsonToNBT.getTagFromJson("{ench:[{lvl:0s,id:69s}]}").getTag("ench"));
+					} catch (NBTException e) {}
+				}
 				holding.setTagCompound(nbt);
 				Reference.sendMessage(player, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " has successfully been assigned to your item using nbt. "
 						+ "Do note that using the powertool may crash your minecraft due to some server ticking loop randomly giving a ConcurrentModificationException.");
