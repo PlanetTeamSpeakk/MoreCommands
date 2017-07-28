@@ -1,18 +1,23 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
+import javax.annotation.Nullable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.lwjgl.input.Keyboard;
-
+import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -34,11 +39,12 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import scala.actors.threadpool.Arrays;
 
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.15.1";
+	public static final String VERSION = "1.16";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -88,10 +94,13 @@ public class Reference {
     }
 	
 	public static void sendMessage(Object player, String message) {
+		if (message == null) message = "null";
 		try {
 			((EntityPlayer) player).sendMessage(new TextComponentString(message));
 		} catch (NullPointerException e) {
 			Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+		} catch (ClassCastException e) { // occurs when trying to send a message to the console
+			System.out.println(message);
 		}
 	}
 	
@@ -239,10 +248,179 @@ public class Reference {
 		return item.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
 	}
 	
-	public static String evalJavaScript(String equation) throws ScriptException {
-		return new ScriptEngineManager(null).getEngineByName("nashorn").eval(equation).toString();
+	public static String evalJavaScript(String script) throws ScriptException {
+		return evalCode(script, "nashorn");
+	}
+	
+	public static String evalCode(String script, String language) throws ScriptException {
+		return new ScriptEngineManager(null).getEngineByName(language).eval(script).toString();
+	}
+	
+	public static TextFormatting getRandomColor(String... exceptions) {
+		TextFormatting[] colors = {TextFormatting.AQUA, TextFormatting.BLACK, TextFormatting.BLUE, TextFormatting.DARK_AQUA, TextFormatting.DARK_BLUE, TextFormatting.DARK_GRAY, TextFormatting.DARK_GREEN,
+				TextFormatting.DARK_PURPLE, TextFormatting.DARK_RED, TextFormatting.GOLD, TextFormatting.GRAY, TextFormatting.GREEN, TextFormatting.LIGHT_PURPLE, TextFormatting.RED, TextFormatting.WHITE,
+				TextFormatting.YELLOW};
+		TextFormatting color = colors[ThreadLocalRandom.current().nextInt(0, colors.length+1)];
+		while (Arrays.asList(exceptions).contains(getColorName(color))) {
+			color = colors[ThreadLocalRandom.current().nextInt(0, colors.length+1)];
+		}
+		
+		return color;
+		
+	}
+	
+	public static String getColorName(TextFormatting color) {
+		if (color == TextFormatting.AQUA) return "AQUA";
+		else if (color == TextFormatting.BLACK) return "BLACK";
+		else if (color == TextFormatting.BLUE) return "BLUE";
+		else if (color == TextFormatting.BOLD) return "BOLD";
+		else if (color == TextFormatting.DARK_AQUA) return "DARK_AQUA";
+		else if (color == TextFormatting.DARK_BLUE) return "DARK_BLUE";
+		else if (color == TextFormatting.DARK_GRAY) return "DARK_GRAY";
+		else if (color == TextFormatting.DARK_GREEN) return "DARK_GREEN";
+		else if (color == TextFormatting.DARK_PURPLE) return "DARK_PURPLE";
+		else if (color == TextFormatting.DARK_RED) return "DARK_RED";
+		else if (color == TextFormatting.GOLD) return "GOLD";
+		else if (color == TextFormatting.GRAY) return "GRAY";
+		else if (color == TextFormatting.GREEN) return "GREEN";
+		else if (color == TextFormatting.ITALIC) return "ITALIC";
+		else if (color == TextFormatting.LIGHT_PURPLE) return "LIGHT_PURPLE";
+		else if (color == TextFormatting.OBFUSCATED) return "OBFUSCATED";
+		else if (color == TextFormatting.RED) return "RED";
+		else if (color == TextFormatting.RESET) return "RESET";
+		else if (color == TextFormatting.STRIKETHROUGH) return "STRIKETHROUGH";
+		else if (color == TextFormatting.UNDERLINE) return "UNDERLINE";
+		else if (color == TextFormatting.WHITE) return "WHITE";
+		else if (color == TextFormatting.YELLOW) return "YELLOW";
+		else return "UNKNOWN";
+	}
+	
+	public static TextFormatting getColorByName(String name) {
+		if (name.toLowerCase().equals("aqua")) return TextFormatting.AQUA;
+		else if (name.toLowerCase().equals("black")) return TextFormatting.BLACK;
+		else if (name.toLowerCase().equals("blue")) return TextFormatting.BLUE;
+		else if (name.toLowerCase().equals("bold")) return TextFormatting.BOLD;
+		else if (name.toLowerCase().equals("dark_aqua")) return TextFormatting.DARK_AQUA;
+		else if (name.toLowerCase().equals("dark_blue")) return TextFormatting.DARK_BLUE;
+		else if (name.toLowerCase().equals("dark_gray")) return TextFormatting.DARK_GRAY;
+		else if (name.toLowerCase().equals("dark_green")) return TextFormatting.DARK_GREEN;
+		else if (name.toLowerCase().equals("dark_purple")) return TextFormatting.DARK_PURPLE;
+		else if (name.toLowerCase().equals("dark_red")) return TextFormatting.DARK_RED;
+		else if (name.toLowerCase().equals("gold")) return TextFormatting.GOLD;
+		else if (name.toLowerCase().equals("gray")) return TextFormatting.GRAY;
+		else if (name.toLowerCase().equals("green")) return TextFormatting.GREEN;
+		else if (name.toLowerCase().equals("italic")) return TextFormatting.ITALIC;
+		else if (name.toLowerCase().equals("light_purple")) return TextFormatting.LIGHT_PURPLE;
+		else if (name.toLowerCase().equals("obfuscated")) return TextFormatting.OBFUSCATED;
+		else if (name.toLowerCase().equals("red")) return TextFormatting.RED;
+		else if (name.toLowerCase().equals("reset")) return TextFormatting.RESET;
+		else if (name.toLowerCase().equals("strikethrough")) return TextFormatting.STRIKETHROUGH;
+		else if (name.toLowerCase().equals("underline")) return TextFormatting.UNDERLINE;
+		else if (name.toLowerCase().equals("white")) return TextFormatting.WHITE;
+		else if (name.toLowerCase().equals("yellow")) return TextFormatting.YELLOW;
+		else return TextFormatting.BLUE;
+	}
+	
+	public static boolean isConsole(ICommandSender sender) {
+		try {
+			EntityPlayer player = (EntityPlayer) sender;
+		} catch (ClassCastException e) {return true;}
+		return false;
 	}
 
+	public static void setAllWorldTimes(MinecraftServer server, Integer time) {
+		CommandfixTime.time = -1;
+		new CommandfixTime().setAllWorldTimes(server, time);
+	}
+	
+	public static void setWorldTime(World world, Integer time) {
+		CommandfixTime.time = -1;
+		world.setWorldTime(time);
+	}
+	
+	public static String getArrayAsString(Object[] array) {
+		String arrayString = "";
+		for (int x = 0; x < array.length; x += 1) {
+			arrayString += array[x].toString();
+			if (x+1 == array.length);
+			else if (x+2 != array.length) arrayString += ", ";
+			else if (x+2 == array.length) arrayString += " and ";
+		}
+		return arrayString;
+	}
+	
+	public static String getHTML(String url) throws IOException {
+		StringBuilder result = new StringBuilder();
+		java.net.URL URL = new java.net.URL(url);
+		HttpURLConnection connection = (HttpURLConnection) URL.openConnection();
+		connection.setRequestMethod("GET");
+		BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		String line;
+		while ((line = rd.readLine()) != null) {
+			result.append(line);
+		}
+		rd.close();
+		return result.toString();
+	}
+	
+	public static String getServerStatus() throws IOException {
+		String statuses = getHTML("https://status.mojang.com/check");
+		String[] statusesArray = statuses.split(",");
+		for (int x = 0; x < statusesArray.length; x += 1) {
+			statusesArray[x] = statusesArray[x].substring(1, statusesArray[x].length()-1).replaceAll("\"", "");
+		}
+		HashMap<String, String> statusesMap = new HashMap<String, String>();
+		for (int x = 0; x < statusesArray.length; x += 1) {
+			statusesMap.put(statusesArray[x].split(":")[0], statusesArray[x].split(":")[1]);
+		}
+		String statusesMapString = statusesMap.toString();
+		statusesMapString = statusesMapString.replaceAll("\\{", "");
+		statusesMapString = statusesMapString.replaceAll("\\}", "");
+		String[] statusesMapArray = statusesMapString.split(", ");
+		String statusesFinal = "";
+		for (int x = 0; x < statusesMapArray.length; x += 1) {
+			statusesFinal += statusesMapArray[x].split("=")[0] + " = " + getColorByName(statusesMapArray[x].split("=")[1]) + statusesMapArray[x].split("=")[1] + TextFormatting.RESET + (x+1 != statusesMapArray.length ? "\n" : "");
+		}
+		return statusesFinal;
+	}
+	
+	@Nullable
+	public static String getUUIDFromName(String name) throws IOException {
+		String data = getHTML("https://api.mojang.com/users/profiles/minecraft/" + name);
+		if (data.split(",").length == 1) return null;
+		else {
+			String[] dataArray = data.substring(1, data.length()-1).split(",");
+			HashMap<String, String> dataMap = new HashMap<String, String>();
+			for (int x = 0; x < dataArray.length; x += 1) {
+				dataMap.put(dataArray[x].split(":")[0].substring(1, dataArray[x].split(":")[0].length()-1), dataArray[x].split(":")[1].substring(1, dataArray[x].split(":")[1].length()-1));
+			}
+			if (dataMap.get("name") != null && dataMap.get("name").equals(name)) return dataMap.get("id");
+			else return null;
+		}
+	}
+	
+	public static HashMap getPastNamesFromUUID(String UUID) throws IOException {
+		String data = getHTML("https://api.mojang.com/user/profiles/" + UUID + "/names");
+		String[] dataArray;
+		try {
+			dataArray = data.substring(1, data.length()-1).split("},");
+		} catch (StringIndexOutOfBoundsException e) {
+			return new HashMap<String, Long>();
+		}
+		String firstName = "";
+		HashMap<String, Long> dataMap = new HashMap<String, Long>();
+		for (int x = 0; x < dataArray.length; x += 1) {
+			if (dataArray[x].split(",").length == 1) {firstName = dataArray[x].split(":")[1].substring(1, dataArray[x].split(":")[1].length()-1); dataMap.put(firstName, null);}
+			else {
+				String name = dataArray[x].split(",")[0].split(":")[1];
+				name = name.substring(1, name.length()-1);
+				Long changedAt = Long.parseLong(dataArray[x].split(",")[1].split(":")[1].substring(0, dataArray[x].split(",")[1].split(":")[1].length()-1));
+				dataMap.put(name, changedAt);
+			}
+		}
+		return dataMap;
+	}
+	
 	private static FMLServerStartingEvent serverStartingEvent = null;
 	private static int powerToolCounter = 0; // every event gets called twice except for leftclickempty.
 	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
