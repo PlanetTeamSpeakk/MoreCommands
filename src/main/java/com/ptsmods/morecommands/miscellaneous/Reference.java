@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nullable;
@@ -17,16 +16,20 @@ import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
@@ -35,6 +38,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.storage.AnvilChunkLoader;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.relauncher.Side;
@@ -44,7 +49,7 @@ import scala.actors.threadpool.Arrays;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.16";
+	public static final String VERSION = "1.17";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -176,7 +181,7 @@ public class Reference {
 		return direction;
 	}
 	
-	private static ArrayList blockBlacklist = new ArrayList();
+	private static ArrayList<Block> blockBlacklist = new ArrayList<Block>();
 	
 	public static ArrayList getBlockBlacklist() {
 		return blockBlacklist;
@@ -191,7 +196,7 @@ public class Reference {
 		blockWhitelist = new ArrayList();
 	}
 	
-	private static ArrayList blockWhitelist = new ArrayList();
+	private static ArrayList<Block> blockWhitelist = new ArrayList<Block>();
 	
 	public static ArrayList getBlockWhitelist() {
 		return blockWhitelist;
@@ -230,6 +235,7 @@ public class Reference {
 		}
 	}
 	
+	@SideOnly(Side.CLIENT)
 	public static void superPickaxeBreak(EntityPlayer player, EnumHand hand) throws CommandException {
 		MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
 		EntityPlayer player2;
@@ -419,6 +425,40 @@ public class Reference {
 			}
 		}
 		return dataMap;
+	}
+	
+	public static void sitOnStairs(RightClickBlock event, EntityPlayer player, BlockPos pos, @Nullable MinecraftServer server) throws CommandException {
+		World world = player.getEntityWorld();
+		Block block = world.getBlockState(pos).getBlock();
+		if (block instanceof BlockStairs) {
+			if (server == null) {
+				EntityPlayer player1;
+				try {
+					player1 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
+				} catch (PlayerNotFoundException e) {
+					return;
+				} catch (NullPointerException e) {return;}
+				event.setCanceled(true);
+				server = player1.getServer();
+				world = player1.getEntityWorld();
+				player = player1;
+			}
+			NBTTagCompound nbt = new NBTTagCompound();
+			nbt.setString("id", "minecraft:arrow");
+			try {
+				nbt = JsonToNBT.getTagFromJson("{id:\"minecraft:arrow\",NoGravity:1b,pickup:0}");
+			} catch (NBTException e) {
+				e.printStackTrace();
+				return;
+			}
+			double d0 = pos.getX() + 0.5;
+			double d1 = pos.getY();
+			double d2 = pos.getZ() + 0.5;
+			Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
+			entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
+			entity.setInvisible(true); // for some reason this function exists but doesn't work, I'll just leave it be.
+			player.startRiding(entity);
+		}
 	}
 	
 	private static FMLServerStartingEvent serverStartingEvent = null;

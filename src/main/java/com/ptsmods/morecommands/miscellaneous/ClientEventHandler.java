@@ -21,6 +21,7 @@ public class ClientEventHandler {
 	@SubscribeEvent
 	public void onPlayerUseItem(PlayerInteractEvent.RightClickBlock event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
+		if (event.getWorld().isRemote) Reference.sitOnStairs(event, event.getEntityPlayer(), event.getPos(), null);
 	}
 	
 	@SubscribeEvent
