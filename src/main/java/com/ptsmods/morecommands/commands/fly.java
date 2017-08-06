@@ -47,9 +47,8 @@ public class fly {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0 ) {
-				Reference.sendCommandUsage(sender, usage);
-			} else if (args.length == 1) {
+			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
+			else if (args.length == 1) {
 				if (args[0].equals("on")) {
 					EntityPlayer player = (EntityPlayer) sender;
 					player.capabilities.allowFlying = true;
