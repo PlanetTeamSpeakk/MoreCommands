@@ -12,7 +12,9 @@ import com.ptsmods.morecommands.commands.day.Commandday;
 import com.ptsmods.morecommands.commands.descend.Commanddescend;
 import com.ptsmods.morecommands.commands.easy.Commandeasy;
 import com.ptsmods.morecommands.commands.enchant.Commandenchant;
+import com.ptsmods.morecommands.commands.evalJavaScript.CommandevalJavaScript;
 import com.ptsmods.morecommands.commands.explode.Commandexplode;
+import com.ptsmods.morecommands.commands.fireball.Commandfireball;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.fly.Commandfly;
 import com.ptsmods.morecommands.commands.fullbright.Commandfullbright;
@@ -87,7 +89,7 @@ public class Initialize {
 				new Commandsave(), new Commandtop(), new CommandconsoleCommand(), new CommandreloadMoreCommands(), new Commandfly(), new Commandtpa(), new Commandtpaccept(), new Commandtpdeny(), new Commandwild(), 
 				new Commandspawn(), new Commandbreak(), new Commandsmite(), new Commandthrough(), new Commandping(), new Commandrepair(), new Commandrename(), new Commandhat(), new CommandpowerTool(), 
 				new CommandresetNBT(), new CommandshowNBT(), new Commandvanish(), new Commanddescend(), new Commandascend(), new CommandopTool(), new CommandsuperPickaxe(), new Commandenchant(),
-				new CommandfixTime()};
+				new CommandfixTime(), new Commandfireball()};
 		
 		Integer counter = 0;
 		Integer failed = 0;
@@ -136,7 +138,7 @@ public class Initialize {
 	public static void registerClientCommands() {
 		System.out.println("Registering MoreCommands client sided commands.");
 		ICommand[] commands = {new CommandspawnClientEntity(), new Commandfullbright(), new Commandptime(), new Commandruncmd(), new CommandsetFOV(), new CommandsetRenderDistance(), new Commandcalc(),
-				new CommandserverStatus(), new CommandpastNames()};
+				new CommandserverStatus(), new CommandpastNames(), new CommandevalJavaScript()};
 
 		Integer counter = 0;
 		Integer fails = 0;

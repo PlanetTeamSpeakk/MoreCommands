@@ -21,12 +21,12 @@ public class MoreCommands {
 	@EventHandler
 	@SideOnly(Side.CLIENT)
 	public void postInit(FMLPostInitializationEvent event) {
-        try {
+		try {
         	Initialize.registerClientCommands();
         } catch (NoClassDefFoundError e) {
         	System.out.println("An error occured while loading the client sided MoreCommands commands, if the mod is installed on a server you can ignore this error, if not please contact PlanetTeamSpeak.");
         	System.out.println(e.getStackTrace());
         }
 	}
-
+	
 }
