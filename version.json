@@ -7,7 +7,8 @@
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
         "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
         "1.15.1": "Fixed:\nGame crashing when trying to break a block.",
-        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command."
+        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
+        "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs."
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -17,7 +18,8 @@
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
         "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
         "1.15.1": "Fixed:\nGame crashing when trying to break a block.",
-        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command."
+        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
+        "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs."
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -27,15 +29,16 @@
         "1.14": "Added:\n/vanish Makes you invisible, you basically get the invisibility potion effect but without the potion effect.\n/setfov <fov> Sets your fov, client sided command.\n/setrenderdistance <distance> Sets your render distance, client sided command.\n/descend Teleports you down 1 floor.\n/ascend Teleports you up 1 floor.\n/optool Enchants whatever tool your holding with every enchantment of level 16348.\n/superpickaxe Makes you able to destroy any block with any pickaxe.\n\nChanged/fixed:\nSome small things which I forgot what they were.",
         "1.15": "Added:\n/calc <equation> Calculates a math equation so you don't have to.\n/optool Enchants the item you're holding with every enchantment of level 16348.\n\nChanged:\nThe registering of the commands now looks a lot cleaner altough you won't notice this in-game.",
         "1.15.1": "Fixed:\nGame crashing when trying to break a block.",
-        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command."
+        "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
+        "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12-latest": "1.16",
-        "1.12-recommended": "1.16",
-        "1.11.2-latest": "1.16",
-        "1.11.2-recommended": "1.16",
-        "1.11-latest": "1.16",
-        "1.11-recommended": "1.16"
+        "1.12-latest": "1.17",
+        "1.12-recommended": "1.17",
+        "1.11.2-latest": "1.17",
+        "1.11.2-recommended": "1.17",
+        "1.11-latest": "1.17",
+        "1.11-recommended": "1.17"
     }
 }
