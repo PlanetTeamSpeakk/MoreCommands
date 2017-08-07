@@ -1,12 +1,10 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
+import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
@@ -19,24 +17,23 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientEventHandler {
 	
 	@SubscribeEvent
-	public void onPlayerUseItem(PlayerInteractEvent.RightClickBlock event) throws CommandException {
-		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
-		if (event.getWorld().isRemote) Reference.sitOnStairs(event, event.getEntityPlayer(), event.getPos(), null);
-	}
-	
-	@SubscribeEvent
-	public void onPlayerUseItem(PlayerInteractEvent.EntityInteract event) throws CommandException {
+	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
 	}
 	
 	@SubscribeEvent
-	public void onPlayerUseItem(PlayerInteractEvent.LeftClickBlock event) throws CommandException {
+	public void onPlayerRightClickEntity(PlayerInteractEvent.EntityInteract event) throws CommandException {
+		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
+	}
+	
+	@SubscribeEvent
+	public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
 		Reference.superPickaxeBreak(event.getEntityPlayer(), event.getHand());
 	}
 	
 	@SubscribeEvent
-	public void onPlayerUseItem(PlayerInteractEvent.LeftClickEmpty event) throws CommandException {
+	public void onPlayerLeftClickAir(PlayerInteractEvent.LeftClickEmpty event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, true);
 	}
 	
@@ -57,7 +54,7 @@ public class ClientEventHandler {
 				Commandptime.time += 1;
 			} catch (NullPointerException e) {} // They can also occur when logging out from a singleplayer world, this will crash your game as well.
 		}
-		
+		if (Reference.isSittingOnChair && !(Reference.player == null) && !Reference.player.isRiding()) Reference.dismountStairs(); // killing the arrow as soon as the player isn't riding it anymore.
 	}
 	
 }

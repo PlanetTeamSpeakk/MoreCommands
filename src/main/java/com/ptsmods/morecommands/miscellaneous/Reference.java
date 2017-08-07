@@ -23,6 +23,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -49,7 +50,7 @@ import scala.actors.threadpool.Arrays;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.17";
+	public static final String VERSION = "1.17.1";
 	public static final String MC_VERSIONS = "[1.11,1.12]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -430,21 +431,21 @@ public class Reference {
 	public static void sitOnStairs(RightClickBlock event, EntityPlayer player, BlockPos pos, @Nullable MinecraftServer server) throws CommandException {
 		World world = player.getEntityWorld();
 		Block block = world.getBlockState(pos).getBlock();
+		if (server == null) {
+			EntityPlayer player1;
+			try {
+				player1 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
+			} catch (PlayerNotFoundException e) {
+				return;
+			} catch (NullPointerException e) {return;}
+			event.setCanceled(true);
+			server = player1.getServer();
+			world = player1.getEntityWorld();
+			player = player1;
+		}
 		if (block instanceof BlockStairs) {
-			if (server == null) {
-				EntityPlayer player1;
-				try {
-					player1 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
-				} catch (PlayerNotFoundException e) {
-					return;
-				} catch (NullPointerException e) {return;}
-				event.setCanceled(true);
-				server = player1.getServer();
-				world = player1.getEntityWorld();
-				player = player1;
-			}
+			event.setCanceled(true);
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("id", "minecraft:arrow");
 			try {
 				nbt = JsonToNBT.getTagFromJson("{id:\"minecraft:arrow\",NoGravity:1b,pickup:0}");
 			} catch (NBTException e) {
@@ -458,9 +459,23 @@ public class Reference {
 			entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
 			entity.setInvisible(true); // for some reason this function exists but doesn't work, I'll just leave it be.
 			player.startRiding(entity);
+			isSittingOnChair = true;
+			arrow = entity;
+			Reference.player = player;
 		}
 	}
 	
+	public static void dismountStairs() {
+		if (arrow != null && isSittingOnChair) {
+			player.dismountRidingEntity();
+			arrow.onKillCommand();
+			isSittingOnChair = false;
+		}
+	}
+	
+	public static Entity arrow = null;
+	public static boolean isSittingOnChair = false;
+	public static EntityPlayer player = null;
 	private static FMLServerStartingEvent serverStartingEvent = null;
 	private static int powerToolCounter = 0; // every event gets called twice except for leftclickempty.
 	public static HashMap<String, String> tpRequests = new HashMap<String, String>();

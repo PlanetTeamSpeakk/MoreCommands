@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.miscellaneous;
 
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 
+import net.minecraft.block.BlockStairs;
 import net.minecraft.command.CommandException;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -18,7 +19,11 @@ public class ServerEventHandler {
 	
 	@SubscribeEvent
 	public void onPlayerUseItem(PlayerInteractEvent.RightClickBlock event) throws CommandException {
-		if (!event.getWorld().isRemote) Reference.sitOnStairs(event, event.getEntityPlayer(), event.getPos(), event.getEntityPlayer().getServer());
+		if (Reference.isSittingOnChair && event.getWorld().getBlockState(event.getPos()).getBlock() instanceof BlockStairs) {
+			event.getEntityPlayer().dismountEntity(Reference.arrow);
+			Reference.arrow.onKillCommand();
+		}
+		Reference.sitOnStairs(event, event.getEntityPlayer(), event.getPos(), event.getEntityPlayer().getServer());
 	}
 	
 }
