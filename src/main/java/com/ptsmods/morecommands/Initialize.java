@@ -63,6 +63,7 @@ import com.ptsmods.morecommands.commands.top.Commandtop;
 import com.ptsmods.morecommands.commands.tpa.Commandtpa;
 import com.ptsmods.morecommands.commands.tpaccept.Commandtpaccept;
 import com.ptsmods.morecommands.commands.tpdeny.Commandtpdeny;
+import com.ptsmods.morecommands.commands.urban.Commandurban;
 import com.ptsmods.morecommands.commands.vanish.Commandvanish;
 import com.ptsmods.morecommands.commands.wild.Commandwild;
 import com.ptsmods.morecommands.miscellaneous.ClientEventHandler;
@@ -138,7 +139,7 @@ public class Initialize {
 	public static void registerClientCommands() {
 		System.out.println("Registering MoreCommands client sided commands.");
 		ICommand[] commands = {new CommandspawnClientEntity(), new Commandfullbright(), new Commandptime(), new Commandruncmd(), new CommandsetFOV(), new CommandsetRenderDistance(), new Commandcalc(),
-				new CommandserverStatus(), new CommandpastNames(), new CommandevalJavaScript()};
+				new CommandserverStatus(), new CommandpastNames(), new CommandevalJavaScript(), new Commandurban()};
 
 		Integer counter = 0;
 		Integer fails = 0;
