@@ -24,6 +24,7 @@ public class ClientEventHandler {
 	@SubscribeEvent
 	public void onPlayerRightClickEntity(PlayerInteractEvent.EntityInteract event) throws CommandException {
 		Reference.powerToolCommand(event.getEntityPlayer(), event.getHand(), event, false);
+		//event.getTarget().onKillCommand(); // :3
 	}
 	
 	@SubscribeEvent

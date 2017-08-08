@@ -50,8 +50,8 @@ import scala.actors.threadpool.Arrays;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.17.1";
-	public static final String MC_VERSIONS = "[1.11,1.12]";
+	public static final String VERSION = "1.18";
+	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
 	public static boolean isInteger(String s) {
@@ -471,6 +471,13 @@ public class Reference {
 			arrow.onKillCommand();
 			isSittingOnChair = false;
 		}
+	}
+	
+	/*
+	 * Replaces \r\n with a line break and removes any backslash
+	 */
+	public static String getCleanString(String dirtyString) {
+		return dirtyString.replaceAll("(\\\\r|\\\\n)+", "\n").replaceAll("\\\\\"", "\"").trim();
 	}
 	
 	public static Entity arrow = null;
