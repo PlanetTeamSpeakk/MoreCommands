@@ -5,6 +5,8 @@ import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
@@ -57,5 +59,4 @@ public class ClientEventHandler {
 		}
 		if (Reference.isSittingOnChair && !(Reference.player == null) && !Reference.player.isRiding()) Reference.dismountStairs(); // killing the arrow as soon as the player isn't riding it anymore.
 	}
-	
 }

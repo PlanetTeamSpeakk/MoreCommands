@@ -50,7 +50,7 @@ import scala.actors.threadpool.Arrays;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.18";
+	public static final String VERSION = "1.19";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -66,8 +66,8 @@ public class Reference {
 	    return true;
 	}
 	
-	public static boolean isBoolean(String s) {
-		return s.toLowerCase().equals("true") || s.toLowerCase().equals("false");
+	public static boolean isBoolean(Object bool) {
+		return bool.toString().toLowerCase().equals("true") || bool.toString().toLowerCase().equals("false");
 	}
 	
 	public static String parseTime(int time, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
@@ -473,11 +473,24 @@ public class Reference {
 		}
 	}
 	
-	/*
-	 * Replaces \r\n with a line break and removes any backslash
+	/**
+	 * Replaces \r\n with a line break, removes all backslashes and removes spaces at the beginning and end.
 	 */
 	public static String getCleanString(String dirtyString) {
-		return dirtyString.replaceAll("(\\\\r|\\\\n)+", "\n").replaceAll("\\\\\"", "\"").trim();
+		return dirtyString.replaceAll("(\\\\r|\\\\n)+", "\n").replaceAll("\\\\\"", "").trim();
+	}
+	
+	
+	public static BlockPos roundBlockPos(BlockPos blockpos) {
+		double x = blockpos.getX();
+		double y = blockpos.getY();
+		double z = blockpos.getZ();
+		return new BlockPos(Math.round(x), Math.round(y), Math.round(z));
+	}
+	
+	public static TextFormatting getColorFromBoolean(Object bool) {
+		if (isBoolean(bool) && Boolean.parseBoolean(bool.toString())) return TextFormatting.GREEN;
+		else return TextFormatting.RED;
 	}
 	
 	public static Entity arrow = null;
