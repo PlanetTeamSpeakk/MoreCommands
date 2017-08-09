@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.commands.calc.Commandcalc;
 import com.ptsmods.morecommands.commands.clearEffects.CommandclearEffects;
 import com.ptsmods.morecommands.commands.clearInv.CommandclearInv;
 import com.ptsmods.morecommands.commands.cmdBlock.Commandcmdblock;
+import com.ptsmods.morecommands.commands.compareIPs.CommandcompareIPs;
 import com.ptsmods.morecommands.commands.consoleCommand.CommandconsoleCommand;
 import com.ptsmods.morecommands.commands.day.Commandday;
 import com.ptsmods.morecommands.commands.descend.Commanddescend;
@@ -65,6 +66,8 @@ import com.ptsmods.morecommands.commands.tpaccept.Commandtpaccept;
 import com.ptsmods.morecommands.commands.tpdeny.Commandtpdeny;
 import com.ptsmods.morecommands.commands.urban.Commandurban;
 import com.ptsmods.morecommands.commands.vanish.Commandvanish;
+import com.ptsmods.morecommands.commands.whereAmI.CommandwhereAmI;
+import com.ptsmods.morecommands.commands.whois.Commandwhois;
 import com.ptsmods.morecommands.commands.wild.Commandwild;
 import com.ptsmods.morecommands.miscellaneous.ClientEventHandler;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -90,7 +93,7 @@ public class Initialize {
 				new Commandsave(), new Commandtop(), new CommandconsoleCommand(), new CommandreloadMoreCommands(), new Commandfly(), new Commandtpa(), new Commandtpaccept(), new Commandtpdeny(), new Commandwild(), 
 				new Commandspawn(), new Commandbreak(), new Commandsmite(), new Commandthrough(), new Commandping(), new Commandrepair(), new Commandrename(), new Commandhat(), new CommandpowerTool(), 
 				new CommandresetNBT(), new CommandshowNBT(), new Commandvanish(), new Commanddescend(), new Commandascend(), new CommandopTool(), new CommandsuperPickaxe(), new Commandenchant(),
-				new CommandfixTime(), new Commandfireball()};
+				new CommandfixTime(), new Commandfireball(), new CommandwhereAmI(), new Commandwhois(), new CommandcompareIPs()};
 		
 		Integer counter = 0;
 		Integer failed = 0;
