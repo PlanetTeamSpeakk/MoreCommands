@@ -4,25 +4,23 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 
-public class hat {
+public class whereAmI {
 
-	public hat() {
+	public whereAmI() {
 	}
 
-	public static class Commandhat implements ICommand {
+	public static class CommandwhereAmI implements ICommand {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("coords");
 			return aliases;
 		}
 
@@ -31,7 +29,7 @@ public class hat {
 		}
 
 		public String getName() {
-			return "hat";
+			return "whereami";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -41,16 +39,11 @@ public class hat {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
-			if (!player.getHeldItemMainhand().isEmpty()) {
-				ItemStack itemstack = player.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
-				player.setItemStackToSlot(EntityEquipmentSlot.HEAD, player.getHeldItemMainhand());
-				player.setHeldItem(EnumHand.MAIN_HAND, itemstack);
-				Reference.sendMessage(player, "Enjoy your new hat.");
-			} else Reference.sendMessage(player, "Please hold an item or block.");
-
+			Reference.sendMessage(player, "Your coords are X: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
+					", Biome: " + player.getEntityWorld().getBiome(new BlockPos(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ())).getBiomeName() + ".");
 		}
 		
-		protected String usage = "/hat Puts the item you're holding on your head.";
+		protected String usage = "/whereami Shows you your coordinates.";
 
 		@Override
 		public int compareTo(ICommand o) {

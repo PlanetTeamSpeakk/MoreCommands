@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -20,6 +21,7 @@ public class urban {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("define");
 			return aliases;
 		}
 
@@ -53,11 +55,12 @@ public class urban {
 					Reference.sendMessage(sender, "No results found for the search term " + TextFormatting.GRAY + TextFormatting.ITALIC + searchTerm + TextFormatting.RESET + ".");
 				} else {
 					String[] dataArray = data.split("\\[\\{");
-					String definition = Reference.getCleanString(dataArray[1].substring(14).split("\",\"")[0]);
-					String example = dataArray[1].split("\",\"")[5];
+					String[] dataArray2 = dataArray[1].split("\",\"");
+					String definition = Reference.getCleanString(dataArray2[0].substring(14));
+					String example = dataArray2[5];
 					example = Reference.getCleanString(example.substring(10));
-					String thumbsUp = dataArray[1].split("\",\"")[2].split(",\"")[0].substring(11);
-					String thumbsDown = dataArray[1].split("\",\"")[6].substring(13).split("\\}")[0];
+					String thumbsUp = dataArray2[2].split(",\"")[0].substring(11);
+					String thumbsDown = dataArray2[6].substring(13).split("\\}")[0];
 					String result = "Definition for " + TextFormatting.GRAY + TextFormatting.ITALIC + searchTerm + TextFormatting.RESET + ":\n" + definition + "\n\nExample:\n" + example + "\n\nThumbs up: " + thumbsUp + "\nThumbs down: " + thumbsDown;
 					Reference.sendMessage(sender, result);
 				}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
