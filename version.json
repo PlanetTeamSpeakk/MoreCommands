@@ -1,6 +1,6 @@
 {
     "1.12.1": {
-               "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
+        "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
         "1.11": "Added:\n/smite <player> Strikes someone with lightning.\n/through Teleports you through a wall.\n\nFixed:\nAll commands which you were supposed to be able to use on singleplayer or modded server not being able to use.\nTL;DR a lot of permission issues.",
         "1.12": "Added:\n/hat Puts the item you're holding on your head.\n/repair Repairs the item you're holding\n/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.",
         "1.13": "Added:\n/powertool <command> Assigns a command to the item you're holding using NBT.\n/resetnbt Resets the NBT data of the item you're holding.\n/shownbt Shows the NBT data of the item you're holding.\n\nChanges:\nThe mod is now usable for any Minecraft version ranging from 1.11 to 1.12.",
@@ -10,7 +10,8 @@
         "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
-        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1." 
+        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
     }, 
     "1.12": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -23,7 +24,8 @@
         "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
-        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1."
+        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -36,7 +38,8 @@
         "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
-        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1."
+        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -49,17 +52,18 @@
         "1.16": "Added:\n/time fix <value> Fixes the time to the set amount.\n/enchant <player> <id> [level] Same as the normal command but now you can enchant any item with any enchantment of any level.\n/serverstatus Shows the server statuses of all mojang and minecraft servers. Client sided command.\n/pastnames [player] Shows the past names of the given player, player defaults to you. Client sided command.",
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
-        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1."
+        "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12.1-latest": "1.18",
-        "1.12.1-recommended": "1.18",
-        "1.12-latest": "1.18",
-        "1.12-recommended": "1.18",
-        "1.11.2-latest": "1.18",
-        "1.11.2-recommended": "1.18",
-        "1.11-latest": "1.18",
-        "1.11-recommended": "1.18"
+        "1.12.1-latest": "1.19",
+        "1.12.1-recommended": "1.19",
+        "1.12-latest": "1.19",
+        "1.12-recommended": "1.19",
+        "1.11.2-latest": "1.19",
+        "1.11.2-recommended": "1.19",
+        "1.11-latest": "1.19",
+        "1.11-recommended": "1.19"
     }
 }
