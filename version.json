@@ -11,7 +11,8 @@
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
         "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
-        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.",
+        "1.20": "Added:\n/n/narrate [message] Let the narrator narrate a message for you, just doing /narrate makes you able to let it narrate a whole novel. This command does not work on Minecraft versions below 1.12.\n\nChanged:\nA very, very lazy way of registering the commands so now whenever I create a new class I don't have to change initialize.java and it'll just get registered when I relog :D (it did take me numerous hours before I achieved this.)\nIf your game crashes whenever you updated to 1.20, just restart and there shouldn't be a problem."
     }, 
     "1.12": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -25,7 +26,8 @@
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
         "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
-        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.",
+        "1.20": "Added:\n/n/narrate [message] Let the narrator narrate a message for you, just doing /narrate makes you able to let it narrate a whole novel. This command does not work on Minecraft versions below 1.12.\n\nChanged:\nA very, very lazy way of registering the commands so now whenever I create a new class I don't have to change initialize.java and it'll just get registered when I relog :D (it did take me numerous hours before I achieved this.)\nIf your game crashes whenever you updated to 1.20, just restart and there shouldn't be a problem."
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -39,7 +41,8 @@
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
         "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
-        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.",
+        "1.20": "Added:\n/n/narrate [message] Let the narrator narrate a message for you, just doing /narrate makes you able to let it narrate a whole novel. This command does not work on Minecraft versions below 1.12.\n\nChanged:\nA very, very lazy way of registering the commands so now whenever I create a new class I don't have to change initialize.java and it'll just get registered when I relog :D (it did take me numerous hours before I achieved this.)\nIf your game crashes whenever you updated to 1.20, just restart and there shouldn't be a problem."
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -53,7 +56,8 @@
         "1.17": "Added:\n/fireball Summons a fireball in the direction you're looking.\nThe ability to sit on stairs.",
         "1.17.1": "Changed:\nThe arrow will now be removed once you dismount the chair or go sit on another one.",
         "1.18": "Added:\n/urban <search term> Lookup a word on urban dictionary.\n\nChanged:\nThe mod can now be used on 1.12.1.",
-        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone."
+        "1.19": "Added:\n/whereami Shows your coordinates.\n/whois <player> Get all of a player's information, including their ip, you hackerman.\n/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.",
+        "1.20": "Added:\n/n/narrate [message] Let the narrator narrate a message for you, just doing /narrate makes you able to let it narrate a whole novel. This command does not work on Minecraft versions below 1.12.\n\nChanged:\nA very, very lazy way of registering the commands so now whenever I create a new class I don't have to change initialize.java and it'll just get registered when I relog :D (it did take me numerous hours before I achieved this.)\nIf your game crashes whenever you updated to 1.20, just restart and there shouldn't be a problem."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
