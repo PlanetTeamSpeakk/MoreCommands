@@ -1,11 +1,11 @@
 package com.ptsmods.morecommands.commands;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -19,7 +19,7 @@ public class pastNames {
 	public pastNames() {
 	}
 
-	public static class CommandpastNames implements ICommand {
+	public static class CommandpastNames extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -50,14 +50,17 @@ public class pastNames {
 				String firstName = "";
 				HashMap<String, Long> dataMap = Reference.getPastNamesFromUUID(Reference.getUUIDFromName(user));
 				if (dataMap == new HashMap<String, Long>());
-				else { for (int x = 0; x < dataMap.keySet().size(); x += 1) {
-					String key = (String) dataMap.keySet().toArray()[x];
-					if (dataMap.get(key) == null) firstName = key;
-					else data += "\nChanged to " + key + " at " + new Date(dataMap.get(key)).toString();
-				}
+				else { 
+					for (int x = 0; x < dataMap.keySet().size(); x += 1) {
+						String key = (String) dataMap.keySet().toArray()[x];
+						if (dataMap.get(key) == null) firstName = key;
+						else data += "\nChanged to " + key + " at " + new Date(dataMap.get(key)).toString();
+					}
 				}
 				String dataFinal = "First name: " + firstName + data;
-				if (!data.equals("")) Reference.sendMessage(sender, dataFinal); else Reference.sendMessage(sender, "No data found.");
+				System.out.println(firstName);
+				if (firstName.equals("")) Reference.sendMessage(sender, "The given player does not exist.");
+				else if (!data.equals("")) Reference.sendMessage(sender, dataFinal); else Reference.sendMessage(sender, "No data found.");
 				
 			} catch (IOException e) {
 				Reference.sendMessage(sender, "An unknown error occured while attempting to get the player's UUID, please try again, if the error keeps occuring send PlanetTeamSpeak the error you can find in the console.");
@@ -66,21 +69,16 @@ public class pastNames {
 
 		}
 		
-		protected String usage = "/pastnames [user] Gets all the past names of the given user.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
-
+		
+		protected String usage = "/pastnames [user] Gets all the past names of the given user.";
+		
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

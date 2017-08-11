@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -19,8 +20,8 @@ public class opTool {
 	public opTool() {
 	}
 
-	public static class CommandopTool extends CommandBase {
-
+	public static class CommandopTool extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -61,6 +62,11 @@ public class opTool {
 			player.getHeldItemMainhand().setTagCompound(nbt);
 			Reference.sendMessage(player, "Your " + Reference.getLocalizedName(player.getHeldItemMainhand().getItem()) + " has been made OP.");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/optool Makes whatever you're holding op.";

@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
@@ -14,7 +15,7 @@ public class fixTime {
 	}
 
 	public static class CommandfixTime extends net.minecraft.command.CommandTime {
-
+		
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			ArrayList options = new ArrayList();
@@ -37,6 +38,10 @@ public class fixTime {
 			
 			this.server = sender.getServer();
 
+		}
+		
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		public static int time = -1;

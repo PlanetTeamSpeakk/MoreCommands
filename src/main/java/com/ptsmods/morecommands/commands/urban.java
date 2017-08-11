@@ -3,9 +3,10 @@ package com.ptsmods.morecommands.commands;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -17,8 +18,8 @@ public class urban {
 	public urban() {
 	}
 
-	public static class Commandurban implements ICommand {
-
+	public static class Commandurban extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("define");
@@ -65,6 +66,11 @@ public class urban {
 					Reference.sendMessage(sender, result);
 				}
 			} else Reference.sendCommandUsage(sender, usage);
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
 		
 		protected String usage = "/urban <search term> Lookup the definition of a word on urban dictionary.";

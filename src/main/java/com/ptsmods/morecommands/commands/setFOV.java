@@ -2,28 +2,22 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class setFOV {
-
-	public static Object instance;
 
 	public setFOV() {
 	}
 
-	public static class CommandsetFOV implements ICommand{
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandsetFOV extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -61,6 +55,11 @@ public class setFOV {
 				Minecraft.getMinecraft().gameSettings.saveOptions();
 				Reference.sendMessage(sender, "Your fov has been set to " + Float.toString(Minecraft.getMinecraft().gameSettings.fovSetting) + ".");
 			}
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
 
 		private static String usage = "/setfov <fov> Changes your fov, normal fov is 70.";

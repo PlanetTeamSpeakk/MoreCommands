@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -12,15 +13,10 @@ import net.minecraft.util.math.BlockPos;
 
 public class night {
 
-	public static Object instance;
-
 	public night() {
 	}
 
-	public static class Commandnight extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandnight extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -52,6 +48,11 @@ public class night {
 			Reference.setAllWorldTimes(server, 13000);
 			Reference.sendMessage(sender, "The time has been changed to 13000 ticks, aka night-time.");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

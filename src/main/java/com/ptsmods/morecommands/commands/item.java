@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -21,15 +22,10 @@ import net.minecraft.util.text.TextComponentString;
 
 public class item {
 
-	public static Object instance;
-
 	public item() {
 	}
 
-	public static class Commanditem extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commanditem extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -102,6 +98,11 @@ public class item {
 			player.world.playSound((EntityPlayer)null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             player.inventoryContainer.detectAndSendChanges();
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected static String usage = "/item <item> [amount] [player] Gives you an item.";

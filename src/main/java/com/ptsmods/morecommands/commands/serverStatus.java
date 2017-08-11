@@ -1,27 +1,26 @@
 package com.ptsmods.morecommands.commands;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
-public class kys {
+public class serverStatus {
 
-	public kys() {
+	public serverStatus() {
 	}
 
-	public static class Commandkys extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+	public static class CommandserverStatus extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("suicide");
 			return aliases;
 		}
 
@@ -30,26 +29,30 @@ public class kys {
 		}
 
 		public String getName() {
-			return "kys";
+			return "serverstatus";
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/kys Commit suicide.";
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			player.sendMessage(new TextComponentString("Goodbye cruel world."));
-			player.setHealth(0F);
-			server.sendMessage(new TextComponentString(sender.getName() + " took their own life."));
+			try {
+				Reference.sendMessage(sender, "The server statuses are:\n" + Reference.getServerStatus());
+			} catch (IOException e) {
+				Reference.sendMessage(sender, "An unkown error occured while getting the server statuses, look in the console for more information.");
+				e.printStackTrace();
+			}
 
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.SERVER;
+			return CommandType.CLIENT;
 		}
+		
+		protected String usage = "/serverstatus Shows you the Mojang server statuses.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

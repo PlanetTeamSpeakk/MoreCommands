@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -17,12 +18,10 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class killAll {
 
-	public static Object instance;
-
 	public killAll() {
 	}
 
-	public static class CommandkillAll extends CommandBase {
+	public static class CommandkillAll extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public boolean isUsernameIndex(int sender) {
 			return false;
@@ -70,7 +69,11 @@ public class killAll {
 			} else {
 				Reference.sendCommandUsage(sender, usage);
 			}
-
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/killall <entity> Kills all of the given entity in the world.";

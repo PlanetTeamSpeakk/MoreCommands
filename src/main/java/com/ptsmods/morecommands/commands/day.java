@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -13,15 +14,11 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class day {
 
-	public static Object instance;
-
 	public day() {
 	}
 
-	public void preInit(FMLPreInitializationEvent event) {
-	}
-
-	public static class Commandday extends CommandBase {
+	public static class Commandday extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -56,6 +53,11 @@ public class day {
 			Reference.setAllWorldTimes(server, 1000);
 			Reference.sendMessage(sender, "The time has been changed to 1000 ticks, aka day-time.");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

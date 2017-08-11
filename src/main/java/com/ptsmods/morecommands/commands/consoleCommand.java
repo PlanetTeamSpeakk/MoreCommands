@@ -1,10 +1,8 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -15,12 +13,11 @@ import net.minecraft.util.text.TextFormatting;
 
 public class consoleCommand {
 
-	public static Object instance;
-
 	public consoleCommand() {
 	}
 
-	public static class CommandconsoleCommand extends CommandBase {
+	public static class CommandconsoleCommand extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -60,7 +57,11 @@ public class consoleCommand {
 				server.getCommandManager().executeCommand((ICommandSender) server, command);
 				Reference.sendMessage(sender, "Successfully ran command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " from the console. Some commands may give errors, or not work at all when ran by the console.");
 			}
-
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/consolecommand <command> Runs a command from the console.";

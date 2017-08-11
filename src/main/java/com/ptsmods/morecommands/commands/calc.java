@@ -6,8 +6,10 @@ import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -18,8 +20,8 @@ public class calc {
 	public calc() {
 	}
 
-	public static class Commandcalc implements ICommand {
-
+	public static class Commandcalc extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("calculate");
@@ -57,23 +59,18 @@ public class calc {
 			} else Reference.sendCommandUsage(sender, usage);
 		}
 		
-		protected String usage = "/calc <equation> Calculates a math equation so you don't have to.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
+		
+		protected String usage = "/calc <equation> Calculates a math equation so you don't have to.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
 		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
-		}
-
+		
 	}
 
 }

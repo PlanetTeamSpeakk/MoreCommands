@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -18,7 +19,7 @@ public class resetNBT {
 	public resetNBT() {
 	}
 
-	public static class CommandresetNBT extends CommandBase {
+	public static class CommandresetNBT extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -52,6 +53,11 @@ public class resetNBT {
 				Reference.sendMessage(player, "The item you're holding doesn't have any NBT data.");
 			}
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/resetnbt Resets the NBT data of the item you're holding.";

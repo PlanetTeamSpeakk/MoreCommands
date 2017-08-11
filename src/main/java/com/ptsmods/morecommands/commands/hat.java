@@ -2,12 +2,13 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -19,8 +20,8 @@ public class hat {
 	public hat() {
 	}
 
-	public static class Commandhat implements ICommand {
-
+	public static class Commandhat extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
@@ -50,21 +51,16 @@ public class hat {
 
 		}
 		
-		protected String usage = "/hat Puts the item you're holding on your head.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/hat Puts the item you're holding on your head.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

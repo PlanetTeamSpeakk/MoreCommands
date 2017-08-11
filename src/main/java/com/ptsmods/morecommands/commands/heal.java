@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -19,15 +21,10 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class heal {
 
-	public static Object instance;
-
 	public heal() {
 	}
 
-	public static class Commandheal extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandheal extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -90,8 +87,10 @@ public class heal {
 
 			}
 		}
-		public int compareTo(ICommand c) {
-			return getName().compareTo(c.getName());
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

@@ -2,9 +2,10 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.ICommand;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,14 +19,11 @@ public class clearInv {
 	public clearInv() {
 	}
 
-	public static class CommandclearInv implements ICommand {
+	public static class CommandclearInv extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -57,10 +55,10 @@ public class clearInv {
 			player.inventory.clear();
 			Reference.sendMessage(sender, "Your inventory was successfully cleared.");
 		}
-
+		
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 		@Override

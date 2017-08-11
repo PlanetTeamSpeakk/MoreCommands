@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -13,15 +15,10 @@ import net.minecraft.util.text.TextComponentString;
 
 public class noHunger {
 
-	public static Object instance;
-
 	public noHunger() {
 	}
 
-	public static class CommandnoHunger extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandnoHunger extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -88,7 +85,11 @@ public class noHunger {
 					return;
 				}
 			}
-				
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

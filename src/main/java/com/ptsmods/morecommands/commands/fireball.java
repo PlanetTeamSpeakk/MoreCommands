@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,7 @@ public class fireball {
 	public fireball() {
 	}
 
-	public static class Commandfireball extends CommandBase {
+	public static class Commandfireball extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -90,6 +91,11 @@ public class fireball {
 			Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
 			entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/fireball Summons a fireball in the direction you're looking.";

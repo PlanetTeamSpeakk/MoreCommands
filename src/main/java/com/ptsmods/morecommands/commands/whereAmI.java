@@ -2,9 +2,10 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,8 +17,8 @@ public class whereAmI {
 	public whereAmI() {
 	}
 
-	public static class CommandwhereAmI implements ICommand {
-
+	public static class CommandwhereAmI extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("coords");
@@ -40,24 +41,19 @@ public class whereAmI {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
 			Reference.sendMessage(player, "Your coords are X: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-					", Biome: " + player.getEntityWorld().getBiome(new BlockPos(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ())).getBiomeName() + ".");
+					", Biome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + ", World: " + player.getEntityWorld().getWorldInfo().getWorldName() + ".");
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
 		
 		protected String usage = "/whereami Shows you your coordinates.";
 
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
-		}
-
-		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

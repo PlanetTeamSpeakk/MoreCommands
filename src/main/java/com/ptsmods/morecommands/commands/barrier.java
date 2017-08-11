@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,12 +17,11 @@ import net.minecraft.util.text.TextComponentString;
 
 public class barrier {
 
-	public static Object instance;
-
 	public barrier() {
 	}
 
-	public static class Commandbarrier extends CommandBase {
+	public static class Commandbarrier extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -59,6 +60,11 @@ public class barrier {
             player.inventoryContainer.detectAndSendChanges();
 			sender.sendMessage(new TextComponentString("Your barrier has arrived."));
 			
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

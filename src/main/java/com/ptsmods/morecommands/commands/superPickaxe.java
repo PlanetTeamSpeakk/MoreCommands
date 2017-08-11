@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -15,8 +16,8 @@ public class superPickaxe {
 	public superPickaxe() {
 	}
 
-	public static class CommandsuperPickaxe extends CommandBase {
-
+	public static class CommandsuperPickaxe extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -43,8 +44,13 @@ public class superPickaxe {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			enabled = !enabled;
-			Reference.sendMessage(sender, "Superpickaxe has been " + (enabled == true ? "enabled, do note that using the pickaxe may crash your Minecraft due to some server ticking look randomly giving a ConcurrentModificationException." : "disabled."));
+			Reference.sendMessage(sender, "Superpickaxe has been " + (enabled ? "enabled, do note that using the pickaxe may crash your Minecraft due to some server ticking look randomly giving a ConcurrentModificationException." : "disabled."));
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/superpickaxe Enables superpickaxe.";

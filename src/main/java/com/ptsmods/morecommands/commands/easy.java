@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -13,12 +15,11 @@ import net.minecraft.world.EnumDifficulty;
 
 public class easy {
 
-	public static Object instance;
-
 	public easy() {
 	}
 
-	public static class Commandeasy extends CommandBase {
+	public static class Commandeasy extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -53,6 +54,11 @@ public class easy {
             server.setDifficultyForAllWorlds(EnumDifficulty.EASY);
             sender.sendMessage(new TextComponentString("The difficulty has been set to easy."));
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

@@ -2,8 +2,10 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -12,15 +14,10 @@ import net.minecraft.util.text.TextFormatting;
 
 public class ptime {
 
-	public static Object instance;
-
 	public ptime() {
 	}
 
-	public static class Commandptime implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandptime extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -85,7 +82,11 @@ public class ptime {
 				this.time = time;
 				this.fixed = fixed;
 			}
-
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
 		
 		public static int time = -1;
@@ -95,18 +96,8 @@ public class ptime {
 				+ TextFormatting.AQUA + " and" + TextFormatting.BLACK + " not" + TextFormatting.BLUE + " because" + TextFormatting.DARK_AQUA + " I" + TextFormatting.DARK_BLUE + " can't" + TextFormatting.DARK_GRAY + ".";
 
 		@Override
-		public int compareTo(ICommand arg0) {
-			return 0;
-		}
-
-		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

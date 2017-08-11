@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -10,21 +11,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 public class explode {
-	
-	public static Object instance;
 
 	public explode() {
 	}
 
-	public static class Commandexplode extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandexplode extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public int getRequiredPermissionLevel() {
 	        return 2;
@@ -47,7 +42,7 @@ public class explode {
 		}
 
 		public String getUsage(ICommandSender sender) {
-			return "/explode [power] Explode yourself with the set amount of power, power should be a number.";
+			return usage;
 		}
 
 		@Override
@@ -55,22 +50,35 @@ public class explode {
 			int x = sender.getPosition().getX();
 			int y = sender.getPosition().getY();
 			int z = sender.getPosition().getZ();
-			EntityPlayer player = (EntityPlayer) sender;
 			Float power = 4F;
 			
-			World world = Reference.getWorld(server, player);
+			EntityPlayer player = (EntityPlayer) sender;
+			World world = player.getEntityWorld();
+			player.setInvisible(true);
+			Boolean fire = false;
 			
 			if (args.length != 0) {
 				if (Reference.isInteger(args[0])) {
 					power = (float) Integer.parseInt(args[0]);
 				} else {
-					sender.sendMessage(new TextComponentString("Power should be a number."));
+					Reference.sendCommandUsage(sender, usage);
 					return;
 				}
+				if (args.length == 2 && Reference.isBoolean(args[1])) {
+					fire = Boolean.parseBoolean(args[1]);
+				}
 			}
-			world.createExplosion((Entity) null, x+0.5, y, z+0.5, power, true);
+			Explosion explosion = world.newExplosion((Entity) null, x+0.5, y, z+0.5, power, fire, true);
 		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
+		}
+		
+		private static String usage = "/explode [power] [fire] Explode yourself with the set amount of power, power should be a number and defaults to 4, fire should be a boolean (true/false) and defaults to false.";
 
 	}
 
 }
+

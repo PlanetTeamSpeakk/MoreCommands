@@ -5,6 +5,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +18,7 @@ public class dummyCommand {
 	public dummyCommand() {
 	}
 
-	public static class CommandCOMMANDNAME extends CommandBase {
+	public static class CommandCOMMANDNAME extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -43,6 +45,11 @@ public class dummyCommand {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			//CODE HERE
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.UNKNOWN;
 		}
 		
 		protected String usage = "COMMAND USAGE";

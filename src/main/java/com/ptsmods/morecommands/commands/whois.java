@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -20,8 +21,8 @@ public class whois {
 	public whois() {
 	}
 
-	public static class Commandwhois extends CommandBase {
-
+	public static class Commandwhois extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -55,7 +56,7 @@ public class whois {
 					Reference.sendMessage(sender, "The given player could not be found.");
 					return;
 				}
-				String ip = victim.getPlayerIP();
+				String ip = (victim.getPlayerIP().equals("local") ? Reference.getIPAddress() : victim.getPlayerIP());
 				String health = Float.toString(victim.getHealth());
 				String stamina = Float.toString(victim.getFoodStats().getFoodLevel());
 				String exp = Float.toString(victim.experienceTotal);
@@ -65,7 +66,7 @@ public class whois {
 				String country = "";
 				try {
 					country = Reference.getHTML("http://ip-api.com/json/" + ip).split("\",\"")[2].split(":")[1];
-					country = (ip.equals("local") ? "Unknown" : country.substring(1, country.length()-1));
+					country = (ip.equals("unknown") ? "unknown" : country.substring(1));
 				} catch (IOException e) {
 					country = "Error getting country.";
 				}
@@ -73,6 +74,8 @@ public class whois {
 				String godEnabled = Boolean.toString(victim.getIsInvulnerable());
 				String isOp = Boolean.toString(victim.canUseCommand(victim.getServer().getOpPermissionLevel(), "barrier"));
 				String isFlying = Boolean.toString(victim.capabilities.isFlying);
+				String canFly = Boolean.toString(victim.capabilities.allowFlying);
+				String speed = Double.toString(Reference.roundDouble(victim.capabilities.getWalkSpeed()));
 				Reference.sendMessage(sender, 
 						"Victim: " + victim.getName() +
 						"\nIP address: " + ip +
@@ -83,11 +86,18 @@ public class whois {
 						"\nExp level: " + expLevel +
 						"\nLocation: " + location +
 						"\nGamemode: " + gamemode +
+						"\nSpeed: " + speed +
 						"\nGod enabled: " + Reference.getColorFromBoolean(godEnabled) + godEnabled +
 						"\nIs op: " + Reference.getColorFromBoolean(isOp) + isOp +
-						"\nIs flying: " + Reference.getColorFromBoolean(isFlying) + isFlying);
+						"\nIs flying: " + Reference.getColorFromBoolean(isFlying) + isFlying +
+						"\nCan fly: " + Reference.getColorFromBoolean(canFly) + canFly);
 			} else Reference.sendCommandUsage(sender, usage);
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/whois <player> Get all of a player's information, including their ip, you hackerman.";

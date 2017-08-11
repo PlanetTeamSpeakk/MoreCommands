@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -18,8 +19,8 @@ public class tpa {
 	public tpa() {
 	}
 
-	public static class Commandtpa implements ICommand {
-
+	public static class Commandtpa extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 0;
 	    }
@@ -61,21 +62,16 @@ public class tpa {
 
 		}
 		
-		protected String usage = "/tpa <player> Send someone a request to teleport to them.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/tpa <player> Send someone a request to teleport to them.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

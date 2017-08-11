@@ -2,9 +2,11 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,14 +20,7 @@ public class wild {
 	public wild() {
 	}
 
-	public static class Commandwild implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+	public static class Commandwild extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -56,25 +51,20 @@ public class wild {
 				blockIn = player.getEntityWorld().getBlockState(new BlockPos(player.getPosition().getX(), player.getPosition().getY()-1, player.getPosition().getZ())).getBlock();
 			}
 			Reference.sendMessage(player, "You have been randomly teleported, your new coords are\nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-					", Biome: " + player.getEntityWorld().getBiome(new BlockPos(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ())).getBiomeName() + ".");
+					", Biome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + ".");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/wild Teleports you somewhere random.";
 
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
-		}
-
-		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -15,15 +16,10 @@ import net.minecraft.util.text.TextComponentString;
 
 public class speed {
 
-	public static Object instance;
-
 	public speed() {
 	}
 	
-	public static class Commandspeed extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandspeed extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -56,8 +52,7 @@ public class speed {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
-
-			if ((Integer.parseInt(args[0]) > 10) || (Integer.parseInt(args[0]) < 0)) {
+			if (args.length == 0 || (Integer.parseInt(args[0]) > 10) || (Integer.parseInt(args[0]) < 0)) {
 				Reference.sendCommandUsage(player, usage);
 			} else {
 				float speed = (float) Integer.parseInt(args[0]) / 10;
@@ -66,6 +61,11 @@ public class speed {
 				player.sendPlayerAbilities();
 				Reference.sendMessage(sender, "Your move speed has been set to " + Float.toString(speed) + ".");
 			}
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/speed <number> Makes you go faster, number should be a number between 0 and 10.";

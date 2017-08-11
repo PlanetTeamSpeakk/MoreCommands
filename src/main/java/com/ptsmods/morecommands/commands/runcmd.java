@@ -5,29 +5,24 @@ import java.util.ArrayList;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-public class tpdeny {
+public class runcmd {
 
-	public tpdeny() {
+	public runcmd() {
 	}
 
-	public static class Commandtpdeny extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
-
+	public static class Commandruncmd extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("tpno");
 			return aliases;
 		}
 
@@ -36,7 +31,7 @@ public class tpdeny {
 		}
 
 		public String getName() {
-			return "tpdeny";
+			return "runcmd";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -45,27 +40,25 @@ public class tpdeny {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (Reference.tpRequests.get(sender.getName()) == null) {
-				Reference.sendMessage(sender, "You do not have a tpa request open.");
-			} else {
-				try {
-					EntityPlayer requester = CommandBase.getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
-					Reference.sendMessage(requester, sender.getName() + " has denied your tpa request.");
-					Reference.tpRequests.remove(sender.getName());
-					Reference.sendMessage(sender, "You have denied " + requester.getName() + "'s tpa request.");
-				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(sender, "Error getting the person who tried to teleport to you, are they offline?");
+			try {
+				server = CommandBase.getPlayer(Minecraft.getMinecraft().getIntegratedServer(), sender, sender.getName()).getServer();
+				String command = "";
+				for (int x = 0; x < args.length; x += 1) {
+					command += args[x];
+					if (x+1 != args.length) command += " ";
 				}
+				server.getCommandManager().executeCommand(sender, command);
+			} catch (PlayerNotFoundException e) {
+				Reference.sendMessage(sender, "You could not be found, what kind of black magic are you using that makes code unable to target you?");
 			}
-
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.SERVER;
+			return CommandType.CLIENT;
 		}
 		
-		protected String usage = "/tpdeny Deny a tpa request.";
+		protected String usage = "/runcmd <command> Runs a command client side, idk why you would want this.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

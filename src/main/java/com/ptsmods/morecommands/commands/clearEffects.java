@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -21,14 +22,11 @@ public class clearEffects {
 	public clearEffects() {
 	}
 	
-	public static class CommandclearEffects implements ICommand {
+	public static class CommandclearEffects extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
 
 		public java.util.List getAliases() {
            ArrayList aliases = new ArrayList();
@@ -79,10 +77,10 @@ public class clearEffects {
 				 }
 			}
 		}
-
+		
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 		@Override

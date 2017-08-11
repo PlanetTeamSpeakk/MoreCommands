@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -16,7 +17,7 @@ public class repair {
 	public repair() {
 	}
 
-	public static class Commandrepair extends CommandBase {
+	public static class Commandrepair extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -45,6 +46,11 @@ public class repair {
 			player.getHeldItemMainhand().setItemDamage((player.getHeldItemMainhand().getMaxDamage()) * -1);
 			Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getDisplayName() + TextFormatting.RESET + " has been repaired.");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/repair Repairs the item you're holding.";

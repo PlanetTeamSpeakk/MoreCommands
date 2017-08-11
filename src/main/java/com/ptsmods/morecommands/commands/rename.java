@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 import java.util.Set;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -19,7 +20,7 @@ public class rename {
 	public rename() {
 	}
 
-	public static class Commandrename extends CommandBase {
+	public static class Commandrename extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -53,13 +54,18 @@ public class rename {
 						name += " ";
 					}
 				}
+				if (!name.startsWith("&")) name = "&r" + name; // so the name isn't in italic like it would be when renamed with an anvil.
 				name = name.replaceAll("&", "§");
 				player.getHeldItemMainhand().setStackDisplayName(name);
-				Reference.sendMessage(player, "Your " + player.getHeldItemMainhand().getItem().getRegistryName().toString().split(":")[1] + " has been renamed to " + name + TextFormatting.RESET + ".");
+				Reference.sendMessage(player, "Your " + Reference.getLocalizedName(player.getHeldItemMainhand().getItem()) + " has been renamed to " + name + TextFormatting.RESET + ".");
 			} else {
 				Reference.sendCommandUsage(sender, usage);
 			}
-
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/rename <name> Renames the item you're holding, you can use color codes like &1, &2, &3, etc.";

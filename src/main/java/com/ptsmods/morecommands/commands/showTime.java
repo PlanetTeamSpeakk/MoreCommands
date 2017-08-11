@@ -2,29 +2,21 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class showTime {
-
-	public static Object instance;
 
 	public showTime() {
 	}
 
-	public static class CommandshowTime implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+	public static class CommandshowTime extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -52,10 +44,10 @@ public class showTime {
 			Integer time = (int)(sender.getEntityWorld().getWorldTime() % 24000L);
 			Reference.sendMessage(sender, "The server time is " + time.toString() + " ticks, " + Reference.parseTime(time, true) + " or " + Reference.parseTime(time, false) + ".");
 		}
-
+		
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 		@Override

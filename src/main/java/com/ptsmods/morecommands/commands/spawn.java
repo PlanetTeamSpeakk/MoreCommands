@@ -2,8 +2,10 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,11 +20,7 @@ public class spawn {
 	public spawn() {
 	}
 
-	public static class Commandspawn implements ICommand {
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+	public static class Commandspawn extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -52,21 +50,16 @@ public class spawn {
 
 		}
 		
-		protected String usage = "/spawn Teleports you to spawn.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/spawn Teleports you to spawn.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -13,15 +15,10 @@ import net.minecraft.world.EnumDifficulty;
 
 public class normal {
 
-	public static Object instance;
-
 	public normal() {
 	}
 
-	public static class Commandnormal extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandnormal extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -53,6 +50,11 @@ public class normal {
             server.setDifficultyForAllWorlds(EnumDifficulty.NORMAL);
             sender.sendMessage(new TextComponentString("The difficulty has been set to normal."));
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

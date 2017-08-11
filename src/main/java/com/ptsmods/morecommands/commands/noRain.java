@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -15,15 +16,10 @@ import net.minecraft.world.storage.WorldInfo;
 
 public class noRain {
 
-	public static Object instance;
-
 	public noRain() {
 	}
 
-	public static class CommandnoRain extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandnoRain extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -53,15 +49,20 @@ public class noRain {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
-			World world = Reference.getWorld(server, player);
+			World world = player.getEntityWorld();
 			WorldInfo worldinfo = world.getWorldInfo();
             worldinfo.setCleanWeatherTime(20000000);
             worldinfo.setRainTime(0);
             worldinfo.setThunderTime(0);
             worldinfo.setRaining(false);
             worldinfo.setThundering(false);
-            sender.sendMessage(new TextComponentString("Can't you tell I got news for you? The sun is shining and so are you."));
+            Reference.sendMessage(player, "Can't you tell I got news for you? The sun is shining and so are you.");
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

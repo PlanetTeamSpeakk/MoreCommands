@@ -1,12 +1,10 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -21,15 +19,10 @@ import net.minecraft.util.text.TextFormatting;
 
 public class sudo {
 
-	public static Object instance;
-
 	public sudo() {
 	}
 
-	public static class Commandsudo extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class Commandsudo extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -82,6 +75,11 @@ public class sudo {
 				
 			}
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/sudo <player> <command> Runs a command as another player.";

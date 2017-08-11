@@ -2,33 +2,27 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class setRenderDistance {
-
-	public static Object instance;
 
 	public setRenderDistance() {
 	}
 
-	public static class CommandsetRenderDistance implements ICommand{
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandsetRenderDistance extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("srd");
 			aliases.add("setviewdistance"); // it's render distance, but some people call it view distance.
+			aliases.add("svd");
 			return aliases;
 		}
 
@@ -60,13 +54,13 @@ public class setRenderDistance {
 				Reference.sendMessage(sender, "Your render distance has been set to " + Integer.toString(Minecraft.getMinecraft().gameSettings.renderDistanceChunks) + ".");
 			}
 		}
-
-		private static String usage = "/setrenderdistance <distance> Sets your render distance to the set amount, 12 is recommended.";
 		
 		@Override
-		public int compareTo(ICommand arg0) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
+
+		private static String usage = "/setrenderdistance <distance> Sets your render distance to the set amount, 12 is recommended.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

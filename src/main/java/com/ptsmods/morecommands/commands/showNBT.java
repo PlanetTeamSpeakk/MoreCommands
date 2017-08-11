@@ -2,8 +2,10 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +20,8 @@ public class showNBT {
 	public showNBT() {
 	}
 
-	public static class CommandshowNBT implements ICommand {
-
+	public static class CommandshowNBT extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
@@ -57,21 +59,16 @@ public class showNBT {
 
 		}
 		
-		protected String usage = "/shownbt Shows the NBT data of the item you're holding.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/shownbt Shows the NBT data of the item you're holding.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

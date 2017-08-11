@@ -1,11 +1,18 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nullable;
@@ -20,10 +27,10 @@ import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -50,7 +57,7 @@ import scala.actors.threadpool.Arrays;
 public class Reference {
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.19";
+	public static final String VERSION = "1.20";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
@@ -193,8 +200,8 @@ public class Reference {
 	}
 	
 	public static void resetBlockBlackAndWhitelist() {
-		blockBlacklist = new ArrayList();
-		blockWhitelist = new ArrayList();
+		blockBlacklist.clear();
+		blockWhitelist.clear();
 	}
 	
 	private static ArrayList<Block> blockWhitelist = new ArrayList<Block>();
@@ -493,11 +500,94 @@ public class Reference {
 		else return TextFormatting.RED;
 	}
 	
+	public static void addTextToNarratorMessage(String text) {
+		narratorMessage += text + " ";
+	}
+	
+	public static void resetNarratorMessage() {
+		narratorMessage = "";
+	}
+	
+	public static String getNarratorMessage() {
+		return narratorMessage;
+	}
+	
+	public static String getIPAddress() {
+	    try {
+			return getHTML("http://checkip.amazonaws.com/");
+		} catch (IOException e) {
+			return "unknown"; // occurs when there's no internet connection.
+		}
+	}
+	
+	public static double roundDouble(double dbl) {
+		return Double.parseDouble(((Long) Math.round(dbl*10)).toString()) / 10.0;
+	}
+	
+	public static void addCommandToRegistry(CommandType type, ICommand command) throws IncorrectCommandType {
+		if (type == CommandType.CLIENT) {
+			clientCommands.add(command);
+		} else if (type == CommandType.SERVER) {
+			serverCommands.add(command);
+		} else if (type == CommandType.UNKNOWN) { // the only command that should have a command type of UNKNOWN should be the dummy command.
+		} else throwIncorrectCommandType();
+	}
+	
+	public static List<ICommand> getCommandRegistry(CommandType type) throws IncorrectCommandType {
+		if (type == CommandType.CLIENT) return clientCommands;
+		else if (type == CommandType.SERVER) return serverCommands;
+		else throwIncorrectCommandType(); return new ArrayList<ICommand>();
+	}
+	
+	public static void resetCommandRegistry(CommandType type) throws IncorrectCommandType {
+		if (type == CommandType.SERVER) serverCommands = new ArrayList<ICommand>();
+		else if (type == CommandType.CLIENT) clientCommands = new ArrayList<ICommand>();
+		else if (type == CommandType.UNKNOWN) {}
+		else throwIncorrectCommandType();
+	}
+	
+	public static void throwIncorrectCommandType() throws IncorrectCommandType {
+		throw new IncorrectCommandType("The given command type has to be either com.ptsmods.morecommands.miscellaneous.CommandType.CLIENT or com.ptsmods.morecommands.miscellaneous.CommandType.SERVER");
+	}
+	
+	public static boolean downloadFile(String url, String fileLocation) {
+		java.net.URL website = null;
+		try {
+			website = new java.net.URL(url);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		ReadableByteChannel rbc = null;
+		try {
+			rbc = Channels.newChannel(website.openStream());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(fileLocation);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return new File(fileLocation).exists();
+		
+	}
+	
+	public static boolean narratorActive = false;
 	public static Entity arrow = null;
 	public static boolean isSittingOnChair = false;
 	public static EntityPlayer player = null;
+	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
+	private static List<ICommand> serverCommands = new ArrayList<ICommand>();
+	private static List<ICommand> clientCommands = new ArrayList<ICommand>();
+	private static String narratorMessage = "";
 	private static FMLServerStartingEvent serverStartingEvent = null;
 	private static int powerToolCounter = 0; // every event gets called twice except for leftclickempty.
-	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
 	
 }

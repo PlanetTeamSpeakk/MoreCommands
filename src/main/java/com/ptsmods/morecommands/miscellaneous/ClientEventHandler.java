@@ -1,11 +1,14 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import java.io.IOException;
+
+import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
-import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.command.ICommandSender;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -59,4 +62,27 @@ public class ClientEventHandler {
 		}
 		if (Reference.isSittingOnChair && !(Reference.player == null) && !Reference.player.isRiding()) Reference.dismountStairs(); // killing the arrow as soon as the player isn't riding it anymore.
 	}
+	
+	@SubscribeEvent
+	public void onChatMessageSent(ClientChatEvent event) {
+		if (Reference.narratorActive) {
+			event.setCanceled(true);
+			if (event.getOriginalMessage().toLowerCase().equals("cancel")) {
+				Reference.sendMessage(Minecraft.getMinecraft().player, "The narrate command has been canceled.");
+				Reference.resetNarratorMessage();
+				Reference.narratorActive = false;
+			} else if (event.getOriginalMessage().toLowerCase().equals("done")) {
+				Narrator.getNarrator().say(Reference.getNarratorMessage());
+				Reference.resetNarratorMessage();
+				Reference.narratorActive = false;
+			} else {
+				if (event.getOriginalMessage().toLowerCase().equals("bee movie")) {
+					try {
+						Reference.addTextToNarratorMessage(Reference.getHTML("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/bee_movie_script.txt")); // I know it's an old meme, but idgaf.
+					} catch (IOException e) {}
+					Reference.sendMessage(Minecraft.getMinecraft().player, ":O you added the bee movie script! Do note that once you say 'done' there's not way back unless you force close Minecraft with task manager and restart it.");
+				} else Reference.addTextToNarratorMessage(event.getOriginalMessage());
+			}
+		} else if (event.getOriginalMessage().startsWith("/") && ClientCommandHandler.instance.getCommands().containsKey(event.getOriginalMessage().split(" ")[0].substring(1))) {ClientCommandHandler.instance.executeCommand((ICommandSender) Minecraft.getMinecraft().player, event.getOriginalMessage().substring(1)); event.setCanceled(true);}
+	}	// above line makes sure that client sided commands are ran on the client side and not the server side.
 }

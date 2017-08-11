@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -23,8 +24,8 @@ public class powerTool {
 	public powerTool() {
 	}
 
-	public static class CommandpowerTool extends CommandBase {
-
+	public static class CommandpowerTool extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -102,7 +103,11 @@ public class powerTool {
 				Reference.sendMessage(player, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " has successfully been assigned to your item using nbt. "
 						+ "Do note that using the powertool may crash your minecraft due to some server ticking loop randomly giving a ConcurrentModificationException.");
 			}
-
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/powertool <command> Assigns a command to the itemstack you're holding.";

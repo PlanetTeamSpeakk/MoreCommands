@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.Initialize;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -14,12 +15,11 @@ import net.minecraft.util.math.BlockPos;
 
 public class reloadMoreCommands {
 
-	public static Object instance;
-
 	public reloadMoreCommands() {
 	}
 
-	public static class CommandreloadMoreCommands implements ICommand {
+	public static class CommandreloadMoreCommands extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -55,6 +55,11 @@ public class reloadMoreCommands {
 				Initialize.registerCommands(Reference.getServerStartingEvent());
 				Reference.sendMessage(sender, "MoreCommands commands have successfully been reloaded.");
 			}
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/reloadmorecommands Reloads all MoreCommands commands, only PlanetTeamSpeak, Forge Test Environment accounts and the console may use this.";

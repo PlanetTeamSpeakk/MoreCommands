@@ -1,28 +1,26 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
 import javax.script.ScriptException;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
-import scala.actors.threadpool.Arrays;
 
 public class evalJavaScript {
 
 	public evalJavaScript() {
 	}
 
-	public static class CommandevalJavaScript implements ICommand {
-
+	public static class CommandevalJavaScript extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
@@ -58,21 +56,16 @@ public class evalJavaScript {
 
 		}
 		
-		protected String usage = "/evaljavascript <code> Evaluates JavaScript, idek.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
+		
+		protected String usage = "/evaljavascript <code> Evaluates JavaScript, idek.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}

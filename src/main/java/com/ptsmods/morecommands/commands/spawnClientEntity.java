@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.client.Minecraft;
@@ -15,21 +16,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 
 public class spawnClientEntity {
 
-	public static Object instance;
-
 	public spawnClientEntity() {
 	}
 
-	public static class CommandspawnClientEntity implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandspawnClientEntity extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -71,19 +66,17 @@ public class spawnClientEntity {
 				double d2 = player.getPosition().getZ() + 0.5;
 				Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
 				entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
-				if (args.length != 3) {
-					Reference.sendMessage(sender, "Successfully spawned a ghost entity of type " + args[0] + ".");
-				}
+				Reference.sendMessage(sender, "Successfully spawned a ghost entity of type " + args[0] + ".");
 			}
 
 		}
 		
-		protected String usage = "/spawncliententity <entity> Spawns an entity on the client side that only the player can see.";
-
 		@Override
-		public int compareTo(ICommand arg0) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
+		
+		protected String usage = "/spawncliententity <entity> Spawns an entity on the client side that only the player can see.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

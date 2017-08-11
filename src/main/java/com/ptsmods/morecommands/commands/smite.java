@@ -7,36 +7,40 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-public class tpaccept {
+public class smite {
 
-	public tpaccept() {
+	public smite() {
 	}
 
-	public static class Commandtpaccept extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class Commandsmite extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("tpyes");
 			return aliases;
 		}
 
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return new ArrayList();
+			if (args.length == 1) {
+				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			} else {
+				return new ArrayList();
+			}
 		}
 
 		public String getName() {
-			return "tpaccept";
+			return "smite";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -45,18 +49,16 @@ public class tpaccept {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (Reference.tpRequests.get(sender.getName()) == null) {
-				Reference.sendMessage(sender, "You do not have a tpa request open.");
+			if (args.length == 0) {
+				Reference.sendCommandUsage(sender, usage);
 			} else {
 				try {
-					EntityPlayer requester = CommandBase.getPlayer(server, sender, Reference.tpRequests.get(sender.getName()));
-					Reference.sendMessage(requester, sender.getName() + " has accepted your tpa request.");
-					EntityPlayer player = (EntityPlayer) sender;
-					requester.setPositionAndUpdate(player.getPosition().getX() + 0.5, player.getPosition().getY(), player.getPosition().getZ() + 0.5);
-					Reference.tpRequests.remove(player.getName());
-					Reference.sendMessage(player, requester.getName() + " has been teleported to you.");
+					EntityPlayer victim = getPlayer(server, sender, args[0]);
+					World world = victim.getEntityWorld();
+					for (int x = 0; x < 3; x += 1) world.addWeatherEffect(new EntityLightningBolt(world, victim.getPosition().getX(), victim.getPosition().getY(), victim.getPosition().getZ(), false));
+					Reference.sendMessage(sender, victim.getName() + " has been smitten.");
 				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(sender, "Error getting the person who tried to teleport to you, are they offline?");
+					Reference.sendMessage(sender, "The given player does not exist.");
 				}
 			}
 
@@ -67,12 +69,7 @@ public class tpaccept {
 			return CommandType.SERVER;
 		}
 		
-		protected String usage = "/tpaccept Accept a tpa request.";
-
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
-		}
+		protected String usage = "/smite <player> Strikes someone with lightning.";
 
 	}
 

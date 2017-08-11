@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.block.Block;
@@ -17,8 +18,8 @@ public class ascend {
 	public ascend() {
 	}
 
-	public static class Commandascend extends CommandBase {
-
+	public static class Commandascend extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -49,7 +50,7 @@ public class ascend {
 			Integer y = playerpos.getY();
 			Integer z = playerpos.getZ();
 			String direction = Reference.getLookDirectionFromLookVec(player.getLookVec());
-			for (int x1 = 0; x1 < 256; x1 += 1) { // it will look 256 blocks above of you at most.
+			for (int x1 = 0; x1 < 256; x1 += 1) { // it will look 256 blocks above you at most.
 				y += 1;
 				Block block = world.getBlockState(new BlockPos(x, y-1, z)).getBlock();
 				Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
@@ -65,7 +66,12 @@ public class ascend {
 			
 		}
 		
-		protected String usage = "/descend Teleport through the roof.";
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
+		}
+		
+		protected String usage = "/ascend Teleport through the roof.";
 
 	}
 

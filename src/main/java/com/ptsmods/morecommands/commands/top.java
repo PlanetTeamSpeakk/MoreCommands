@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.Reference;
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -15,14 +16,7 @@ public class top {
 	public top() {
 	}
 	
-	public static class Commandtop implements ICommand {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
-
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+	public static class Commandtop extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -52,12 +46,12 @@ public class top {
 
 		}
 		
-		protected String usage = "/top Teleports you to a safe location.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/top Teleports you to a safe location.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.commands;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
@@ -57,8 +58,12 @@ public class enchant {
 	        }
 	    }
 		
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
+		}
+		
 	    public String getCommandUsage(ICommandSender sender) {
-	        return "commands.enchant.usage" + " Enchant any item with any enchant of any level, thanks to MoreCommands.";
+	        return "commands.enchant.usage";
 	    }
 		
 	}

@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,13 +20,14 @@ public class gma {
 	public gma() {
 	}
 
-	public static class Commandgma extends CommandBase {
+	public static class Commandgma extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
 	    public int getRequiredPermissionLevel() {
-	        return 0;
+	        return 2;
 	    }
 
 		public java.util.List getAliases() {
@@ -50,13 +53,14 @@ public class gma {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.ADVENTURE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
-			}
-
+			EntityPlayer player = (EntityPlayer) sender;
+			player.setGameType(GameType.ADVENTURE);
+			sender.sendMessage(new TextComponentString("Your gamemode has been updated to adventure mode."));
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

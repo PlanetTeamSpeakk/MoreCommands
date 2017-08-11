@@ -2,22 +2,22 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.command.ICommand;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class fullbright {
 
-	public static Object instance;
-
 	public fullbright() {
 	}
 
-	public static class Commandfullbright implements ICommand{
+	public static class Commandfullbright extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -52,10 +52,10 @@ public class fullbright {
 			Minecraft.getMinecraft().gameSettings.saveOptions();
 			Reference.sendMessage(sender, "Now you can see anything! To remove the effect set your gamma setting to something different.");
 		}
-
+		
 		@Override
-		public int compareTo(ICommand arg0) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.CLIENT;
 		}
 
 		@Override

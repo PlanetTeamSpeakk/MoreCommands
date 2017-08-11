@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -12,15 +13,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class setBuildLimit {
 
-	public static Object instance;
-
 	public setBuildLimit() {
 	}
 
-	public static class CommandsetBuildLimit extends CommandBase {
-		public boolean isUsernameIndex(int sender) {
-			return false;
-		}
+	public static class CommandsetBuildLimit extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 2;
@@ -60,6 +56,11 @@ public class setBuildLimit {
 				Reference.sendMessage(sender, "The build limit has been set to " + limit.toString() + ".");
 			}
 
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 		
 		protected String usage = "/setbuildlimit <limit>";

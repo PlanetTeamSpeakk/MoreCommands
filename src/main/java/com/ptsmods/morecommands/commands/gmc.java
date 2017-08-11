@@ -2,6 +2,8 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,7 +20,8 @@ public class gmc {
 	public gmc() {
 	}
 
-	public static class Commandgmc extends CommandBase {
+	public static class Commandgmc extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
@@ -50,13 +53,14 @@ public class gmc {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer entity = (EntityPlayer) sender;
-			
-			if (entity instanceof EntityPlayerMP) {
-				((EntityPlayer) entity).setGameType(GameType.CREATIVE);
-				sender.sendMessage(new TextComponentString("Your gamemode has been updated to creative mode."));
-			}
-
+			EntityPlayer player = (EntityPlayer) sender;
+			player.setGameType(GameType.CREATIVE);
+			sender.sendMessage(new TextComponentString("Your gamemode has been updated to creative mode."));
+		}
+		
+		@Override
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
 
 	}

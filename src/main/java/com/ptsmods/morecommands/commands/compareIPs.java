@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
@@ -18,8 +19,8 @@ public class compareIPs {
 	public compareIPs() {
 	}
 
-	public static class CommandcompareIPs implements ICommand {
-
+	public static class CommandcompareIPs extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+		
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
@@ -61,21 +62,16 @@ public class compareIPs {
 
 		}
 		
-		protected String usage = "/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.";
-
 		@Override
-		public int compareTo(ICommand o) {
-			return 0;
+		public CommandType getCommandType() {
+			return CommandType.SERVER;
 		}
+		
+		protected String usage = "/compareips <player1> <player2> Compares the ip addresses of 2 players to see if an account is an alt account of someone.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
-		}
-
-		@Override
-		public boolean isUsernameIndex(String[] args, int index) {
-			return false;
 		}
 
 	}
