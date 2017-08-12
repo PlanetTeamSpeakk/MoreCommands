@@ -120,37 +120,10 @@ public class Initialize {
 	
 	public static void setupCommandRegistry() {
 		Set<Class<? extends CommandBase>> commands = new Reflections("com.ptsmods.morecommands.commands").getSubTypesOf(CommandBase.class);
-
-		List<Class<? extends CommandBase>> serverCommandsList = new ArrayList<Class<? extends CommandBase>>();
-		List<Class<? extends CommandBase>> clientCommandsList = new ArrayList<Class<? extends CommandBase>>();
 		
 		for (Class<? extends CommandBase> command : commands) {
-			CommandBase commandObject;
 			try {
-				commandObject = command.newInstance();
-			} catch (InstantiationException | IllegalAccessException e1) {
-				e1.printStackTrace();
-				continue;
-			}
-			if (commandObject.getCommandType() == CommandType.SERVER) serverCommandsList.add(command);
-			else if (commandObject.getCommandType() == CommandType.CLIENT) clientCommandsList.add(command);
-		}
-		Class<? extends CommandBase>[] serverCommands = serverCommandsList.toArray((Class<? extends CommandBase>[]) new Class[0]);
-		Class<? extends CommandBase>[] clientCommands = clientCommandsList.toArray((Class<? extends CommandBase>[]) new Class[0]);
-		
-		for (Class<? extends CommandBase> command : serverCommands) {
-			try {
-				Reference.addCommandToRegistry(CommandType.SERVER, command.newInstance());
-			} catch (IncorrectCommandType e) {
-				e.printStackTrace();
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		for (Class<? extends CommandBase> command : clientCommands) {
-			try {
-				Reference.addCommandToRegistry(CommandType.CLIENT, command.newInstance());
+				Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
 			} catch (IncorrectCommandType e) {
 				e.printStackTrace();
 			} catch (InstantiationException | IllegalAccessException e) {

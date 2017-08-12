@@ -1,7 +1,9 @@
 package com.ptsmods.morecommands;
 
 import java.io.File;
-import java.nio.file.Files;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
@@ -14,7 +16,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import scala.reflect.io.Path;
 
 @Mod(modid=Reference.MOD_ID, name=Reference.MOD_NAME, version=Reference.VERSION, acceptedMinecraftVersions=Reference.MC_VERSIONS, updateJSON=Reference.UPDATE_URL)
 public class MoreCommands {
@@ -43,9 +44,17 @@ public class MoreCommands {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		if (!new File("mods/javassist.jar").exists()) {
-			System.out.println("Could not find javassist.jar file, downloading it now...");
-			boolean downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/javassist.jar", "mods/javassist.jar");
-			if (!downloaded) {
+			System.out.println("Could not find javassist.jar file, download it now...");
+			Map<String, String> downloaded = new HashMap<String, String>();
+			downloaded.put("fileLocation", "");
+			downloaded.put("success", "false");
+			try {
+				downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/javassist.jar", "mods/javassist.jar");
+			} catch (NullPointerException | MalformedURLException e) {
+				System.err.println("Javassist.jar could not be downloaded, thus MoreCommands cannot be used.");
+				this.shouldRegisterCommands = false;
+			}
+			if (!Boolean.parseBoolean(downloaded.get("success"))) {
 				System.err.println("Javassist.jar could not be downloaded, thus MoreCommands cannot be used.");
 				this.shouldRegisterCommands = false;
 			} else {
@@ -55,8 +64,16 @@ public class MoreCommands {
 		
 		if (!new File("mods/reflections.jar").exists()) {
 			System.out.println("Could not find reflections.jar file, download it now...");
-			boolean downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/reflections.jar", "mods/reflections.jar");
-			if (!downloaded) {
+			Map<String, String> downloaded = new HashMap<String, String>();
+			downloaded.put("fileLocation", "");
+			downloaded.put("success", "false");
+			try {
+				downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/reflections.jar", "mods/reflections.jar");
+			} catch (NullPointerException | MalformedURLException e) {
+				System.err.println("Reflections.jar could not be downloaded, thus MoreCommands cannot be used.");
+				this.shouldRegisterCommands = false;
+			}
+			if (!Boolean.parseBoolean(downloaded.get("success"))) {
 				System.err.println("Reflections.jar could not be downloaded, thus MoreCommands cannot be used.");
 				this.shouldRegisterCommands = false;
 			} else {
