@@ -83,6 +83,6 @@ public class ClientEventHandler {
 					Reference.sendMessage(Minecraft.getMinecraft().player, ":O you added the bee movie script! Do note that once you say 'done' there's not way back unless you force close Minecraft with task manager and restart it.");
 				} else Reference.addTextToNarratorMessage(event.getOriginalMessage());
 			}
-		} else if (event.getOriginalMessage().startsWith("/") && ClientCommandHandler.instance.getCommands().containsKey(event.getOriginalMessage().split(" ")[0].substring(1))) {ClientCommandHandler.instance.executeCommand((ICommandSender) Minecraft.getMinecraft().player, event.getOriginalMessage().substring(1)); event.setCanceled(true);}
-	}	// above line makes sure that client sided commands are ran on the client side and not the server side.
+		} 
+	}
 }

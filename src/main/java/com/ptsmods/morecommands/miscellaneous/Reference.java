@@ -13,6 +13,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -55,11 +57,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import scala.actors.threadpool.Arrays;
 
 public class Reference {
-	public static final String MOD_ID = "morecommands";
-	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.20";
-	public static final String MC_VERSIONS = "[1.11,1.12.1]";
-	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	
 	public static boolean isInteger(String s) {
 	    try { 
@@ -550,35 +547,70 @@ public class Reference {
 		throw new IncorrectCommandType("The given command type has to be either com.ptsmods.morecommands.miscellaneous.CommandType.CLIENT or com.ptsmods.morecommands.miscellaneous.CommandType.SERVER");
 	}
 	
-	public static boolean downloadFile(String url, String fileLocation) {
+	/**
+	 * 
+	 * @param url The url of the file to be downloaded.
+	 * @param fileLocation A string of the location where the file should be downloaded to, this must include a file suffix.
+	 * @return Map<String, String> Contains keys fileLocation and success, fileLocation will contain the location where the file was downloaded to, success will be a boolean in a string which shows if the download was successful.
+	 * @throws NullPointerException
+	 * @throws MalformedURLException 
+	 */
+	public static Map<String, String> downloadFile(String url, String fileLocation) throws NullPointerException, MalformedURLException {
+		String[] fileLocationParts = fileLocation.split("/");
+		String fileLocation2 = "";
+		for (int x = 0; x < fileLocationParts.length; x += 1) {
+			if (x+1 != fileLocationParts.length) {
+				fileLocation2 += "/" + fileLocationParts[x];
+				new File(fileLocation2.substring(1)).mkdirs();
+			}
+		}
+		if (new File(fileLocation).exists()) fileLocation = fileLocation.split("\\.")[0] + "-1" + (fileLocation.split("\\.").length != 1 ? "." + fileLocation.split("\\.")[fileLocation.split("\\.").length-1] : "");
+		while (new File(fileLocation).exists()) fileLocation = addNextDigit(fileLocation);
 		java.net.URL website = null;
 		try {
-			website = new java.net.URL(url);
+			website = new java.net.URL(url); // getting the URL
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			throw e;
 		}
 		ReadableByteChannel rbc = null;
 		try {
-			rbc = Channels.newChannel(website.openStream());
+			rbc = Channels.newChannel(website.openStream()); // getting the data
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			throw new MalformedURLException("URL does not exist.");
 		}
 		FileOutputStream fos = null;
 		try {
-			fos = new FileOutputStream(fileLocation);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+			fos = new FileOutputStream(fileLocation); // creating a new FileOutputStream
+		} catch (FileNotFoundException e) {}
 		try {
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE); // writing data to a file
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			new File(fileLocation).delete();
+			throw new MalformedURLException("URL does not exist.");
 		}
-		
-		return new File(fileLocation).exists();
-		
+		Map<String, String> data = new HashMap<String, String>();
+		data.put("fileLocation", fileLocation);
+		data.put("success", Boolean.toString(new File(fileLocation).exists()));
+		return data;
 	}
 	
+	private static String addNextDigit(String string) {
+		Long digit = Long.parseLong(string.split("-")[string.split("-").length-1].split("\\.")[0]);
+		digit += 1;
+		return string.split("\\.")[0].split("-")[0] + "-" + digit.toString() + "." + string.split("\\.")[string.split("\\.").length-1];
+	}
+	
+	public static String getMinecraftVersion() {
+		return new GuiOverlayDebug(Minecraft.getMinecraft()).call().toArray(new String[0])[0].split(" ")[1]; // not the most beautiful way, but doing Minecraft.getVersion() on 1.11.2 returns 1.12.
+	}
+	
+	public static final String MOD_ID = "morecommands";
+	public static final String MOD_NAME = "MoreCommands";
+	public static final String VERSION = "1.21.1";
+	public static final String MC_VERSIONS = "[1.11,1.12.1]";
+	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	public static boolean narratorActive = false;
 	public static Entity arrow = null;
 	public static boolean isSittingOnChair = false;
