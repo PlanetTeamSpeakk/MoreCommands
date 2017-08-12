@@ -13,6 +13,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.common.MinecraftForge;
 
 public class narrate {
 
@@ -41,12 +42,12 @@ public class narrate {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length != 0) {
-				if (Minecraft.getMinecraft().getVersion().startsWith("1.11")) Reference.sendMessage(sender, "This command can only be used on 1.12+.");
+				if (Reference.getMinecraftVersion().startsWith("1.11")) Reference.sendMessage(sender, "This command can only be used on 1.12+.");
 				else {
 					Narrator narrator = Narrator.getNarrator();
 					String message = "";
-					for (int x = 0; x < args.length; x += 1) {
-						message += args[x] + " ";
+					for (String arg : args) {
+						message += arg + " ";
 					}
 					narrator.say(message.trim());
 				}
