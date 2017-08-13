@@ -1,7 +1,5 @@
 package com.ptsmods.morecommands;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -24,7 +22,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class Initialize {
+public abstract class Initialize {
 
 	public static void registerCommands(FMLServerStartingEvent event) {
 		System.out.println("Registering MoreCommands commands.");
@@ -81,8 +79,11 @@ public class Initialize {
 		}
 		
 		System.out.println("Successfully registered " + counter.toString() + " client sided commands, with " + fails.toString() + " fails.");
-		
+	}
+	
+	public static void registerEvenHandlers() {
 		MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
+		MinecraftForge.EVENT_BUS.register(new ServerEventHandler());
 	}
 	
 	public static void setupBlockLists() {
@@ -98,8 +99,6 @@ public class Initialize {
 			Reference.addBlockToBlacklist(blacklist[x]);
 			counter += 1;
 		}
-		
-		MinecraftForge.EVENT_BUS.register(new ServerEventHandler());
 		
 		System.out.println("Successfully set up the block blacklist and added " + counter.toString() + " blocks.");
 		System.out.println("Setting up the MoreCommands block whitelist.");
