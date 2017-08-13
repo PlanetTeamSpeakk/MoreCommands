@@ -60,8 +60,8 @@ public class setRenderDistance {
 			return CommandType.CLIENT;
 		}
 
-		private static String usage = "/setrenderdistance <distance> Sets your render distance to the set amount, 12 is recommended.";
-
+		private static String usage = "/setrenderdistance <distance> Sets your render distance to the given amount, 12 is recommended.";
+		
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;

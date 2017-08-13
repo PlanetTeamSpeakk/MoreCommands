@@ -50,24 +50,23 @@ public class fireball {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
+			//Minecraft.getMinecraft().player.sendChatMessage("/fireball"); // :D
+			String power = "1";
+			if (args.length != 0 && Reference.isInteger(args[0])) power = args[0];
 			World world = player.getEntityWorld();
 			Vec3d lookvec = player.getLookVec();
 			NBTTagCompound nbt;
 			try {
 				nbt = JsonToNBT.getTagFromJson("{id:\"minecraft:fireball\",direction:[" + Double.toString(lookvec.x) + "," + Double.toString(lookvec.y) + "," + Double.toString(lookvec.z) + "],"
-						+ "power:[" + Double.toString(lookvec.x) + "," + Double.toString(lookvec.y) + "," + Double.toString(lookvec.z) + "],ExplosionPower:1}");
+						+ "power:[" + Double.toString(lookvec.x) + "," + Double.toString(lookvec.y) + "," + Double.toString(lookvec.z) + "],ExplosionPower:" + power + "}");
 			} catch (NBTException e) {
 				return;
 			}
-			String direction = Reference.getLookDirectionFromLookVec(lookvec);
-			double d0 = player.getPosition().getX() + 0.5;
-			double d1 = player.getPosition().getY() + player.getEyeHeight(); // this will shoot the fireball from your eyes.
-			double d2 = player.getPosition().getZ() + 0.5;
-			if (direction.equals("up")) {
-				d1 += 2;
-			} else if (direction.equals("down")) {
-				d1 -= (player.getEyeHeight() + 2);
-			} else if (direction.equals("north")) {
+			String direction = Reference.getLookDirectionFromLookVec(lookvec, false);
+			double d0 = player.getPositionEyes(0).x;
+			double d1 = player.getPositionEyes(0).y;// + player.getEyeHeight(); // this will shoot it from the player's eyes.
+			double d2 = player.getPositionEyes(0).z;
+			if (direction.equals("north")) {
 				d2 -= 2;
 			} else if (direction.equals("north-east")) {
 				d2 -= 2;

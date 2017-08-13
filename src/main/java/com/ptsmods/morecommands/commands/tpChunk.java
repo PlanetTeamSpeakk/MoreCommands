@@ -6,22 +6,25 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-public class whereAmI {
+public class tpChunk {
 
-	public whereAmI() {
+	public tpChunk() {
 	}
 
-	public static class CommandwhereAmI extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+	public static class CommandtpChunk extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
+	    public int getRequiredPermissionLevel() {
+	        return 2;
+	    }
+
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("coords");
 			return aliases;
 		}
 
@@ -30,7 +33,7 @@ public class whereAmI {
 		}
 
 		public String getName() {
-			return "whereami";
+			return "tpchunk";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -39,23 +42,30 @@ public class whereAmI {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			Reference.sendMessage(player, "Your coords are \nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-					"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + 
-					"\nWorld: " + player.getEntityWorld().getWorldInfo().getWorldName() + ".");
+			if (args.length != 3 || !Reference.isLong(args[0]) || !Reference.isInteger(args[1]) || !Reference.isInteger(args[2])) Reference.sendCommandUsage(sender, usage);
+			else {
+				EntityPlayer player = (EntityPlayer) sender;
+				Long chunkX = Long.parseLong(args[0]);
+				Long chunkY = Long.parseLong(args[1]);
+				Long chunkZ = Long.parseLong(args[2]);
+				player.setPositionAndUpdate((chunkX*16)+8, chunkY*16, (chunkZ*16)+8);
+				Reference.sendMessage(sender, "You have been teleported.");
+			}
+
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.CLIENT;
+			return CommandType.SERVER;
 		}
 		
-		protected String usage = "/whereami Shows you your coordinates.";
-
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
+			return super.checkPermission(server, sender);
+			//return true;
 		}
+		
+		protected String usage = "/tpchunk <x> <y> <z> Teleports you to the given chunk.";
 
 	}
 

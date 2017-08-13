@@ -43,24 +43,24 @@ public class descend {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			BlockPos playerpos = player.getPosition();
-			World world = player.getEntityWorld();
-			Integer x = playerpos.getX();
-			Integer y = playerpos.getY();
-			Integer z = playerpos.getZ();
-			String direction = Reference.getLookDirectionFromLookVec(player.getLookVec());
-			for (int x1 = 0; x1 < 256; x1 += 1) { // it will look 256 blocks below you at most.
-				y -= 1;
-				Block block = world.getBlockState(new BlockPos(x, y-1, z)).getBlock();
-				Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
-				Block tpblock2 = world.getBlockState(new BlockPos(x, y+1, z)).getBlock();
-				if (!Reference.getBlockBlacklist().contains(block) && Reference.getBlockWhitelist().contains(tpblock) && Reference.getBlockWhitelist().contains(tpblock2)) {
-					player.setPositionAndUpdate(x+0.5, y, z+0.5);
-					Reference.sendMessage(player, "You have been teleported through the ground.");
-					return;
+				EntityPlayer player = (EntityPlayer) sender;
+				BlockPos playerpos = player.getPosition();
+				World world = player.getEntityWorld();
+				Integer x = playerpos.getX();
+				Integer y = playerpos.getY();
+				Integer z = playerpos.getZ();
+				String direction = Reference.getLookDirectionFromLookVec(player.getLookVec());
+				for (int x1 = 0; x1 < 256; x1 += 1) { // it will look 256 blocks below you at most.
+					y -= 1;
+					Block block = world.getBlockState(new BlockPos(x, y-1, z)).getBlock();
+					Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
+					Block tpblock2 = world.getBlockState(new BlockPos(x, y+1, z)).getBlock();
+					if (!Reference.getBlockBlacklist().contains(block) && Reference.getBlockWhitelist().contains(tpblock) && Reference.getBlockWhitelist().contains(tpblock2)) {
+						player.setPositionAndUpdate(x+0.5, y, z+0.5);
+						Reference.sendMessage(player, "You have been teleported through the ground.");
+						return;
+					}
 				}
-			}
 			// Only got here if no free spot was found.
 			Reference.sendMessage(player, "No free spot found below of you.");
 			

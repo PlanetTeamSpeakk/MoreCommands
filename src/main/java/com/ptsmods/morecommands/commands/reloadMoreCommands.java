@@ -4,12 +4,14 @@ import java.util.ArrayList;
 
 import com.ptsmods.morecommands.Initialize;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -52,6 +54,13 @@ public class reloadMoreCommands {
 				Reference.sendMessage(sender, "The MoreCommands commands are not yet registered.");
 			} else {
 				Reference.resetBlockBlackAndWhitelist();
+				try {
+					Reference.resetCommandRegistry(CommandType.CLIENT);
+					Reference.resetCommandRegistry(CommandType.SERVER);
+				} catch (IncorrectCommandType e) {
+					e.printStackTrace();
+				}
+				Initialize.setupCommandRegistry();
 				Initialize.registerCommands(Reference.getServerStartingEvent());
 				Reference.sendMessage(sender, "MoreCommands commands have successfully been reloaded.");
 			}

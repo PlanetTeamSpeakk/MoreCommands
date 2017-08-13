@@ -1,27 +1,25 @@
 package com.ptsmods.morecommands.commands;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-public class whereAmI {
+public class copy {
 
-	public whereAmI() {
+	public copy() {
 	}
 
-	public static class CommandwhereAmI extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+	public static class Commandcopy extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("coords");
 			return aliases;
 		}
 
@@ -30,7 +28,7 @@ public class whereAmI {
 		}
 
 		public String getName() {
-			return "whereami";
+			return "copy";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -39,10 +37,9 @@ public class whereAmI {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			Reference.sendMessage(player, "Your coords are \nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-					"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + 
-					"\nWorld: " + player.getEntityWorld().getWorldInfo().getWorldName() + ".");
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(Reference.join(args)), null);
+			Reference.sendMessage(sender, "The text has been copied to your clipboard.");
+
 		}
 		
 		@Override
@@ -50,12 +47,12 @@ public class whereAmI {
 			return CommandType.CLIENT;
 		}
 		
-		protected String usage = "/whereami Shows you your coordinates.";
-
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
 		}
+		
+		protected String usage = "/copy <text> Copies text.";
 
 	}
 
