@@ -2,19 +2,22 @@ package com.ptsmods.morecommands.miscellaneous;
 
 import java.io.IOException;
 
+import org.lwjgl.opengl.Display;
+
 import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -83,6 +86,20 @@ public class ClientEventHandler {
 					Reference.sendMessage(Minecraft.getMinecraft().player, ":O you added the bee movie script! Do note that once you say 'done' there's not way back unless you force close Minecraft with task manager and restart it.");
 				} else Reference.addTextToNarratorMessage(event.getOriginalMessage());
 			}
-		} 
+		}
 	}
+	
+	@SubscribeEvent
+	public void onClientConnectedToServer(ClientConnectedToServerEvent event) {
+		if (!Reference.shouldRegisterCommands && !Reference.warnedUnregisteredCommands) {
+			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+				public void run() {
+					Reference.sendMessage(Minecraft.getMinecraft().player, TextFormatting.RED + "MoreComands commands were not registered, this is due to the necessary files being downloaded this session. "
+							+ "Try restarting your game and if it still does not work after that, check your internet connection.");
+					Reference.warnedUnregisteredCommands = true;
+				}
+			});
+		}
+	}
+	
 }

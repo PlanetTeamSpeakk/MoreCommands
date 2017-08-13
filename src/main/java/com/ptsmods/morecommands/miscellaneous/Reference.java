@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -19,6 +20,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+
+import org.lwjgl.opengl.Display;
 
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
@@ -26,7 +32,6 @@ import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -45,6 +50,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -56,7 +62,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import scala.actors.threadpool.Arrays;
 
-public class Reference {
+public abstract class Reference {
 	
 	public static boolean isInteger(String s) {
 	    try { 
@@ -72,6 +78,18 @@ public class Reference {
 	
 	public static boolean isBoolean(Object bool) {
 		return bool.toString().toLowerCase().equals("true") || bool.toString().toLowerCase().equals("false");
+	}
+	
+	public static boolean isLong(String s) {
+	    try { 
+	        Long.parseLong(s); 
+	    } catch(NumberFormatException e) { 
+	        return false; 
+	    } catch(NullPointerException e) {
+	        return false;
+	    }
+
+	    return true;
 	}
 	
 	public static String parseTime(int time, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
@@ -108,7 +126,11 @@ public class Reference {
 		try {
 			((EntityPlayer) player).sendMessage(new TextComponentString(message));
 		} catch (NullPointerException e) {
-			Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+			try {
+				Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+			} catch (NullPointerException e1) {
+				Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(message));
+			}
 		} catch (ClassCastException e) { // occurs when trying to send a message to the console
 			System.out.println(message);
 		}
@@ -158,13 +180,17 @@ public class Reference {
 	}
 	
 	public static String getLookDirectionFromLookVec(Vec3d lookvec) {
+		return getLookDirectionFromLookVec(lookvec, true);
+	}
+	
+	public static String getLookDirectionFromLookVec(Vec3d lookvec, Boolean includeY) {
 		String direction = "unknown";
 		Integer x = (int) Math.round(lookvec.x);
 		Integer y = (int) Math.round(lookvec.y);
 		Integer z = (int) Math.round(lookvec.z);
-		if (y == 1) {
+		if (y == 1 && includeY) {
 			direction = "up";
-		} else if (y == -1) {
+		} else if (y == -1 && includeY) {
 			direction = "down";
 		} else if (x == 0 && z == 1) {
 			direction = "south";
@@ -606,11 +632,36 @@ public class Reference {
 		return new GuiOverlayDebug(Minecraft.getMinecraft()).call().toArray(new String[0])[0].split(" ")[1]; // not the most beautiful way, but doing Minecraft.getVersion() on 1.11.2 returns 1.12.
 	}
 	
+	public static String join(String[] stringArray) {
+		String data = "";
+		for (String part : stringArray) {
+			data += part + " ";
+		}
+		return data.trim();
+	}
+	
+	/**
+	 * Sets the title of the window.
+	 * @param title
+	 * @return True if the title is the same as the given one afterwards, false otherwise.
+	 */
+	public static boolean setDisplayTitle(String title) {
+		Display.setTitle(title);
+		System.out.println("The display title has been set to " + Display.getTitle());
+		return Display.getTitle().equals(title);
+	}
+	
+	public static String getDefaultDisplayTitle() {
+		return join(new String[] {Display.getTitle().split(" ")[0], Display.getTitle().split(" ")[1]}); // on Minecraft 1.12 this will return Minecraft 1.12
+	}
+	
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.21.1";
+	public static final String VERSION = "1.22";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
+	public static boolean warnedUnregisteredCommands = false;
+	public static boolean shouldRegisterCommands = true; // only this very variable has to be set to false to disable the mod's functionality entirely.
 	public static boolean narratorActive = false;
 	public static Entity arrow = null;
 	public static boolean isSittingOnChair = false;
