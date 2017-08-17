@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
@@ -47,19 +45,16 @@ public class explode {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			int x = sender.getPosition().getX();
-			int y = sender.getPosition().getY();
-			int z = sender.getPosition().getZ();
+			double x = sender.getPositionVector().x;
+			double y = sender.getPositionVector().y;
+			double z = sender.getPositionVector().z;
 			Float power = 4F;
-			
-			EntityPlayer player = (EntityPlayer) sender;
-			World world = player.getEntityWorld();
-			player.setInvisible(true);
+			World world = sender.getEntityWorld();
 			Boolean fire = false;
 			
 			if (args.length != 0) {
 				if (Reference.isInteger(args[0])) {
-					power = (float) Integer.parseInt(args[0]);
+					power = Float.parseFloat(args[0]);
 				} else {
 					Reference.sendCommandUsage(sender, usage);
 					return;
@@ -68,7 +63,7 @@ public class explode {
 					fire = Boolean.parseBoolean(args[1]);
 				}
 			}
-			Explosion explosion = world.newExplosion((Entity) null, x+0.5, y, z+0.5, power, fire, true);
+			Explosion explosion = world.newExplosion((Entity) null, x, y, z, power, fire, true);
 		}
 		
 		@Override

@@ -62,11 +62,15 @@ public class fireball {
 			} catch (NBTException e) {
 				return;
 			}
-			String direction = Reference.getLookDirectionFromLookVec(lookvec, false);
+			String direction = Reference.getLookDirectionFromLookVec(lookvec, true);
 			double d0 = player.getPositionEyes(0).x;
-			double d1 = player.getPositionEyes(0).y;// + player.getEyeHeight(); // this will shoot it from the player's eyes.
+			double d1 = player.getPositionEyes(0).y; // this will shoot it from the player's eyes.
 			double d2 = player.getPositionEyes(0).z;
-			if (direction.equals("north")) {
+			if (direction.equals("up")) {
+				d1 += 2;
+			} else if (direction.equals("down")) {
+				d1 -= 2;
+			} else if (direction.equals("north")) {
 				d2 -= 2;
 			} else if (direction.equals("north-east")) {
 				d2 -= 2;

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -42,11 +43,11 @@ public class wild {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
-			player.setPosition(ThreadLocalRandom.current().nextDouble(0, 100000), 0, ThreadLocalRandom.current().nextDouble(0, 100000));
+			player.setPosition(Reference.Random.randDouble(100000), 0, Reference.Random.randDouble(100000));
 			Reference.teleportSafely(player);
 			Block blockIn = player.getEntityWorld().getBlockState(new BlockPos(player.getPosition().getX(), player.getPosition().getY()-1, player.getPosition().getZ())).getBlock();
 			while (blockIn == Blocks.WATER) {
-				player.setPosition(ThreadLocalRandom.current().nextDouble(0, 100000), 0, ThreadLocalRandom.current().nextDouble(0, 100000));
+				player.setPosition(Reference.Random.randDouble(100000), 0, Reference.Random.randDouble(100000));
 				Reference.teleportSafely(player);
 				blockIn = player.getEntityWorld().getBlockState(new BlockPos(player.getPosition().getX(), player.getPosition().getY()-1, player.getPosition().getZ())).getBlock();
 			}
@@ -65,6 +66,16 @@ public class wild {
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return true;
+		}
+		
+		@Override
+		public boolean hasCooldown() {
+			return true;
+		}
+		
+		@Override
+		public int getCooldownSeconds() {
+			return 10;
 		}
 
 	}

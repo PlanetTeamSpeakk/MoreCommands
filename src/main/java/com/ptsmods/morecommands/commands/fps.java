@@ -1,26 +1,26 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.commands.hat.Commandhat;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-public class dummyCommand {
+public class fps {
 
-	public dummyCommand() {
+	public fps() {
 	}
 
-	public static class CommandCOMMANDNAME extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class Commandfps extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
-	        return 2;
+	        return 0;
 	    }
 
 		public java.util.List getAliases() {
@@ -33,7 +33,7 @@ public class dummyCommand {
 		}
 
 		public String getName() {
-			return "COMMAND NAME";
+			return "fps";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -42,22 +42,16 @@ public class dummyCommand {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			//CODE HERE
+			Reference.sendMessage(sender, "Your fps is " + Minecraft.getDebugFPS());
 
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.UNKNOWN;
+			return CommandType.CLIENT;
 		}
 		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return super.checkPermission(server, sender);
-			//return true;
-		}
-		
-		protected String usage = "COMMAND USAGE";
+		protected String usage = "/fps Shows you your fps.";
 
 	}
 

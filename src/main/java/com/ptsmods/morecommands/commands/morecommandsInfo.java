@@ -1,27 +1,22 @@
-// THIS IS A DUMMY CLASS MEANING IT WON'T BE LOADED INTO THE GAME.
-// THIS CLASS IS MEANT TO COPY AND PASTE TO MAKE NEW COMMANDS.
-
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.commands.hat.Commandhat;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-public class dummyCommand {
+public class morecommandsInfo {
 
-	public dummyCommand() {
+	public morecommandsInfo() {
 	}
 
-	public static class CommandCOMMANDNAME extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
+	public static class CommandmorecommandsInfo extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
@@ -33,7 +28,7 @@ public class dummyCommand {
 		}
 
 		public String getName() {
-			return "COMMAND NAME";
+			return "morecommandsinfo";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -42,22 +37,15 @@ public class dummyCommand {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			//CODE HERE
-
+			Reference.sendMessage(sender, "You have MoreCommands version " + Reference.VERSION + ", built on " + Reference.BUILD_DATE + ", by " + joinNiceString(Reference.AUTHORS) + ".");
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.UNKNOWN;
+			return CommandType.SERVER;
 		}
 		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return super.checkPermission(server, sender);
-			//return true;
-		}
-		
-		protected String usage = "COMMAND USAGE";
+		protected String usage = "/morecommandsinfo Shows you the info of your MoreCommands version.";
 
 	}
 

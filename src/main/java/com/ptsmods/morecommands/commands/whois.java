@@ -15,6 +15,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import scala.actors.threadpool.Arrays;
 
 public class whois {
 
@@ -72,7 +73,7 @@ public class whois {
 				}
 				String gamemode = victim.interactionManager.getGameType().getName();
 				String godEnabled = Boolean.toString(victim.getIsInvulnerable());
-				String isOp = Boolean.toString(victim.canUseCommand(victim.getServer().getOpPermissionLevel(), "barrier"));
+				String isOp = Boolean.toString(Reference.isOp(victim));
 				String isFlying = Boolean.toString(victim.capabilities.isFlying);
 				String canFly = Boolean.toString(victim.capabilities.allowFlying);
 				String speed = Double.toString(Reference.roundDouble(victim.capabilities.getWalkSpeed()));

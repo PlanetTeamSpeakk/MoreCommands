@@ -25,6 +25,7 @@ public class vanish {
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("v");
 			return aliases;
 		}
 
@@ -44,7 +45,7 @@ public class vanish {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
 			player.setInvisible(!player.isInvisible());
-			Reference.sendMessage(player, "Your visibility has been toggled.");
+			Reference.sendMessage(player, "You're now " + (player.isInvisible() ? "invisible" : "visible") + ".");
 
 		}
 		
