@@ -7,13 +7,13 @@ import java.util.Map;
 
 import org.lwjgl.opengl.Display;
 
+import com.ptsmods.morecommands.miscellaneous.ClientEventHandler;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
-import com.ptsmods.morecommands.miscellaneous.CrashedOnPurpose;
+import com.ptsmods.morecommands.miscellaneous.ServerEventHandler;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CrashReport;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -36,7 +36,9 @@ public class MoreCommands {
 		}
 		if (Reference.shouldRegisterCommands) Initialize.registerCommands(event);
 		Initialize.setupBlockLists();
-		Initialize.registerEvenHandlers();
+		try {
+			Reference.registerEventHandler(CommandType.SERVER, new ServerEventHandler());
+		} catch (IncorrectCommandType e) {}
 		Reference.setServerStartingEvent(event);
 	}
 	
@@ -48,44 +50,15 @@ public class MoreCommands {
 	}
 	
 	@EventHandler
+	@SideOnly(Side.CLIENT)
 	public void preInit(FMLPreInitializationEvent event) {
 		Reference.setDisplayTitle(Display.getTitle() + " with MinecraftForge");
-		if (!new File("mods/javassist.jar").exists()) {	
-			System.out.println("Could not find javassist.jar file, download it now...");
-			Map<String, String> downloaded = new HashMap<String, String>();
-			downloaded.put("fileLocation", "");
-			downloaded.put("success", "false");
-			try {
-				downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/javassist.jar", "mods/javassist.jar");
-			} catch (NullPointerException | MalformedURLException e) {
-				System.err.println("Javassist.jar could not be downloaded, thus MoreCommands cannot be used.");
-			}
-			if (!Boolean.parseBoolean(downloaded.get("success"))) {
-				System.err.println("Javassist.jar could not be downloaded, thus MoreCommands cannot be used.");
-			} else {
-				System.out.println("Successfully download javassist.jar.");
-			}
-			Reference.shouldRegisterCommands = false; // The game has to be restarted for the mod to see the files.
-		}
-		
-		if (!new File("mods/reflections.jar").exists()) {
-			System.out.println("Could not find reflections.jar file, download it now...");
-			Map<String, String> downloaded = new HashMap<String, String>();
-			downloaded.put("fileLocation", "");
-			downloaded.put("success", "false");
-			try {
-				downloaded = Reference.downloadFile("https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/reflections.jar", "mods/reflections.jar");
-			} catch (NullPointerException | MalformedURLException e) {
-				System.err.println("Reflections.jar could not be downloaded, thus MoreCommands cannot be used.");
-			}
-			if (!Boolean.parseBoolean(downloaded.get("success"))) {
-				System.err.println("Reflections.jar could not be downloaded, thus MoreCommands cannot be used.");
-			} else {
-				System.out.println("Successfully download reflections.jar.");
-			}
-			Reference.shouldRegisterCommands = false; // The game has to be restarted for the mod to see the files.
-		}
-		
+		Reference.setupBiomeList();
+		try {
+			Reference.registerEventHandler(CommandType.CLIENT, new ClientEventHandler());
+		} catch (IncorrectCommandType e) {}
+		Reference.downloadDependency("http://central.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar", "javassist.jar");
+		Reference.downloadDependency("http://central.maven.org/maven2/org/reflections/reflections/0.9.11/reflections-0.9.11.jar", "reflections.jar");
 	}
 	
 }
