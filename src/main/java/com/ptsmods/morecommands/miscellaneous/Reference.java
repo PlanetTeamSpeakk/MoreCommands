@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -20,12 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 
 import org.lwjgl.opengl.Display;
 
+import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 
@@ -54,7 +51,10 @@ import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -121,8 +121,8 @@ public abstract class Reference {
         }
     }
 	
-	public static void sendMessage(Object player, String message) {
-		if (message == null) message = "null";
+	public static void sendMessage(EntityPlayer player, String message) {
+		if (message == null) message = "";
 		try {
 			((EntityPlayer) player).sendMessage(new TextComponentString(message));
 		} catch (NullPointerException e) {
@@ -131,17 +131,22 @@ public abstract class Reference {
 			} catch (NullPointerException e1) {
 				Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(message));
 			}
-		} catch (ClassCastException e) { // occurs when trying to send a message to the console
+		}
+	}
+	
+	public static void sendMessage(ICommandSender player, String message) {
+		if (message == null) message = "";
+		try {
+			sendMessage((EntityPlayer) player, message);
+		} catch (ClassCastException e) {
 			System.out.println(message);
 		}
 	}
 	
 	public static void sendServerMessage(MinecraftServer server, ICommandSender sender, String message) {
-		for (int x = 0; x < server.getOnlinePlayerNames().length; x += 1) {
-			try {
-				EntityPlayer player = CommandBase.getPlayer(server, sender, server.getOnlinePlayerNames()[x]);
-				sendMessage(player, message);
-			} catch (CommandException e) {}
+		for (GameProfile gameProfile : server.getOnlinePlayerProfiles()) {
+			EntityPlayer player = server.getPlayerList().getPlayerByUUID(gameProfile.getId());
+			sendMessage(player, message);
 		}
 	}
 	
@@ -153,8 +158,16 @@ public abstract class Reference {
 		serverStartingEvent = event;
 	}
 	
-	public static void sendCommandUsage(Object player, String usage) {
+	public static void sendCommandUsage(EntityPlayer player, String usage) {
 		sendMessage(player, TextFormatting.RED + "Usage: " + usage);
+	}
+	
+	public static void sendCommandUsage(ICommandSender player, String usage) {
+		try {
+			sendCommandUsage((EntityPlayer) player, usage);
+		} catch (ClassCastException e) {
+			System.out.println(usage);
+		}
 	}
 	
 	public static void teleportSafely(EntityPlayer player) {
@@ -655,11 +668,89 @@ public abstract class Reference {
 		return join(new String[] {Display.getTitle().split(" ")[0], Display.getTitle().split(" ")[1]}); // on Minecraft 1.12 this will return Minecraft 1.12
 	}
 	
+	public static void registerEventHandler(CommandType side, EventHandler handler) throws IncorrectCommandType {
+		if (side == CommandType.CLIENT) registerClientEventHandler(handler);
+		else if (side == CommandType.SERVER) registerServerEventHandler(handler);
+		else throwIncorrectCommandType();
+	}
+	
+	@SideOnly(Side.CLIENT)
+	private static void registerClientEventHandler(EventHandler handler) {
+		MinecraftForge.EVENT_BUS.register(handler);
+	}
+	
+	private static void registerServerEventHandler(EventHandler handler) {
+		MinecraftForge.EVENT_BUS.register(handler);
+	}
+	
+	public static void downloadDependency(String url, String name) {
+		String fileLocation = "mods/" + name;
+		if (!new File(fileLocation).exists()) {
+			System.out.println("Could not find " + name + " file, download it now...");
+			Map<String, String> downloaded = new HashMap<String, String>();
+			downloaded.put("fileLocation", "");
+			downloaded.put("success", "false");
+			try {
+				downloaded = Reference.downloadFile(url, fileLocation);
+			} catch (NullPointerException | MalformedURLException e) {
+				System.err.println(name + " could not be downloaded, thus MoreCommands cannot be used.");
+			}
+			if (!Boolean.parseBoolean(downloaded.get("success"))) {
+				System.err.println(name + " could not be downloaded, thus MoreCommands cannot be used.");
+			} else {
+				System.out.println("Successfully download " + name + ".");
+			}
+			shouldRegisterCommands = false; // The game has to be restarted for the mod to see the files.
+		}
+	}
+	
+	public static void setupBiomeList() {
+		BiomeDictionary.Type[] types = new BiomeDictionary.Type[] {BiomeDictionary.Type.BEACH, BiomeDictionary.Type.COLD, BiomeDictionary.Type.CONIFEROUS, BiomeDictionary.Type.DEAD, BiomeDictionary.Type.DENSE,
+				BiomeDictionary.Type.DRY, BiomeDictionary.Type.DRY, BiomeDictionary.Type.END, BiomeDictionary.Type.FOREST, BiomeDictionary.Type.HILLS, BiomeDictionary.Type.HOT, BiomeDictionary.Type.JUNGLE,
+				BiomeDictionary.Type.LUSH, BiomeDictionary.Type.MAGICAL, BiomeDictionary.Type.MESA, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.MUSHROOM, BiomeDictionary.Type.NETHER, 
+				BiomeDictionary.Type.OCEAN, BiomeDictionary.Type.PLAINS, BiomeDictionary.Type.RARE, BiomeDictionary.Type.RIVER, BiomeDictionary.Type.SANDY, BiomeDictionary.Type.SAVANNA, BiomeDictionary.Type.SNOWY,
+				BiomeDictionary.Type.SPARSE, BiomeDictionary.Type.SPOOKY, BiomeDictionary.Type.SWAMP, BiomeDictionary.Type.VOID, BiomeDictionary.Type.WASTELAND, BiomeDictionary.Type.WATER, BiomeDictionary.Type.WET};
+		for (BiomeDictionary.Type type : types) {
+			for (Biome biome : BiomeDictionary.getBiomes(type)) {
+				if (!biomes.contains(biome)) biomes.add(biome);
+			}
+		}
+	}
+	
+	public static List<Biome> getBiomes() {
+		return biomes;
+	}
+	
+	public static List<String> getBiomeNames() {
+		List<String> names = new ArrayList<String>();
+		for (Biome biome : biomes) {
+			names.add(biome.getBiomeName().replaceAll(" ", "_")); // just because otherwise everything will get messed up if you'd press tab.
+		}
+		return names;
+	}
+	
+	@Nullable
+	public static Biome getBiomeByName(String name) {
+		
+		Biome biome = null;
+		for (Biome biome2 : biomes) {
+			if (biome2.getBiomeName().toLowerCase().equals(name.toLowerCase())) biome = biome2;
+		}
+		return biome;
+	}
+	
+	public static boolean isOp(EntityPlayer player) {
+		if (player.getServer().isSinglePlayer()) return player.canUseCommand(player.getServer().getOpPermissionLevel(), "barrier");
+		else return Arrays.asList(player.getServer().getPlayerList().getOppedPlayerNames()).contains(player.getName());
+	}
+	
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.22";
+	public static final String VERSION = "1.23";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
+	public static final String BUILD_DATE = "August 17th";
+	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"}; 
 	public static boolean warnedUnregisteredCommands = false;
 	public static boolean shouldRegisterCommands = true; // only this very variable has to be set to false to disable the mod's functionality entirely.
 	public static boolean narratorActive = false;
@@ -667,10 +758,77 @@ public abstract class Reference {
 	public static boolean isSittingOnChair = false;
 	public static EntityPlayer player = null;
 	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
+	public static HashMap<String, HashMap<ICommandSender, Long>> cooldowns = new HashMap<String, HashMap<ICommandSender, Long>>();
+	private static List<Biome> biomes = new ArrayList<Biome>();
 	private static List<ICommand> serverCommands = new ArrayList<ICommand>();
 	private static List<ICommand> clientCommands = new ArrayList<ICommand>();
 	private static String narratorMessage = "";
 	private static FMLServerStartingEvent serverStartingEvent = null;
 	private static int powerToolCounter = 0; // every event gets called twice except for leftclickempty.
+	
+	public static abstract class Random {
+		private static ThreadLocalRandom tlr = ThreadLocalRandom.current();
+		
+		public static int randInt() {
+			return randInt(0, Integer.MAX_VALUE);
+		}
+		
+		public static int randInt(int max) {
+			return randInt(0, max);
+		}
+		
+		public static int randInt(int min, int max) {
+			return tlr.nextInt(min, max);
+		}
+		
+		public static long randLong() {
+			return randLong(0, Long.MAX_VALUE);
+		}
+		
+		public static long randLong(long max) {
+			return randLong(0, max);
+		}
+		
+		public static long randLong(long min, long max) {
+			return tlr.nextLong(min, max);
+		}
+		
+		public static short randShort() {
+			return randShort((short) 0, Short.MAX_VALUE);
+		}
+		
+		public static short randShort(short max) {
+			return randShort((short) 0, max);
+		}
+		
+		public static short randShort(short min, short max) {
+			return (short) randInt(min, max);
+		}
+		
+		public static double randDouble() {
+			return randDouble(0D, Double.MAX_VALUE);
+		}
+		
+		public static double randDouble(double max) {
+			return randDouble(0D, max);
+		}
+		
+		public static double randDouble(double min, double max) {
+			return tlr.nextDouble(min, max);
+		}
+		
+		public static float randFloat() {
+			return randFloat(0F, Float.MAX_VALUE);
+		}
+		
+		public static float randFloat(float max) {
+			return randFloat(0F, max);
+		}
+		
+		public static float randFloat(float min, float max) {
+			return (float) randDouble(min, max);
+		}
+		
+	}
 	
 }
