@@ -41,7 +41,7 @@ public class kys {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
 			player.sendMessage(new TextComponentString("Goodbye cruel world."));
-			player.setHealth(0F);
+			player.onKillCommand();
 			server.sendMessage(new TextComponentString(sender.getName() + " took their own life."));
 
 		}

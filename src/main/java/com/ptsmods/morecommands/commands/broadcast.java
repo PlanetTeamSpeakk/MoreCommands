@@ -2,22 +2,21 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.commands.hat.Commandhat;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-public class superPickaxe {
+public class broadcast {
 
-	public superPickaxe() {
+	public broadcast() {
 	}
 
-	public static class CommandsuperPickaxe extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+	public static class Commandbroadcast extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
@@ -32,19 +31,19 @@ public class superPickaxe {
 		}
 
 		public String getName() {
-			return "superpickaxe";
+			return "broadcast";
 		}
 
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
-		
-		public static Boolean enabled = false;
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			enabled = !enabled;
-			Reference.sendMessage(sender, "Superpickaxe has been " + (enabled ? "enabled, do note that using the pickaxe may crash your Minecraft due to some server ticking look randomly giving a ConcurrentModificationException." : "disabled."));
+			if (args.length != 0) {
+				String message = Reference.convertColorCodes(Reference.join(args));
+				Reference.sendServerMessage(server, message);
+			} else Reference.sendCommandUsage(sender, usage);
 
 		}
 		
@@ -53,12 +52,7 @@ public class superPickaxe {
 			return CommandType.SERVER;
 		}
 		
-		@Override
-		public boolean singleplayerOnly() {
-			return true;
-		}
-		
-		protected String usage = "/superpickaxe Enables superpickaxe.";
+		protected String usage = "/broadcast <message> Broadcasts a message to the whole server, you can use color codes e.g. &6, &4.";
 
 	}
 

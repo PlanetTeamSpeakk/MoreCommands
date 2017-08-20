@@ -95,6 +95,11 @@ public class biomeTeleport {
 			return 10;
 		}
 		
+		@Override
+		public boolean singleplayerOnly() {
+			return true;
+		}
+		
 		protected String usage = "/biometeleport <biome> Teleports you to a biome.";
 
 	}

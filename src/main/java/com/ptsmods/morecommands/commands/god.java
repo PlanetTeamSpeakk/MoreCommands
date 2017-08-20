@@ -58,56 +58,24 @@ public class god {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws PlayerNotFoundException, CommandException {
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if ((args.length == 0) || ((!args[0].equals("on")) && (!args[0].equals("off")))) {
 				Reference.sendCommandUsage(sender, usage);
-			} else if (args.length == 1) { 
-				if (args[0].equals("on")) {
-					EntityPlayer player = (EntityPlayer) sender;
-					player.setEntityInvulnerable(true);
-					player.getFoodStats().setFoodLevel(20);
-					player.getFoodStats().setFoodSaturationLevel(20000000F);
-					Reference.sendMessage(sender, "You're now invulnerable and will no longer be hungry.");
-				} else {
-					EntityPlayer player = (EntityPlayer) sender;
-					player.setEntityInvulnerable(false);
-					player.getFoodStats().setFoodSaturationLevel(5F);
-					Reference.sendMessage(sender, "You're no longer invulnerable and can be hungry.");
-				}
 			} else {
+				EntityPlayer player = (EntityPlayer) sender;
+				if (args.length == 2) {
+					try {
+						player = getPlayer(server, sender, args[1]);
+					} catch (PlayerNotFoundException e) {
+						Reference.sendMessage(sender, "The given player could not be found.");
+					}
+				}
 				if (args[0].equals("on")) {
-					EntityPlayer victim = getPlayer(server, sender, args[1]);
-					if (victim != null) {
-						victim.setEntityInvulnerable(true);
-						victim.getFoodStats().setFoodLevel(20);
-						victim.getFoodStats().setFoodSaturationLevel(20000000F);
-						if (victim == (EntityPlayer) sender) {
-							EntityPlayer player = (EntityPlayer) sender;
-							Reference.sendMessage(player, "You're now invulnerable and will no longer be hungry.");
-						} else {
-							EntityPlayer player = (EntityPlayer) sender;
-							Reference.sendMessage(victim, player.getName() + " made you invulnerable and you'll no longer be hungry.");
-							Reference.sendMessage(player, "You have made " + victim.getName() + " invulnerable.");
-						}
-					} else {
-						sender.sendMessage(new TextComponentString("The given player does not exist."));
-					}
+					player.setEntityInvulnerable(true);
+					Reference.sendMessage(sender, "You're now invulnerable.");
 				} else {
-					EntityPlayer victim = getPlayer(server, sender, args[1]);
-					if (victim != null) {
-						victim.setEntityInvulnerable(false);
-						victim.getFoodStats().setFoodSaturationLevel(5F);
-						if (victim == (EntityPlayer) sender) {
-							EntityPlayer player = (EntityPlayer) sender;
-							Reference.sendMessage(player, "You're now invulrnerable and will no longer be hungry.");
-						} else {
-							EntityPlayer player = (EntityPlayer) sender;
-							Reference.sendMessage(victim, player.getName() + " made you invulnerable and you'll no longer be hungry.");
-							Reference.sendMessage(player, "You have made " + victim.getName() + " vulnerable.");
-						}
-					} else {
-						Reference.sendMessage(sender, "The given player does not exist.");
-					}
+					player.setEntityInvulnerable(false);
+					Reference.sendMessage(sender, "You're no longer invulnerable.");
 				}
 			}
 		}

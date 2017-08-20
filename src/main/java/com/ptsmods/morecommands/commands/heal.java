@@ -3,21 +3,17 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.PlayerNotFoundException;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.MobEffects;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class heal {
 
@@ -31,7 +27,9 @@ public class heal {
 	    }
 
 		public java.util.List getAliases() {
-			return new ArrayList();
+			ArrayList aliases = new ArrayList();
+			aliases.add("feed");
+			return aliases;
 		}
 
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
@@ -56,35 +54,18 @@ public class heal {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			Blocks.GRASS.setBlockUnbreakable();
 			EntityPlayer player = (EntityPlayer) sender;
-
-			if (player instanceof EntityPlayerMP) {
-				MinecraftServer minecraftserver = FMLCommonHandler.instance().getMinecraftServerInstance();
-				if (minecraftserver != null) {
-					if (args.length == 0) {
-						player.setHealth(20F);
-						player.getFoodStats().setFoodLevel(20);
-						player.getFoodStats().setFoodSaturationLevel(20F);
-						sender.sendMessage(new TextComponentString("You're now healed and fed."));
-					} else {
-						try {
-							EntityPlayer victim = getPlayer(server, sender, args[0]);
-							victim.setHealth(20F);
-							victim.getFoodStats().setFoodLevel(20);
-							victim.getFoodStats().setFoodSaturationLevel(20F);
-							if (victim != player) {
-								victim.sendMessage(new TextComponentString(sender.getName() + " healed and fed you."));
-								sender.sendMessage(new TextComponentString(victim.getName() + " has been healed and fed."));
-							} else {
-								sender.sendMessage(new TextComponentString("You're now healed and fed."));
-							}
-						} catch (PlayerNotFoundException e) {
-							sender.sendMessage(new TextComponentString("The given player does not exist."));
-							return;
-						}
-					}
-				}
-
+			if (args.length >= 2) {
+				player = getPlayer(server, sender, args[1]);
+			}
+			player.setHealth(20F);
+			player.getFoodStats().setFoodLevel(20);
+			if (server.isSinglePlayer()) player.getFoodStats().setFoodSaturationLevel(5F);
+			if (player == (EntityPlayer) sender) Reference.sendMessage(player, "You're now healed and fed.");
+			else {
+				Reference.sendMessage(player, sender.getName() + " has healed and fed you.");
+				Reference.sendMessage(sender, player.getName() + " has been healed and fed.");
 			}
 		}
 		

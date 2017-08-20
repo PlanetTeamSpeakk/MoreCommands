@@ -52,6 +52,10 @@ public class powerTool {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			if (!sender.getServer().isSinglePlayer()) {
+				Reference.sendMessage(sender, "This command is currently only for singleplayer.");
+				return;
+			}
 			EntityPlayer player = (EntityPlayer) sender;
 			ItemStack holding = player.getHeldItemMainhand();
 			if (args.length == 0) {
@@ -101,7 +105,7 @@ public class powerTool {
 				}
 				holding.setTagCompound(nbt);
 				Reference.sendMessage(player, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " has successfully been assigned to your item using nbt. "
-						+ "Do note that using the powertool may crash your minecraft due to some server ticking loop randomly giving a ConcurrentModificationException.");
+						+ "Do note that using the powertool may crash your game due to some server ticking loop randomly giving a ConcurrentModificationException.");
 			}
 		}
 		

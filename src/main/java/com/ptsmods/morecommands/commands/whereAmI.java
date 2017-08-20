@@ -41,8 +41,7 @@ public class whereAmI {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
 			Reference.sendMessage(player, "Your coords are \nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-					"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + 
-					"\nWorld: " + player.getEntityWorld().getWorldInfo().getWorldName() + ".");
+					"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + ".");
 		}
 		
 		@Override

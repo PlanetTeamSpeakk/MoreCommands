@@ -62,12 +62,11 @@ public class whois {
 				String stamina = Float.toString(victim.getFoodStats().getFoodLevel());
 				String exp = Float.toString(victim.experienceTotal);
 				String expLevel = Float.toString(victim.experienceLevel);
-				String location = "X: " + victim.getPosition().getX() + ", Y: " + victim.getPosition().getY() + ", Z: " + victim.getPosition().getZ() + ", Biome: " +
-							victim.getEntityWorld().getBiome(victim.getPosition()).getBiomeName();
+				String location = "X: " + victim.getPosition().getX() + ", Y: " + victim.getPosition().getY() + ", Z: " + victim.getPosition().getZ();
 				String country = "";
 				try {
 					country = Reference.getHTML("http://ip-api.com/json/" + ip).split("\",\"")[2].split(":")[1];
-					country = (ip.equals("unknown") ? "unknown" : country.substring(1));
+					country = (ip.equals("unknown") || ip.equals("127.0.0.1") ? "unknown" : country.substring(1));
 				} catch (IOException e) {
 					country = "Error getting country.";
 				}

@@ -51,12 +51,6 @@ public class dummyCommand {
 			return CommandType.UNKNOWN;
 		}
 		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return super.checkPermission(server, sender);
-			//return true;
-		}
-		
 		protected String usage = "COMMAND USAGE";
 
 	}

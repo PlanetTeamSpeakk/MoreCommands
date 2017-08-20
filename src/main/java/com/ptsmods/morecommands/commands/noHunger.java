@@ -91,6 +91,11 @@ public class noHunger {
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
+		
+		@Override
+		public boolean singleplayerOnly() {
+			return true;
+		}
 
 	}
 

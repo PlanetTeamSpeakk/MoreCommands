@@ -68,6 +68,11 @@ public class speed {
 			return CommandType.SERVER;
 		}
 		
+		@Override
+		public boolean singleplayerOnly() {
+			return true;
+		}
+		
 		protected String usage = "/speed <number> Makes you go faster, number should be a number between 0 and 10.";
 
 	}

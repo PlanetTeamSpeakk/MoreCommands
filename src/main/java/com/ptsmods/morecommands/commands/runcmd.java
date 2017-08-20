@@ -39,18 +39,8 @@ public class runcmd {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			try {
-				server = CommandBase.getPlayer(Minecraft.getMinecraft().getIntegratedServer(), sender, sender.getName()).getServer();
-				String command = "";
-				for (int x = 0; x < args.length; x += 1) {
-					command += args[x];
-					if (x+1 != args.length) command += " ";
-				}
-				server.getCommandManager().executeCommand(sender, command);
-			} catch (PlayerNotFoundException e) {
-				Reference.sendMessage(sender, "You could not be found, what kind of black magic are you using that makes code unable to target you?");
-			}
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+			server.getCommandManager().executeCommand(sender, Reference.join(args));
 		}
 		
 		@Override
@@ -58,7 +48,7 @@ public class runcmd {
 			return CommandType.CLIENT;
 		}
 		
-		protected String usage = "/runcmd <command> Runs a command client side, idk why you would want this.";
+		protected String usage = "/runcmd <command> Runs a server command client side, idk why you would want this.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
