@@ -25,6 +25,10 @@ public class CommandBase extends net.minecraft.command.CommandBase {
 		return CommandType.UNKNOWN;
 	}
 	
+	public boolean singleplayerOnly() {
+		return false; // make this return true and the command cannot be used on servers
+	}
+	
 	public boolean hasCooldown() {
 		return false; // if this returns true the getCooldownSeconds() method will be called to put a cooldown on the command.
 	}

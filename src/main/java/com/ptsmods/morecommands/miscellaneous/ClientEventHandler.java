@@ -2,8 +2,6 @@ package com.ptsmods.morecommands.miscellaneous;
 
 import java.io.IOException;
 
-import org.lwjgl.opengl.Display;
-
 import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
@@ -11,18 +9,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ClientEventHandler {
+public class ClientEventHandler extends EventHandler {
 	
 	@SubscribeEvent
 	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) throws CommandException {
@@ -90,11 +88,16 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
+	public void onChatMessageReceived(ClientChatReceivedEvent event) {
+		if (event.getMessage().getUnformattedText().equals("")) event.setCanceled(true);
+	}
+	
+	@SubscribeEvent
 	public void onClientConnectedToServer(ClientConnectedToServerEvent event) {
 		if (!Reference.shouldRegisterCommands && !Reference.warnedUnregisteredCommands) {
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				public void run() {
-					Reference.sendMessage(Minecraft.getMinecraft().player, TextFormatting.RED + "MoreComands commands were not registered, this is due to the necessary files being downloaded this session. "
+					Reference.sendMessage(Minecraft.getMinecraft().player, TextFormatting.RED + "MoreComands commands were not registered, this is due to the dependencies being downloaded this session. "
 							+ "Try restarting your game and if it still does not work after that, check your internet connection.");
 					Reference.warnedUnregisteredCommands = true;
 				}

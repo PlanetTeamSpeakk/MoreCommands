@@ -25,6 +25,15 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @Mod(modid=Reference.MOD_ID, name=Reference.MOD_NAME, version=Reference.VERSION, acceptedMinecraftVersions=Reference.MC_VERSIONS, updateJSON=Reference.UPDATE_URL)
 public class MoreCommands {
 	
+	public MoreCommands() {
+		try {
+			Reference.setDisplayTitle(Display.getTitle() + " with MinecraftForge");
+		} catch (NoClassDefFoundError e) {}
+		Reference.downloadDependency("http://central.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar", "javassist.jar");
+		Reference.downloadDependency("http://central.maven.org/maven2/org/reflections/reflections/0.9.11/reflections-0.9.11.jar", "reflections.jar");
+		Reference.setupBiomeList();
+	}
+	
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
 		try {
@@ -52,13 +61,9 @@ public class MoreCommands {
 	@EventHandler
 	@SideOnly(Side.CLIENT)
 	public void preInit(FMLPreInitializationEvent event) {
-		Reference.setDisplayTitle(Display.getTitle() + " with MinecraftForge");
-		Reference.setupBiomeList();
 		try {
 			Reference.registerEventHandler(CommandType.CLIENT, new ClientEventHandler());
 		} catch (IncorrectCommandType e) {}
-		Reference.downloadDependency("http://central.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar", "javassist.jar");
-		Reference.downloadDependency("http://central.maven.org/maven2/org/reflections/reflections/0.9.11/reflections-0.9.11.jar", "reflections.jar");
 	}
 	
 }

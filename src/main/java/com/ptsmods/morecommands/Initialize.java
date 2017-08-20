@@ -81,11 +81,6 @@ public abstract class Initialize {
 		System.out.println("Successfully registered " + counter.toString() + " client sided commands, with " + fails.toString() + " fails.");
 	}
 	
-	public static void registerEvenHandlers() {
-		MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-		MinecraftForge.EVENT_BUS.register(new ServerEventHandler());
-	}
-	
 	public static void setupBlockLists() {
 		System.out.println("Setting up the MoreCommands block blacklist.");
 		
@@ -122,14 +117,12 @@ public abstract class Initialize {
 		
 		for (Class<? extends CommandBase> command : commands) {
 			try {
-				Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
+				 Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
 			} catch (IncorrectCommandType e) {
 				e.printStackTrace();
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
-			}
+			} catch (NoClassDefFoundError e) {};
 		}
-		
 	}
-	
 }

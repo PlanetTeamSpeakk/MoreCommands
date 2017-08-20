@@ -29,6 +29,7 @@ import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -43,6 +44,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -67,9 +69,9 @@ public abstract class Reference {
 	public static boolean isInteger(String s) {
 	    try { 
 	        Integer.parseInt(s); 
-	    } catch(NumberFormatException e) { 
+	    } catch (NumberFormatException e) { 
 	        return false; 
-	    } catch(NullPointerException e) {
+	    } catch (NullPointerException e) {
 	        return false;
 	    }
 
@@ -98,12 +100,12 @@ public abstract class Reference {
         int minutes = (gameTime % 1000) * 60 / 1000;
         String ampm = "AM";
         if (isTimeRetarded) {
-	        if (hours >= 12) {
+	        if (hours > 12) {
 	            hours -= 12; ampm = "PM"; 
-	        }
-	 
-	        if (hours < 12) {
-	            ampm = "AM";
+	        } 
+
+	        if (hours > 12) {
+	        	hours -= 12; ampm = "AM";
 	        }
 	 
 	        if (hours == 0) hours = 12;
@@ -143,11 +145,12 @@ public abstract class Reference {
 		}
 	}
 	
-	public static void sendServerMessage(MinecraftServer server, ICommandSender sender, String message) {
-		for (GameProfile gameProfile : server.getOnlinePlayerProfiles()) {
-			EntityPlayer player = server.getPlayerList().getPlayerByUUID(gameProfile.getId());
-			sendMessage(player, message);
-		}
+	public static void sendChatMessage(EntityPlayerSP player, String message) {
+		player.sendChatMessage(message);
+	}
+	
+	public static void sendServerMessage(MinecraftServer server, String message) {
+		server.getPlayerList().sendMessage(new TextComponentString(message));
 	}
 	
 	public static FMLServerStartingEvent getServerStartingEvent() {
@@ -263,6 +266,8 @@ public abstract class Reference {
 					player1 = CommandBase.getPlayer(server, (ICommandSender) player, player.getName());
 				} catch (PlayerNotFoundException e) {
 					return;
+				} catch (NullPointerException e) {
+					return;
 				}
 				ICommandSender sender = (ICommandSender) player1;
 				server = player1.getServer();
@@ -296,6 +301,10 @@ public abstract class Reference {
 	
 	public static String getLocalizedName(Item item) {
 		return item.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
+	}
+	
+	public static String getLocalizedName(Block block) {
+		return block.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
 	}
 	
 	public static String evalJavaScript(String script) throws ScriptException {
@@ -368,7 +377,32 @@ public abstract class Reference {
 		else if (name.toLowerCase().equals("underline")) return TextFormatting.UNDERLINE;
 		else if (name.toLowerCase().equals("white")) return TextFormatting.WHITE;
 		else if (name.toLowerCase().equals("yellow")) return TextFormatting.YELLOW;
-		else return TextFormatting.BLUE;
+		else return TextFormatting.BLACK;
+	}
+	
+	public static TextFormatting getColorByCode(String code) {
+		if (code.equals("0")) return TextFormatting.BLACK;
+		else if (code.equals("1")) return TextFormatting.DARK_BLUE;
+		else if (code.equals("2")) return TextFormatting.DARK_GREEN;
+		else if (code.equals("3")) return TextFormatting.AQUA;
+		else if (code.equals("4")) return TextFormatting.DARK_RED;
+		else if (code.equals("5")) return TextFormatting.DARK_PURPLE;
+		else if (code.equals("6")) return TextFormatting.GOLD;
+		else if (code.equals("7")) return TextFormatting.GRAY;
+		else if (code.equals("8")) return TextFormatting.DARK_GRAY;
+		else if (code.equals("9")) return TextFormatting.BLUE;
+		else if (code.toLowerCase().equals("a")) return TextFormatting.GREEN;
+		else if (code.toLowerCase().equals("b")) return TextFormatting.AQUA;
+		else if (code.toLowerCase().equals("c")) return TextFormatting.RED;
+		else if (code.toLowerCase().equals("d")) return TextFormatting.LIGHT_PURPLE;
+		else if (code.toLowerCase().equals("e")) return TextFormatting.YELLOW;
+		else if (code.toLowerCase().equals("f")) return TextFormatting.WHITE;
+		else if (code.toLowerCase().equals("k")) return TextFormatting.OBFUSCATED;
+		else if (code.toLowerCase().equals("l")) return TextFormatting.BOLD;
+		else if (code.toLowerCase().equals("m")) return TextFormatting.STRIKETHROUGH;
+		else if (code.toLowerCase().equals("n")) return TextFormatting.UNDERLINE;
+		else if (code.toLowerCase().equals("o")) return TextFormatting.ITALIC;
+		else return TextFormatting.RESET;
 	}
 	
 	public static boolean isConsole(ICommandSender sender) {
@@ -645,7 +679,7 @@ public abstract class Reference {
 		return new GuiOverlayDebug(Minecraft.getMinecraft()).call().toArray(new String[0])[0].split(" ")[1]; // not the most beautiful way, but doing Minecraft.getVersion() on 1.11.2 returns 1.12.
 	}
 	
-	public static String join(String[] stringArray) {
+	public static String join(String... stringArray) {
 		String data = "";
 		for (String part : stringArray) {
 			data += part + " ";
@@ -665,7 +699,7 @@ public abstract class Reference {
 	}
 	
 	public static String getDefaultDisplayTitle() {
-		return join(new String[] {Display.getTitle().split(" ")[0], Display.getTitle().split(" ")[1]}); // on Minecraft 1.12 this will return Minecraft 1.12
+		return join(Display.getTitle().split(" ")[0], Display.getTitle().split(" ")[1]); // on Minecraft 1.12 this will return Minecraft 1.12
 	}
 	
 	public static void registerEventHandler(CommandType side, EventHandler handler) throws IncorrectCommandType {
@@ -731,7 +765,6 @@ public abstract class Reference {
 	
 	@Nullable
 	public static Biome getBiomeByName(String name) {
-		
 		Biome biome = null;
 		for (Biome biome2 : biomes) {
 			if (biome2.getBiomeName().toLowerCase().equals(name.toLowerCase())) biome = biome2;
@@ -744,12 +777,42 @@ public abstract class Reference {
 		else return Arrays.asList(player.getServer().getPlayerList().getOppedPlayerNames()).contains(player.getName());
 	}
 	
+    public static void removeExperience(EntityPlayer player, Integer amount) {
+    	System.out.println("Removing " + amount.toString() + " experience.");
+        player.addScore(-1 * amount);
+        int i = Integer.MAX_VALUE - player.experienceTotal;
+
+        if (amount > i)
+        {
+            amount = i;
+        }
+
+        player.experience -= (float)amount / (float)player.xpBarCap();
+
+        for (player.experienceTotal -= amount; player.experience <= 1.0F; player.experience /= (float)player.xpBarCap())
+        {
+            player.experience = (player.experience + 1.0F) * (float)player.xpBarCap();
+            player.addExperienceLevel(-1);
+        }
+    }
+    
+    public static String convertColorCodes(String string) {
+    	for (Integer x = 0; x <= 9; x ++) {
+    		string = string.replaceAll("&" + x, getColorByCode(x.toString()).toString());
+    	}
+    	String[] nonNumericColorCodes = new String[] {"a", "b", "c", "d", "e", "f", "k", "l", "m", "n", "o", "r"};
+    	for (String code : nonNumericColorCodes) {
+    		string = string.replaceAll("&" + code, getColorByCode(code).toString());
+    	}
+    	return string;
+    }
+	
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.23";
+	public static final String VERSION = "1.24";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String BUILD_DATE = "August 17th";
+	public static final String BUILD_DATE = "August 20th";
 	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"}; 
 	public static boolean warnedUnregisteredCommands = false;
 	public static boolean shouldRegisterCommands = true; // only this very variable has to be set to false to disable the mod's functionality entirely.
@@ -759,6 +822,10 @@ public abstract class Reference {
 	public static EntityPlayer player = null;
 	public static HashMap<String, String> tpRequests = new HashMap<String, String>();
 	public static HashMap<String, HashMap<ICommandSender, Long>> cooldowns = new HashMap<String, HashMap<ICommandSender, Long>>();
+	public static HashMap<EntityPlayer, NBTTagList> inventories = new HashMap<EntityPlayer, NBTTagList>();
+	public static HashMap<EntityPlayer, Vec3d> locations = new HashMap<EntityPlayer, Vec3d>();
+	public static HashMap<EntityPlayer, Integer> experiencePoints = new HashMap<EntityPlayer, Integer>();
+	public static HashMap<EntityPlayer, HashMap<String, Float>> pitchNYaws = new HashMap<EntityPlayer, HashMap<String, Float>>();
 	private static List<Biome> biomes = new ArrayList<Biome>();
 	private static List<ICommand> serverCommands = new ArrayList<ICommand>();
 	private static List<ICommand> clientCommands = new ArrayList<ICommand>();
