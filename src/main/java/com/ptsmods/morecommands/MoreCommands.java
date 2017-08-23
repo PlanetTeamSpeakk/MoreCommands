@@ -1,9 +1,7 @@
 package com.ptsmods.morecommands;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import org.lwjgl.opengl.Display;
 
@@ -13,7 +11,6 @@ import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 import com.ptsmods.morecommands.miscellaneous.ServerEventHandler;
 
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -31,7 +28,26 @@ public class MoreCommands {
 		} catch (NoClassDefFoundError e) {}
 		Reference.downloadDependency("http://central.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar", "javassist.jar");
 		Reference.downloadDependency("http://central.maven.org/maven2/org/reflections/reflections/0.9.11/reflections-0.9.11.jar", "reflections.jar");
+		Reference.downloadDependency("http://central.maven.org/maven2/org/yaml/snakeyaml/1.18/snakeyaml-1.18.jar", "snakeyaml.jar"); 
 		Reference.setupBiomeList();
+		if (!new File("config/MoreCommands/").isDirectory()) new File("config/MoreCommands/").mkdirs();
+		if (!new File("config/MoreCommands/homes.yaml").exists())
+			try {
+				new File("config/MoreCommands/homes.yaml").createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		if (!new File("config/MoreCommands/warps.yaml").exists())
+			try {
+				new File("config/MoreCommands/warps.yaml").createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		try {
+			Reference.loadWarpsFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@EventHandler
@@ -61,6 +77,18 @@ public class MoreCommands {
 	@EventHandler
 	@SideOnly(Side.CLIENT)
 	public void preInit(FMLPreInitializationEvent event) {
+		if (!new File("config/MoreCommands/infoOverlay.txt").exists())
+			try {
+				new File("config/MoreCommands/infoOverlay.txt").createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		try {
+			Reference.loadInfoOverlayConfig();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		Reference.setupKeyBindingRegistry();
 		try {
 			Reference.registerEventHandler(CommandType.CLIENT, new ClientEventHandler());
 		} catch (IncorrectCommandType e) {}

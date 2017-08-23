@@ -1,23 +1,24 @@
 package com.ptsmods.morecommands;
 
+import java.util.HashMap;
 import java.util.Set;
 
 import org.reflections.Reflections;
 
+import com.ptsmods.morecommands.commands.chelp.Commandchelp;
 import com.ptsmods.morecommands.commands.enchant.Commandenchant;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
-import com.ptsmods.morecommands.miscellaneous.ClientEventHandler;
 import com.ptsmods.morecommands.miscellaneous.CommandBase;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
-import com.ptsmods.morecommands.miscellaneous.ServerEventHandler;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -60,6 +61,7 @@ public abstract class Initialize {
 	public static void registerClientCommands() {
 		System.out.println("Registering MoreCommands client sided commands.");
 
+		ICommand[] nonRegistryCommands = new ICommand[] {new Commandchelp()};
 		ICommand[] commands;
 		try {
 			commands = Reference.getCommandRegistry(CommandType.CLIENT).toArray(new ICommand[0]);
@@ -71,9 +73,16 @@ public abstract class Initialize {
 		Integer counter = 0;
 		Integer fails = 0;
 		
-		for (int x = 0; x < commands.length; x += 1) {
+		for (ICommand command : commands) {
 			try {
-				ClientCommandHandler.instance.registerCommand(commands[x]);
+				ClientCommandHandler.instance.registerCommand(command);
+				counter += 1;
+			} catch (Exception e) {fails += 1; continue;}
+		}
+		
+		for (ICommand command : nonRegistryCommands) {
+			try {
+				ClientCommandHandler.instance.registerCommand(command);
 				counter += 1;
 			} catch (Exception e) {fails += 1; continue;}
 		}
@@ -117,12 +126,20 @@ public abstract class Initialize {
 		
 		for (Class<? extends CommandBase> command : commands) {
 			try {
-				 Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
+				Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
 			} catch (IncorrectCommandType e) {
 				e.printStackTrace();
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (NoClassDefFoundError e) {};
+		}
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public static void registerKeyBinds() {
+		HashMap<String, KeyBinding> keyBindings = Reference.getKeyBindings();
+		for (String keyBinding : keyBindings.keySet()) {
+			ClientRegistry.registerKeyBinding(keyBindings.get(keyBinding));
 		}
 	}
 }

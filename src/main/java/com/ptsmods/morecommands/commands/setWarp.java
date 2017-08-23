@@ -1,30 +1,31 @@
 package com.ptsmods.morecommands.commands;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraft.util.math.MathHelper;
 
-public class superPickaxe {
+public class setWarp {
 
-	public superPickaxe() {
+	public setWarp() {
 	}
 
-	public static class CommandsuperPickaxe extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+	public static class CommandsetHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
 	    public int getRequiredPermissionLevel() {
 	        return 2;
 	    }
 
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("/");
 			return aliases;
 		}
 
@@ -33,20 +34,26 @@ public class superPickaxe {
 		}
 
 		public String getName() {
-			return "superpickaxe";
+			return "setwarp";
 		}
 
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
-		
-		public static Boolean enabled = false;
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			enabled = !enabled;
-			Reference.sendMessage(sender, "Superpickaxe has been " + (enabled ? "enabled, do note that using the pickaxe may crash your Minecraft due to some server ticking look randomly giving a ConcurrentModificationException." : "disabled."));
-
+			EntityPlayer player = (EntityPlayer) sender;
+			if (args.length != 0) {
+				try {
+					Reference.addWarp(args[0], player.getPositionVector(), MathHelper.wrapDegrees(player.rotationYaw), MathHelper.wrapDegrees(player.rotationPitch));
+					Reference.saveWarpsFile();
+					Reference.sendMessage(player, "The warp has been set.");
+				} catch (IOException e) {
+					Reference.sendMessage(sender, "An unknown error occured while reading the file.");
+					return;
+				}
+			} else Reference.sendCommandUsage(sender, usage);
 		}
 		
 		@Override
@@ -54,12 +61,7 @@ public class superPickaxe {
 			return CommandType.SERVER;
 		}
 		
-		@Override
-		public boolean singleplayerOnly() {
-			return true;
-		}
-		
-		protected String usage = "/superpickaxe Toggles superpickaxe.";
+		protected String usage = "/setwarp <name> Sets a warp.";
 
 	}
 

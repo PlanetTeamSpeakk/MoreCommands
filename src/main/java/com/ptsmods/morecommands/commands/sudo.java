@@ -7,14 +7,12 @@ import java.util.List;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
 public class sudo {
@@ -57,18 +55,9 @@ public class sudo {
 				Reference.sendCommandUsage(sender, usage);
 			} else {
 				try {
-					EntityPlayer victim = getPlayer(server, sender, args[0]);
-					final List<String> argslist = new ArrayList<String>();
-					Collections.addAll(argslist, args);
-					argslist.remove(victim.getName());
-					args = argslist.toArray(new String[argslist.size()]);
-					String command = "";
-					for (int x = 0; x < args.length; x += 1) {
-						if (x != 0) command += " ";
-						command += args[x];
-					}
-					server.getCommandManager().executeCommand(victim, command);
-					Reference.sendMessage(sender, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " has been executed as " + victim.getName() + ".");
+					Entity victim = getEntity(server, sender, args[0]);
+					server.getCommandManager().executeCommand(victim, Reference.join(Reference.removeArg(args, 0)));
+					Reference.sendMessage(sender, "The command " + TextFormatting.GRAY + TextFormatting.ITALIC + Reference.join(Reference.removeArg(args, 0)) + TextFormatting.RESET + " has been executed as " + victim.getName() + ".");
 				} catch (PlayerNotFoundException e) {
 					Reference.sendMessage(sender, "The given player could not be found.");
 				}

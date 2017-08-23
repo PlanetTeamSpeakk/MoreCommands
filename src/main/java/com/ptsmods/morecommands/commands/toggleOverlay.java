@@ -2,22 +2,20 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
+import com.ptsmods.morecommands.commands.hat.Commandhat;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.CrashedOnPurpose;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.crash.CrashReport;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-public class crash {
+public class toggleOverlay {
 
-	public crash() {
+	public toggleOverlay() {
 	}
 
-	public static class Commandcrash extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class CommandtoggleOverlay extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 0;
@@ -33,7 +31,7 @@ public class crash {
 		}
 
 		public String getName() {
-			return "crash";
+			return "toggleoverlay";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -42,7 +40,9 @@ public class crash {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Minecraft.getMinecraft().displayCrashReport(new CrashReport(Reference.join(args), new CrashedOnPurpose(Reference.join(args))));
+			Reference.toggleCoordinatesOverlay();
+			Reference.sendMessage(sender, "The info overlay has been " + (Reference.isInfoOverlayEnabled() ? "enabled." : "disabled."));
+
 		}
 		
 		@Override
@@ -50,12 +50,7 @@ public class crash {
 			return CommandType.CLIENT;
 		}
 		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
-		}
-		
-		protected String usage = "/crash [description] Crashes your game with the given description.";
+		protected String usage = "/toggleoverlay Toggles the info overlay, same as pressing C.";
 
 	}
 

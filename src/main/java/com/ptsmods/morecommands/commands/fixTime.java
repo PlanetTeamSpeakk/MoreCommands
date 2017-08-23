@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -15,6 +16,13 @@ public class fixTime {
 	}
 
 	public static class CommandfixTime extends net.minecraft.command.CommandTime {
+		
+		@Override
+		public java.util.List getAliases() {
+			List<String> aliases = super.getAliases();
+			aliases.add("tiem");
+			return aliases;
+		}
 		
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {

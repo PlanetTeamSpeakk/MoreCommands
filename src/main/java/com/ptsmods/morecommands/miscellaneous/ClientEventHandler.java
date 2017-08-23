@@ -1,17 +1,23 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandException;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
@@ -56,6 +62,10 @@ public class ClientEventHandler extends EventHandler {
 	
 	@SubscribeEvent
 	public void onClientTick(ClientTickEvent event) {
+		if (Reference.lastPosition != null) Reference.blocksPerSecond = Reference.calculateBlocksPerSecond();
+		try {
+			Reference.lastPosition = Minecraft.getMinecraft().player.getPositionVector();
+		} catch (NullPointerException e) {} // occurs when the player hasn't logged in a world or server.
 		if (Commandptime.time != -1 && !Commandptime.fixed && event.phase == Phase.END) {
 			try {
 				Commandptime.time += 1;
@@ -103,6 +113,19 @@ public class ClientEventHandler extends EventHandler {
 				}
 			});
 		}
+	}
+	
+	@SubscribeEvent
+	public void onKeyInput(KeyInputEvent event) {
+		HashMap<String, KeyBinding> keyBindings = Reference.getKeyBindings();
+		for (String keyBinding : keyBindings.keySet()) {
+			if (keyBindings.get(keyBinding).isPressed()) Reference.keyBindPressed(keyBinding);
+		}
+	}
+	
+	@SubscribeEvent
+	public void onRenderGui(RenderGameOverlayEvent.Post event) {
+		if (event.getType() == ElementType.EXPERIENCE && Reference.isInfoOverlayEnabled()) new InfoOverlay();
 	}
 	
 }

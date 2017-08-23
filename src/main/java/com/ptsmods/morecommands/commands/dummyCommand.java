@@ -51,7 +51,7 @@ public class dummyCommand {
 			return CommandType.UNKNOWN;
 		}
 		
-		protected String usage = "COMMAND USAGE";
+		private String usage = "COMMAND USAGE";
 
 	}
 

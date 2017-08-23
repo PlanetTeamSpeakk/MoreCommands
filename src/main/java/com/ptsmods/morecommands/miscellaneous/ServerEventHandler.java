@@ -10,7 +10,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -70,10 +70,11 @@ public class ServerEventHandler extends EventHandler {
 			data.put("yaw", event.getEntity().rotationYaw);
 			data.put("pitch", event.getEntity().rotationPitch);
 			Reference.pitchNYaws.put((EntityPlayer) event.getEntity(), data);
+			Vec3d location = event.getEntity().getPositionVector();
+			if (location.y < 0D) location = new Vec3d(location.x, 0D, location.z);
 			Reference.locations.put((EntityPlayer) event.getEntity(), event.getEntity().getPositionVector());
 			Reference.experiencePoints.put((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).experienceTotal - 100);
 			Reference.removeExperience((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).experienceTotal + 100);
-			event.getEntity().getServer().getPlayerList().sendMessage(new TextComponentString("Testing"), false);
 		}
 	}
 	

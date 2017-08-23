@@ -6,6 +6,9 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.EntityNotFoundException;
+import net.minecraft.command.EntitySelector;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -56,16 +59,16 @@ public class killAll {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if (args.length == 1) {
+				int counter = 0;
 				if (args[0].equals("all")) args[0] = "!player";
-				boolean sendCommandFeedback = player.getEntityWorld().getGameRules().getBoolean("sendCommandFeedback");
-				player.getEntityWorld().getGameRules().setOrCreateGameRule("sendCommandFeedback", "false");
-				server.getCommandManager().executeCommand((ICommandSender) server, "tp @e[type=" + args[0] + "] ~ -128 ~");
-				server.getCommandManager().executeCommand((ICommandSender) server, "kill @e[type=" + args[0] + "]");
-				player.getEntityWorld().getGameRules().setOrCreateGameRule("sendCommandFeedback", Boolean.toString(sendCommandFeedback));
-				Reference.sendMessage(player, "Successfully killed all entities of type " + args[0] + ".");
+				for (Entity entity : EntitySelector.matchEntities(sender, "@e[type=" + args[0] + "]", Entity.class)) {
+					entity.setPositionAndUpdate(entity.posX, -128, entity.posZ);
+					entity.onKillCommand();
+					counter += 1;
+				}
+				Reference.sendMessage(sender, "Successfully killed all entities of type " + args[0] + ", killing a total of " + counter + " entities.");
 			} else {
 				Reference.sendCommandUsage(sender, usage);
 			}

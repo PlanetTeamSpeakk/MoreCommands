@@ -4,12 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +27,11 @@ import javax.annotation.Nullable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.io.IOUtils;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
+import org.yaml.snakeyaml.Yaml;
 
-import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
 
@@ -30,6 +39,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -48,6 +58,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TextComponentString;
@@ -55,6 +66,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
@@ -94,10 +106,9 @@ public abstract class Reference {
 	    return true;
 	}
 	
-	public static String parseTime(int time, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
-        int gameTime = time;
-        int hours = gameTime / 1000 + 6;
-        int minutes = (gameTime % 1000) * 60 / 1000;
+	public static String parseTime(long gameTime, boolean isTimeRetarded) { // retarded time = 10AM and 10PM, non-retarded time = 10:00 and 22:00 
+        long hours = gameTime / 1000 + 6;
+        long minutes = (gameTime % 1000) * 60 / 1000;
         String ampm = "AM";
         if (isTimeRetarded) {
 	        if (hours > 12) {
@@ -676,13 +687,21 @@ public abstract class Reference {
 	}
 	
 	public static String getMinecraftVersion() {
-		return new GuiOverlayDebug(Minecraft.getMinecraft()).call().toArray(new String[0])[0].split(" ")[1]; // not the most beautiful way, but doing Minecraft.getVersion() on 1.11.2 returns 1.12.
+		try {
+			return new GuiOverlayDebug(Minecraft.getMinecraft()).call().toArray(new String[0])[0].split(" ")[1]; // not the most beautiful way, but doing Minecraft.getVersion() on 1.11.2 returns 1.12.
+		} catch (NullPointerException e) {
+			return getDefaultDisplayTitle().split(" ")[1];
+		}
 	}
 	
 	public static String join(String... stringArray) {
+		return joinCustomChar(" ", stringArray);
+	}
+	
+	public static String joinCustomChar(String character, String... stringArray) {
 		String data = "";
 		for (String part : stringArray) {
-			data += part + " ";
+			data += part + character;
 		}
 		return data.trim();
 	}
@@ -720,7 +739,7 @@ public abstract class Reference {
 	public static void downloadDependency(String url, String name) {
 		String fileLocation = "mods/" + name;
 		if (!new File(fileLocation).exists()) {
-			System.out.println("Could not find " + name + " file, download it now...");
+			System.out.println("Could not find " + name + " file, downloading it now...");
 			Map<String, String> downloaded = new HashMap<String, String>();
 			downloaded.put("fileLocation", "");
 			downloaded.put("success", "false");
@@ -778,7 +797,6 @@ public abstract class Reference {
 	}
 	
     public static void removeExperience(EntityPlayer player, Integer amount) {
-    	System.out.println("Removing " + amount.toString() + " experience.");
         player.addScore(-1 * amount);
         int i = Integer.MAX_VALUE - player.experienceTotal;
 
@@ -797,22 +815,225 @@ public abstract class Reference {
     }
     
     public static String convertColorCodes(String string) {
-    	for (Integer x = 0; x <= 9; x ++) {
-    		string = string.replaceAll("&" + x, getColorByCode(x.toString()).toString());
-    	}
-    	String[] nonNumericColorCodes = new String[] {"a", "b", "c", "d", "e", "f", "k", "l", "m", "n", "o", "r"};
-    	for (String code : nonNumericColorCodes) {
+    	String[] colorCodes = new String[] {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "k", "l", "m", "n", "o", "r"};
+    	for (String code : colorCodes) {
     		string = string.replaceAll("&" + code, getColorByCode(code).toString());
     	}
     	return string;
     }
+    
+    public static String[] removeArg(String[] args, int arg) {
+    	List<String> data = new ArrayList<String>();
+    	for (int x = 0; x < args.length; x++) {
+    		if (x != arg) data.add(args[x]);
+    	}
+    	return data.toArray(new String[0]);
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static void setupKeyBindingRegistry() {
+    	KeyBinding[] keyBindings = new KeyBinding[] {new KeyBinding("Toggle overlay", Keyboard.KEY_C, "MoreCommands"), new KeyBinding("Fireball", Keyboard.KEY_V, "MoreCommands")};
+    	String[] names = new String[] {"toggleOverlay", "fireball"};
+    	for (int x = 0; x < keyBindings.length; x++) {
+    		Reference.keyBindings.put(names[x], keyBindings[x]);
+    	}
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static KeyBinding getKeyBindingByName(String name) {
+    	return keyBindings.get(name);
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static HashMap<String, KeyBinding> getKeyBindings() {
+    	return keyBindings;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static void keyBindPressed(String keyBindName) {
+    	if (keyBindName.equals("toggleOverlay")) executeClientCommand("toggleoverlay");
+    	else if (keyBindName.equals("fireball")) executeClientCommand("fireball");
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static void toggleCoordinatesOverlay() {
+    	overlayEnabled = !overlayEnabled;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static boolean isInfoOverlayEnabled() {
+    	return overlayEnabled;
+    }
+    
+    public static double calculateBlocksPerSecond(Vec3d before, Vec3d after) {
+    	double x = after.x - before.x;
+    	double y = after.y - before.y;
+    	double z = after.z - before.z;
+    	return MathHelper.sqrt(x*x+y*y+z*z) * 10;
+    }
 	
+    public static double calculateBlocksPerSecond() {
+    	try {
+    		return calculateBlocksPerSecond(lastPosition, Minecraft.getMinecraft().player.getPositionVector());
+    	} catch (NullPointerException e) {
+    		return 0D;
+    	}
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static void executeClientCommand(String command) {
+    	ClientCommandHandler.instance.executeCommand((ICommandSender) Minecraft.getMinecraft().player, command);
+    }
+    
+    public static void executeServerCommand(String command, Entity entity, MinecraftServer server) {
+    	server.getCommandManager().executeCommand((ICommandSender) entity, command);
+    }
+    
+    public static void addHome(EntityPlayer owner, Vec3d location, Float yaw, Float pitch) throws IOException {
+    	if (!isHomesFileLoaded()) loadHomesFile();
+    	Map<String, Double> data = new HashMap<String, Double>();
+    	data.put("x", location.x);
+    	data.put("y", location.y);
+    	data.put("z", location.z);
+    	data.put("yaw", (double) yaw);
+    	data.put("pitch", (double) pitch);
+    	homes.put(owner.getName(), data);
+    }
+    
+    public static void removeHome(EntityPlayer owner) throws IOException {
+    	if (!isHomesFileLoaded()) loadHomesFile();
+    	homes.remove(owner.getName());
+    }
+    
+    public static boolean doesPlayerHaveHome(EntityPlayer player) throws IOException {
+    	if (!isHomesFileLoaded()) loadHomesFile();
+    	return homes.containsKey(player.getName());
+    }
+    
+    public static void saveHomesFile() throws IOException {
+    	if (!isHomesFileLoaded()) loadHomesFile();
+    	if (shouldRegisterCommands) {
+	    	Yaml yaml = new Yaml();
+	    	yaml.dump(homes, new FileWriter(new File("config/MoreCommands/homes.yaml")));
+    	}
+    }
+   
+	public static void loadHomesFile() throws IOException {
+		if (shouldRegisterCommands) {
+			Yaml yaml = new Yaml();
+			homes = (Map<String, Map<String, Double>>) yaml.load(joinCustomChar("\n", Files.readAllLines(Paths.get(new File("config/MoreCommands/homes.yaml").getAbsolutePath())).toArray(new String[0])));
+			homes = (homes == null ? new HashMap<String, Map<String, Double>>() : homes); // just making sure when the file is empty no NullPointerExceptions occur.
+		}
+    }
+    
+    public static boolean isHomesFileLoaded() {
+    	return !(homes == null);
+    }
+    
+    public static void addWarp(String name, Vec3d location, Float yaw, Float pitch) throws IOException {
+    	if (!isHomesFileLoaded()) loadHomesFile();
+    	Map<String, Double> data = new HashMap<String, Double>();
+    	data.put("x", location.x);
+    	data.put("y", location.y);
+    	data.put("z", location.z);
+    	data.put("yaw", (double) yaw);
+    	data.put("pitch", (double) pitch);
+    	warps.put(name, data);
+    }
+    
+    public static void removeWarp(String name) throws IOException {
+    	if (!isWarpsFileLoaded()) loadWarpsFile();
+    	warps.remove(name);
+    }
+    
+    public static boolean doesWarpExist(String name) throws IOException {
+    	if (!isWarpsFileLoaded()) loadWarpsFile();
+    	return warps.containsKey(name);
+    }
+    
+    public static void saveWarpsFile() throws IOException {
+    	if (shouldRegisterCommands) {
+	    	if (!isWarpsFileLoaded()) loadWarpsFile();
+	    	Yaml yaml = new Yaml();
+	    	yaml.dump(warps, new FileWriter(new File("config/MoreCommands/warps.yaml")));
+    	}
+    }
+   
+	public static void loadWarpsFile() throws IOException {
+		if (shouldRegisterCommands) {
+			Yaml yaml = new Yaml();
+			warps = (Map<String, Map<String, Double>>) yaml.load(joinCustomChar("\n", Files.readAllLines(Paths.get(new File("config/MoreCommands/warps.yaml").getAbsolutePath())).toArray(new String[0])));
+			warps = (warps == null ? new HashMap<String, Map<String, Double>>() : warps); // just making sure when the file is empty no NullPointerExceptions occurs.
+		}
+    }
+    
+    public static boolean isWarpsFileLoaded() {
+    	return warps != null;
+    }
+    
+    public static String getWarpsString() {
+    	String warps = joinCustomChar(TextFormatting.YELLOW + ", " + TextFormatting.GOLD, getWarps());
+    	return TextFormatting.GOLD + warps.substring(0, warps.length()-6);
+    }
+    
+    public static String[] getWarps() {
+    	return warps.keySet().toArray(new String[0]);
+    }
+    
+    public static float doubleToFloat(Double d) {
+    	return Float.parseFloat(d.toString());
+    }
+    
+	public static void loadInfoOverlayConfig() throws IOException {
+		if (shouldRegisterCommands) {
+			infoOverlayConfig = Files.readAllLines(Paths.get(new File("config/MoreCommands/infoOverlay.txt").getAbsolutePath()));
+			infoOverlayConfig = (infoOverlayConfig.size() == 0 ? setupDefaultInfoOverlayConfig() : infoOverlayConfig); // just making sure when the file is empty no NullPointerExceptions occurs.
+			if (shouldSaveInfoOverlayConfig) {
+				PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream("config/MoreCommands/infoOverlay.txt"), StandardCharsets.UTF_8));
+				try {
+					for (String line : infoOverlayConfig) {
+						writer.println(line);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					IOUtils.closeQuietly((Writer) writer);
+				}
+			}
+		}
+    }
+	
+	public static List<String> setupDefaultInfoOverlayConfig() {
+		infoOverlayConfig.add(TextFormatting.GOLD + "Player: " + TextFormatting.YELLOW + "{playerName}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "X: " + TextFormatting.YELLOW + "{x}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Y: " + TextFormatting.YELLOW + "{y}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Z: " + TextFormatting.YELLOW + "{z}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Yaw: " + TextFormatting.YELLOW + "{yaw}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Pitch: " + TextFormatting.YELLOW + "{pitch}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Biome: " + TextFormatting.YELLOW + "{biome}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Difficulty: " + TextFormatting.YELLOW + "{difficulty}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Blocks/sec: " + TextFormatting.YELLOW + "{blocksPerSec}");
+		infoOverlayConfig.add(TextFormatting.GOLD + "Toggle key: " + TextFormatting.YELLOW + "{toggleKey}");
+		shouldSaveInfoOverlayConfig = true;
+		return infoOverlayConfig;
+	}
+    
+    public static List<String> getInfoOverlayConfig() {
+    	if (infoOverlayConfig == null)
+			try {
+				loadInfoOverlayConfig();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	return infoOverlayConfig;
+    }
+    
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.24";
+	public static final String VERSION = "1.25";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String BUILD_DATE = "August 20th";
+	public static final String BUILD_DATE = "August 23rd";
 	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"}; 
 	public static boolean warnedUnregisteredCommands = false;
 	public static boolean shouldRegisterCommands = true; // only this very variable has to be set to false to disable the mod's functionality entirely.
@@ -826,6 +1047,14 @@ public abstract class Reference {
 	public static HashMap<EntityPlayer, Vec3d> locations = new HashMap<EntityPlayer, Vec3d>();
 	public static HashMap<EntityPlayer, Integer> experiencePoints = new HashMap<EntityPlayer, Integer>();
 	public static HashMap<EntityPlayer, HashMap<String, Float>> pitchNYaws = new HashMap<EntityPlayer, HashMap<String, Float>>();
+	public static double blocksPerSecond = 0;
+	public static Vec3d lastPosition = null;
+	public static Map<String, Map<String, Double>> homes = null;
+	public static Map<String, Map<String, Double>> warps = null;
+	public static List<String> infoOverlayConfig = null;
+	private static boolean shouldSaveInfoOverlayConfig = false;
+	private static boolean overlayEnabled = false;
+	private static HashMap<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
 	private static List<Biome> biomes = new ArrayList<Biome>();
 	private static List<ICommand> serverCommands = new ArrayList<ICommand>();
 	private static List<ICommand> clientCommands = new ArrayList<ICommand>();

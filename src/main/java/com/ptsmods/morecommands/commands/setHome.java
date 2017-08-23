@@ -1,23 +1,24 @@
 package com.ptsmods.morecommands.commands;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.CrashedOnPurpose;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 
-public class crash {
+public class setHome {
 
-	public crash() {
+	public setHome() {
 	}
 
-	public static class Commandcrash extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class CommandsetHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 	    public int getRequiredPermissionLevel() {
 	        return 0;
@@ -33,7 +34,7 @@ public class crash {
 		}
 
 		public String getName() {
-			return "crash";
+			return "sethome";
 		}
 
 		public String getUsage(ICommandSender sender) {
@@ -42,20 +43,23 @@ public class crash {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Minecraft.getMinecraft().displayCrashReport(new CrashReport(Reference.join(args), new CrashedOnPurpose(Reference.join(args))));
+			EntityPlayer player = (EntityPlayer) sender;
+			try {
+				Reference.addHome(player, player.getPositionVector(), MathHelper.wrapDegrees(player.rotationYaw), MathHelper.wrapDegrees(player.rotationPitch));
+				Reference.saveHomesFile();
+				Reference.sendMessage(player, "Your home has been set.");
+			} catch (IOException e) {
+				Reference.sendMessage(sender, "An unknown error occured while reading the file.");
+				return;
+			}
 		}
 		
 		@Override
 		public CommandType getCommandType() {
-			return CommandType.CLIENT;
+			return CommandType.SERVER;
 		}
 		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
-		}
-		
-		protected String usage = "/crash [description] Crashes your game with the given description.";
+		protected String usage = "/sethome Sets your home.";
 
 	}
 

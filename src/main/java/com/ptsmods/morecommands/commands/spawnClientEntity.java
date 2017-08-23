@@ -8,10 +8,10 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -64,8 +64,16 @@ public class spawnClientEntity {
 				double d0 = player.getPosition().getX() + 0.5;
 				double d1 = player.getPosition().getY();
 				double d2 = player.getPosition().getZ() + 0.5;
-				Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
-				entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
+				if (args[0].endsWith("lightning_bolt")) {
+					world.addWeatherEffect(new EntityLightningBolt(world, d0, d1, d2, false));
+				} else {
+					Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
+					if (entity == null) {
+						Reference.sendMessage(sender, "The given entity could not be found.");
+						return;
+					}
+					entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
+				}
 				Reference.sendMessage(sender, "Successfully spawned a ghost entity of type " + args[0] + ".");
 			}
 

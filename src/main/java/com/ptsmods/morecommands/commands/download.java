@@ -73,7 +73,7 @@ public class download {
 			return true;
 		}
 		
-		protected String usage = "/download <url> Downloads a file to your Minecraft directory. By default files are downloaded to %appdata%\\.minecraft\\downloads unless the Minecraft directory has been changed.";
+		protected String usage = "/download <url> Downloads a file to your Minecraft directory. By default files are downloaded to appdata\\.minecraft\\downloads unless the Minecraft directory has been changed.";
 
 	}
 
