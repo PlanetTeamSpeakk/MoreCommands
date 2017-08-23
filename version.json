@@ -17,7 +17,9 @@
         "1.21.1": "Fixed:\n\nA permission error in the download command.\nThe narrate command being able to be used on 1.11 and 1.11.2",
         "1.22": "Added:\n/copy <text> Copies text.\n/tpchunk <x> <y> <z> Teleports you to a chunk.\n/crash [description] Crashes your game.\n\n'Fixed':\nThe game crashing when used for the first time, the commands just don't load but it does prevent the game from crashing.",
         "1.22.1": "Fixed:\nThe client event handler not being registered correctly, meaning it only loads when you're playing on singleplayer.",
-        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup."
+        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
+        "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
+        "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands."
     }, 
     "1.12": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -37,7 +39,9 @@
         "1.21.1": "Fixed:\n\nA permission error in the download command.\nThe narrate command being able to be used on 1.11 and 1.11.2",
         "1.22": "Added:\n/copy <text> Copies text.\n/tpchunk <x> <y> <z> Teleports you to a chunk.\n/crash [description] Crashes your game.\n\n'Fixed':\nThe game crashing when used for the first time, the commands just don't load but it does prevent the game from crashing.",
         "1.22.1": "Fixed:\nThe client event handler not being registered correctly, meaning it only loads when you're playing on singleplayer.",
-        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup."
+        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
+        "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
+        "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands."
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -57,7 +61,9 @@
         "1.21.1": "Fixed:\n\nA permission error in the download command.\nThe narrate command being able to be used on 1.11 and 1.11.2",
         "1.22": "Added:\n/copy <text> Copies text.\n/tpchunk <x> <y> <z> Teleports you to a chunk.\n/crash [description] Crashes your game.\n\n'Fixed':\nThe game crashing when used for the first time, the commands just don't load but it does prevent the game from crashing.",
         "1.22.1": "Fixed:\nThe client event handler not being registered correctly, meaning it only loads when you're playing on singleplayer.",
-        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup."
+        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
+        "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
+        "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands."
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -77,17 +83,19 @@
         "1.21.1": "Fixed:\n\nA permission error in the download command.\nThe narrate command being able to be used on 1.11 and 1.11.2",
         "1.22": "Added:\n/copy <text> Copies text.\n/tpchunk <x> <y> <z> Teleports you to a chunk.\n/crash [description] Crashes your game.\n\n'Fixed':\nThe game crashing when used for the first time, the commands just don't load but it does prevent the game from crashing.",
         "1.22.1": "Fixed:\nThe client event handler not being registered correctly, meaning it only loads when you're playing on singleplayer.",
-        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup."
+        "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
+        "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
+        "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands."
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12.1-latest": "1.23",
-        "1.12.1-recommended": "1.23",
-        "1.12-latest": "1.23",
-        "1.12-recommended": "1.23",
-        "1.11.2-latest": "1.23",
-        "1.11.2-recommended": "1.23",
-        "1.11-latest": "1.23",
-        "1.11-recommended": "1.23"
+        "1.12.1-latest": "1.25",
+        "1.12.1-recommended": "1.25",
+        "1.12-latest": "1.25",
+        "1.12-recommended": "1.25",
+        "1.11.2-latest": "1.25",
+        "1.11.2-recommended": "1.25",
+        "1.11-latest": "1.25",
+        "1.11-recommended": "1.25"
     }
 }
