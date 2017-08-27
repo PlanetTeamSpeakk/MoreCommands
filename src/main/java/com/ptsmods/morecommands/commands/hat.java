@@ -3,10 +3,9 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -21,20 +20,24 @@ public class hat {
 	}
 
 	public static class Commandhat extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "hat";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -50,18 +53,18 @@ public class hat {
 			} else Reference.sendMessage(player, "Please hold an item or block.");
 
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
-		protected String usage = "/hat Puts the item you're holding on your head.";
 
 		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "hat", "Permission to use the hat command.", true);
 		}
+
+		protected String usage = "/hat Puts the item you're holding on your head.";
 
 	}
 

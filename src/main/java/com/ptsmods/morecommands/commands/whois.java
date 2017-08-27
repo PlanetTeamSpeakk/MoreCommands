@@ -4,18 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import scala.actors.threadpool.Arrays;
 
 public class whois {
 
@@ -23,26 +20,31 @@ public class whois {
 	}
 
 	public static class Commandwhois extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
 
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 2;
+		}
+
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1) {
+			if (args.length == 1)
 				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-			} else return new ArrayList();
+			else return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "whois";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -52,12 +54,12 @@ public class whois {
 			if (args.length != 0) {
 				EntityPlayerMP victim;
 				try {
-					victim = ((EntityPlayerMP) getPlayer(server, sender, args[0]));
+					victim = getPlayer(server, sender, args[0]);
 				} catch (PlayerNotFoundException e) {
 					Reference.sendMessage(sender, "The given player could not be found.");
 					return;
 				}
-				String ip = (victim.getPlayerIP().equals("local") ? Reference.getIPAddress() : victim.getPlayerIP());
+				String ip = victim.getPlayerIP().equals("local") ? Reference.getIPAddress() : victim.getPlayerIP();
 				String health = Float.toString(victim.getHealth());
 				String stamina = Float.toString(victim.getFoodStats().getFoodLevel());
 				String exp = Float.toString(victim.experienceTotal);
@@ -66,7 +68,7 @@ public class whois {
 				String country = "";
 				try {
 					country = Reference.getHTML("http://ip-api.com/json/" + ip).split("\",\"")[2].split(":")[1];
-					country = (ip.equals("unknown") || ip.equals("127.0.0.1") ? "unknown" : country.substring(1));
+					country = ip.equals("unknown") || ip.equals("127.0.0.1") ? "unknown" : country.substring(1);
 				} catch (IOException e) {
 					country = "Error getting country.";
 				}
@@ -76,7 +78,7 @@ public class whois {
 				String isFlying = Boolean.toString(victim.capabilities.isFlying);
 				String canFly = Boolean.toString(victim.capabilities.allowFlying);
 				String speed = Double.toString(Reference.roundDouble(victim.capabilities.getWalkSpeed()));
-				Reference.sendMessage(sender, 
+				Reference.sendMessage(sender,
 						"Victim: " + victim.getName() +
 						"\nIP address: " + ip +
 						"\nCountry: " + country +
@@ -92,14 +94,18 @@ public class whois {
 						"\nIs flying: " + Reference.getColorFromBoolean(isFlying) + isFlying +
 						"\nCan fly: " + Reference.getColorFromBoolean(canFly) + canFly);
 			} else Reference.sendCommandUsage(sender, usage);
-
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "whois", "Permission to use the whois command.", true);
+		}
+
 		protected String usage = "/whois <player> Get all of a player's information, including their ip, you hackerman.";
 
 	}

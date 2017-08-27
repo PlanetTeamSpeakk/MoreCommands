@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommandSender;
@@ -19,10 +19,12 @@ public class biomeTeleport {
 
 	public static class CommandbiomeTeleport extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 2;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("bpt");
@@ -31,15 +33,18 @@ public class biomeTeleport {
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			if (args.length == 1) return getListOfStringsMatchingLastWord(args, Reference.getBiomeNames());
 			else return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "biometeleport";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -64,8 +69,8 @@ public class biomeTeleport {
 						found = true;
 						player.setPositionAndUpdate(x, 0, z);
 						Reference.teleportSafely(player);
-						Reference.sendMessage(player, "You have been teleported to a " + biome.getBiomeName() + " biome. Your new coords are \nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() + 
-								"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() + 
+						Reference.sendMessage(player, "You have been teleported to a " + biome.getBiomeName() + " biome. Your new coords are \nX: " + player.getPosition().getX() + ", Y: " + player.getPosition().getY() + ", Z: " + player.getPosition().getZ() +
+								"\nChunk: X: " + player.chunkCoordX + ", Y: " + player.chunkCoordY + ", Z: " + player.chunkCoordZ + "\nBiome: " + player.getEntityWorld().getBiome(player.getPosition()).getBiomeName() +
 								"\nWorld: " + player.getEntityWorld().getWorldInfo().getWorldName() + ".");
 						return;
 					}
@@ -73,33 +78,38 @@ public class biomeTeleport {
 				Reference.sendMessage(sender, "The given biome could not be found in the world, maybe give it another try.");
 			}
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return super.checkPermission(server, sender);
 			//return true;
 		}
-		
+
 		@Override
 		public boolean hasCooldown() {
 			return true;
 		}
-		
+
 		@Override
 		public int getCooldownSeconds() {
 			return 10;
 		}
-		
+
 		@Override
 		public boolean singleplayerOnly() {
 			return true;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "btp", "Permission to use the biometeleport command.", true);
+		}
+
 		protected String usage = "/biometeleport <biome> Teleports you to a biome.";
 
 	}

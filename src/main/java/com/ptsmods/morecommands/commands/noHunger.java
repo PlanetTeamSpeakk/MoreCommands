@@ -3,8 +3,9 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
@@ -20,45 +21,50 @@ public class noHunger {
 
 	public static class CommandnoHunger extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 2;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			if (args.length == 1) {
 				ArrayList options = new ArrayList();
 				options.add("off");
 				options.add("on");
 				return options;
-			} else if (args.length == 2) {
+			} else if (args.length == 2)
 				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-			} else {
+			else
 				return new ArrayList();
-			}
 		}
 
+		@Override
 		public boolean isUsernameIndex(String[] string, int index) {
 			return true;
 		}
 
+		@Override
 		public String getName() {
 			return "nohunger";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return "/nohunger <on/off> [player] You, or someone else, will never be hungry anymore.";
 		}
 
-		@Override
+		@Override // wot 'n starvation
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0) {
+			if (args.length == 0)
 				sender.sendMessage(new TextComponentString("§cUsage: /nohunger <on/off> [player] You, or someone else, will never be hungry anymore."));
-			} else if (args.length == 1) {
+			else if (args.length == 1) {
 				EntityPlayer player = (EntityPlayer) sender;
 				if (args[0].equals("on")) {
 					player.getFoodStats().setFoodLevel(20);
@@ -68,7 +74,7 @@ public class noHunger {
 					player.getFoodStats().setFoodSaturationLevel(5F);
 					player.sendMessage(new TextComponentString("You can get hungry again."));
 				}
-			} else {
+			} else
 				try {
 					EntityPlayer victim = getPlayer(server, sender, args[0]);
 					if (args[0].equals("on")) {
@@ -84,17 +90,21 @@ public class noHunger {
 					sender.sendMessage(new TextComponentString("The given player does not exist."));
 					return;
 				}
-			}
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
 		@Override
 		public boolean singleplayerOnly() {
 			return true;
+		}
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "nohunger", "Permission to use the nohunger command.", true);
 		}
 
 	}

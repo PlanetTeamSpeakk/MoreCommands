@@ -3,9 +3,9 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,11 +20,12 @@ public class clearInv {
 	}
 
 	public static class CommandclearInv extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
+
 		public boolean isUsernameIndex(int sender) {
 			return false;
 		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("clearinv");
@@ -33,18 +34,22 @@ public class clearInv {
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return (java.util.List) (new java.util.ArrayList());
+			return new java.util.ArrayList();
 		}
 
+		@Override
 		public boolean isUsernameIndex(String[] string, int index) {
 			return true;
 		}
 
+		@Override
 		public String getName() {
 			return "ci";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return "/ci Clears your inventory.";
 		}
@@ -55,17 +60,17 @@ public class clearInv {
 			player.inventory.clear();
 			Reference.sendMessage(sender, "Your inventory was successfully cleared.");
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
 
 		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "clearinv", "Permission to use the clearinv command.", true);
 		}
-		
+
 	}
 
 }

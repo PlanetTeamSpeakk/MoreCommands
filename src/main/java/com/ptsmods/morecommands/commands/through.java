@@ -3,13 +3,12 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -20,11 +19,13 @@ public class through {
 	}
 
 	public static class Commandthrough extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
 
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 2;
+		}
+
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("thru");
@@ -33,14 +34,17 @@ public class through {
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "through";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -57,15 +61,15 @@ public class through {
 			Boolean found = false;
 			while (!found) {
 				for (int x1 = 0; x1 < 64; x1 += 1) { // it will look 64 blocks in front of you at most.
-					if (direction.equals("north")) {
+					if (direction.equals("north"))
 						z -= 1;
-					} else if (direction.equals("west")) {
+					else if (direction.equals("west"))
 						x -= 1;
-					} else if (direction.equals("south")) {
+					else if (direction.equals("south"))
 						z += 1;
-					} else if (direction.equals("east")) {
+					else if (direction.equals("east"))
 						x += 1;
-					} else if (direction.equals("down")) {
+					else if (direction.equals("down")) {
 						server.getCommandManager().executeCommand(sender, "descend");
 						return;
 					} else if (direction.equals("up")) {
@@ -93,14 +97,19 @@ public class through {
 			}
 			// Only got here if no free spot was found.
 			Reference.sendMessage(player, "No free spot found ahead of you.");
-			
+
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "through", "Permission to use the through command.", true);
+		}
+
 		protected String usage = "/through Teleport through the wall.";
 
 	}

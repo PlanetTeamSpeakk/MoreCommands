@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommandSender;
@@ -21,23 +22,28 @@ public class home {
 
 	public static class Commandhome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 0;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "home";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -45,7 +51,7 @@ public class home {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			try {
-				Map<String, Double> data = new HashMap<String, Double>();
+				Map<String, Double> data = new HashMap<>();
 				boolean isOwnHome = true;
 				if (!Reference.isHomesFileLoaded()) Reference.loadHomesFile();
 				if (args.length != 0 && Reference.isOp((EntityPlayer) sender)) {
@@ -56,16 +62,14 @@ public class home {
 						Reference.sendMessage(sender, "The given player does not have a home.");
 						return;
 					}
-				} else {
-					if (Reference.doesPlayerHaveHome((EntityPlayer) sender)) data = Reference.homes.get(sender.getName());
-					else {
-						Reference.sendMessage(sender, "You do not have a home set.");
-						return;
-					}
+				} else if (Reference.doesPlayerHaveHome((EntityPlayer) sender)) data = Reference.homes.get(sender.getName());
+				else {
+					Reference.sendMessage(sender, "You do not have a home set.");
+					return;
 				}
 				EntityPlayer player = (EntityPlayer) sender;
 				player.setPositionAndRotation(0, 0, 0, Reference.doubleToFloat(data.get("yaw")), Reference.doubleToFloat(data.get("pitch")));
-		        player.setPositionAndUpdate(data.get("x"), data.get("y"), data.get("z"));
+				player.setPositionAndUpdate(data.get("x"), data.get("y"), data.get("z"));
 				if (isOwnHome) Reference.sendMessage(sender, "You have been teleported to your home.");
 				else Reference.sendMessage(sender, "You have been teleported to " + args[0] + "'s home.");
 			} catch (IOException e) {
@@ -73,12 +77,17 @@ public class home {
 			}
 
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "home", "Permission to use the home command.", true);
+		}
+
 		protected String usage = "/home Teleports you to your home.";
 
 	}

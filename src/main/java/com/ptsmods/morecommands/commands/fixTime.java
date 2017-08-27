@@ -19,7 +19,7 @@ public class fixTime {
 		
 		@Override
 		public java.util.List getAliases() {
-			List<String> aliases = super.getAliases();
+			List<String> aliases = new ArrayList<String>();
 			aliases.add("tiem");
 			return aliases;
 		}

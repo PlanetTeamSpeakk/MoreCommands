@@ -3,11 +3,14 @@ package com.ptsmods.morecommands.miscellaneous;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -16,55 +19,88 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class InfoOverlay extends Gui {
 
 	private Minecraft mc;
-	
+
 	public InfoOverlay() {
-		this.mc = Minecraft.getMinecraft();
-		int color = Integer.parseInt("FFAA00", 16);
-		this.zLevel = Float.MAX_VALUE;
+		mc = Minecraft.getMinecraft();
+		zLevel = Float.MAX_VALUE;
 		try {
-			if (Reference.Random.randInt(101) == 0) Reference.loadInfoOverlayConfig(); // This adds a refresh rate of about 3-5 seconds.
+			Reference.loadInfoOverlayConfig();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		drawStrings(parseInfoOverlayConfig(Reference.getInfoOverlayConfig()).toArray(new String[0]));
 	}
-	
+
 	private void drawString(String string, int row) {
-		drawString(this.mc.fontRenderer, string, 2, row*10 + 2, Integer.parseInt("FFFFFF", 16));
+		int defaultHeight = 2;
+		int defaultWidth = 2;
+		if (Reference.setVariables.containsKey("defaultHeight") && Reference.isInteger(Reference.setVariables.get("defaultHeight"))) defaultHeight = Integer.parseInt(Reference.setVariables.get("defaultHeight"));
+		if (Reference.setVariables.containsKey("defaultWidth") && Reference.isInteger(Reference.setVariables.get("defaultWidth"))) defaultWidth = Integer.parseInt(Reference.setVariables.get("defaultWidth"));
+		drawString(mc.fontRenderer, string, defaultWidth, row*10 + defaultHeight, Integer.parseInt("FFFFFF", 16));
 	}
-	
+
 	private void drawStrings(String... strings) {
-		for (int x = 0; x < strings.length; x++) {
+		for (int x = 0; x < strings.length; x++)
 			drawString(strings[x], x);
-		}
 	}
-	
-    private static List<String> parseInfoOverlayConfig(List<String> config) {
-    	Minecraft mc = Minecraft.getMinecraft();
-    	List<String> output = new ArrayList<String>();
-    	try {
-	    	for (String line : config) {
-	    		line = line.replaceAll("\\{playerName\\}", mc.player.getName());
-	    		line = line.replaceAll("\\{x\\}", String.format("%f", mc.player.getPositionVector().x));
-	    		line = line.replaceAll("\\{y\\}", String.format("%f", mc.player.getPositionVector().y));
-	    		line = line.replaceAll("\\{z\\}", String.format("%f", mc.player.getPositionVector().z));
-	    		line = line.replaceAll("\\{chunkX\\}", "" + mc.player.chunkCoordX);
-	    		line = line.replaceAll("\\{chunkY\\}", "" + mc.player.chunkCoordY);
-	    		line = line.replaceAll("\\{chunkZ\\}", "" + mc.player.chunkCoordZ);
-	    		line = line.replaceAll("\\{yaw\\}", "" + MathHelper.wrapDegrees(mc.player.rotationYaw));
-	    		line = line.replaceAll("\\{pitch\\}", "" + MathHelper.wrapDegrees(mc.player.rotationPitch));
-	    		line = line.replaceAll("\\{biome\\}", mc.world.getBiome(mc.player.getPosition()).getBiomeName());
-	    		line = line.replaceAll("\\{difficulty\\}", mc.world.getWorldInfo().getDifficulty().name());
-	    		line = line.replaceAll("\\{blocksPerSec\\}", String.format("%f", Reference.blocksPerSecond));
-	    		line = line.replaceAll("\\{toggleKey\\}", Reference.getKeyBindingByName("toggleOverlay").getDisplayName());
-	    		line = line.replaceAll("\\{configFile\\}", new File("config/MoreCommands/infoOverlay.txt").getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
-	    		line = line.replaceAll("\\{facing\\}", Reference.getLookDirectionFromLookVec(mc.player.getLookVec()));
-	    		line = line.replaceAll("\\{time\\}", Reference.parseTime(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0).getWorldTime(), false));
-	    		line = line.replaceAll("\\{easterEgg\\}", ":O, you found the easter egg!"); // cheater, don't look at this!
-	    		if (!line.split("//")[0].equals("")) output.add(line.split("//")[0]);
-	    	}
-    	} catch (NullPointerException e) {}
-    	return output;
-    }
-	
+
+	private TextFormatting getRandomColor() {
+		if (Reference.Random.randInt(101) == 0)
+			Reference.lastColor = Reference.getRandomColor("WHITE");
+		return Reference.lastColor;
+	}
+
+	private List<String> parseInfoOverlayConfig(List<String> config) {
+		Minecraft mc = Minecraft.getMinecraft();
+		List<String> output = new ArrayList<>();
+		Reference.setVariables = new HashMap<>();
+		try {
+			for (String line : config)
+				if (line.startsWith("var ")) {
+					if (line.split(" ").length == 4) Reference.setVariables.put(line.split(" ")[1], line.split(" ")[3]);
+				} else {
+					line = line.replaceAll("\\{playerName\\}", mc.player.getName())
+							.replaceAll("\\{x\\}", String.format("%f", mc.player.getPositionVector().x))
+							.replaceAll("\\{y\\}", String.format("%f", mc.player.getPositionVector().y))
+							.replaceAll("\\{z\\}", String.format("%f", mc.player.getPositionVector().z))
+							.replaceAll("\\{chunkX\\}", "" + mc.player.chunkCoordX)
+							.replaceAll("\\{chunkY\\}", "" + mc.player.chunkCoordY)
+							.replaceAll("\\{chunkZ\\}", "" + mc.player.chunkCoordZ)
+							.replaceAll("\\{yaw\\}", "" + MathHelper.wrapDegrees(mc.player.rotationYaw))
+							.replaceAll("\\{pitch\\}", "" + MathHelper.wrapDegrees(mc.player.rotationPitch))
+							.replaceAll("\\{biome\\}", mc.world.getBiome(mc.player.getPosition()).getBiomeName())
+							.replaceAll("\\{difficulty\\}", mc.world.getWorldInfo().getDifficulty().name())
+							.replaceAll("\\{blocksPerSec\\}", String.format("%f", Reference.blocksPerSecond))
+							.replaceAll("\\{toggleKey\\}", Reference.getKeyBindingByName("toggleOverlay").getDisplayName())
+							.replaceAll("\\{configFile\\}", new File("config/MoreCommands/infoOverlay.txt").getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")) // replacing 1 backslash with 2 so backslashes actually show
+							.replaceAll("\\{facing\\}", Reference.getLookDirectionFromLookVec(mc.player.getLookVec()))
+							.replaceAll("\\{time\\}", Reference.parseTime(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(mc.player.dimension).getWorldTime() % 24000L, false))
+							.replaceAll("\\{time12\\}", Reference.parseTime(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(mc.player.dimension).getWorldTime() % 24000L, true))
+							.replaceAll("\\{UUID\\}", mc.player.getUniqueID().toString())
+							.replaceAll("\\{holding\\}", Reference.getLocalizedName(mc.player.getHeldItemMainhand().getItem()))
+							.replaceAll("\\{rainbow\\}", "" + getRandomColor())
+							.replaceAll("\\{easterEgg\\}", "Do /easteregg") // cheater, don't look at this!
+							.replaceAll("\\{xp\\}", "" + mc.player.experienceTotal)
+							.replaceAll("\\{xpLevel\\}", "" + mc.player.experienceLevel)
+							.replaceAll("\\{gamemode\\}", FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(mc.player.getName()).interactionManager.getGameType().getName())
+							.replaceAll("\\{fps\\}", "" + mc.getDebugFPS())
+							.replaceAll("\\{blockLight\\}", "" + mc.world.getChunkFromBlockCoords(Reference.centerBlockPos(mc.player.getPosition())).getLightFor(EnumSkyBlock.BLOCK, mc.player.getPosition()))
+							.replaceAll("\\{skyLight\\}", "" + mc.world.getChunkFromBlockCoords(Reference.centerBlockPos(mc.player.getPosition())).getLightFor(EnumSkyBlock.SKY, mc.player.getPosition()))
+							.replaceAll("\\{lookingAtX\\}", "" + mc.objectMouseOver.getBlockPos().getX())
+							.replaceAll("\\{lookingAtY\\}", "" + mc.objectMouseOver.getBlockPos().getY())
+							.replaceAll("\\{lookingAtZ\\}", "" + mc.objectMouseOver.getBlockPos().getZ())
+							.replaceAll("\\{lookingAt\\}", "" + Reference.getLocalizedName(mc.world.getBlockState(Reference.centerBlockPos(mc.objectMouseOver.getBlockPos())).getBlock()))
+							.replaceAll("\\{isSingleplayer\\}", "" + FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer())
+							.replaceAll("\\{language\\}", FMLCommonHandler.instance().getCurrentLanguage())
+							.replaceAll("\\{lookingVecX\\}", "" + mc.player.getLookVec().x)
+							.replaceAll("\\{lookingVecY\\}", "" + mc.player.getLookVec().y)
+							.replaceAll("\\{lookingVecZ\\}", "" + mc.player.getLookVec().z)
+							.replaceAll("\\{lookingAtSide\\}", "" + mc.objectMouseOver.sideHit.getName())
+							.replaceAll("\\{updatesPerSecond\\}", "" + Reference.updatesPerSecond);
+					if (line.equals("") || !line.split("//")[0].equals("")) output.add(line.split("//")[0]); // handling comments in the config, this should be exactly the same as how normal, non-multiline, Java comments work.
+				}
+		} catch (NullPointerException e) {}
+		return output;
+	}
+
 }

@@ -3,11 +3,11 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,36 +20,41 @@ public class tpa {
 	}
 
 	public static class Commandtpa extends com.ptsmods.morecommands.miscellaneous.CommandBase {
-		
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
 
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 0;
+		}
+
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			if (args.length == 1) return CommandBase.getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
 			else return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "tpa";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0) {
+			if (args.length == 0)
 				Reference.sendCommandUsage(sender, usage);
-			} else if (args[0].equals(sender.getName())) {
+			else if (args[0].equals(sender.getName()))
 				Reference.sendMessage(sender, "You cannot send a tpa request to yourself.");
-			} else {
+			else
 				try {
 					EntityPlayer victim = CommandBase.getPlayer(server, sender, args[0]);
 					Reference.tpRequests.put(victim.getName(), sender.getName());
@@ -58,15 +63,19 @@ public class tpa {
 				} catch (PlayerNotFoundException e) {
 					Reference.sendMessage(sender, "The given player could not be found.");
 				}
-			}
 
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "tpa", "Permission to use the tpa command.", true);
+		}
+
 		protected String usage = "/tpa <player> Send someone a request to teleport to them.";
 
 		@Override

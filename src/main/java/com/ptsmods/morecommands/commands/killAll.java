@@ -3,21 +3,16 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.EntityNotFoundException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class killAll {
 
@@ -30,32 +25,37 @@ public class killAll {
 			return false;
 		}
 
+		@Override
 		public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
+			return 2;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			return new ArrayList();
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1) {
+			if (args.length == 1)
 				return getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
-			} else {
+			else
 				return new ArrayList();
-			}
 		}
 
+		@Override
 		public boolean isUsernameIndex(String[] string, int index) {
 			return true;
 		}
 
+		@Override
 		public String getName() {
 			return "killall";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
@@ -69,16 +69,20 @@ public class killAll {
 					counter += 1;
 				}
 				Reference.sendMessage(sender, "Successfully killed all entities of type " + args[0] + ", killing a total of " + counter + " entities.");
-			} else {
+			} else
 				Reference.sendCommandUsage(sender, usage);
-			}
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "killall", "Permission to use the killall command.", true);
+		}
+
 		protected String usage = "/killall <entity> Kills all of the given entity in the world.";
 
 	}

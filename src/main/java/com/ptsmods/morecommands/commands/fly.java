@@ -3,13 +3,13 @@ package com.ptsmods.morecommands.commands;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -20,23 +20,28 @@ public class fly {
 
 	public static class Commandfly extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
-	    public int getRequiredPermissionLevel() {
-	        return 2;
-	    }
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 2;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "fly";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -58,38 +63,40 @@ public class fly {
 					player.sendPlayerAbilities();
 					Reference.sendMessage(player, "Flight mode has been turned off.");
 				}
-			} else {
-				if (args[0].equals("on")) {
-					try {
-						EntityPlayer victim = getPlayer(server, sender, args[1]);
-						victim.capabilities.allowFlying = true;
-						victim.capabilities.isFlying = true;
-						victim.sendPlayerAbilities();
-						Reference.sendMessage(victim, sender.getName() + " has made you able to fly.");
-						Reference.sendMessage(sender, "You made " + victim.getName() + " able to fly.");
-					} catch (PlayerNotFoundException e) {
-						Reference.sendMessage(sender, "The given player does not exist.");
-					}
-				} else {
-					try {
-						EntityPlayer victim = getPlayer(server, sender, args[1]);
-						victim.capabilities.allowFlying = false;
-						victim.capabilities.isFlying = false;
-						victim.sendPlayerAbilities();
-						Reference.sendMessage(victim, sender.getName() + " has made you unable to fly.");
-						Reference.sendMessage(sender, "You made " + victim.getName() + " unable to fly.");
-					} catch (PlayerNotFoundException e) {
-						Reference.sendMessage(sender, "The given player does not exist.");
-					}
+			} else if (args[0].equals("on"))
+				try {
+					EntityPlayer victim = getPlayer(server, sender, args[1]);
+					victim.capabilities.allowFlying = true;
+					victim.capabilities.isFlying = true;
+					victim.sendPlayerAbilities();
+					Reference.sendMessage(victim, sender.getName() + " has made you able to fly.");
+					Reference.sendMessage(sender, "You made " + victim.getName() + " able to fly.");
+				} catch (PlayerNotFoundException e) {
+					Reference.sendMessage(sender, "The given player does not exist.");
 				}
-			}
+			else
+				try {
+					EntityPlayer victim = getPlayer(server, sender, args[1]);
+					victim.capabilities.allowFlying = false;
+					victim.capabilities.isFlying = false;
+					victim.sendPlayerAbilities();
+					Reference.sendMessage(victim, sender.getName() + " has made you unable to fly.");
+					Reference.sendMessage(sender, "You made " + victim.getName() + " unable to fly.");
+				} catch (PlayerNotFoundException e) {
+					Reference.sendMessage(sender, "The given player does not exist.");
+				}
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.SERVER;
 		}
-		
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(Reference.MOD_ID, "fly", "Permission to use the fly command.", true);
+		}
+
 		protected String usage = "/fly <on/off> [player]";
 
 	}
