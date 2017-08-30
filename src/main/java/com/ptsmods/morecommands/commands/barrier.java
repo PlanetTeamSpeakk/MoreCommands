@@ -12,7 +12,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 
@@ -61,9 +60,9 @@ public class barrier {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			EntityPlayer player = (EntityPlayer) sender;
-			ItemStack cmdblock = new ItemStack(Blocks.BARRIER, 1);
-			player.inventory.addItemStackToInventory(cmdblock);
-			player.world.playSound((EntityPlayer)null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+			ItemStack barrier = new ItemStack(Blocks.BARRIER, 1);
+			player.inventory.addItemStackToInventory(barrier);
+			Reference.playSound(SoundEvents.ENTITY_ITEM_PICKUP);
 			player.inventoryContainer.detectAndSendChanges();
 			sender.sendMessage(new TextComponentString("Your barrier has arrived."));
 		}

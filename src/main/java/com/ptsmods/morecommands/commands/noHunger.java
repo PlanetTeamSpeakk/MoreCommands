@@ -63,12 +63,12 @@ public class noHunger {
 		@Override // wot 'n starvation
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if (args.length == 0)
-				sender.sendMessage(new TextComponentString("§cUsage: /nohunger <on/off> [player] You, or someone else, will never be hungry anymore."));
+				Reference.sendCommandUsage(sender, "/nohunger <on/off> [player] You, or someone else, will never be hungry anymore.");
 			else if (args.length == 1) {
 				EntityPlayer player = (EntityPlayer) sender;
 				if (args[0].equals("on")) {
 					player.getFoodStats().setFoodLevel(20);
-					player.getFoodStats().setFoodSaturationLevel(20000000F);
+					player.getFoodStats().setFoodSaturationLevel(Float.MAX_VALUE);
 					player.sendMessage(new TextComponentString("You will never be hungry anymore."));
 				} else {
 					player.getFoodStats().setFoodSaturationLevel(5F);
@@ -79,7 +79,7 @@ public class noHunger {
 					EntityPlayer victim = getPlayer(server, sender, args[0]);
 					if (args[0].equals("on")) {
 						victim.getFoodStats().setFoodLevel(20);
-						victim.getFoodStats().setFoodSaturationLevel(20000000F);
+						victim.getFoodStats().setFoodSaturationLevel(Float.MAX_VALUE);
 						victim.sendMessage(new TextComponentString("You will never be hungry anymore, thanks to " + sender.getName() + "."));
 						sender.sendMessage(new TextComponentString(victim.getName() + " will never be hungry anymore."));
 					} else {

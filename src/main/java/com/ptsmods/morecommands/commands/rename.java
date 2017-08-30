@@ -56,7 +56,7 @@ public class rename {
 						name += " ";
 				}
 				if (!name.startsWith("&")) name = "&r" + name; // so the name isn't in italic like it would be when renamed with an anvil.
-				name = name.replaceAll("&", "§");
+				name = Reference.convertColorCodes(name);
 				player.getHeldItemMainhand().setStackDisplayName(name);
 				Reference.sendMessage(player, "Your " + Reference.getLocalizedName(player.getHeldItemMainhand().getItem()) + " has been renamed to " + name + TextFormatting.RESET + ".");
 			} else
