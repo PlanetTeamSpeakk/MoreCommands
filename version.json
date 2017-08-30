@@ -20,7 +20,8 @@
         "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
         "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
         "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands.",
-        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty."
+        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty.",
+        "1.26.1": "Fixed:\nThe mod not working, thanks for not telling, everyone!"
     }, 
     "1.12": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -43,7 +44,8 @@
         "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
         "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
         "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands.",
-        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty."
+        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty.",
+        "1.26.1": "Fixed:\nThe mod not working, thanks for not telling, everyone!"
     },
     "1.11.2": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -66,7 +68,8 @@
         "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
         "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
         "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands.",
-        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty."
+        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty.",
+        "1.26.1": "Fixed:\nThe mod not working, thanks for not telling, everyone!"
     },
     "1.11": {
         "1.10": "Added:\n/break Breaks the block you're looking at.\n/spawn Teleports you to spawn.\n/wild Teleports you randomly in the world.\n/ptime <day/night/normal/6900> Sets your personal time, can be used on any server. I am not responsible if you get banned because of this.",
@@ -89,17 +92,18 @@
         "1.23": "Added:\n/biometeleport <biome> Attempts to teleport you to the given biome.\n/fps Shows your fps.\n/morecommandsinfo Shows info on your build of MoreCommands.\n\nChanged:\nA lot of small things in some commands and some code cleanup.",
         "1.24": "Added:\n/tobinary <text> Converts text to binary.\n/frombinary <text> Converts text from binary.\n/broadcast <text> Broadcasts text.\n/makeunbreakable <block> Makes a block unbreakable.\n\nFixed:\nThe mod once again not loading on servers and a lot of bugs that only occured on servers.",
         "1.25": "Added:\n/home [player] Teleports you to your home.\n/sethome Sets your home.\n/delhome Deletes your home.\n/warp [name] Teleports you to a warp or lists all warps.\n/setwarp <name> Sets a warp.\n/delwarp <name> Deletes a warp.\n/toggleinfooverlay Toggles the info overlay, this overlay is fully customizable in .minecraft/config/MoreCommands/infoOverlay.txt. This overlay will also pop up by pressing C.\n/chelp Just like the help command, but for client sided commands.",
-        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty."
+        "1.26": "Added:\nPERMISSIONS! :D. You can clearly tell I have ran out of ideas, with this permissions system comes a /mcperms command.\nSome more functions to the info overlay.\n\nFixed:\nYour game crashing when the homes.yaml and warps.yaml files were empty.",
+        "1.26.1": "Fixed:\nThe mod not working, thanks for not telling, everyone!"
     },
     "homepage": "https://minecraft.curseforge.com/projects/morecommands",
     "promos": {
-        "1.12.1-latest": "1.26",
-        "1.12.1-recommended": "1.26",
-        "1.12-latest": "1.26",
-        "1.12-recommended": "1.26",
-        "1.11.2-latest": "1.26",
-        "1.11.2-recommended": "1.26",
-        "1.11-latest": "1.26",
-        "1.11-recommended": "1.26"
+        "1.12.1-latest": "1.26.1",
+        "1.12.1-recommended": "1.26.1",
+        "1.12-latest": "1.26.1",
+        "1.12-recommended": "1.26.1",
+        "1.11.2-latest": "1.26.1",
+        "1.11.2-recommended": "1.26.1",
+        "1.11-latest": "1.26.1",
+        "1.11-recommended": "1.26.1"
     }
 }
