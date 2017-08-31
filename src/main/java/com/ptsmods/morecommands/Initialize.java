@@ -154,6 +154,7 @@ public abstract class Initialize {
 		HashMap<String, KeyBinding> keyBindings = Reference.getKeyBindings();
 		for (String keyBinding : keyBindings.keySet())
 			ClientRegistry.registerKeyBinding(keyBindings.get(keyBinding));
+
 	}
 
 }

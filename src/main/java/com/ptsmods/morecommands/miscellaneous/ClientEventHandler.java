@@ -6,23 +6,25 @@ import java.util.HashMap;
 import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -89,6 +91,7 @@ public class ClientEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onChatMessageSent(ClientChatEvent event) {
+		// BEGIN NARRATE COMMAND
 		if (Reference.narratorActive) {
 			event.setCanceled(true);
 			if (event.getOriginalMessage().toLowerCase().equals("cancel")) {
@@ -105,7 +108,9 @@ public class ClientEventHandler extends EventHandler {
 				} catch (IOException e) {}
 				Reference.sendMessage(Minecraft.getMinecraft().player, ":O you added the bee movie script! Do note that once you say 'done' there's not way back unless you force close Minecraft with task manager and restart it.");
 			} else Reference.addTextToNarratorMessage(event.getOriginalMessage());
-		} else if (event.getOriginalMessage().toLowerCase().equals("/easteregg"))
+			// END NARRATE COMMAND
+			// BEGIN EASTER EGG
+		} else if (event.getOriginalMessage().toLowerCase().equals("/easteregg")) {
 			if (!Reference.easterEggLoopEnabled) {
 				Reference.playEasterEgg();
 				Reference.easterEggLoopEnabled = true;
@@ -113,32 +118,28 @@ public class ClientEventHandler extends EventHandler {
 			} else {
 				Reference.easterEggLoopEnabled = false;
 				Reference.clientTicksPassed = 0;
-				//				PacketBuffer packetBuffer = new PacketBuffer(Unpooled.buffer());
-				//				EntityPlayerMP player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(Minecraft.getMinecraft().player.getName());
-				//				packetBuffer.writeString("players");
-				//				packetBuffer.writeString("morecommands:easteregg");
-				//				player.connection.sendPacket(new SPacketCustomPayload("MC|StopSound", packetBuffer)); // letting the client send a packet to itself :3
-				Minecraft.getMinecraft().getSoundHandler().stopSound(new PositionedSoundRecord(Reference.easterEgg, SoundCategory.PLAYERS, Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS), 0F, 0F, 0F, 0F));
+				PacketBuffer packetBuffer = new PacketBuffer(Unpooled.buffer());
+				EntityPlayerMP player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(Minecraft.getMinecraft().player.getName());
+				packetBuffer.writeString("players");
+				packetBuffer.writeString("morecommands:easteregg");
+				player.connection.sendPacket(new SPacketCustomPayload("MC|StopSound", packetBuffer)); // letting the client send a packet to itself :3
 				event.setCanceled(true);
 			}
+			// END EASTER EGG
+			// BEGIN ALIASES
+		} else if (Reference.doesAliasExist(event.getOriginalMessage().split(" ")[0].substring(1))) {
+			String command = Reference.getCommandFromAlias(event.getOriginalMessage().split(" ")[0].substring(1));
+			if (ClientCommandHandler.instance.getCommands().keySet().contains(command.split(" ")[0])) ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().player, command);
+			else Reference.sendChatMessage(Minecraft.getMinecraft().player, "/" + command);
+			event.setCanceled(true);
+		}
+		// END ALIASES
 		if (event.isCanceled()) Minecraft.getMinecraft().ingameGUI.getChatGUI().addToSentMessages(event.getOriginalMessage());
 	}
 
 	@SubscribeEvent
 	public void onChatMessageReceived(ClientChatReceivedEvent event) {
 		if (event.getMessage().getUnformattedText().trim().equals("")) event.setCanceled(true);
-	}
-
-	@SubscribeEvent
-	public void onClientConnectedToServer(ClientConnectedToServerEvent event) {
-		if (!Reference.shouldRegisterCommands && !Reference.warnedUnregisteredCommands)
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					Reference.sendMessage(Minecraft.getMinecraft().player, TextFormatting.RED + "There was an error during the downloading and registering the dependencies, try restarting your game.");
-					Reference.warnedUnregisteredCommands = true;
-				}
-			});
 	}
 
 	@SubscribeEvent
@@ -150,7 +151,10 @@ public class ClientEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) {
-		if (event.getType() == ElementType.EXPERIENCE && Reference.isInfoOverlayEnabled()) new InfoOverlay();
+		if (event.getType() == ElementType.EXPERIENCE && Reference.isInfoOverlayEnabled()) {
+			new InfoOverlay();
+			Reference.updated += 1;
+		}
 	}
 
 }

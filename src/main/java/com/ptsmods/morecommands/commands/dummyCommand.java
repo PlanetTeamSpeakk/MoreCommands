@@ -21,11 +21,6 @@ public class dummyCommand {
 	public static class CommandCOMMANDNAME extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		@Override
-		public int getRequiredPermissionLevel() {
-			return 2;
-		}
-
-		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;

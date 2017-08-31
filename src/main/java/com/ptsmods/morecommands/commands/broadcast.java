@@ -45,10 +45,9 @@ public class broadcast {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0) {
-				String message = Reference.convertColorCodes(Reference.join(args));
-				Reference.sendServerMessage(server, message);
-			} else Reference.sendCommandUsage(sender, usage);
+			if (args.length != 0)
+				Reference.sendServerMessage(server, Reference.convertColorCodes(Reference.join(args)));
+			else Reference.sendCommandUsage(sender, usage);
 
 		}
 
