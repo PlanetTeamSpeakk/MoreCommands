@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -70,7 +69,7 @@ public class InfoOverlay extends Gui {
 							.replaceAll("\\{pitch\\}", "" + MathHelper.wrapDegrees(mc.player.rotationPitch))
 							.replaceAll("\\{biome\\}", mc.world.getBiome(mc.player.getPosition()).getBiomeName())
 							.replaceAll("\\{difficulty\\}", mc.world.getWorldInfo().getDifficulty().name())
-							.replaceAll("\\{blocksPerSec\\}", String.format("%f", Reference.blocksPerSecond))
+							.replaceAll("\\{blocksPerSec\\}", Reference.formatBlocksPerSecond())
 							.replaceAll("\\{toggleKey\\}", Reference.getKeyBindingByName("toggleOverlay").getDisplayName())
 							.replaceAll("\\{configFile\\}", new File("config/MoreCommands/infoOverlay.txt").getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")) // replacing 1 backslash with 2 so backslashes actually show
 							.replaceAll("\\{facing\\}", Reference.getLookDirectionFromLookVec(mc.player.getLookVec()))
@@ -84,22 +83,25 @@ public class InfoOverlay extends Gui {
 							.replaceAll("\\{xpLevel\\}", "" + mc.player.experienceLevel)
 							.replaceAll("\\{gamemode\\}", FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(mc.player.getName()).interactionManager.getGameType().getName())
 							.replaceAll("\\{fps\\}", "" + mc.getDebugFPS())
-							.replaceAll("\\{blockLight\\}", "" + mc.world.getChunkFromBlockCoords(Reference.centerBlockPos(mc.player.getPosition())).getLightFor(EnumSkyBlock.BLOCK, mc.player.getPosition()))
-							.replaceAll("\\{skyLight\\}", "" + mc.world.getChunkFromBlockCoords(Reference.centerBlockPos(mc.player.getPosition())).getLightFor(EnumSkyBlock.SKY, mc.player.getPosition()))
-							.replaceAll("\\{lookingAtX\\}", "" + mc.objectMouseOver.getBlockPos().getX())
-							.replaceAll("\\{lookingAtY\\}", "" + mc.objectMouseOver.getBlockPos().getY())
-							.replaceAll("\\{lookingAtZ\\}", "" + mc.objectMouseOver.getBlockPos().getZ())
-							.replaceAll("\\{lookingAt\\}", "" + Reference.getLocalizedName(mc.world.getBlockState(Reference.centerBlockPos(mc.objectMouseOver.getBlockPos())).getBlock()))
+							.replaceAll("\\{blockLight\\}", "" + Reference.getBlockLight(mc.world, mc.player.getPosition()))
+							.replaceAll("\\{skyLight\\}", "" + Reference.getSkyLight(mc.world, mc.player.getPosition()))
+							.replaceAll("\\{lookingAtX\\}", "" + (mc.objectMouseOver.getBlockPos() == null ? "null" : mc.objectMouseOver.getBlockPos().getX()))
+							.replaceAll("\\{lookingAtY\\}", "" + (mc.objectMouseOver.getBlockPos() == null ? "null" : mc.objectMouseOver.getBlockPos().getY()))
+							.replaceAll("\\{lookingAtZ\\}", "" + (mc.objectMouseOver.getBlockPos() == null ? "null" : mc.objectMouseOver.getBlockPos().getZ()))
+							.replaceAll("\\{lookingAt\\}", "" + (mc.objectMouseOver.getBlockPos() == null ? "null" : Reference.getLocalizedName(mc.world.getBlockState(Reference.centerBlockPos(mc.objectMouseOver.getBlockPos())).getBlock())))
 							.replaceAll("\\{isSingleplayer\\}", "" + FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer())
 							.replaceAll("\\{language\\}", FMLCommonHandler.instance().getCurrentLanguage())
 							.replaceAll("\\{lookingVecX\\}", "" + mc.player.getLookVec().x)
 							.replaceAll("\\{lookingVecY\\}", "" + mc.player.getLookVec().y)
 							.replaceAll("\\{lookingVecZ\\}", "" + mc.player.getLookVec().z)
-							.replaceAll("\\{lookingAtSide\\}", "" + mc.objectMouseOver.sideHit.getName())
-							.replaceAll("\\{updatesPerSecond\\}", "" + Reference.updatesPerSecond);
+							.replaceAll("\\{lookingAtSide\\}", "" + (mc.objectMouseOver.getBlockPos() == null ? "null" : mc.objectMouseOver.sideHit.getName()))
+							.replaceAll("\\{updatesPerSecond\\}", "" + Reference.updatesPerSecond)
+							.replaceAll("\\{entities\\}", "" + mc.world.getLoadedEntityList().size());
 					if (line.equals("") || !line.split("//")[0].equals("")) output.add(line.split("//")[0]); // handling comments in the config, this should be exactly the same as how normal, non-multiline, Java comments work.
 				}
-		} catch (NullPointerException e) {}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 		return output;
 	}
 

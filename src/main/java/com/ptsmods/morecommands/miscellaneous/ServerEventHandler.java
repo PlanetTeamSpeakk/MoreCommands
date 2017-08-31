@@ -11,6 +11,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -23,11 +24,10 @@ public class ServerEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onServerTick(ServerTickEvent event) {
-		if (CommandfixTime.time != -1 && CommandfixTime.server != null) {
-			try {new CommandfixTime().setAllWorldTimes(CommandfixTime.server, CommandfixTime.time);} catch (NullPointerException e) {} // Probably not necessary because it's on server tick and not client tick 
-		}																															   // but just for that extra bit of security
+		if (CommandfixTime.time != -1 && CommandfixTime.server != null)
+			try {new CommandfixTime().setAllWorldTimes(CommandfixTime.server, CommandfixTime.time);} catch (NullPointerException e) {} // Probably not necessary because it's on server tick and not client tick
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerUseItem(PlayerInteractEvent.RightClickBlock event) throws CommandException {
 		if (Reference.isSittingOnChair && event.getWorld().getBlockState(event.getPos()).getBlock() instanceof BlockStairs) {
@@ -36,37 +36,47 @@ public class ServerEventHandler extends EventHandler {
 		}
 		Reference.sitOnStairs(event, event.getEntityPlayer(), event.getPos(), event.getEntityPlayer().getServer());
 	}
-	
+
 	@SubscribeEvent
 	public void onCommand(CommandEvent event) {
 		CommandBase command = null;
 		try {
-			command = ((CommandBase) event.getCommand()); // checking if the command extends com.ptsmods.morecommands.miscellaneous.CommandBase
+			command = (CommandBase) event.getCommand(); // checking if the command extends com.ptsmods.morecommands.miscellaneous.CommandBase
 		} catch (ClassCastException e) {return;}
 		if (command.singleplayerOnly() && !FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()) {
 			Reference.sendMessage(event.getSender(), "This command is currently only for singleplayer.");
 			event.setCanceled(true);
-		} else if (command.hasCooldown()) {
-			if (Reference.cooldowns.containsKey(event.getCommand().getName()) && 
-					Reference.cooldowns.get(event.getCommand().getName()).containsKey(event.getSender()) && 
+			// START COOLDOWN SYSTEM
+		} else if (command.hasCooldown())
+			if (Reference.cooldowns.containsKey(event.getCommand().getName()) &&
+					Reference.cooldowns.get(event.getCommand().getName()).containsKey(event.getSender()) &&
 					new Date().getTime()/1000-Reference.cooldowns.get(event.getCommand().getName()).get(event.getSender()) <= ((CommandBase) event.getCommand()).getCooldownSeconds()) {
 				event.setCanceled(true);
 				Long cooldown = ((CommandBase) event.getCommand()).getCooldownSeconds()-(new Date().getTime()/1000-Reference.cooldowns.get(event.getCommand().getName()).get(event.getSender()));
 				Reference.sendMessage(event.getSender(), "You're still on cooldown, try again in " + cooldown + " second" + (cooldown == 1 ? "" : "s") + ".");
 			} else {
-				HashMap<ICommandSender, Long> data = new HashMap<ICommandSender, Long>();
+				HashMap<ICommandSender, Long> data = new HashMap<>();
 				data.put(event.getSender(), new Date().getTime()/1000);
 				Reference.cooldowns.put(event.getCommand().getName(), data);
 			}
+		// END COOLDOWN SYSTEM
+		// START PERMISSIONS SYSTEM
+		if (!Reference.checkPermission(event.getSender(), command.getPermission())) {
+			Reference.sendMessage(event.getSender(), TextFormatting.RED + "You do not have permission to use this command, " + (Reference.isOp((EntityPlayer) event.getSender()) ?
+					" you can give yourself permissions to use this command by doing /mcperms group create Operator, /mcperms group addperm Operator " + command.getPermission().toString() +
+					" and /mcperms player addgroup Operator " + event.getSender().getName() :
+					" if you believe you should ask an admin to set the permissions for you."));
+			event.setCanceled(true);
 		}
+		// END PERMISSIONS SYSTEM
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerDeath(LivingDeathEvent event) {
 		if (event.getEntity() instanceof EntityPlayer && event.getEntity().getIsInvulnerable()) {
 			Reference.inventories.put((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).inventory.writeToNBT(new NBTTagList()));
 			((EntityPlayer) event.getEntity()).inventory.clear();
-			HashMap<String, Float> data = new HashMap<String, Float>();
+			HashMap<String, Float> data = new HashMap<>();
 			data.put("yaw", event.getEntity().rotationYaw);
 			data.put("pitch", event.getEntity().rotationPitch);
 			Reference.pitchNYaws.put((EntityPlayer) event.getEntity(), data);
@@ -77,7 +87,7 @@ public class ServerEventHandler extends EventHandler {
 			Reference.removeExperience((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).experienceTotal + 100);
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		if (Reference.inventories.containsKey(event.player)) {
@@ -89,5 +99,5 @@ public class ServerEventHandler extends EventHandler {
 			Reference.sendMessage(event.player, "You died, but since you had god on your location, inventory and experience has been recovered and it's now like nothing happened.");
 		}
 	}
-	
+
 }
