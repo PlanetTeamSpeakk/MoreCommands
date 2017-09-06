@@ -141,11 +141,10 @@ public abstract class Initialize {
 			try {
 				Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
 				command.newInstance().getPermission(); // just so it's registered in the permissions.
-			} catch (IncorrectCommandType e) {
-				e.printStackTrace();
+				Reference.commands.add(command.newInstance());
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
-			} catch (NoClassDefFoundError e) {};
+			} catch (NoClassDefFoundError | IncorrectCommandType e) {};
 		}
 	}
 

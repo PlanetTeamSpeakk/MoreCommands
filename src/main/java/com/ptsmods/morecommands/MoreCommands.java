@@ -19,15 +19,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @Mod(modid=Reference.MOD_ID, name=Reference.MOD_NAME, version=Reference.VERSION, acceptedMinecraftVersions=Reference.MC_VERSIONS, updateJSON=Reference.UPDATE_URL)
 public class MoreCommands {
 
-	private static boolean initialized = false;
-
 	public MoreCommands() {
-		initialize();
+		Reference.initialize();
 	}
 
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
-		initialize();
 		try {
 			Reference.resetCommandRegistry(CommandType.SERVER); // for when you relog and a new command has been added, only needed for development.
 			Reference.resetCommandRegistry(CommandType.CLIENT);
@@ -52,7 +49,6 @@ public class MoreCommands {
 	@EventHandler
 	@SideOnly(Side.CLIENT)
 	public void preInit(FMLPreInitializationEvent event) {
-		initialize();
 		Reference.createFileIfNotExisting("config/MoreCommands/infoOverlay.txt");
 		Reference.createFileIfNotExisting("config/MoreCommands/aliases.yaml");
 		try {
@@ -65,32 +61,6 @@ public class MoreCommands {
 		try {
 			Reference.registerEventHandler(CommandType.CLIENT, new ClientEventHandler());
 		} catch (IncorrectCommandType e) {}
-	}
-
-	private static void initialize() {
-		if (!initialized) {
-			//			try {
-			//				Downloader.downloadDependency("http://central.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar", "javassist.jar");
-			//				if (new File("libs/reflections.jar").exists()) new File("libs/reflections.jar").delete(); // getting ready to downgrade to 0.9.10 since 0.9.11 gives an error.
-			//				Downloader.downloadDependency("http://central.maven.org/maven2/org/reflections/reflections/0.9.10/reflections-0.9.10.jar", "reflections.jar");
-			//				Downloader.downloadDependency("http://central.maven.org/maven2/org/yaml/snakeyaml/1.18/snakeyaml-1.18.jar", "snakeyaml.jar");
-			//				Downloader.downloadDependency("http://central.maven.org/maven2/com/google/guava/guava/23.0/guava-23.0.jar", "guava.jar");
-			//			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-			//					| InvocationTargetException | IOException e2) {
-			//				e2.printStackTrace();
-			//			} // using shadowJar instead now.
-			//			try {
-			//				Downloader.addJarToClasspath("libs/javassist.jar");
-			//				Downloader.addJarToClasspath("libs/reflections.jar");
-			//				Downloader.addJarToClasspath("libs/snakeyaml.jar");
-			//				Downloader.addJarToClasspath("libs/guava.jar");
-			//			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-			//					| InvocationTargetException | MalformedURLException e) {
-			//				e.printStackTrace();
-			//			} just let forge handle it.
-			Reference.initialize();
-			initialized = true;
-		}
 	}
 
 }
