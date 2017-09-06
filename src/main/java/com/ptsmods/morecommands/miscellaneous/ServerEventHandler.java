@@ -64,7 +64,7 @@ public class ServerEventHandler extends EventHandler {
 		if (!Reference.checkPermission(event.getSender(), command.getPermission())) {
 			Reference.sendMessage(event.getSender(), TextFormatting.RED + "You do not have permission to use this command, " + (Reference.isOp((EntityPlayer) event.getSender()) ?
 					" you can give yourself permissions to use this command by doing /mcperms group create Operator, /mcperms group addperm Operator " + command.getPermission().toString() +
-					" and /mcperms player addgroup Operator " + event.getSender().getName() :
+					", or just a *, and /mcperms player addgroup Operator " + event.getSender().getName() :
 					" if you believe you should ask an admin to set the permissions for you."));
 			event.setCanceled(true);
 		}

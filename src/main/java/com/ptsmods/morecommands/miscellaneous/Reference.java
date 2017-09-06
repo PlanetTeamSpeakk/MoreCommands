@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nullable;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
@@ -140,25 +141,39 @@ public abstract class Reference {
 			return hours + ":" + mm;
 	}
 
-	public static void sendMessage(EntityPlayer player, String message) {
-		if (message == null) message = "";
+	public static void sendMessage(EntityPlayer player, Object... message) {
+		String[] data = new String[message.length];
+		for (int x = 0; x < message.length; x++)
+			data[x] = message[x].toString();
+		sendMessage(player, data);
+	}
+
+	public static void sendMessage(ICommandSender sender, Object... message) {
+		String[] data = new String[message.length];
+		for (int x = 0; x < message.length; x++)
+			data[x] = message[x].toString();
+		sendMessage(sender, data);
+	}
+
+	public static void sendMessage(EntityPlayer player, String... message) {
+		if (message == null) message = new String[] {""};
 		try {
-			player.sendMessage(new TextComponentString(message));
+			player.sendMessage(new TextComponentString(join(message)));
 		} catch (NullPointerException e) {
 			try {
-				Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+				Minecraft.getMinecraft().player.sendMessage(new TextComponentString(join(message)));
 			} catch (NullPointerException e1) {
-				Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(message));
+				Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(join(message)));
 			}
 		}
 	}
 
-	public static void sendMessage(ICommandSender player, String message) {
-		if (message == null) message = "";
+	public static void sendMessage(ICommandSender player, String... message) {
+		if (message == null) message = new String[] {""};
 		try {
-			sendMessage((EntityPlayer) player, message);
+			sendMessage((EntityPlayer) player, join(message));
 		} catch (ClassCastException e) {
-			print(LogType.INFO,message);
+			print(LogType.INFO, join(message));
 		}
 	}
 
@@ -322,7 +337,7 @@ public abstract class Reference {
 	}
 
 	public static String evalJavaScript(String script) throws ScriptException {
-		return evalCode(script, "nashorn");
+		return nashorn.eval(script).toString();
 	}
 
 	public static String evalCode(String script, String language) throws ScriptException {
@@ -336,7 +351,6 @@ public abstract class Reference {
 		TextFormatting color = colors[Random.randInt(0, colors.length)];
 		while (Arrays.asList(exceptions).contains(getColorName(color)))
 			color = colors[Random.randInt(0, colors.length)];
-
 		return color;
 
 	}
@@ -513,19 +527,8 @@ public abstract class Reference {
 	public static void sitOnStairs(RightClickBlock event, EntityPlayer player, BlockPos pos, @Nullable MinecraftServer server) throws CommandException {
 		World world = player.getEntityWorld();
 		Block block = world.getBlockState(pos).getBlock();
-		if (server == null) {
-			EntityPlayer player1;
-			try {
-				player1 = CommandBase.getPlayer(server, player, player.getName());
-			} catch (PlayerNotFoundException e) {
-				return;
-			} catch (NullPointerException e) {return;}
-			event.setCanceled(true);
-			server = player1.getServer();
-			world = player1.getEntityWorld();
-			player = player1;
-		}
-		if (block instanceof BlockStairs) {
+		server = server == null ? FMLCommonHandler.instance().getMinecraftServerInstance() : server;
+		if (block instanceof BlockStairs && !player.isSneaking()) {
 			event.setCanceled(true);
 			NBTTagCompound nbt = new NBTTagCompound();
 			try {
@@ -556,10 +559,10 @@ public abstract class Reference {
 	}
 
 	/**
-	 * Replaces \r\n with a line break, removes all backslashes and removes spaces at the beginning and end.
+	 * Removes \r, all backslashes, spaces at the beginning and end and color codes.
 	 */
 	public static String getCleanString(String dirtyString) {
-		return dirtyString.replaceAll("(\\\\r|\\\\n)+", "\n").replaceAll("\\\\\"", "").trim();
+		return TextFormatting.getTextWithoutFormattingCodes(dirtyString.replaceAll("(\\r)+", "").replaceAll("\\\\\"", "").trim());
 	}
 
 
@@ -670,7 +673,9 @@ public abstract class Reference {
 	}
 
 	public static void registerEventHandler(CommandType side, EventHandler handler) throws IncorrectCommandType {
-		if (side == CommandType.CLIENT) registerClientEventHandler(handler);
+		if (side == CommandType.CLIENT) try {
+			registerClientEventHandler(handler);
+		} catch (NoSuchMethodError e) {} // server sided
 		else if (side == CommandType.SERVER) registerServerEventHandler(handler);
 		else throwIncorrectCommandType();
 	}
@@ -1015,6 +1020,10 @@ public abstract class Reference {
 		print(MOD_NAME, logType, message);
 	}
 
+	public static void print(LogType logType, String... message) {
+		print(MOD_NAME, logType, (Object[]) message);
+	}
+
 	public static boolean checkPermission(ICommandSender sender, Permission permission) {
 		if (FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()) return true;
 		if (!permission.reqPerms()) return true;
@@ -1187,7 +1196,7 @@ public abstract class Reference {
 			Initialize.setupCommandRegistry();
 			try {
 				setDisplayTitle(Display.getTitle() + " with MinecraftForge");
-			} catch (NoClassDefFoundError e) {}
+			} catch (Throwable e) {}
 			setupBiomeList();
 			if (!new File("config/MoreCommands/").isDirectory()) new File("config/MoreCommands/").mkdirs();
 			if (!new File("config/MoreCommands/Permissions/").isDirectory()) new File("config/MoreCommands/Permissions/").mkdirs();
@@ -1315,16 +1324,33 @@ public abstract class Reference {
 		}
 	}
 
+	public static boolean isEmpty(String string) {
+		return string.equals("");
+	}
+
+	public static boolean isBoolNull(boolean bool) {
+		try {
+			if (bool) return false;
+		} catch (NullPointerException e) {
+			return true;
+		}
+		return false;
+	}
+
+	public static Long formatDouble(Double d) {
+		return Long.parseLong(d.toString().substring(0, d.toString().length()-2));
+	}
+
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.27";
+	public static final String VERSION = "1.28";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	public static final String BUILD_DATE = "August 31st";
 	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"};
+	public static final ArrayList<com.ptsmods.morecommands.miscellaneous.CommandBase> commands = new ArrayList<>();
 	public static EasterEgg easterEgg = null;
 	public static boolean narratorActive = false;
-	public static boolean sittingEnabled = true;
 	public static Entity arrow = null;
 	public static boolean isSittingOnChair = false;
 	public static EntityPlayer player = null;
@@ -1346,12 +1372,13 @@ public abstract class Reference {
 	public static boolean easterEggLoopEnabled = false;
 	public static int updated = 0;
 	public static int updatesPerSecond = 0;
+	public static boolean initialized = false;
 	private static ArrayList<Block> blockBlacklist = new ArrayList<>();
 	private static ArrayList<Block> blockWhitelist = new ArrayList<>();
 	private static String ipAddress = null;
 	private static boolean shouldSaveInfoOverlayConfig = false;
 	private static boolean overlayEnabled = false;
-	public static boolean initialized = false;
+	private static ScriptEngine nashorn = new ScriptEngineManager(null).getEngineByName("nashorn");
 	private static HashMap<String, KeyBinding> keyBindings = new HashMap<>();
 	private static HashMap<String, ArrayList<String>> players = new HashMap<>();
 	private static HashMap<String, ArrayList<String>> groups = new HashMap<>();
@@ -1430,6 +1457,31 @@ public abstract class Reference {
 
 	public enum LogType {
 		INFO(), ERROR(), WARN();
+	}
+
+	public static abstract class Regex {
+
+		/**
+		 * Checks if a string contains anything other than what's allowed.
+		 * @param regex The regex pattern.
+		 * @param string The string to use the regex pattern on.
+		 * @return What's left after the regex pattern has been applied.
+		 */
+		public static String regexString(String regex, String string) {
+			return string.replaceAll(regex, "");
+		}
+
+		public static String removeUnwantedChars(String regex, String string) {
+			String data = regexString(regex, string);
+			for (String ch : data.split("")) {
+				String data1 = "";
+				for (String ch1 : string.split(""))
+					if (!ch1.equals(ch)) data1 += ch1;
+				string = data1;
+			}
+			return string;
+		}
+
 	}
 
 }

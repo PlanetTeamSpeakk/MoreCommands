@@ -8,6 +8,7 @@ import com.ptsmods.morecommands.commands.ptime.Commandptime;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandException;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,6 +19,7 @@ import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -30,6 +32,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class ClientEventHandler extends EventHandler {
+
+	private static boolean isGamePaused = false;
+	private static boolean isGamePaused1 = false;
 
 	@SubscribeEvent
 	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) throws CommandException {
@@ -58,7 +63,16 @@ public class ClientEventHandler extends EventHandler {
 			try {
 				Minecraft.getMinecraft().world.setWorldTime(Commandptime.time);
 			} catch (NullPointerException e) {} // NullPointerExceptions can occur when logging out from a server, these will crash your game.
-
+		isGamePaused1  = Minecraft.getMinecraft().currentScreen instanceof GuiIngameMenu;
+		if (isGamePaused1 && !isGamePaused) {
+			isGamePaused = true;
+			if (MinecraftForge.EVENT_BUS.post(new GamePaused()))
+				Minecraft.getMinecraft().displayGuiScreen(null);
+		} else if (!isGamePaused1 && isGamePaused) { // net.minecraft.client.Minecraft.isGamePaused() can only return true on singleplayer.
+			isGamePaused = false;
+			if (MinecraftForge.EVENT_BUS.post(new GameResumed()))
+				Minecraft.getMinecraft().displayGuiScreen(new GuiIngameMenu());
+		}
 	}
 
 	@SubscribeEvent
@@ -157,4 +171,19 @@ public class ClientEventHandler extends EventHandler {
 		}
 	}
 
+	@SubscribeEvent
+	public void onGamePaused(GamePaused event) {
+		Minecraft.getMinecraft().displayGuiScreen(new com.ptsmods.morecommands.miscellaneous.GuiIngameMenu());
+	}
+
+	//	@SubscribeEvent
+	//	public void onGamePaused(GamePaused event) {
+	//		event.setCanceled(true);
+	//	}
+	//  You can probably guess what these 2 events together will do
+	//	@SubscribeEvent
+	//	public void onGameResumed(GameResumed event) {
+	//		event.setCanceled(true);
+	//	}
+	//  If you can't: https://youtu.be/L1d530LibpE
 }

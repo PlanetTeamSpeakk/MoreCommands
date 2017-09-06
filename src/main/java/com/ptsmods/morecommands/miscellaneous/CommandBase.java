@@ -38,7 +38,7 @@ public class CommandBase extends net.minecraft.command.CommandBase {
 	}
 
 	public Permission getPermission() { // this has to be set to something, if the player has this permission in any group the player has, the player will be able to use this command.
-		return new Permission(Reference.MOD_ID, "PERMISSION", "DESCRIPTION", true);
+		return new Permission(null, null, null, false);
 	}
 
 }
