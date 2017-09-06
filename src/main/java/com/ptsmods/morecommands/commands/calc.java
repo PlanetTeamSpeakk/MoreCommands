@@ -1,8 +1,6 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -44,13 +42,8 @@ public class calc {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length != 0) {
-				Pattern pattern = Pattern.compile("([-+]?[0-9]*\\.?[0-9]+[\\/\\+\\-\\*\\%])+([-+]?[0-9]*\\.?[0-9]+)");
-				Matcher matcher = pattern.matcher(args[0]);
-				if (!matcher.matches()) {
-					Reference.sendMessage(sender, "The equation contained characters other than digits and math symbols.");
-					return;
-				}
-				ClientCommandHandler.instance.executeCommand(sender, "evaljavascript " + args[0]);
+				String regex = "(\\d*[\\/\\+\\-\\*\\%]*)"; // sadly, you cannot use brackets in your math equation, so you'd just have to run the command multiple times.
+				ClientCommandHandler.instance.executeCommand(sender, "evaljavascript " + Reference.Regex.removeUnwantedChars(regex, Reference.joinCustomChar("", args)));
 			} else Reference.sendCommandUsage(sender, usage);
 		}
 
@@ -60,11 +53,6 @@ public class calc {
 		}
 
 		protected String usage = "/calc <equation> Calculates a math equation so you don't have to.";
-
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return true;
-		}
 
 	}
 

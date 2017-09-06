@@ -96,7 +96,7 @@ public class fireball {
 				d2 -= 2;
 			}
 			Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
-			entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
+			if (entity != null) entity.setLocationAndAngles(d0, d1, d2, entity.rotationYaw, entity.rotationPitch);
 
 		}
 
@@ -110,7 +110,7 @@ public class fireball {
 			return new Permission(Reference.MOD_ID, "fireball", "Permission to use the fireball command.", true);
 		}
 
-		protected String usage = "/fireball Summons a fireball in the direction you're looking.";
+		protected String usage = "/fireball [power] Summons a fireball in the direction you're looking, power defaults to 4.";
 
 	}
 

@@ -23,6 +23,9 @@ public class wild {
 		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("rtp");
+			aliases.add("randomtp");
+			aliases.add("randomteleport");
 			return aliases;
 		}
 

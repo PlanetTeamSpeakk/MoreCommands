@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommandSender;
@@ -69,6 +70,11 @@ public class alias {
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.CLIENT;
+		}
+
+		@Override
+		public Permission getPermission() {
+			return new Permission(null, null, "", false);
 		}
 
 		private String usage = "/alias <create|edit|delete|list> Manage client sided aliases, can be used on any server with any command.";
