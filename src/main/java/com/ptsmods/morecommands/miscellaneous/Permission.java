@@ -22,7 +22,7 @@ public class Permission {
 	 *            A string, should be the name of the mod, doing
 	 *            Permission.toString() will return "modName.permission".
 	 */
-	public Permission(@Nullable String modName, @Nullable String permission, String description, Boolean reqPerms) {
+	public Permission(String modName, String permission, String description, Boolean reqPerms) {
 		if (reqPerms) {
 			this.modName = modName;
 			this.permission = permission;
@@ -63,7 +63,7 @@ public class Permission {
 	@Nullable
 	public static Permission getPermissionByName(String name) {
 		if (name.endsWith("*"))
-			return new Permission(name, null, "All permissions available.", true);
+			return new Permission(name, "", "All permissions available.", true);
 		else {
 			for (Permission perm : permissions)
 				if (perm.toString().equals(name) || perm.getName().equals(name)) return perm;

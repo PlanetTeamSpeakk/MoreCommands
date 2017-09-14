@@ -42,7 +42,7 @@ public class ServerEventHandler extends EventHandler {
 		CommandBase command = null;
 		try {
 			command = (CommandBase) event.getCommand(); // checking if the command extends com.ptsmods.morecommands.miscellaneous.CommandBase
-		} catch (ClassCastException e) {return;}
+		} catch (Throwable e) {return;}
 		if (command.singleplayerOnly() && !FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()) {
 			Reference.sendMessage(event.getSender(), "This command is currently only for singleplayer.");
 			event.setCanceled(true);
@@ -74,8 +74,9 @@ public class ServerEventHandler extends EventHandler {
 	@SubscribeEvent
 	public void onPlayerDeath(LivingDeathEvent event) {
 		if (event.getEntity() instanceof EntityPlayer && event.getEntity().getIsInvulnerable()) {
-			Reference.inventories.put((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).inventory.writeToNBT(new NBTTagList()));
-			((EntityPlayer) event.getEntity()).inventory.clear();
+			EntityPlayer player = (EntityPlayer) event.getEntity();
+			Reference.inventories.put((EntityPlayer) event.getEntity(), player.inventory.writeToNBT(new NBTTagList()));
+			player.inventory.clear();
 			HashMap<String, Float> data = new HashMap<>();
 			data.put("yaw", event.getEntity().rotationYaw);
 			data.put("pitch", event.getEntity().rotationPitch);
@@ -83,8 +84,8 @@ public class ServerEventHandler extends EventHandler {
 			Vec3d location = event.getEntity().getPositionVector();
 			if (location.y < 0D) location = new Vec3d(location.x, 0D, location.z);
 			Reference.locations.put((EntityPlayer) event.getEntity(), event.getEntity().getPositionVector());
-			Reference.experiencePoints.put((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).experienceTotal - 100);
-			Reference.removeExperience((EntityPlayer) event.getEntity(), ((EntityPlayer) event.getEntity()).experienceTotal + 100);
+			Reference.experiencePoints.put((EntityPlayer) event.getEntity(), player.experienceTotal - 100);
+			Reference.removeExperience((EntityPlayer) event.getEntity(), player.experienceTotal + 100);
 		}
 	}
 

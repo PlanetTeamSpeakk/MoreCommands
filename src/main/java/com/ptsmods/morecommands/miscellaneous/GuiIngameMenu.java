@@ -15,15 +15,12 @@ public class GuiIngameMenu extends net.minecraft.client.gui.GuiIngameMenu {
 	@Override
 	public void initGui() {
 		super.initGui();
-		buttonList.add(new GuiButton(3, width/2 - 100, height/4 + 128, "Exit game"));
-		buttonList.add(new GuiButton(2, width/2 - 100, height/4 + 152, "MoreCommands"));
+		buttonList.add(new GuiButton(3, width/2 - 100, height/4 + 128, I18n.format("menu.quit")));
+		buttonList.add(new GuiButton(2, width/2 - 100, height/4 + 152, I18n.format("menu.moreCommands")));
 		for (GuiButton button : buttonList)
 			button.y -= 20;
-		String[] descriptions = new String[] {"Tweak the Minecraft settings.", "Return to main menu.", "A little information about the MoreCommands mod.", "Leaves the world or server and closes the game.",
-				"Close this GUI.", "All the advancements you've made so far.", "Your statistics of the world or server you're playing on.", "Let people on your network play on this world as well.", "", "", "", "",
-				"The mods you've installed and their settings.", ""}; // button 8, 9, 10 and 11 don't exist
-		for (int x = 0; x < descriptions.length; x++)
-			buttonDescriptions.put(x, descriptions[x]);
+		for (int x : Reference.range(13))
+			buttonDescriptions.put(x, I18n.format("menu.descs." + x));
 	}
 
 	@Override

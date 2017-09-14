@@ -9,7 +9,6 @@ import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngameMenu;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.PacketBuffer;

@@ -45,16 +45,18 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -62,6 +64,7 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -162,7 +165,7 @@ public abstract class Reference {
 		} catch (NullPointerException e) {
 			try {
 				Minecraft.getMinecraft().player.sendMessage(new TextComponentString(join(message)));
-			} catch (NullPointerException e1) {
+			} catch (Throwable e1) {
 				Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(join(message)));
 			}
 		}
@@ -173,7 +176,11 @@ public abstract class Reference {
 		try {
 			sendMessage((EntityPlayer) player, join(message));
 		} catch (ClassCastException e) {
-			print(LogType.INFO, join(message));
+			try {
+				((DedicatedServer) player).logInfo(TextFormatting.getTextWithoutFormattingCodes(join(message)));
+			} catch (ClassCastException e1) {
+				print(LogType.INFO, "ClassCastException\n" + TextFormatting.getTextWithoutFormattingCodes(join(message)));
+			}
 		}
 	}
 
@@ -198,11 +205,7 @@ public abstract class Reference {
 	}
 
 	public static void sendCommandUsage(ICommandSender player, String usage) {
-		try {
-			sendCommandUsage((EntityPlayer) player, usage);
-		} catch (ClassCastException e) {
-			print(LogType.INFO,usage);
-		}
+		sendMessage(player, TextFormatting.RED + "Usage: " + usage);
 	}
 
 	public static void teleportSafely(EntityPlayer player) {
@@ -286,7 +289,7 @@ public abstract class Reference {
 		if (holding.hasTagCompound()) {
 			NBTTagCompound nbt = holding.getTagCompound();
 			if (nbt.hasKey("ptcmd")) {
-				MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
+				MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 				EntityPlayer player1;
 				try {
 					player1 = CommandBase.getPlayer(server, player, player.getName());
@@ -311,7 +314,7 @@ public abstract class Reference {
 
 	@SideOnly(Side.CLIENT)
 	public static void superPickaxeBreak(EntityPlayer player, EnumHand hand) throws CommandException {
-		MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		EntityPlayer player2;
 		try {
 			player2 = CommandBase.getPlayer(server, player, player.getName());
@@ -327,13 +330,13 @@ public abstract class Reference {
 	public static String getLocalizedName(Item item) {
 		String translation = new TextComponentTranslation("item." + item.getUnlocalizedName().substring(5) + ".name").getUnformattedText();
 		if (translation.startsWith("item.") && translation.endsWith(".name")) translation = item.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
-		return translation;
+		return I18n.format(item.getUnlocalizedName() + ".name");
 	}
 
 	public static String getLocalizedName(Block block) {
 		String translation = new TextComponentTranslation("block." + block.getUnlocalizedName().substring(5) + ".name").getUnformattedText();
 		if (translation.startsWith("block.") && translation.endsWith(".name")) translation = block.getRegistryName().toString().split(":")[1].replaceAll("_", " ");
-		return translation == null ? "air" : translation;
+		return I18n.format(block.getUnlocalizedName() + ".name");
 	}
 
 	public static String evalJavaScript(String script) throws ScriptException {
@@ -433,10 +436,14 @@ public abstract class Reference {
 	}
 
 	public static boolean isConsole(ICommandSender sender) {
+		EntityPlayer player;
 		try {
+			player = (EntityPlayer) sender;
 		} catch (ClassCastException e) {return true;}
-		return false;
+		return False(player); // if I'd just return false eclipse would remove the code and it'll break.
 	}
+
+	private static boolean False(@Nullable EntityPlayer player) {return false;}
 
 	public static void setAllWorldTimes(MinecraftServer server, Integer time) {
 		CommandfixTime.time = -1;
@@ -449,14 +456,7 @@ public abstract class Reference {
 	}
 
 	public static String getArrayAsString(Object[] array) {
-		String arrayString = "";
-		for (int x = 0; x < array.length; x += 1) {
-			arrayString += array[x].toString();
-			if (x+1 == array.length);
-			else if (x+2 != array.length) arrayString += ", ";
-			else if (x+2 == array.length) arrayString += " and ";
-		}
-		return arrayString;
+		return CommandBase.joinNiceString(array);
 	}
 
 	public static String getHTML(String url) throws IOException {
@@ -756,7 +756,7 @@ public abstract class Reference {
 
 	@SideOnly(Side.CLIENT)
 	public static void setupKeyBindingRegistry() {
-		KeyBinding[] keyBindings = new KeyBinding[] {new KeyBinding("Toggle overlay", Keyboard.KEY_C, "MoreCommands"), new KeyBinding("Fireball", Keyboard.KEY_V, "MoreCommands")};
+		KeyBinding[] keyBindings = new KeyBinding[] {new KeyBinding("toggleOverlay", Keyboard.KEY_C), new KeyBinding("fireball", Keyboard.KEY_V)};
 		String[] names = new String[] {"toggleOverlay", "fireball"};
 		for (int x = 0; x < keyBindings.length; x++)
 			Reference.keyBindings.put(names[x], keyBindings[x]);
@@ -798,7 +798,7 @@ public abstract class Reference {
 	public static double calculateBlocksPerSecond() {
 		try {
 			return calculateBlocksPerSecond(lastPosition, Minecraft.getMinecraft().player.getPositionVector());
-		} catch (NullPointerException e) {
+		} catch (Throwable e) {
 			return 0D;
 		}
 	}
@@ -854,7 +854,7 @@ public abstract class Reference {
 	}
 
 	public static boolean isHomesFileLoaded() {
-		return !(homes == null);
+		return homes != null;
 	}
 
 	public static void addWarp(String name, Vec3d location, Float yaw, Float pitch) throws IOException {
@@ -1025,16 +1025,24 @@ public abstract class Reference {
 	}
 
 	public static boolean checkPermission(ICommandSender sender, Permission permission) {
-		if (FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()) return true;
-		if (!permission.reqPerms()) return true;
-		if (!players.containsKey(((EntityPlayer) sender).getUniqueID().toString())) return false;
-		boolean hasPerm = false;
-		for (String group : players.get(sender.getCommandSenderEntity().getUniqueID().toString()))
-			if (groups.containsKey(group) && (groups.get(group).contains(permission.toString()) || groups.get(group).contains("*") || groups.get(group).contains(permission.getModName() + ".*"))) {
-				hasPerm = true;
-				break;
-			}
-		return hasPerm;
+		try {
+			boolean isPublic = false;
+			try {
+				isPublic = Minecraft.getMinecraft().getIntegratedServer().getPublic();
+			} catch (Throwable e) {} // for if the mod's installed on a server.
+			if (FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer() && !isPublic) return true;
+			if (!permission.reqPerms() || isConsole(sender)) return true;
+			if (!players.containsKey(((EntityPlayer) sender).getUniqueID().toString())) return false;
+			boolean hasPerm = false;
+			for (String group : players.get(sender.getCommandSenderEntity().getUniqueID().toString()))
+				if (groups.containsKey(group) && (groups.get(group).contains(permission.toString()) || groups.get(group).contains("*") || groups.get(group).contains(permission.getModName() + ".*"))) {
+					hasPerm = true;
+					break;
+				}
+			return hasPerm;
+		} catch (Throwable e) {
+			return true;
+		}
 	}
 
 	public static void loadGroups() {
@@ -1188,11 +1196,6 @@ public abstract class Reference {
 	public static void initialize() {
 		if (!initialized) {
 			if (System.console() == null) System.setProperty("jansi.passthrough", "true");
-			try {
-				registerEventHandler(CommandType.CLIENT, new RegistryEventHandler());
-			} catch (IncorrectCommandType e1) {
-				e1.printStackTrace();
-			}
 			Initialize.setupCommandRegistry();
 			try {
 				setDisplayTitle(Display.getTitle() + " with MinecraftForge");
@@ -1215,9 +1218,11 @@ public abstract class Reference {
 
 	public static void sleep(double millis) throws InterruptedException {
 		double time = System.currentTimeMillis();
-		while (true)
-			if (System.currentTimeMillis()-time == millis) return;
+		while (System.currentTimeMillis()-time != millis)
+			nothing();
 	}
+
+	public static void nothing() {}
 
 	public static double ticksToMillis(double ticks) {
 		return ticks / 20 * 1000;
@@ -1341,14 +1346,36 @@ public abstract class Reference {
 		return Long.parseLong(d.toString().substring(0, d.toString().length()-2));
 	}
 
+	public static String capitalizeFirstChar(String string) {
+		return string.substring(0, 1).toUpperCase() + string.substring(1, string.length());
+	}
+
+	public static String[] capitalizeFirstChars(String... strings) {
+		List<String> output = new ArrayList<>();
+		for (String string : strings) output.add(capitalizeFirstChar(string));
+		return output.toArray(new String[output.size()]);
+	}
+
+	public static int getHighestInt(Integer... ints) {
+		int i = Integer.MIN_VALUE;
+		for (int x : ints)
+			if (x > i) i = x;
+		return i;
+	}
+
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.28";
+	public static final String VERSION = "1.29";
 	public static final String MC_VERSIONS = "[1.11,1.12.1]";
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String BUILD_DATE = "August 31st";
+	public static final String BUILD_DATE = "September 8th";
 	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"};
 	public static final ArrayList<com.ptsmods.morecommands.miscellaneous.CommandBase> commands = new ArrayList<>();
+	public static final boolean yiss = true;
+	public static final boolean nah = false;
+	public static final Block lockedChest = new BlockFactory(BlockLockedChest.class, "morecommands:locked_chest", "lockedChest").getBlockNoExceptions();
+	public static final CreativeTabs unobtainableItems = new CreativeTab("Unobtainable items", new ItemBlock(lockedChest));
+	public static final String w3hillsApiKey = "5D58B696-7AF3-4DD0-1251-B5D24E16668C"; // feel free to use it, it's free anyway. https://api.w3hills.com/youtube
 	public static EasterEgg easterEgg = null;
 	public static boolean narratorActive = false;
 	public static Entity arrow = null;
