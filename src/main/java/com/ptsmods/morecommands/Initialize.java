@@ -13,23 +13,28 @@ import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.miscellaneous.CommandBase;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
+import com.ptsmods.morecommands.miscellaneous.KeyBinding;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 import com.ptsmods.morecommands.miscellaneous.Reference.LogType;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.GameRules.ValueType;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import scala.actors.threadpool.Arrays;
 
 public abstract class Initialize {
 
 	public static void registerCommands(FMLServerStartingEvent event) {
 		Reference.print(LogType.INFO, "Registering MoreCommands server sided commands.");
+		for (WorldServer world : event.getServer().worlds)
+			if (!Arrays.asList(world.getGameRules().getRules()).contains("doMeltBlocks")) world.getGameRules().addGameRule("doMeltBlocks", "true", ValueType.BOOLEAN_VALUE);
 
 		ICommand[] nonRegistryCommands = new ICommand[] {new CommandfixTime(), new Commandenchant()};
 		ICommand[] commands;
@@ -48,13 +53,18 @@ public abstract class Initialize {
 			try {
 				event.registerServerCommand(command);
 				counter += 1;
-			} catch (Exception e) {fails += 1; failList.add(command.getName()); continue;}
+			} catch (Throwable e) {
+				fails += 1;
+				failList.add(command.getName());
+				e.printStackTrace();
+				continue;
+			}
 
 		for (ICommand command : nonRegistryCommands)
 			try {
 				event.registerServerCommand(command);
 				counter += 1;
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				fails += 1;
 				failList.add(command.getName());
 				e.printStackTrace();
@@ -62,7 +72,7 @@ public abstract class Initialize {
 			}
 
 		Reference.print(LogType.INFO, "Successfully registered " + counter.toString() + " server sided commands, with " + fails.toString() + " fails.");
-		if (!(failList.size() == 0)) Reference.print(LogType.INFO, "Failed to register " + CommandBase.joinNiceString(failList.toArray(new String[0])));
+		if (failList.size() != 0) Reference.print(LogType.INFO, "Failed to register " + CommandBase.joinNiceString(failList.toArray(new String[0])));
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -86,13 +96,18 @@ public abstract class Initialize {
 			try {
 				ClientCommandHandler.instance.registerCommand(command);
 				counter += 1;
-			} catch (Exception e) {fails += 1; failList.add(command.getName()); continue;}
+			} catch (Throwable e) {
+				fails += 1;
+				failList.add(command.getName());
+				e.printStackTrace();
+				continue;
+			}
 
 		for (ICommand command : nonRegistryCommands)
 			try {
 				ClientCommandHandler.instance.registerCommand(command);
 				counter += 1;
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				fails += 1;
 				failList.add(command.getName());
 				e.printStackTrace();
