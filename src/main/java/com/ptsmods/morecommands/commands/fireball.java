@@ -110,7 +110,7 @@ public class fireball {
 			return new Permission(Reference.MOD_ID, "fireball", "Permission to use the fireball command.", true);
 		}
 
-		protected String usage = "/fireball [power] Summons a fireball in the direction you're looking, power defaults to 4.";
+		protected String usage = "/fireball [power] Summons a fireball in the direction you're looking, power defaults to 1.";
 
 	}
 

@@ -54,7 +54,7 @@ public class showNBT {
 					dataFinal += dataArray[x];
 					if (x+1 != dataArray.length) dataFinal += " ";
 				}
-				dataFinal = TextFormatting.getTextWithoutFormattingCodes(dataFinal);
+				dataFinal = TextFormatting.getTextWithoutFormattingCodes(dataFinal).replaceAll("\\\\", "");
 				Reference.sendMessage(player, "The item you're holding has the following NBT data: " + dataFinal);
 			} else
 				Reference.sendMessage(player, "THe item you're holding doesn't have any NBT data.");

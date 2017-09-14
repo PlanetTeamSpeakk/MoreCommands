@@ -69,6 +69,7 @@ public class makeUnbreakable {
 					}
 					Reference.sendMessage(sender, "Every block is now unbreakable, glhf.");
 				}
+			else Reference.sendCommandUsage(sender, usage);
 
 		}
 
