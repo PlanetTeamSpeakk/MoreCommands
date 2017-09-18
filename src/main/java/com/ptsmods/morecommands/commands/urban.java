@@ -48,10 +48,10 @@ public class urban {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length != 0) {
-				String searchTerm = Reference.joinCustomChar("+", args);
+				String searchTerm = Reference.join(args);
 				String data;
 				try {
-					data = Reference.getHTML("http://api.urbandictionary.com/v0/define?term=" + searchTerm);
+					data = Reference.getHTML("http://api.urbandictionary.com/v0/define?term=" + searchTerm.replaceAll(" ", "+"));
 				} catch (IOException e) {
 					Reference.sendMessage(sender, "An unknown error occured while trying to get the data, please try again.");
 					e.printStackTrace();

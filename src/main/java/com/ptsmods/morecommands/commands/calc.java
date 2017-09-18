@@ -41,10 +41,15 @@ public class calc {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0) {
-				String regex = "(\\d*[\\/\\+\\-\\*\\%]*)"; // sadly, you cannot use brackets in your math equation, so you'd just have to run the command multiple times.
-				ClientCommandHandler.instance.executeCommand(sender, "evaljavascript " + Reference.Regex.removeUnwantedChars(regex, Reference.joinCustomChar("", args)));
-			} else Reference.sendCommandUsage(sender, usage);
+			if (args.length != 0)
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						String regex = "(\\d*[\\/\\+\\-\\*\\%]*)"; // sadly, you cannot use brackets in your math equation, so you'd just have to run the command multiple times.
+						ClientCommandHandler.instance.executeCommand(sender, "evaljavascript " + Reference.Regex.removeUnwantedChars(regex, Reference.joinCustomChar("", args)));
+					}
+				}).start();
+			else Reference.sendCommandUsage(sender, usage);
 		}
 
 		@Override

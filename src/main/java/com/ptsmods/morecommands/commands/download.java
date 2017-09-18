@@ -55,21 +55,24 @@ public class download {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
+						String url = Reference.joinCustomChar("", args);
 						Reference.sendMessage(sender, "Calculating file size, please wait...");
 						try {
-							Reference.sendMessage(sender, "Downloading " + Downloader.formatFileSize(Downloader.getWebFileSize(args[0])) + " , please wait...");
+							Reference.sendMessage(sender, "Downloading " + Downloader.formatFileSize(Downloader.getWebFileSize(Downloader.convertUrl(url))) + ", please wait...");
 						} catch (Throwable e1) {
 							Reference.sendMessage(sender, "Could not get the file size, downloading the file, please wait...");
 							e1.printStackTrace();
 						}
-						String filename = args[0].split("/")[args[0].split("/").length-1];
+						String filename = url.split("/")[url.split("/").length-1];
+						if (url.contains("youtu") && url.split("v=").length == 2) filename = "downloads/" + filename.split("v=")[1] + ".mp4";
+						if (url.contains("vimeo.com/")) filename = "downloads/" + filename + ".mp4";
 						Map<String, String> downloaded = new HashMap<>();
 						downloaded.put("fileLocation", "");
 						downloaded.put("success", "false");
 						downloaded.put("bytes", "0");
 						Long milis1 = System.currentTimeMillis();
 						try {
-							downloaded = args[0].contains("youtu") ? Downloader.downloadYoutubeVideo(args[0], "downloads/" + filename) : Downloader.downloadFile(args[0], "downloads/" + filename);
+							downloaded = Downloader.downloadFileOrVideo(url, filename);
 						} catch (NullPointerException e) {
 							Reference.sendMessage(sender, "An unknown error occured while trying to download the file, please try again.");
 							e.printStackTrace();
@@ -94,7 +97,9 @@ public class download {
 			return true;
 		}
 
-		protected String usage = "/download <url> Downloads a file to your Minecraft directory. By default files are downloaded to appdata\\.minecraft\\downloads unless the Minecraft directory has been changed. Can also download (most, except for music vids) YouTube videos.";
+		protected String usage = "/download <url> Downloads a file to your Minecraft directory. "
+				+ "By default files are downloaded to appdata\\.minecraft\\downloads unless the Minecraft directory has been changed. "
+				+ "Can also download (most, except for music vids) YouTube videos and Vimeo videos.";
 
 	}
 
