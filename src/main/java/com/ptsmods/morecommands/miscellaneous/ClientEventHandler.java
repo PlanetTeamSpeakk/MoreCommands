@@ -172,7 +172,7 @@ public class ClientEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onGamePaused(GamePaused event) {
-		Minecraft.getMinecraft().displayGuiScreen(new com.ptsmods.morecommands.miscellaneous.GuiIngameMenu());
+		if (Reference.getMinecraftVersion().equals("1.12") || Reference.getMinecraftVersion().equals("1.12.1")) Minecraft.getMinecraft().displayGuiScreen(new com.ptsmods.morecommands.miscellaneous.GuiIngameMenu());
 	}
 
 	//	@SubscribeEvent

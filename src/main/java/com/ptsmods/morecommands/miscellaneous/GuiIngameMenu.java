@@ -35,13 +35,12 @@ public class GuiIngameMenu extends net.minecraft.client.gui.GuiIngameMenu {
 	}
 
 	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks)
-	{
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		drawDefaultBackground();
 		drawCenteredString(fontRenderer, I18n.format("menu.game"), width / 2, 20, 16777215);
 		for (GuiButton button : buttonList)
 			button.drawButton(mc, mouseX, mouseY, partialTicks);
-		for (GuiButton button : buttonList) // creating a second for loop so the hovering text gets drawn correctly
+		for (GuiButton button : buttonList) // creating a second 'for' loop so the hovering text gets drawn correctly
 			if (button.isMouseOver())
 				drawHoveringText(buttonDescriptions.get(button.id), mouseX, mouseY+8);
 		for (GuiLabel label : labelList)

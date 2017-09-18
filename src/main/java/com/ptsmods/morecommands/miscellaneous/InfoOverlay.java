@@ -107,7 +107,7 @@ public class InfoOverlay extends Gui {
 
 	private static String translate(String key) {
 		Minecraft mc = Minecraft.getMinecraft();
-		String output = "The variable to be assigned could not be found, this is probably a bug so please tell the devs (" + Reference.getArrayAsString(Reference.AUTHORS) + ")";
+		String output = "unknown";
 		try {
 			switch (key) {
 			case "playerName": {output = mc.player.getName(); break;}

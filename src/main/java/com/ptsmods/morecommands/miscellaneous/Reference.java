@@ -11,16 +11,17 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.lwjgl.opengl.Display;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.parser.ParserException;
 
+import com.google.gson.Gson;
 import com.ptsmods.morecommands.Initialize;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.commands.superPickaxe.CommandsuperPickaxe;
@@ -87,7 +89,6 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import scala.actors.threadpool.Arrays;
 
 public abstract class Reference {
 
@@ -100,6 +101,17 @@ public abstract class Reference {
 			return false;
 		}
 
+		return true;
+	}
+
+	public static boolean isDouble(String s) {
+		try {
+			Double.parseDouble(s);
+		} catch (NumberFormatException e) {
+			return false;
+		} catch (NullPointerException e) {
+			return false;
+		}
 		return true;
 	}
 
@@ -461,8 +473,9 @@ public abstract class Reference {
 
 	public static String getHTML(String url) throws IOException {
 		StringBuilder result = new StringBuilder();
-		java.net.URL URL = new java.net.URL(url);
-		HttpURLConnection connection = (HttpURLConnection) URL.openConnection();
+		URL URL = new URL(url);
+		URLConnection connection = URL.openConnection();
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
 		BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		String line;
 		while ((line = rd.readLine()) != null)
@@ -476,7 +489,7 @@ public abstract class Reference {
 		String[] statusesArray = statuses.split(",");
 		for (int x = 0; x < statusesArray.length; x += 1)
 			statusesArray[x] = statusesArray[x].substring(1, statusesArray[x].length()-1).replaceAll("\"", "");
-		HashMap<String, String> statusesMap = new HashMap<>();
+		Map<String, String> statusesMap = new HashMap<>();
 		for (String element : statusesArray)
 			statusesMap.put(element.split(":")[0], element.split(":")[1]);
 		String statusesMapString = statusesMap.toString();
@@ -675,13 +688,13 @@ public abstract class Reference {
 	public static void registerEventHandler(CommandType side, EventHandler handler) throws IncorrectCommandType {
 		if (side == CommandType.CLIENT) try {
 			registerClientEventHandler(handler);
-		} catch (NoSuchMethodError e) {} // server sided
+		} catch (Throwable e) {} // server sided
 		else if (side == CommandType.SERVER) registerServerEventHandler(handler);
 		else throwIncorrectCommandType();
 	}
 
 	@SideOnly(Side.CLIENT)
-	private static void registerClientEventHandler(EventHandler handler) {
+	static void registerClientEventHandler(EventHandler handler) {
 		MinecraftForge.EVENT_BUS.register(handler);
 	}
 
@@ -969,9 +982,18 @@ public abstract class Reference {
 	}
 
 	public static Integer[] range(int range) {
+		if (range < 0) range = 0;
 		Integer[] array = new Integer[range];
 		for (int x = 0; x < array.length; x++)
 			array[x] = x;
+		return array;
+	}
+
+	public static Long[] range(long range) {
+		if (range < 0) range = 0;
+		Long[] array = new Long[((Long) range).intValue()];
+		for (Long x = (long) 0; x < array.length; x++)
+			array[x.intValue()] = x;
 		return array;
 	}
 
@@ -985,13 +1007,6 @@ public abstract class Reference {
 
 	public static void playEasterEgg() {
 		Minecraft.getMinecraft().player.playSound(new SoundEvent(regenerateEasterEgg().getSoundLocation()), Float.MAX_VALUE, 0F);
-	}
-
-	public static void loopEasterEgg() throws InterruptedException {
-		while (easterEggLoopEnabled) {
-			playEasterEgg();
-			sleep(ticksToMillis(secondsToTicks(9.5)));
-		}
 	}
 
 	public static void addJarToClasspath(String fileLocation) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, MalformedURLException {
@@ -1212,17 +1227,21 @@ public abstract class Reference {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			apiKeys.put("w3hills", "5D58B696-7AF3-4DD0-1251-B5D24E16668C");
+			apiKeys.put("geocoding", "AIzaSyCXkFcW0v8XJWGK2Im2_fApsbh3I8OGCDI"); // they're all free, anyway.
+			apiKeys.put("timezone", "AIzaSyCXkFcW0v8XJWGK2Im2_fApsbh3I8OGCDI");
+			Gson gson = new Gson();
+			try {
+				String data = getHTML("http://free.currencyconverterapi.com/api/v3/currencies");
+				Map<String, Map> results = (Map) gson.fromJson(data, Map.class).get("results");
+				for (String currency : results.keySet())
+					currencies.put(currency, (String) results.get(currency).get("currencyName"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			initialized = true;
 		}
 	}
-
-	public static void sleep(double millis) throws InterruptedException {
-		double time = System.currentTimeMillis();
-		while (System.currentTimeMillis()-time != millis)
-			nothing();
-	}
-
-	public static void nothing() {}
 
 	public static double ticksToMillis(double ticks) {
 		return ticks / 20 * 1000;
@@ -1335,7 +1354,7 @@ public abstract class Reference {
 
 	public static boolean isBoolNull(boolean bool) {
 		try {
-			if (bool) return false;
+			if (bool || !bool) return false;
 		} catch (NullPointerException e) {
 			return true;
 		}
@@ -1363,10 +1382,30 @@ public abstract class Reference {
 		return i;
 	}
 
+	public static String formatTimeStamp(Long timestamp) {
+		String output = "";
+		try {
+			Gson gson = new Gson();
+			String data = getHTML("http://www.convert-unix-time.com/api?timestamp=" + timestamp);
+			Map dataMap = gson.fromJson(data, Map.class);
+			output = (String) dataMap.get("utcDate");
+		} catch (IOException e) {
+			output = "unknown";
+		}
+		return output;
+	}
+
+	public static String multiplyString(String string, Integer times) {
+		String output = "";
+		for (int x : range(times))
+			output += string;
+		return output;
+	}
+
 	public static final String MOD_ID = "morecommands";
 	public static final String MOD_NAME = "MoreCommands";
-	public static final String VERSION = "1.29";
-	public static final String MC_VERSIONS = "[1.11,1.12.1]";
+	public static final String VERSION = "1.30";
+	public static final String MC_VERSIONS = "[1.12,1.12.1]"; // TODO change this to 1.11,1.11.2 with the 1.11 version and comment out the annotation in RegistryEventHandler.java
 	public static final String UPDATE_URL = "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
 	public static final String BUILD_DATE = "September 8th";
 	public static final String[] AUTHORS = new String[] {"PlanetTeamSpeak"};
@@ -1374,8 +1413,9 @@ public abstract class Reference {
 	public static final boolean yiss = true;
 	public static final boolean nah = false;
 	public static final Block lockedChest = new BlockFactory(BlockLockedChest.class, "morecommands:locked_chest", "lockedChest").getBlockNoExceptions();
-	public static final CreativeTabs unobtainableItems = new CreativeTab("Unobtainable items", new ItemBlock(lockedChest));
-	public static final String w3hillsApiKey = "5D58B696-7AF3-4DD0-1251-B5D24E16668C"; // feel free to use it, it's free anyway. https://api.w3hills.com/youtube
+	public static final CreativeTabs unobtainableItems = new CreativeTab("unobtainable items", new ItemBlock(lockedChest));
+	public static final Map<String, String> apiKeys = new HashMap<>();
+	public static final Map<String, String> currencies = new HashMap<>();
 	public static EasterEgg easterEgg = null;
 	public static boolean narratorActive = false;
 	public static Entity arrow = null;
