@@ -12,7 +12,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
-import scala.actors.threadpool.Arrays;
 
 public class curConvert {
 
@@ -30,7 +29,7 @@ public class curConvert {
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			if (args.length == 1 || args.length == 2)
-				return getListOfStringsMatchingLastWord(args, Arrays.asList(Reference.currencies.keySet().toArray(new String[0])));
+				return getListOfStringsMatchingLastWord(args, Reference.currencies.keySet().toArray(new String[0]));
 			else return new ArrayList();
 		}
 

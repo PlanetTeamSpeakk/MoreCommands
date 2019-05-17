@@ -12,8 +12,7 @@ import net.minecraft.util.math.BlockPos;
 
 public class broadcast {
 
-	public broadcast() {
-	}
+	public broadcast() {}
 
 	public static class Commandbroadcast extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -45,8 +44,7 @@ public class broadcast {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0)
-				Reference.sendServerMessage(server, Reference.convertColorCodes(Reference.join(args)));
+			if (args.length != 0) Reference.sendServerMessage(server, Reference.convertColorCodes(Reference.join(args)));
 			else Reference.sendCommandUsage(sender, usage);
 
 		}
@@ -58,7 +56,7 @@ public class broadcast {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "broadcast", "Permission to use the broadcast command.", true);
+			return new Permission(Reference.MOD_ID, "broadcast", "Broadcasts a message to the whole server.", true);
 		}
 
 		protected String usage = "/broadcast <message> Broadcasts a message to the whole server, you can use color codes e.g. &6, &4.";

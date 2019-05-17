@@ -6,7 +6,7 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -17,8 +17,7 @@ public class breakBlock {
 
 	public static Object instance;
 
-	public breakBlock() {
-	}
+	public breakBlock() {}
 
 	public static class Commandbreak extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -53,11 +52,10 @@ public class breakBlock {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			BlockPos block = Minecraft.getMinecraft().objectMouseOver.getBlockPos();
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			BlockPos block = Reference.rayTrace(getCommandSenderAsPlayer(sender), 160).getBlockPos();
 			EntityPlayer player = (EntityPlayer) sender;
-			if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR)
-				Reference.sendMessage(player, "You cannot break air.");
+			if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR) Reference.sendMessage(player, "You cannot break air.");
 			else {
 				player.getEntityWorld().setBlockToAir(block);
 				Reference.sendMessage(player, "The block at X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + " has been broken.");

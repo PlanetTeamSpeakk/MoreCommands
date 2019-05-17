@@ -17,8 +17,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class home {
 
-	public home() {
-	}
+	public home() {}
 
 	public static class Commandhome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -85,7 +84,7 @@ public class home {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "home", "Permission to use the home command.", true);
+			return new Permission(Reference.MOD_ID, "home", "Teleport to your home.", true);
 		}
 
 		protected String usage = "/home Teleports you to your home.";

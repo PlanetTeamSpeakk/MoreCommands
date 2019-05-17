@@ -13,8 +13,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class consoleCommand {
 
-	public consoleCommand() {
-	}
+	public consoleCommand() {}
 
 	public static class CommandconsoleCommand extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -51,8 +50,7 @@ public class consoleCommand {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length == 0)
-				Reference.sendCommandUsage(sender, usage);
+			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
 			else {
 				String command = "";
 				for (Integer length = 0; length < args.length; length += 1) {
@@ -60,7 +58,7 @@ public class consoleCommand {
 					if (length + 1 != args.length) command += " ";
 				}
 				server.getCommandManager().executeCommand(server, command);
-				Reference.sendMessage(sender, "Successfully ran command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + TextFormatting.RESET + " from the console. Some commands may give errors, or not work at all when ran by the console.");
+				Reference.sendMessage(sender, "Successfully ran command " + TextFormatting.GRAY + TextFormatting.ITALIC + command + Reference.dtf + " from the console. Some commands may give errors, or not work at all when ran by the console.");
 			}
 		}
 
