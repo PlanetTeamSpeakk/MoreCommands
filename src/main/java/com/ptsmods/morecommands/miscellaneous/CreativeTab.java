@@ -6,8 +6,8 @@ import net.minecraft.item.ItemStack;
 
 public class CreativeTab extends CreativeTabs {
 
-	private final Item iconItem;
-	private final String label;
+	private final Item		iconItem;
+	private final String	label;
 
 	public CreativeTab(String label, Item iconItem) {
 		super(label);
@@ -16,12 +16,12 @@ public class CreativeTab extends CreativeTabs {
 	}
 
 	@Override
-	public ItemStack getTabIconItem() {
+	public ItemStack createIcon() {
 		return new ItemStack(iconItem);
 	}
 
 	@Override
-	public String getTranslatedTabLabel() {
+	public String getTranslationKey() {
 		return "itemGroup." + Reference.joinCustomChar("", Reference.capitalizeFirstChars(label.split(" "))); // this should convert "Unobtainable items" to "itemGroup.UnobtainableItems"
 	}
 

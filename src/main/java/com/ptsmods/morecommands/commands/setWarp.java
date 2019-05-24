@@ -1,12 +1,13 @@
 package com.ptsmods.morecommands.commands;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.miscellaneous.WarpsHelper;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -15,8 +16,7 @@ import net.minecraft.util.math.MathHelper;
 
 public class setWarp {
 
-	public setWarp() {
-	}
+	public setWarp() {}
 
 	public static class CommandsetHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -47,18 +47,12 @@ public class setWarp {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			if (args.length != 0)
-				try {
-					Reference.addWarp(args[0], player.getPositionVector(), MathHelper.wrapDegrees(player.rotationYaw), MathHelper.wrapDegrees(player.rotationPitch));
-					Reference.saveWarpsFile();
-					Reference.sendMessage(player, "The warp has been set.");
-				} catch (IOException e) {
-					Reference.sendMessage(sender, "An unknown error occured while reading the file.");
-					return;
-				}
-			else Reference.sendCommandUsage(sender, usage);
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			if (args.length != 0) {
+				EntityPlayer player = getCommandSenderAsPlayer(sender);
+				WarpsHelper.addWarp(sender.getEntityWorld(), args[0], player.dimension, player.getPositionVector(), MathHelper.wrapDegrees(player.rotationYaw), MathHelper.wrapDegrees(player.rotationPitch));
+				Reference.sendMessage(sender, "The warp has been set.");
+			} else Reference.sendCommandUsage(sender, usage);
 		}
 
 		@Override
@@ -68,7 +62,7 @@ public class setWarp {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "setwarp", "Permission to use the setwarp command.", true);
+			return new Permission(Reference.MOD_ID, "setwarp", "Set convient little waypoints everyone can use.", true);
 		}
 
 		protected String usage = "/setwarp <name> Sets a warp.";

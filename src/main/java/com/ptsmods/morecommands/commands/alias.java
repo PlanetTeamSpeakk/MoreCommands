@@ -1,7 +1,6 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
@@ -14,8 +13,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class alias {
 
-	public alias() {
-	}
+	public alias() {}
 
 	public static class Commandalias extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -45,10 +43,9 @@ public class alias {
 			if (args.length == 0 || !args[0].equals("create") && !args[0].equals("edit") && !args[0].equals("delete") && !args[0].equals("list")) Reference.sendCommandUsage(sender, usage);
 			else if (args.length == 1) {
 				if (args[0].equals("list")) {
-					if (Reference.getAliases().equals(new HashMap<String, String>())) Reference.sendMessage(sender, "You haven't made any aliases yet, you can make one with /alias add <name> <command>.");
-					else Reference.sendMessage(sender, "You currently added the following aliases:\n" + TextFormatting.GOLD + Reference.joinCustomChar(TextFormatting.YELLOW + ", " + TextFormatting.GOLD, Reference.getAliases().keySet()));
-				}
-				else if (args[0].equals("create")) Reference.sendCommandUsage(sender, "/alias create <name> Creates an alias, you can assign a command to it with /alias edit <name> <command>.");
+					if (Reference.getAliases().isEmpty()) Reference.sendMessage(sender, "You haven't made any aliases yet, you can make one with /alias add <name> <command>.");
+					else Reference.sendMessage(sender, "You have created the following aliases:\n" + TextFormatting.GOLD + Reference.joinCustomChar(TextFormatting.YELLOW + ", " + TextFormatting.GOLD, Reference.getAliases().keySet().toArray(new String[0])));
+				} else if (args[0].equals("create")) Reference.sendCommandUsage(sender, "/alias create <name> Creates an alias, you can assign a command to it with /alias edit <name> <command>.");
 				else if (args[0].equals("delete")) Reference.sendCommandUsage(sender, "/alias delete <name> Deletes an alias.");
 				else if (args[0].equals("edit")) Reference.sendCommandUsage(sender, "/alias edit <name> <command> Edits an alias.");
 			} else if (args[0].equals("create")) {
@@ -62,8 +59,8 @@ public class alias {
 			} else if (args[0].equals("edit"))
 				if (args.length == 2) Reference.sendCommandUsage(sender, "/alias edit <name> <command> Edits an alias.");
 				else if (Reference.doesAliasExist(args[1])) {
-					Reference.editAlias(args[1], Reference.join(Reference.removeArgs(args, 0, 1)));
-					Reference.sendMessage(sender, "The alias " + args[1] + " has been edited to run " + Reference.join(Reference.removeArgs(args, 0, 1)) + ".");
+				Reference.editAlias(args[1], Reference.join(Reference.removeArgs(args, 0, 1)));
+				Reference.sendMessage(sender, "The alias " + args[1] + " has been edited to run " + Reference.join(Reference.removeArgs(args, 0, 1)) + ".");
 				}
 		}
 

@@ -53,7 +53,7 @@ public class moreCommandsPermissions {
 		private String format(String string, int size) {
 			String s = TextFormatting.YELLOW + "-";
 			String s0 = TextFormatting.GOLD + "=";
-			return s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + "PAGE {PAGE}/" + size + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + "\n" + string;
+			return s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + TextFormatting.RED + "PAGE {PAGE}/" + size + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + s0 + s + "\n" + string;
 		}
 
 		@Override
@@ -170,7 +170,7 @@ public class moreCommandsPermissions {
 					}
 				} else if (args[1].equals("listgroups")) if (args.length == 2) Reference.sendCommandUsage(sender, "/mcperms player listgroups <player> Lists all the group the given player is in.");
 				else if (Reference.getPlayers().containsKey(((EntityPlayer) sender).getUniqueID().toString())) {
-					ArrayList<String> groups = Reference.getPlayers().get(((EntityPlayer) sender).getUniqueID().toString());
+					List<String> groups = Reference.getPlayers().get(((EntityPlayer) sender).getUniqueID().toString());
 					Reference.sendMessage(sender, "The given player has the following groups:\n" + TextFormatting.GOLD + Reference.joinCustomChar(TextFormatting.YELLOW + ", " + TextFormatting.GOLD, groups.toArray(new String[groups.size()])));
 				} else Reference.sendMessage(sender, "The given player is not in any group.");
 			} else if (args[0].equals("listperms")) if (Permission.permissions.equals(new ArrayList<Permission>())) Reference.sendMessage(sender, "There are no permissions."); // very, very unlikely.

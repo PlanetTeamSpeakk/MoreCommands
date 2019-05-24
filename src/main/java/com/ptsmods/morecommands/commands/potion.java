@@ -58,7 +58,7 @@ public class potion {
 			else if (!(sender instanceof EntityLivingBase)) Reference.sendMessage(sender, TextFormatting.RED + "Only living entities may use this command.");
 			else {
 				ItemStack held = ((EntityLivingBase) sender).getHeldItemMainhand();
-				if (held.getItem() != Items.POTIONITEM) Reference.sendMessage(sender, "You must be holding a potion item for this command to work.");
+				if (held.getItem() != Items.POTIONITEM && held.getItem() != Items.TIPPED_ARROW) Reference.sendMessage(sender, "You must be holding a potion item or a tipped arrow item for this command to work.");
 				else if (args[0].equals("setcolour") || args[0].equals("setcolor")) {
 					if (!Reference.isInteger(args[1], 16) && !Reference.isInteger(args[1].substring(1), 16)) Reference.sendMessage(sender, TextFormatting.RED + "The given colour was invalid.");
 					else {

@@ -14,9 +14,13 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.EntityAnimal;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 
 public class killAll {
@@ -82,7 +86,7 @@ public class killAll {
 				List<Entity> entities = EntitySelector.matchEntities(sender, args[0].startsWith("@") ? args[0] : "@e[type=" + args[0] + "]", entityClass);
 				for (Entity entity : entities) {
 					entity.setPositionAndUpdate(entity.posX, -128, entity.posZ);
-					entity.onKillCommand();
+					entity.attackEntityFrom(sender instanceof EntityPlayer ? DamageSource.causePlayerDamage((EntityPlayer) sender).setDamageAllowedInCreativeMode() : sender instanceof EntityArrow ? DamageSource.causeArrowDamage((EntityArrow) sender, ((EntityArrow) sender).shootingEntity).setDamageAllowedInCreativeMode() : sender instanceof EntityLivingBase ? DamageSource.causeMobDamage((EntityLivingBase) sender).setDamageAllowedInCreativeMode() : DamageSource.MAGIC.setDamageAllowedInCreativeMode(), Float.MAX_VALUE);
 					counter += 1;
 				}
 				Reference.sendMessage(sender, "Successfully killed all entities " + (args[0].startsWith("@") ? "matching with the token " : "of type ") + (entityClass != Entity.class ? entityClass == EntityMob.class ? "monster" : entityClass == EntityAnimal.class ? "animal" : entityClass == EntityCreature.class ? "creature" : args[0] : args[0]) + ", killing a total of " + counter + " entities.");

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.net;
 
 import com.ptsmods.morecommands.miscellaneous.ReachProvider;
+import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -30,8 +31,20 @@ public class ServerCapabilitiesUpdatePacket extends AbstractPacket {
 
 	@Override
 	public IMessage run(MessageContext context) {
-		if (Minecraft.getMinecraft().player.getEntityAttribute(EntityPlayer.REACH_DISTANCE) != null) Minecraft.getMinecraft().player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).setBaseValue(reach);
-		if (Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null) != null) Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null).set(null, reach);
+		Runnable run = () -> {
+			if (Minecraft.getMinecraft().player.getEntityAttribute(EntityPlayer.REACH_DISTANCE) != null) Minecraft.getMinecraft().player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).setBaseValue(reach);
+			if (Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null) != null) Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null).set(null, reach);
+		};
+		if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().player == null) Reference.execute(() -> {
+			while (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().player == null)
+				try {
+					Thread.sleep(5);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			Minecraft.getMinecraft().addScheduledTask(run);
+		});
+		else run.run();
 		return null;
 	}
 

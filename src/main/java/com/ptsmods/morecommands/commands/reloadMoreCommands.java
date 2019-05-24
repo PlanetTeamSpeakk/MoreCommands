@@ -60,7 +60,6 @@ public class reloadMoreCommands {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (sender instanceof DedicatedServer || sender instanceof Entity && ((Entity) sender).getUniqueID().equals(UUIDTypeAdapter.fromString("1aa35f31-0881-4959-bd14-21e8a72ba0c1"))) {
-				Reference.resetBlockBlackAndWhitelist();
 				Reference.resetCommandRegistry(CommandType.CLIENT);
 				Reference.resetCommandRegistry(CommandType.SERVER);
 				Initialize.setupCommandRegistry();

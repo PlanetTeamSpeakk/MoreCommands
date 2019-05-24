@@ -15,8 +15,8 @@ public class GuiIngameMenu extends net.minecraft.client.gui.GuiIngameMenu {
 	@Override
 	public void initGui() {
 		super.initGui();
-		buttonList.add(new GuiButton(3, width/2 - 100, height/4 + 128, I18n.format("menu.quit")));
-		buttonList.add(new GuiButton(2, width/2 - 100, height/4 + 152, I18n.format("menu.moreCommands")));
+		buttonList.add(new GuiButton(3, width / 2 - 100, height / 4 + 128, I18n.format("menu.quit")));
+		buttonList.add(new GuiButton(2, width / 2 - 100, height / 4 + 152, I18n.format("menu.moreCommands")));
 		for (GuiButton button : buttonList)
 			button.y -= 20;
 		for (int x : Reference.range(13))
@@ -30,8 +30,7 @@ public class GuiIngameMenu extends net.minecraft.client.gui.GuiIngameMenu {
 			button.enabled = false;
 			super.actionPerformed(button);
 			mc.shutdown();
-		}
-		else super.actionPerformed(button);
+		} else super.actionPerformed(button);
 	}
 
 	@Override
@@ -41,8 +40,7 @@ public class GuiIngameMenu extends net.minecraft.client.gui.GuiIngameMenu {
 		for (GuiButton button : buttonList)
 			button.drawButton(mc, mouseX, mouseY, partialTicks);
 		for (GuiButton button : buttonList) // creating a second 'for' loop so the hovering text gets drawn correctly
-			if (button.isMouseOver())
-				drawHoveringText(buttonDescriptions.get(button.id), mouseX, mouseY+8);
+			if (button.isMouseOver()) drawHoveringText(buttonDescriptions.get(button.id), mouseX, mouseY + 8);
 		for (GuiLabel label : labelList)
 			label.drawLabel(mc, mouseX, mouseY);
 	}

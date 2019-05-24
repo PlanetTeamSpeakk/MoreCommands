@@ -3,9 +3,7 @@ package com.ptsmods.morecommands;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +23,7 @@ import com.ptsmods.morecommands.miscellaneous.FP;
 import com.ptsmods.morecommands.miscellaneous.FPStorage;
 import com.ptsmods.morecommands.miscellaneous.IGameRule;
 import com.ptsmods.morecommands.miscellaneous.IReach;
+import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reach;
 import com.ptsmods.morecommands.miscellaneous.ReachStorage;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -36,6 +35,8 @@ import com.ptsmods.morecommands.miscellaneous.Ticker.TickRunnable;
 import com.ptsmods.morecommands.net.ClientCurrentItemUpdatePacket;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.command.ICommand;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -46,6 +47,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -53,6 +55,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Type;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -61,23 +64,33 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Ngl I absolutely despise the way commands are handled in 1.13 and I will
  * refrain from modding in it for as long as I feel like I need.
  */
+@SuppressWarnings("deprecation")
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, acceptedMinecraftVersions = Reference.MC_VERSIONS, updateJSON = Reference.UPDATE_URL)
 public class MoreCommands {
 
 	@Instance(Reference.MOD_ID)
-	public static MoreCommands	INSTANCE		= null;
-	public static List<String>	loadedClasses	= new ArrayList();
+	public static MoreCommands	INSTANCE				= null;
+	public static boolean		modInstalledServerSide	= false;
 
 	public MoreCommands() {
 		try {
 			ClassLoader.getSystemClassLoader().loadClass(Reference.class.getName()); // Reference used to have an initialise method which was called here, but that
-																					 // has been moved to a static constructor which is called using this method.
+																						// has been moved to a static constructor which is called using this method.
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private int lastItem = -1;
+
+	@NetworkCheckHandler
+	public boolean onConnect(Map map, Side side) {
+		if (side == Side.SERVER) {
+			modInstalledServerSide = map.containsKey("morecommands");
+			Reference.print(LogType.INFO, "Connected to a server with" + (!modInstalledServerSide ? "out" : "") + " MoreCommands installed.");
+		}
+		return true;
+	}
 
 	@EventHandler
 	public void onConstruct(FMLConstructionEvent event) {
@@ -87,10 +100,26 @@ public class MoreCommands {
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent event) {
-		Reference.setupGameRules(event.getServer());
+		Initialize.setupGameRules(event.getServer());
+		for (ICommand command : event.getServer().getCommandManager().getCommands().values()) {
+			String modName = "minecraft";
+			String[] pkg = Reference.removeArg(command.getClass().getName().split("\\."), command.getClass().getName().split("\\.").length - 1);
+			Outer: for (ModContainer mod : Loader.instance().getActiveModList()) {
+				if (mod.getMod() == null) continue;
+				String[] pkg0 = Reference.removeArg(mod.getMod().getClass().getName().split("\\."), mod.getMod().getClass().getName().split("\\.").length - 1);
+				for (int i = 0; i < 3; i++)
+					if (i < pkg0.length && i < pkg.length && pkg0[i].equals(pkg[i])) {
+						// First three parts have to be the same.
+						modName = mod.getModId();
+						break Outer;
+					}
+			}
+			new Permission(modName.equals("FML") ? "minecraft" : modName, command.getName(), modName.equals("FML") ? "A vanilla Minecraft command." : I18n.translateToLocal(command.getUsage(event.getServer())), true, command);
+		}
 		Reference.resetCommandRegistry(CommandType.SERVER); // Making sure the commands don't get registered multiple times.
 		Initialize.setupCommandRegistry();
 		Initialize.registerCommands(event.getServer());
+		Permission.setCommands();
 		Reference.registerEventHandler(new ServerEventHandler());
 		Reference.loadPackets();
 		Map<World, Map<IGameRule, Object>> ruleValues = new HashMap();

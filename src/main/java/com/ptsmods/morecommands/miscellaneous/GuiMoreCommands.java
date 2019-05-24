@@ -14,9 +14,9 @@ import net.minecraft.util.text.TextFormatting;
 
 public class GuiMoreCommands extends GuiScreen {
 
-	private final GuiScreen lastScreen;
-	private final Map<Integer, Map<String, Integer>> urls = new HashMap<>();
-	private final Map<Integer, String> urls1 = new HashMap<>();
+	private final GuiScreen								lastScreen;
+	private final Map<Integer, Map<String, Integer>>	urls	= new HashMap<>();
+	private final Map<Integer, String>					urls1	= new HashMap<>();
 
 	public GuiMoreCommands(GuiScreen lastScreen) {
 		this.lastScreen = lastScreen;
@@ -24,7 +24,7 @@ public class GuiMoreCommands extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		buttonList.add(new GuiButton(0, width/2 - 100, height-25, "Back"));
+		buttonList.add(new GuiButton(0, width / 2 - 100, height - 25, "Back"));
 	}
 
 	@Override
@@ -35,15 +35,15 @@ public class GuiMoreCommands extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		drawDefaultBackground();
-		String[] strings = new String[] {"I see you've installed MoreCommands.", "Very nice.", "First off, the basics.", "As you may or may not know, this mod has client sided commands.",
+		String[] strings = /*@formatter:off*/ new String[] {"", "I see you've installed MoreCommands.", "Very nice.", "First off, the basics.", "As you may or may not know, this mod has client sided commands.",
 				"Which are commands you can use on any server.", "To get a list of them, type /chelp.", "The one you'd probably use the most will be /ptime.", "At least, it's my personal favorite.",
-				"Next, you have server sided commands.", "Which only work when the mod is also on the server.", "If you have access to it, the one you'd probably use the most would be /explode.",
+				"Next, you have server sided commands.", "Which only work when the mod is also on the server.", "If you have access to it, the one you'd probably use the most would be /pt fireball.",
 				"Cuz who doesn't like to blow things up?", "I sure do, that's why I made it.", "For a list of commands click", "", "You better click that link, ain't easy to add it y'know.",
-				"Btw, try /easteregg ;)", ""};
+				"Btw, try /easteregg ;)", ""};//@formatter:on
 		int row = 0;
 		for (String string : strings)
-			drawCenteredString(fontRenderer, string, width/2, 2 + row++ * 10, Integer.parseInt("FFAA00", 16));
-		drawCenteredUrl(0, "https://minecraft.curseforge.com/projects/morecommands", "here.", width/2-15, row++ * 8 - 3, width/2+10, row * 8); // precise calculations
+			drawCenteredString(fontRenderer, string, width / 2, 2 + row++ * 10, Integer.parseInt("FFAA00", 16));
+		drawCenteredUrl(0, "https://minecraft.curseforge.com/projects/morecommands", "here.", width / 2 - 15, row++ * 8 - 1, width / 2 + 10, row * 8); // precise calculations
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -60,12 +60,11 @@ public class GuiMoreCommands extends GuiScreen {
 			int y = urls.get(id).get("y");
 			int x1 = urls.get(id).get("x1");
 			int y1 = urls.get(id).get("y1");
-			if (mouseX >= x && mouseX <= x1 && mouseY >= y && mouseY <= y1)
-				try {
-					Desktop.getDesktop().browse(new URI(urls1.get(id)));
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-				}
+			if (mouseX >= x && mouseX <= x1 && mouseY >= y && mouseY <= y1) try {
+				Desktop.getDesktop().browse(new URI(urls1.get(id)));
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}

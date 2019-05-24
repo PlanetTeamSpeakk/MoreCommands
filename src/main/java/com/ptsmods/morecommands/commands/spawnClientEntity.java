@@ -21,52 +21,51 @@ import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 
 public class spawnClientEntity {
 
-	public spawnClientEntity() {
-	}
+	public spawnClientEntity() {}
 
 	public static class CommandspawnClientEntity extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("sce");
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1) {
-				return CommandBase.getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
-			} else {
-				return new ArrayList();
-			}
+			if (args.length == 1) return CommandBase.getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
+			else return new ArrayList();
 		}
 
+		@Override
 		public boolean isUsernameIndex(String[] string, int index) {
 			return true;
 		}
 
+		@Override
 		public String getName() {
 			return "spawncliententity";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
-			return this.usage;
+			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0) {
-				Reference.sendCommandUsage(sender, usage);
-			} else {
+			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
+			else {
 				EntityPlayer player = (EntityPlayer) sender;
-				World world = Minecraft.getMinecraft().world;
+				World world = Minecraft.getMinecraft().player.world;
 				NBTTagCompound nbt = new NBTTagCompound();
 				nbt.setString("id", args[0]);
 				double d0 = player.getPosition().getX() + 0.5;
 				double d1 = player.getPosition().getY();
 				double d2 = player.getPosition().getZ() + 0.5;
-				if (args[0].endsWith("lightning_bolt")) {
-					world.addWeatherEffect(new EntityLightningBolt(world, d0, d1, d2, false));
-				} else {
+				if (args[0].endsWith("lightning_bolt")) world.addWeatherEffect(new EntityLightningBolt(world, d0, d1, d2, false));
+				else {
 					Entity entity = AnvilChunkLoader.readWorldEntityPos(nbt, world, d0, d1, d2, true);
 					if (entity == null) {
 						Reference.sendMessage(sender, "The given entity could not be found.");
@@ -78,12 +77,12 @@ public class spawnClientEntity {
 			}
 
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.CLIENT;
 		}
-		
+
 		protected String usage = "/spawncliententity <entity> Spawns an entity on the client side that only the player can see.";
 
 		@Override

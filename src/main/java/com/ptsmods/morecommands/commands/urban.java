@@ -67,8 +67,8 @@ public class urban {
 					Reference.print(LogType.INFO, definitions);
 					String definition = Reference.getCleanString((String) definitionsMap.get("definition"));
 					String example = Reference.getCleanString((String) definitionsMap.get("example"));
-					Long thumbsUp = Reference.formatDouble((Double) definitionsMap.get("thumbs_up"));
-					Long thumbsDown = Reference.formatDouble((Double) definitionsMap.get("thumbs_down"));
+					Long thumbsUp = ((Double) definitionsMap.get("thumbs_up")).longValue();
+					Long thumbsDown = ((Double) definitionsMap.get("thumbs_down")).longValue();
 					String result = "Definition for " + TextFormatting.GRAY + TextFormatting.ITALIC + searchTerm + TextFormatting.RESET + ":\n" + definition + (!example.equals("") ? "\n\nExample:\n" + example : "") + "\n\nThumbs up: " + thumbsUp + "\nThumbs down: " + thumbsDown;
 					Reference.sendMessage(sender, result);
 				}
