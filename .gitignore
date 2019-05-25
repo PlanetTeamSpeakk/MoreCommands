@@ -1,0 +1,9 @@
+*.launch
+lazycmd.bat
+*.project
+*.classpath
+run
+build
+bin
+.settings
+.gradle
