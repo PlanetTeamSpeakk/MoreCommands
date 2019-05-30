@@ -6,17 +6,16 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.GameType;
 
 public class gms {
 
-	public gms() {
-	}
+	public gms() {}
 
 	public static class Commandgms extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -52,11 +51,10 @@ public class gms {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) {
-			EntityPlayer player = (EntityPlayer) sender;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] cmd) throws CommandException {
+			EntityPlayer player = getCommandSenderAsPlayer(sender);
 			player.setGameType(GameType.SURVIVAL);
-			sender.sendMessage(new TextComponentString("Your gamemode has been updated to survival mode."));
-
+			Reference.sendMessage(sender, "Your gamemode has been updated to survival mode.");
 		}
 
 		@Override

@@ -1,7 +1,9 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
@@ -10,14 +12,20 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.passive.EntityAnimal;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 
 public class killAll {
 
-	public killAll() {
-	}
+	public killAll() {}
 
 	public static class CommandkillAll extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -37,10 +45,11 @@ public class killAll {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1)
-				return getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
-			else
-				return new ArrayList();
+			if (args.length == 1) {
+				List list = getListOfStringsMatchingLastWord(args, EntityList.getEntityNameList());
+				list.addAll(getListOfStringsMatchingLastWord(args, Lists.newArrayList("monster", "creature", "animal")));
+				return list;
+			} else return new ArrayList();
 		}
 
 		@Override
@@ -63,14 +72,25 @@ public class killAll {
 			if (args.length == 1) {
 				int counter = 0;
 				if (args[0].equals("all")) args[0] = "!player";
-				for (Entity entity : EntitySelector.matchEntities(sender, "@e[type=" + args[0] + "]", Entity.class)) {
+				Class<? extends Entity> entityClass = Entity.class;
+				if (args[0].startsWith("monster")) {
+					entityClass = EntityMob.class;
+					args[0] = "!player";
+				} else if (args[0].startsWith("animal")) {
+					entityClass = EntityAnimal.class;
+					args[0] = "!player";
+				} else if (args[0].startsWith("creature")) {
+					entityClass = EntityCreature.class;
+					args[0] = "!player";
+				}
+				List<Entity> entities = EntitySelector.matchEntities(sender, args[0].startsWith("@") ? args[0] : "@e[type=" + args[0] + "]", entityClass);
+				for (Entity entity : entities) {
 					entity.setPositionAndUpdate(entity.posX, -128, entity.posZ);
-					entity.onKillCommand();
+					entity.attackEntityFrom(sender instanceof EntityPlayer ? DamageSource.causePlayerDamage((EntityPlayer) sender).setDamageAllowedInCreativeMode() : sender instanceof EntityArrow ? DamageSource.causeArrowDamage((EntityArrow) sender, ((EntityArrow) sender).shootingEntity).setDamageAllowedInCreativeMode() : sender instanceof EntityLivingBase ? DamageSource.causeMobDamage((EntityLivingBase) sender).setDamageAllowedInCreativeMode() : DamageSource.MAGIC.setDamageAllowedInCreativeMode(), Float.MAX_VALUE);
 					counter += 1;
 				}
-				Reference.sendMessage(sender, "Successfully killed all entities of type " + args[0] + ", killing a total of " + counter + " entities.");
-			} else
-				Reference.sendCommandUsage(sender, usage);
+				Reference.sendMessage(sender, "Successfully killed all entities " + (args[0].startsWith("@") ? "matching with the token " : "of type ") + (entityClass != Entity.class ? entityClass == EntityMob.class ? "monster" : entityClass == EntityAnimal.class ? "animal" : entityClass == EntityCreature.class ? "creature" : args[0] : args[0]) + ", killing a total of " + counter + " entities.");
+			} else Reference.sendCommandUsage(sender, usage);
 		}
 
 		@Override

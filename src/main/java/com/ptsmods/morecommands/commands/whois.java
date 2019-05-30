@@ -4,20 +4,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
+import com.ptsmods.morecommands.miscellaneous.FPProvider;
 import com.ptsmods.morecommands.miscellaneous.Permission;
+import com.ptsmods.morecommands.miscellaneous.ReachProvider;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 
 public class whois {
 
-	public whois() {
-	}
+	public whois() {}
 
 	public static class Commandwhois extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -34,8 +35,7 @@ public class whois {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1)
-				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			if (args.length == 1) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
 			else return new ArrayList();
 		}
 
@@ -52,19 +52,17 @@ public class whois {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if (args.length != 0) {
-				EntityPlayerMP victim;
+				EntityPlayerMP victim = (EntityPlayerMP) Reference.getPlayer(server, args[0]);
+				if (victim == null) Reference.sendMessage(sender, "The given player could not be found.");
+				String ip = "unknown";
 				try {
-					victim = getPlayer(server, sender, args[0]);
-				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(sender, "The given player could not be found.");
-					return;
-				}
-				String ip = victim.getPlayerIP().equals("local") ? Reference.getIPAddress() : victim.getPlayerIP();
+					ip = victim.getPlayerIP() == null ? "unknown" : victim.getPlayerIP().equals("local") ? Reference.getIPAddress() : victim.getPlayerIP();
+				} catch (Throwable e) {}
 				String health = Float.toString(victim.getHealth());
-				String stamina = Float.toString(victim.getFoodStats().getFoodLevel());
-				String exp = Float.toString(victim.experienceTotal);
-				String expLevel = Float.toString(victim.experienceLevel);
-				String location = "X: " + victim.getPosition().getX() + ", Y: " + victim.getPosition().getY() + ", Z: " + victim.getPosition().getZ();
+				String stamina = Integer.toString(victim.getFoodStats().getFoodLevel());
+				String exp = Integer.toString(victim.experienceTotal);
+				String expLevel = Integer.toString(victim.experienceLevel);
+				String location = TextFormatting.GOLD + "\n    X: " + TextFormatting.YELLOW + victim.getPosition().getX() + TextFormatting.GOLD + "\n    Y: " + TextFormatting.YELLOW + victim.getPosition().getY() + TextFormatting.GOLD + "\n    Z: " + TextFormatting.YELLOW + victim.getPosition().getZ();
 				String country = "";
 				try {
 					country = Reference.getHTML("http://ip-api.com/json/" + ip).split("\",\"")[2].split(":")[1];
@@ -77,22 +75,27 @@ public class whois {
 				String isOp = Boolean.toString(Reference.isOp(victim));
 				String isFlying = Boolean.toString(victim.capabilities.isFlying);
 				String canFly = Boolean.toString(victim.capabilities.allowFlying);
-				String speed = Double.toString(Reference.roundDouble(victim.capabilities.getWalkSpeed()));
-				Reference.sendMessage(sender,
-						"Victim: " + victim.getName() +
-						"\nIP address: " + ip +
-						"\nCountry: " + country +
-						"\nHealth: " + health +
-						"\nStamina: " + stamina +
-						"\nExp: " + exp +
-						"\nExp level: " + expLevel +
-						"\nLocation: " + location +
-						"\nGamemode: " + gamemode +
-						"\nSpeed: " + speed +
+				String speed = "\n    Walk: " + TextFormatting.YELLOW + victim.capabilities.getWalkSpeed() * 10 + TextFormatting.GOLD + "\n    Fly: " + TextFormatting.YELLOW + victim.capabilities.getFlySpeed() * 20 + TextFormatting.GOLD;
+				String reach = "" + victim.getCapability(ReachProvider.reachCap, null).get();
+				String isFake = "" + victim.getCapability(FPProvider.fpCap, null).isFake;
+				Reference.sendMessage(sender, // @formatter:off
+						"Whois lookup for " + TextFormatting.YELLOW + victim.getName() +
+						"\nUUID: " + TextFormatting.YELLOW + victim.getUniqueID().toString() +
+						"\nIP address: " + TextFormatting.YELLOW + ip +
+						"\nCountry: " + TextFormatting.YELLOW + country +
+						"\nHealth: " + TextFormatting.YELLOW + health +
+						"\nStamina: " + TextFormatting.YELLOW + stamina +
+						"\nExp: " + TextFormatting.YELLOW + exp +
+						"\nExp level: " + TextFormatting.YELLOW + expLevel +
+						"\nLocation: " + TextFormatting.YELLOW + location +
+						"\nGamemode: " + TextFormatting.YELLOW + gamemode +
+						"\nSpeed: " + TextFormatting.YELLOW + speed +
+						"\nReach: " + TextFormatting.YELLOW + reach +
+						"\nIs fake: " + Reference.getColorFromBoolean(isFake) + isFake +
 						"\nGod enabled: " + Reference.getColorFromBoolean(godEnabled) + godEnabled +
 						"\nIs op: " + Reference.getColorFromBoolean(isOp) + isOp +
 						"\nIs flying: " + Reference.getColorFromBoolean(isFlying) + isFlying +
-						"\nCan fly: " + Reference.getColorFromBoolean(canFly) + canFly);
+						"\nCan fly: " + Reference.getColorFromBoolean(canFly) + canFly);//@formatter:on
 			} else Reference.sendCommandUsage(sender, usage);
 		}
 

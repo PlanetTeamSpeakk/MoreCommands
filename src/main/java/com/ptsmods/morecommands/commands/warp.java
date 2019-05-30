@@ -1,23 +1,24 @@
 package com.ptsmods.morecommands.commands;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.miscellaneous.WarpsHelper;
+import com.ptsmods.morecommands.miscellaneous.WarpsHelper.Warp;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.Teleporter;
 
 public class warp {
 
-	public warp() {
-	}
+	public warp() {}
 
 	public static class Commandwarp extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -34,7 +35,7 @@ public class warp {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return new ArrayList();
+			return args.length == 1 ? getListOfStringsMatchingLastWord(args, WarpsHelper.getWarpNames(sender.getEntityWorld())) : new ArrayList();
 		}
 
 		@Override
@@ -48,20 +49,20 @@ public class warp {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0)
-				try {
-					if (Reference.doesWarpExist(args[0])) {
-						Map<String, Double> data = Reference.warps.get(args[0]);
-						EntityPlayer player = (EntityPlayer) sender;
-						player.setPositionAndRotation(0, 0, 0, Reference.doubleToFloat(data.get("yaw")), Reference.doubleToFloat(data.get("pitch")));
-						player.setPositionAndUpdate(data.get("x"), data.get("y"), data.get("z"));
-						Reference.sendMessage(sender, "You have been teleported.");
-					} else Reference.sendMessage(sender, "The given warp does not exist.");
-				} catch (IOException e) {
-					Reference.sendMessage(sender, TextFormatting.RED + "An unknown error occured while attempting to perform this command");
-				}
-			else Reference.sendMessage(sender, Reference.getWarps().length == 0 ? "There are currently no warps available." : "Currently available warps:\n" + Reference.getWarpsString());
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			if (args.length != 0) if (WarpsHelper.doesWarpExist(sender.getEntityWorld(), args[0])) {
+				Warp warp = WarpsHelper.getWarpByName(sender.getEntityWorld(), args[0]);
+				EntityPlayer player = (EntityPlayer) sender;
+				if (player.dimension != warp.dimension) server.getPlayerList().transferPlayerToDimension(getCommandSenderAsPlayer(sender), warp.dimension, new Teleporter(server.getWorld(warp.dimension)) {
+					@Override
+					public void placeInPortal(Entity entityIn, float rotationYaw) {}
+				});
+				player.setPositionAndRotation(0, 0, 0, warp.yaw, warp.pitch);
+				player.setPositionAndUpdate(warp.x, warp.y, warp.z);
+				Reference.teleportSafely(getCommandSenderAsPlayer(sender));
+				Reference.sendMessage(sender, "You have been teleported.");
+			} else Reference.sendMessage(sender, "The given warp does not exist.");
+			else Reference.sendMessage(sender, WarpsHelper.getWarps(sender.getEntityWorld()).isEmpty() ? "There are currently no warps available for this world." : "Currently available warps for this world:\n" + WarpsHelper.getWarpsString(sender.getEntityWorld()));
 		}
 
 		@Override

@@ -6,17 +6,16 @@ import java.util.ArrayList;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.miscellaneous.WarpsHelper;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 
 public class delWarp {
 
-	public delWarp() {
-	}
+	public delWarp() {}
 
 	public static class CommanddelHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -33,7 +32,7 @@ public class delWarp {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			return new ArrayList();
+			return args.length == 1 ? getListOfStringsMatchingLastWord(args, WarpsHelper.getWarpNames(sender.getEntityWorld())) : new ArrayList();
 		}
 
 		@Override
@@ -48,16 +47,15 @@ public class delWarp {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0)
-				try {
-					if (Reference.doesWarpExist(args[0])) {
-						Reference.removeHome((EntityPlayer) sender);
-						Reference.saveHomesFile();
-						Reference.sendMessage(sender, "The warp has been removed.");
-					} else Reference.sendMessage(sender, "That warp does not exist.");
-				} catch (IOException e) {
-					Reference.sendMessage(sender, TextFormatting.RED + "An unknown error occured while attempting to perform this command");
-				}
+			if (args.length != 0) try {
+				if (WarpsHelper.doesWarpExist(sender.getEntityWorld(), args[0])) {
+					WarpsHelper.removeWarp(sender.getEntityWorld(), args[0]);
+					Reference.sendMessage(sender, "The warp has been removed.");
+				} else Reference.sendMessage(sender, "That warp does not exist.");
+			} catch (IOException e) {
+				Reference.sendMessage(sender, TextFormatting.RED + "An unknown error occured while attempting to perform this command");
+				e.printStackTrace();
+			}
 			else Reference.sendCommandUsage(sender, usage);
 		}
 
@@ -68,10 +66,10 @@ public class delWarp {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "delwarp", "Permission to use the delwarp command.", true);
+			return new Permission(Reference.MOD_ID, "delwarp", "Delete a warp.", true);
 		}
 
-		protected String usage = "/delwarp <name> Deletes a warp.";
+		protected String usage = "/delwarp <name> Delete a warp.";
 
 	}
 

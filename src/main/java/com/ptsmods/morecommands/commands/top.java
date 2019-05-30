@@ -46,8 +46,7 @@ public class top {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.teleportSafely((EntityPlayer) sender);
-			Reference.sendMessage(sender, "You have been teleported to a safe location.");
+			Reference.sendMessage(sender, Reference.teleportSafely((EntityPlayer) sender) ? "You have been teleported to a safe location." : "You are already at a safe location.");
 
 		}
 

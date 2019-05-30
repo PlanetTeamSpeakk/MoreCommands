@@ -9,14 +9,12 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class heal {
 
-	public heal() {
-	}
+	public heal() {}
 
 	public static class Commandheal extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -34,10 +32,8 @@ public class heal {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1)
-				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-			else
-				return new ArrayList();
+			if (args.length == 1) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			else return new ArrayList();
 		}
 
 		@Override
@@ -57,11 +53,9 @@ public class heal {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			Blocks.GRASS.setBlockUnbreakable();
 			EntityPlayer player = (EntityPlayer) sender;
-			if (args.length >= 2)
-				player = getPlayer(server, sender, args[1]);
-			player.setHealth(20F);
+			if (args.length >= 2) player = getPlayer(server, sender, args[1]);
+			player.setHealth(player.getMaxHealth());
 			player.getFoodStats().setFoodLevel(20);
 			if (server.isSinglePlayer()) player.getFoodStats().setFoodSaturationLevel(5F);
 			if (player == (EntityPlayer) sender) Reference.sendMessage(player, "You're now healed and fed.");

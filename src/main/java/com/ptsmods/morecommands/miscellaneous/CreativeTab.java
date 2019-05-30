@@ -6,8 +6,8 @@ import net.minecraft.item.ItemStack;
 
 public class CreativeTab extends CreativeTabs {
 
-	private final Item iconItem;
-	private final String label;
+	private final Item		iconItem;
+	private final String	label;
 
 	public CreativeTab(String label, Item iconItem) {
 		super(label);

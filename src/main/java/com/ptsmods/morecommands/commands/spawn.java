@@ -6,6 +6,7 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -14,10 +15,7 @@ import net.minecraft.world.World;
 
 public class spawn {
 
-	public static Object instance;
-
-	public spawn() {
-	}
+	public spawn() {}
 
 	public static class Commandspawn extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -43,8 +41,8 @@ public class spawn {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			EntityPlayer player = getCommandSenderAsPlayer(sender);
 			World world = player.getEntityWorld();
 			BlockPos spawnpoint = world.getSpawnPoint();
 			player.setPositionAndUpdate(spawnpoint.getX(), spawnpoint.getY(), spawnpoint.getZ());
@@ -59,7 +57,7 @@ public class spawn {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "spawn", "Permission to use the spawn command.", true);
+			return new Permission(Reference.MOD_ID, "spawn", "Teleport to spawn.", true);
 		}
 
 		protected String usage = "/spawn Teleports you to spawn.";

@@ -7,17 +7,18 @@ import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class kys {
 
-	public kys() {
-	}
+	public kys() {}
 
 	public static class Commandkys extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+
+		public static final DamageSource SUICIDE = new DamageSource("suicide").setDamageAllowedInCreativeMode();
 
 		@Override
 		public java.util.List getAliases() {
@@ -43,10 +44,10 @@ public class kys {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			player.sendMessage(new TextComponentString("Goodbye cruel world."));
-			player.onKillCommand();
-			server.sendMessage(new TextComponentString(sender.getName() + " took their own life."));
+			if (sender instanceof Entity) {
+				Reference.sendMessage(sender, "Goodbye cruel world.");
+				((Entity) sender).attackEntityFrom(SUICIDE, Float.MAX_VALUE);
+			}
 
 		}
 
@@ -57,7 +58,7 @@ public class kys {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "kys", "Permission to use the kys command.", true);
+			return new Permission(Reference.MOD_ID, "kys", "Commit suicide.", true);
 		}
 
 	}

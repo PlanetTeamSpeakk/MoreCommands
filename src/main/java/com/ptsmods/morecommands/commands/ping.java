@@ -6,15 +6,14 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class ping {
 
-	public ping() {
-	}
+	public ping() {}
 
 	public static class Commandping extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -40,11 +39,8 @@ public class ping {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (!server.isSinglePlayer())
-				Reference.sendMessage(sender, "Pong! Your latency is " + ((Integer) ((EntityPlayerMP) sender).ping).toString() + ".");
-			else
-				Reference.sendMessage(sender, "This command cannot be used on local worlds, you can probably guess why.");
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			Reference.sendMessage(sender, "Pong! Your latency is " + getCommandSenderAsPlayer(sender).ping + " ms.");
 		}
 
 		@Override

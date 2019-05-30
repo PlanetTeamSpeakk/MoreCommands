@@ -1,12 +1,16 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.net.ServerToggleSuperPickaxePacket;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -44,13 +48,19 @@ public class superPickaxe {
 			return usage;
 		}
 
-		public static Boolean enabled = false;
+		public static List<String> enabledFor = new ArrayList();
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			enabled = !enabled;
-			Reference.sendMessage(sender, "Superpickaxe has been " + (enabled ? "enabled, do note that using the pickaxe may crash your Minecraft due to some server ticking look randomly giving a ConcurrentModificationException." : "disabled."));
-
+			if (!Reference.isConsole(sender)) {
+				String uniqueId = ((EntityPlayer) sender).getUniqueID().toString();
+				if (enabledFor.contains(uniqueId)) enabledFor.remove(uniqueId);
+				else enabledFor.add(uniqueId);
+				Reference.netWrapper.sendTo(new ServerToggleSuperPickaxePacket(enabledFor.contains(uniqueId)), (EntityPlayerMP) sender);
+				Reference.sendMessage(sender, "Superpickaxe has been " + (enabledFor.contains(uniqueId) ? "enabled." : "disabled."));
+			} else {
+				Reference.sendMessage(sender, "This command is not meant for the console.");
+			}
 		}
 
 		@Override
@@ -60,7 +70,7 @@ public class superPickaxe {
 
 		@Override
 		public boolean singleplayerOnly() {
-			return true;
+			return false;
 		}
 
 		@Override

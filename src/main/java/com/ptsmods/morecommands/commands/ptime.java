@@ -5,25 +5,23 @@ import java.util.ArrayList;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 
 public class ptime {
 
-	public ptime() {
-	}
+	public ptime() {}
 
 	public static class Commandptime extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			if (args.length == 1) {
 				ArrayList completions = new ArrayList();
@@ -31,24 +29,23 @@ public class ptime {
 				completions.add("night");
 				completions.add("normal");
 				return completions;
-			} else {
-				return new ArrayList();
-			}
+			} else return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "ptime";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length == 0) {
-				Reference.sendCommandUsage(sender, usage);
-			} else {
+			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
+			else {
 				Integer time = -1;
 				Boolean fixed = false;
 				if (args[0].toLowerCase().equals("day")) {
@@ -75,25 +72,22 @@ public class ptime {
 					time = Integer.parseInt(args[0].substring(1));
 					fixed = true;
 					Reference.sendMessage(sender, "The time has been fixed to " + args[0].substring(1) + " ticks.");
-				} else {
-					Reference.sendCommandUsage(sender, usage);
-				}
-				
-				this.time = time;
-				this.fixed = fixed;
+				} else Reference.sendCommandUsage(sender, usage);
+
+				Commandptime.time = time;
+				Commandptime.fixed = fixed;
 			}
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.CLIENT;
 		}
-		
-		public static int time = -1;
-		public static boolean fixed = false;
-		
-		protected String usage = "/ptime <day/night/normal/6900> Sets your personal time, putting an @ in front of the time will make it fixed, e.g. /ptime @day. Works the same as with Essentials but without the colors,"
-				+ TextFormatting.AQUA + " and" + TextFormatting.BLACK + " not" + TextFormatting.BLUE + " because" + TextFormatting.DARK_AQUA + " I" + TextFormatting.DARK_BLUE + " can't" + TextFormatting.DARK_GRAY + ".";
+
+		public static int		time	= -1;
+		public static boolean	fixed	= false;
+
+		protected String usage = "/ptime <day/night/normal/6900> Sets your personal time, putting an @ in front of the time will make it fixed, e.g. /ptime @day.";
 
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {

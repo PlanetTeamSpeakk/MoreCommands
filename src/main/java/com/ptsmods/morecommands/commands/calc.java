@@ -8,7 +8,6 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.client.ClientCommandHandler;
 
 public class calc {
 
@@ -21,6 +20,7 @@ public class calc {
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("calculate");
+			aliases.add("cacl");
 			return aliases;
 		}
 
@@ -41,15 +41,14 @@ public class calc {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			if (args.length != 0)
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						String regex = "(\\d*[\\/\\+\\-\\*\\%]*)"; // sadly, you cannot use brackets in your math equation, so you'd just have to run the command multiple times.
-						ClientCommandHandler.instance.executeCommand(sender, "evaljavascript " + Reference.Regex.removeUnwantedChars(regex, Reference.joinCustomChar("", args)));
-					}
-				}).start();
-			else Reference.sendCommandUsage(sender, usage);
+			if (args.length != 0) {
+				String equation = Reference.joinCustomChar("", args);
+				try {
+					Reference.sendMessage(sender, equation + " = " + Reference.formatDouble(Reference.eval(equation)));
+				} catch (RuntimeException e) {
+					Reference.sendMessage(sender, e.getMessage());
+				}
+			} else Reference.sendCommandUsage(sender, usage);
 		}
 
 		@Override
@@ -57,7 +56,7 @@ public class calc {
 			return CommandType.CLIENT;
 		}
 
-		protected String usage = "/calc <equation> Calculates a math equation so you don't have to.";
+		protected String usage = "/calc <equation> Calculates a math equation so you don't have to. It does addition, subtraction, multiplication, division, exponentiation (using the ^ symbol), factorial (! before a number), and features like cos(int), tan(int), sin(int), pi(int), sqrt(int) and cbrt(int) in which int is replaced with a number.";
 
 	}
 

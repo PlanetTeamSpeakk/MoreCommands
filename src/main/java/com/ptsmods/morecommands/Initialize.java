@@ -1,57 +1,51 @@
 package com.ptsmods.morecommands;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.reflections.Reflections;
-
+import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.commands.chelp.Commandchelp;
 import com.ptsmods.morecommands.commands.enchant.Commandenchant;
 import com.ptsmods.morecommands.commands.fixTime.CommandfixTime;
 import com.ptsmods.morecommands.miscellaneous.CommandBase;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.IncorrectCommandType;
+import com.ptsmods.morecommands.miscellaneous.IGameRule;
+import com.ptsmods.morecommands.miscellaneous.IGameRule.Inject;
 import com.ptsmods.morecommands.miscellaneous.KeyBinding;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 import com.ptsmods.morecommands.miscellaneous.Reference.LogType;
 
-import net.minecraft.block.Block;
+import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommand;
-import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class Initialize {
+public class Initialize {
 
-	public static void registerCommands(FMLServerStartingEvent event) {
+	private Initialize() {}
+
+	public static void registerCommands(MinecraftServer server) {
 		Reference.print(LogType.INFO, "Registering MoreCommands server sided commands.");
-		for (WorldServer world : event.getServer().worlds)
-			if (!Arrays.asList(world.getGameRules().getRules()).contains("doMeltBlocks")) world.getGameRules().addGameRule("doMeltBlocks", "true", ValueType.BOOLEAN_VALUE);
-
 		ICommand[] nonRegistryCommands = new ICommand[] {new CommandfixTime(), new Commandenchant()};
-		ICommand[] commands;
-		try {
-			commands = Reference.getCommandRegistry(CommandType.SERVER).toArray(new ICommand[0]);
-		} catch (IncorrectCommandType e1) {
-			e1.printStackTrace();
-			return;
-		}
-
+		ICommand[] commands = Reference.getCommandRegistry(CommandType.SERVER).toArray(new ICommand[0]);
 		Integer counter = 0;
 		Integer fails = 0;
 		List<String> failList = new ArrayList<>();
-
 		for (ICommand command : commands)
 			try {
-				event.registerServerCommand(command);
+				((CommandHandler) server.getCommandManager()).registerCommand(command);
+				MinecraftForge.EVENT_BUS.register(command);
 				counter += 1;
 			} catch (Throwable e) {
 				fails += 1;
@@ -59,10 +53,10 @@ public abstract class Initialize {
 				e.printStackTrace();
 				continue;
 			}
-
 		for (ICommand command : nonRegistryCommands)
 			try {
-				event.registerServerCommand(command);
+				((CommandHandler) server.getCommandManager()).registerCommand(command);
+				MinecraftForge.EVENT_BUS.register(command);
 				counter += 1;
 			} catch (Throwable e) {
 				fails += 1;
@@ -70,31 +64,21 @@ public abstract class Initialize {
 				e.printStackTrace();
 				continue;
 			}
-
 		Reference.print(LogType.INFO, "Successfully registered " + counter.toString() + " server sided commands, with " + fails.toString() + " fails.");
-		if (failList.size() != 0) Reference.print(LogType.INFO, "Failed to register " + CommandBase.joinNiceString(failList.toArray(new String[0])));
+		if (failList.size() != 0) Reference.print(LogType.INFO, "Failed to register " + net.minecraft.command.CommandBase.joinNiceString(failList.toArray(new String[0])));
 	}
 
 	@SideOnly(Side.CLIENT)
 	public static void registerClientCommands() {
 		Reference.print(LogType.INFO, "Registering MoreCommands client sided commands.");
-
-		ICommand[] nonRegistryCommands = new ICommand[] {new Commandchelp()};
-		ICommand[] commands;
-		try {
-			commands = Reference.getCommandRegistry(CommandType.CLIENT).toArray(new ICommand[0]);
-		} catch (IncorrectCommandType e1) {
-			e1.printStackTrace();
-			return;
-		}
-
+		ICommand[] commands = Lists.asList(new Commandchelp(), Reference.getCommandRegistry(CommandType.CLIENT).toArray(new ICommand[0])).toArray(new ICommand[0]);
 		Integer counter = 0;
 		Integer fails = 0;
 		List<String> failList = new ArrayList<>();
-
 		for (ICommand command : commands)
 			try {
 				ClientCommandHandler.instance.registerCommand(command);
+				MinecraftForge.EVENT_BUS.register(command);
 				counter += 1;
 			} catch (Throwable e) {
 				fails += 1;
@@ -102,70 +86,80 @@ public abstract class Initialize {
 				e.printStackTrace();
 				continue;
 			}
-
-		for (ICommand command : nonRegistryCommands)
-			try {
-				ClientCommandHandler.instance.registerCommand(command);
-				counter += 1;
-			} catch (Throwable e) {
-				fails += 1;
-				failList.add(command.getName());
-				e.printStackTrace();
-				continue;
-			}
-
 		Reference.print(LogType.INFO, "Successfully registered " + counter.toString() + " client sided commands, with " + fails.toString() + " fails.");
-		if (!(failList.size() == 0)) Reference.print(LogType.INFO, "Failed to register " + CommandBase.joinNiceString(failList.toArray(new String[0])));
-	}
-
-	public static void setupBlockLists() {
-		Reference.print(LogType.INFO, "Setting up the MoreCommands block blacklist.");
-
-		Block[] blacklist = {Blocks.AIR, Blocks.LAVA, Blocks.CACTUS, Blocks.MAGMA, Blocks.ACACIA_FENCE, Blocks.ACACIA_FENCE_GATE, Blocks.BIRCH_FENCE, Blocks.BIRCH_FENCE_GATE, Blocks.DARK_OAK_FENCE, Blocks.DARK_OAK_FENCE_GATE,
-				Blocks.JUNGLE_FENCE, Blocks.JUNGLE_FENCE_GATE, Blocks.NETHER_BRICK_FENCE, Blocks.OAK_FENCE, Blocks.OAK_FENCE_GATE, Blocks.SPRUCE_FENCE, Blocks.SPRUCE_FENCE_GATE, Blocks.FIRE, Blocks.WEB, Blocks.MOB_SPAWNER,
-				Blocks.END_PORTAL, Blocks.END_PORTAL_FRAME, Blocks.TNT, Blocks.IRON_TRAPDOOR, Blocks.TRAPDOOR, Blocks.BREWING_STAND};
-
-		Integer counter = 0;
-
-		for (Block element : blacklist) {
-			Reference.addBlockToBlacklist(element);
-			counter += 1;
-		}
-
-		Reference.print(LogType.INFO, "Successfully set up the block blacklist and added " + counter.toString() + " blocks.");
-		Reference.print(LogType.INFO, "Setting up the MoreCommands block whitelist.");
-
-		Block[] whitelist = {Blocks.AIR, Blocks.DEADBUSH, Blocks.VINE, Blocks.TALLGRASS, Blocks.ACACIA_DOOR, Blocks.BIRCH_DOOR, Blocks.DARK_OAK_DOOR, Blocks.IRON_DOOR, Blocks.JUNGLE_DOOR, Blocks.OAK_DOOR, Blocks.SPRUCE_DOOR,
-				Blocks.DOUBLE_PLANT, Blocks.RED_FLOWER, Blocks.YELLOW_FLOWER, Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.WATERLILY, Blocks.BEETROOTS, Blocks.CARROTS, Blocks.WHEAT, Blocks.POTATOES, Blocks.PUMPKIN_STEM,
-				Blocks.MELON_STEM, Blocks.SNOW_LAYER};
-
-		counter = 0;
-
-		for (Block element : whitelist) {
-			Reference.addBlockToWhitelist(element);
-			counter += 1;
-		}
-
-		Reference.print(LogType.INFO, "Successfully set up the block whitelist and added " + counter.toString() + " blocks.");
+		if (!(failList.size() == 0)) Reference.print(LogType.WARN, "Failed to register " + net.minecraft.command.CommandBase.joinNiceString(failList.toArray(new String[0])));
 	}
 
 	public static void setupCommandRegistry() {
-		Set<Class<? extends CommandBase>> commands = new Reflections("com.ptsmods.morecommands.commands").getSubTypesOf(CommandBase.class);
-
-		for (Class<? extends CommandBase> command : commands) {
+		for (Class<? extends CommandBase> commandClass : Reference.getSubTypesOf(CommandBase.class))
 			try {
-				Reference.addCommandToRegistry(command.newInstance().getCommandType(), command.newInstance());
-				command.newInstance().getPermission(); // just so it's registered in the permissions.
-				Reference.commands.add(command.newInstance());
+				CommandBase command = commandClass.newInstance();
+				Reference.addCommandToRegistry(command.getCommandType(), command);
+				command.getPermission(); // just so it's registered in the permissions.
+				Reference.commands.add(command);
+			} catch (Exception | NoClassDefFoundError e) {
+				Reference.print(LogType.INFO, "Could not load command of class", commandClass.getName() + ".");
+				e.printStackTrace();
+			}
+	}
+
+	public static void setupGameRules(MinecraftServer server) {
+		if (!Reference.gameRules.isEmpty()) return;
+		List<Class<? extends IGameRule>> clazzes = Reference.getSubTypesOf(IGameRule.class);
+		Reference.print(LogType.INFO, "Setting up gamerules...");
+		Map<String, Map<IGameRule, List<Field>>> fieldsToInject = new HashMap();
+		for (Class clazz : clazzes)
+			try {
+				IGameRule rule = (IGameRule) clazz.newInstance();
+				if (rule.getName() == null || rule.getName().isEmpty()) continue;
+				for (Field f : Reference.getFields(clazz))
+					if (f.isAnnotationPresent(Inject.class)) {
+						Inject inject = f.getAnnotation(Inject.class);
+						if (inject.value() == null || inject.value().isEmpty()) {
+							if (clazz.isAssignableFrom(f.getType())) {
+								if (Modifier.isFinal(f.getModifiers())) Reference.removeFinalModifier(f);
+								f.set(Modifier.isStatic(f.getModifiers()) ? null : rule, rule);
+							}
+						} else {
+							if (!fieldsToInject.containsKey(inject.value())) fieldsToInject.put(inject.value(), new HashMap());
+							if (!fieldsToInject.get(inject.value()).containsKey(rule)) fieldsToInject.get(inject.value()).put(rule, new ArrayList());
+							fieldsToInject.get(inject.value()).get(rule).add(f);
+						}
+					}
+				for (WorldServer world : server.worlds) {
+					if (!world.getGameRules().hasRule(rule.getName())) {
+						Reference.print(LogType.INFO, "Gamerule", rule.getName(), "has been created for world", world.getWorldInfo().getWorldName() + ".");
+						rule.onCreateWorld(server, world);
+						world.getGameRules().addGameRule(rule.getName(), "" + rule.getDefaultValue(), rule.getType());
+					}
+					rule.initWorld(server, world, rule.getType() == ValueType.NUMERICAL_VALUE ? world.getGameRules().getInt(rule.getName()) : rule.getType() == ValueType.BOOLEAN_VALUE ? world.getGameRules().getBoolean(rule.getName()) : world.getGameRules().getString(rule.getName()));
+				}
+				rule.initServer(server);
+				MinecraftForge.EVENT_BUS.register(rule);
+				Reference.gameRules.add(rule);
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
-			} catch (NoClassDefFoundError | IncorrectCommandType e) {};
+			}
+		try {
+			for (Entry<String, Map<IGameRule, List<Field>>> entry : fieldsToInject.entrySet()) {
+				IGameRule rule = Reference.getGameRule(entry.getKey());
+				if (rule != null) for (Entry<IGameRule, List<Field>> entry0 : entry.getValue().entrySet())
+					for (Field f1 : entry0.getValue()) {
+						f1.setAccessible(true);
+						if (Modifier.isFinal(f1.getModifiers())) Reference.removeFinalModifier(f1);
+						f1.set(Modifier.isStatic(f1.getModifiers()) ? null : entry0.getKey(), rule);
+					}
+			}
+			Reference.print(LogType.INFO, "Successfully registered and initialised", Reference.gameRules.size(), "gamerules.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			Reference.print(LogType.ERROR, "Something went wrong while setting up the gamerules.");
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
 	public static void registerKeyBinds() {
-		HashMap<String, KeyBinding> keyBindings = Reference.getKeyBindings();
+		Map<String, KeyBinding> keyBindings = Reference.getKeyBindings();
 		for (String keyBinding : keyBindings.keySet())
 			ClientRegistry.registerKeyBinding(keyBindings.get(keyBinding));
 

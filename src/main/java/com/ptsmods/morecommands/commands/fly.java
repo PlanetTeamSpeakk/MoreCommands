@@ -12,11 +12,11 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 
 public class fly {
 
-	public fly() {
-	}
+	public fly() {}
 
 	public static class Commandfly extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -48,43 +48,30 @@ public class fly {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
-			else if (args.length == 1) {
-				if (args[0].equals("on")) {
-					EntityPlayer player = (EntityPlayer) sender;
-					player.capabilities.allowFlying = true;
-					player.capabilities.isFlying = true;
-					player.sendPlayerAbilities();
-					Reference.sendMessage(player, "Flight mode has been turned on.");
-				} else {
-					EntityPlayer player = (EntityPlayer) sender;
-					player.capabilities.allowFlying = false;
-					player.capabilities.isFlying = false;
-					player.sendPlayerAbilities();
-					Reference.sendMessage(player, "Flight mode has been turned off.");
-				}
-			} else if (args[0].equals("on"))
+			boolean on = args.length > 0 && args[0].equals("on");
+			boolean off = args.length > 0 && args[0].equals("off");
+			if (args.length < 2) {
+				EntityPlayer player = (EntityPlayer) sender;
+				on = on || !player.capabilities.allowFlying && !off;
+				player.capabilities.allowFlying = on;
+				player.capabilities.isFlying = on;
+				player.sendPlayerAbilities();
+				Reference.sendMessage(player, "Flight mode has been turned " + (on ? TextFormatting.GREEN + "on" : TextFormatting.RED + "off") + Reference.dtf + ".");
+			} else {
+				EntityPlayer victim;
 				try {
-					EntityPlayer victim = getPlayer(server, sender, args[1]);
-					victim.capabilities.allowFlying = true;
-					victim.capabilities.isFlying = true;
-					victim.sendPlayerAbilities();
-					Reference.sendMessage(victim, sender.getName() + " has made you able to fly.");
-					Reference.sendMessage(sender, "You made " + victim.getName() + " able to fly.");
+					victim = getPlayer(server, sender, args[1]);
 				} catch (PlayerNotFoundException e) {
 					Reference.sendMessage(sender, "The given player does not exist.");
+					return;
 				}
-			else
-				try {
-					EntityPlayer victim = getPlayer(server, sender, args[1]);
-					victim.capabilities.allowFlying = false;
-					victim.capabilities.isFlying = false;
-					victim.sendPlayerAbilities();
-					Reference.sendMessage(victim, sender.getName() + " has made you unable to fly.");
-					Reference.sendMessage(sender, "You made " + victim.getName() + " unable to fly.");
-				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(sender, "The given player does not exist.");
-				}
+				on = on || !victim.capabilities.allowFlying && !off;
+				victim.capabilities.allowFlying = on;
+				victim.capabilities.isFlying = on;
+				victim.sendPlayerAbilities();
+				Reference.sendMessage(victim, sender.getName() + " has made you " + (on ? "" + TextFormatting.GREEN : TextFormatting.RED + "un") + "able" + Reference.dtf + " to fly.");
+				Reference.sendMessage(sender, "You made " + victim.getName() + " " + (on ? "" + TextFormatting.GREEN : TextFormatting.RED + "un") + "able" + Reference.dtf + " to fly.");
+			}
 		}
 
 		@Override

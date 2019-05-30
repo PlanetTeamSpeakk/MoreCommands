@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = "2.0"
+group = "com.ptsmods.morecommands"
+archivesBaseName = "MoreCommands_" + version + "_mc1.11-1.11.2"
+
+sourceCompatibility = targetCompatibility = "1.8"
+
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.8"
+}
+
+minecraft {
+    version = "1.11.2-13.20.1.2386"
+    runDir = "../run"
+    mappings = "snapshot_20170612"
+}
+
+dependencies {
+    compile group: 'org.javassist', 			name: 'javassist', 					version: '3.24.1-GA'
+    compile group: 'org.reflections', 			name: 'reflections', 				version: '0.9.10'
+    compile group: 'org.yaml', 					name: 'snakeyaml', 					version: '1.24'
+}
+
+shadowJar {
+    dependencies {
+        include(dependency('org.javassist:javassist:3.24.1-GA'))
+        include(dependency('org.reflections:reflections:0.9.10'))
+        include(dependency('org.yaml:snakeyaml:1.24'))
+    }
+
+    classifier '' // Replace the default JAR
+    archiveName = "MoreCommands_" + version + "_mc1.11-1.11.2.jar"
+}
+
+reobf {
+    shadowJar {} // Reobfuscate the shadowed JAR
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}

@@ -7,17 +7,15 @@ import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 
 public class showNBT {
 
-	public showNBT() {
-	}
+	public showNBT() {}
 
 	public static class CommandshowNBT extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -44,20 +42,12 @@ public class showNBT {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			ItemStack holding = player.getHeldItemMainhand();
-			if (holding.hasTagCompound() && !holding.getTagCompound().equals(new NBTTagCompound())) {
-				String data = holding.getTagCompound().toString().substring(1, holding.getTagCompound().toString().length()-1);
-				String[] dataArray = data.split(",");
-				String dataFinal = "";
-				for (int x = 0; x < dataArray.length; x += 1) {
-					dataFinal += dataArray[x];
-					if (x+1 != dataArray.length) dataFinal += " ";
-				}
-				dataFinal = TextFormatting.getTextWithoutFormattingCodes(dataFinal).replaceAll("\\\\", "");
-				Reference.sendMessage(player, "The item you're holding has the following NBT data: " + dataFinal);
-			} else
-				Reference.sendMessage(player, "THe item you're holding doesn't have any NBT data.");
+			if (!(sender instanceof EntityLivingBase)) Reference.sendMessage(sender, TextFormatting.RED + "Only living entities may use this command.");
+			else {
+				ItemStack holding = ((EntityLivingBase) sender).getHeldItemMainhand();
+				if (holding.hasTagCompound() && !holding.getTagCompound().hasNoTags()) Reference.sendMessage(sender, "Your " + holding.getDisplayName() + Reference.dtf + " has the following NBT data: " + TextFormatting.getTextWithoutFormattingCodes(holding.getTagCompound().toString()).replaceAll("\\\\", ""));
+				else Reference.sendMessage(sender, "The item you're holding doesn't have any NBT data.");
+			}
 		}
 
 		@Override

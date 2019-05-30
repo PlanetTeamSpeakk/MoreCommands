@@ -6,19 +6,19 @@ import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class barrier {
 
-	public barrier() {
-	}
+	public barrier() {}
 
 	public static class Commandbarrier extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -58,18 +58,17 @@ public class barrier {
 		}
 
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			EntityPlayer player = (EntityPlayer) sender;
-			ItemStack barrier = new ItemStack(Blocks.BARRIER, 1);
-			player.inventory.addItemStackToInventory(barrier);
-			Reference.playSound(SoundEvents.ENTITY_ITEM_PICKUP);
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+			EntityPlayer player = getCommandSenderAsPlayer(sender);
+			player.inventory.addItemStackToInventory(new ItemStack(Blocks.BARRIER, 1));
+			Reference.playSound(player, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS);
 			player.inventoryContainer.detectAndSendChanges();
-			sender.sendMessage(new TextComponentString("Your barrier has arrived."));
+			Reference.sendMessage(sender, "Your barrier has arrived.");
 		}
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "barrier", "Permission to use the barrier command.", true);
+			return new Permission(Reference.MOD_ID, "barrier", "Get yourself a barrier block.", true);
 		}
 
 		@Override

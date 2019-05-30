@@ -13,28 +13,32 @@ import net.minecraftforge.client.ClientCommandHandler;
 
 public class toBinary {
 
-	public toBinary() {
-	}
+	public toBinary() {}
 
 	public static class CommandtoBinary extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
-	    public int getRequiredPermissionLevel() {
-	        return 0;
-	    }
+		@Override
+		public int getRequiredPermissionLevel() {
+			return 0;
+		}
 
+		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			return aliases;
 		}
 
+		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 			return new ArrayList();
 		}
 
+		@Override
 		public String getName() {
 			return "tobinary";
 		}
 
+		@Override
 		public String getUsage(ICommandSender sender) {
 			return usage;
 		}
@@ -58,12 +62,12 @@ public class toBinary {
 			} else Reference.sendCommandUsage(sender, usage);
 
 		}
-		
+
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.CLIENT;
 		}
-		
+
 		protected String usage = "/tobinary <string> Converts a string to binary, idfk why.";
 
 	}

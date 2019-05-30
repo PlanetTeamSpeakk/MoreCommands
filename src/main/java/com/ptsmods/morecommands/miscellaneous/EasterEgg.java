@@ -7,13 +7,15 @@ import net.minecraft.util.SoundCategory;
 
 public class EasterEgg extends PositionedSoundRecord {
 
+	private static Minecraft mc = Minecraft.getMinecraft();
+
 	public EasterEgg() {
-		this(new ResourceLocation("morecommands:easteregg"), SoundCategory.AMBIENT, Float.MAX_VALUE, 0F, true, 190, AttenuationType.LINEAR, Minecraft.getMinecraft().player.getPosition().getX(), Minecraft.getMinecraft().player.getPosition().getY(), Minecraft.getMinecraft().player.getPosition().getZ());
+		super(new ResourceLocation("morecommands:easteregg"), SoundCategory.AMBIENT, Float.MAX_VALUE, 0F, true, 190, AttenuationType.LINEAR, mc.player.getPosition().getX(), mc.player.getPosition().getY(), mc.player.getPosition().getZ());
 	}
 
 	private EasterEgg(ResourceLocation soundId, SoundCategory categoryIn, float volumeIn, float pitchIn,
 			boolean repeatIn, int repeatDelayIn, AttenuationType attenuationTypeIn, float xIn, float yIn, float zIn) {
-		super(soundId, categoryIn, volumeIn, pitchIn, repeatIn, repeatDelayIn, attenuationTypeIn, xIn, yIn, zIn);
+		this();
 	}
 
 }

@@ -20,8 +20,7 @@ public class gm {
 
 	public static Object instance;
 
-	public gm() {
-	}
+	public gm() {}
 
 	public static class Commandgm extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -52,12 +51,9 @@ public class gm {
 			gamemodes.add("adventure");
 			gamemodes.add("spectator");
 			gamemodes.add("debugmode");
-			if (args.length == 1)
-				return gamemodes;
-			else if (args.length == 2)
-				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-			else
-				return new ArrayList();
+			if (args.length == 1) return gamemodes;
+			else if (args.length == 2) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			else return new ArrayList();
 		}
 
 		@Override
@@ -78,26 +74,21 @@ public class gm {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 			EntityPlayer player = (EntityPlayer) sender;
-			if (args.length == 0)
-				Reference.sendCommandUsage(player, usage);
+			if (args.length == 0) Reference.sendCommandUsage(player, usage);
 			else if (args.length == 1) {
 				GameType gametype = getGameModeFromCommand(sender, args[0]);
 				player.setGameType(gametype);
-				String gamemode = getGameModeNameFromAbbreviation(args[0]);
-				sender.sendMessage(new TextComponentString("You have been put in " + gamemode + " mode."));
+				Reference.sendMessage(sender, "You have been put in " + gametype.getName() + " mode.");
 			} else {
 				GameType gametype = getGameModeFromCommand(sender, args[0]);
 				EntityPlayer victim = getPlayer(server, sender, args[1]); // I know I should put victim here, you troll.
-				if (victim == null)
-					sender.sendMessage(new TextComponentString("The given player does not exist."));
+				if (victim == null) Reference.sendMessage(sender, "The given player does not exist.");
 				else {
 					victim.setGameType(gametype);
-					String gamemode = getGameModeNameFromAbbreviation(args[0]);
 					if (victim != player) {
-						victim.sendMessage(new TextComponentString(player.getName() + " has put you in " + gamemode + " mode."));
-						sender.sendMessage(new TextComponentString(victim.getName() + " has been put in " + gamemode + " mode."));
-					} else
-						sender.sendMessage(new TextComponentString("You have been put in " + gamemode + " mode."));
+						victim.sendMessage(new TextComponentString(player.getName() + " has put you in " + gametype.getName() + " mode."));
+						Reference.sendMessage(sender, victim.getName() + " has been put in " + gametype.getName() + " mode.");
+					} else Reference.sendMessage(sender, "You have been put in " + gametype.getName() + " mode.");
 				}
 			}
 		}
@@ -119,16 +110,11 @@ public class gm {
 		}
 
 		protected String getGameModeNameFromAbbreviation(String abbreviation) {
-			if (abbreviation.equals("s") || abbreviation.equals("0"))
-				abbreviation = "survival";
-			else if (abbreviation.equals("c") || abbreviation.equals("1"))
-				abbreviation = "creative";
-			else if (abbreviation.equals("a") || abbreviation.equals("2"))
-				abbreviation = "adventure";
-			else if (abbreviation.equals("sp") || abbreviation.equals("3"))
-				abbreviation = "spectator";
-			else
-				abbreviation = "unknown";
+			if (abbreviation.equals("s") || abbreviation.equals("0")) abbreviation = "survival";
+			else if (abbreviation.equals("c") || abbreviation.equals("1")) abbreviation = "creative";
+			else if (abbreviation.equals("a") || abbreviation.equals("2")) abbreviation = "adventure";
+			else if (abbreviation.equals("sp") || abbreviation.equals("3")) abbreviation = "spectator";
+			else abbreviation = "unknown";
 			return abbreviation;
 		}
 

@@ -1,12 +1,14 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.EntitySelector;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.effect.EntityLightningBolt;
@@ -17,8 +19,7 @@ import net.minecraft.world.World;
 
 public class smite {
 
-	public smite() {
-	}
+	public smite() {}
 
 	public static class Commandsmite extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -35,10 +36,8 @@ public class smite {
 
 		@Override
 		public java.util.List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-			if (args.length == 1)
-				return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-			else
-				return new ArrayList();
+			if (args.length == 1) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+			else return new ArrayList();
 		}
 
 		@Override
@@ -53,17 +52,22 @@ public class smite {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0)
-				Reference.sendCommandUsage(sender, usage);
-			else
-				try {
-					EntityPlayer victim = getPlayer(server, sender, args[0]);
-					World world = victim.getEntityWorld();
-					for (int x = 0; x < 3; x += 1) world.addWeatherEffect(new EntityLightningBolt(world, victim.getPosition().getX(), victim.getPosition().getY(), victim.getPosition().getZ(), false));
-					Reference.sendMessage(sender, victim.getName() + " has been smitten.");
-				} catch (PlayerNotFoundException e) {
-					Reference.sendMessage(sender, "The given player does not exist.");
+			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
+			else try {
+				List<EntityPlayer> victims = new ArrayList();
+				if (args[0].startsWith("@")) victims.addAll(EntitySelector.matchEntities(sender, args[0], EntityPlayer.class));
+				else victims.add(getPlayer(server, sender, args[0]));
+				World world = sender.getEntityWorld();
+				List<String> names = new ArrayList();
+				for (EntityPlayer victim : victims) {
+					names.add(victim.getName());
+					for (int x = 0; x < 3; x += 1)
+						world.addWeatherEffect(new EntityLightningBolt(world, victim.getPosition().getX(), victim.getPosition().getY(), victim.getPosition().getZ(), false));
 				}
+				Reference.sendMessage(sender, joinNiceStringFromCollection(names) + " ha" + (victims.size() > 1 ? "ve" : "s") + " been smitten.");
+			} catch (PlayerNotFoundException e) {
+				Reference.sendMessage(sender, "The given player does not exist.");
+			}
 		}
 
 		@Override

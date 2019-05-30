@@ -14,8 +14,7 @@ import net.minecraft.world.World;
 
 public class explode {
 
-	public explode() {
-	}
+	public explode() {}
 
 	public static class Commandexplode extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -54,21 +53,18 @@ public class explode {
 			double x = sender.getPositionVector().x;
 			double y = sender.getPositionVector().y;
 			double z = sender.getPositionVector().z;
-			Float power = 4F;
+			float power = 4F;
 			World world = sender.getEntityWorld();
-			Boolean fire = false;
-
+			boolean fire = false;
+			boolean damage = true;
+			boolean launch = true;
 			if (args.length != 0) {
-				if (Reference.isInteger(args[0]))
-					power = Float.parseFloat(args[0]);
-				else {
-					Reference.sendCommandUsage(sender, usage);
-					return;
-				}
-				if (args.length == 2 && Reference.isBoolean(args[1]))
-					fire = Boolean.parseBoolean(args[1]);
+				if (Reference.isInteger(args[0])) power = Float.parseFloat(args[0]);
+				if (args.length >= 2 && Reference.isBoolean(args[1])) fire = Boolean.parseBoolean(args[1]);
+				if (args.length >= 3 && Reference.isBoolean(args[2])) damage = Boolean.parseBoolean(args[2]);
+				if (args.length >= 4 && Reference.isBoolean(args[3])) launch = Boolean.parseBoolean(args[3]);
 			}
-			world.newExplosion((Entity) null, x, y, z, power, fire, true);
+			world.newExplosion(sender instanceof Entity && !launch ? (Entity) sender : null, x, y, z, power, fire, damage);
 		}
 
 		@Override
@@ -81,9 +77,8 @@ public class explode {
 			return new Permission(Reference.MOD_ID, "explode", "Permission to use the explode command.", true);
 		}
 
-		private static String usage = "/explode [power] [fire] Explode yourself with the set amount of power, power should be a number and defaults to 4, fire should be a boolean (true/false) and defaults to false.";
+		private static String usage = "/explode [power] [fire] [damage terrain] [launch] Explode yourself with the set amount of power, power should be a number and defaults to 4, fire should be a boolean (true/false) and defaults to false, damage terrain should be a boolean (true/false) and defaults to true, launch should be a boolean (true/false) and defaults to true.";
 
 	}
 
 }
-
