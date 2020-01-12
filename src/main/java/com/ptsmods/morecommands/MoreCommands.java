@@ -16,21 +16,9 @@ import org.apache.logging.log4j.message.Message;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.ptsmods.morecommands.commands.vanish.Commandvanish;
-import com.ptsmods.morecommands.miscellaneous.ClientEventHandler;
-import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.EEGenerator;
-import com.ptsmods.morecommands.miscellaneous.FP;
-import com.ptsmods.morecommands.miscellaneous.FPStorage;
-import com.ptsmods.morecommands.miscellaneous.IGameRule;
-import com.ptsmods.morecommands.miscellaneous.IReach;
-import com.ptsmods.morecommands.miscellaneous.Permission;
-import com.ptsmods.morecommands.miscellaneous.Reach;
-import com.ptsmods.morecommands.miscellaneous.ReachStorage;
-import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.miscellaneous.Reference.LogType;
 import com.ptsmods.morecommands.miscellaneous.Reference.Random;
-import com.ptsmods.morecommands.miscellaneous.ServerEventHandler;
-import com.ptsmods.morecommands.miscellaneous.Ticker;
 import com.ptsmods.morecommands.miscellaneous.Ticker.TickRunnable;
 import com.ptsmods.morecommands.net.ClientCurrentItemUpdatePacket;
 
@@ -41,18 +29,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.common.FMLLog;
-import net.minecraftforge.fml.common.LoadController;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.event.FMLConstructionEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLStateEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Type;
 import net.minecraftforge.fml.common.network.NetworkCheckHandler;
@@ -73,12 +53,7 @@ public class MoreCommands {
 	public static boolean		modInstalledServerSide	= false;
 
 	public MoreCommands() {
-		try {
-			ClassLoader.getSystemClassLoader().loadClass(Reference.class.getName()); // Reference used to have an initialise method which was called here, but that
-																						// has been moved to a static constructor which is called using this method.
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+		Reference.init();
 	}
 
 	private int lastItem = -1;
@@ -111,7 +86,7 @@ public class MoreCommands {
 					if (i < pkg0.length && i < pkg.length && pkg0[i].equals(pkg[i])) {
 						// First three parts have to be the same.
 						modName = mod.getModId();
-						break Outer;
+						continue Outer;
 					}
 			}
 			new Permission(modName.equals("FML") ? "minecraft" : modName, command.getName(), modName.equals("FML") ? "A vanilla Minecraft command." : I18n.translateToLocal(command.getUsage(event.getServer())), true, command);

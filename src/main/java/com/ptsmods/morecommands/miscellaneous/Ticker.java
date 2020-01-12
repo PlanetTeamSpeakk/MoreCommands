@@ -56,9 +56,9 @@ public class Ticker extends EventHandler implements ITickable {
 				else {
 					start -= 1000;
 					if (l < 1000 * 60 * 15) {
-						if (l < 1000 * 60) ctps = ctps == 0 ? cticks : (ctps + cticks) / 2;
-						if (l < 1000 * 60 * 5) ctps5 = ctps5 == 0 ? cticks : (ctps5 + cticks) / 2;
-						ctps15 = ctps15 == 0 ? cticks : (ctps15 + cticks) / 2;
+						if (l < 1000 * 60) ctps = ctps == -1 ? cticks : (ctps + cticks) / 2;
+						if (l < 1000 * 60 * 5) ctps5 = ctps5 == -1 ? cticks : (ctps5 + cticks) / 2;
+						ctps15 = ctps15 == -1 ? cticks : (ctps15 + cticks) / 2;
 					} else break;
 					cticks = 0;
 				}
@@ -89,8 +89,9 @@ public class Ticker extends EventHandler implements ITickable {
 				else {
 					start -= 1000;
 					if (l < 1000 * 60 * 15) {
-						if (l < 1000 * 60 * 5) tps5 = tps5 == 0 ? ticks : (tps5 + ticks) / 2;
-						tps15 = tps15 == 0 ? ticks : (tps15 + ticks) / 2;
+						if (l < 1000 * 60) tps = tps == -1 ? ticks : (tps + ticks) / 2;
+						if (l < 1000 * 60 * 5) tps5 = tps5 == -1 ? ticks : (tps5 + ticks) / 2;
+						tps15 = tps15 == -1 ? ticks : (tps15 + ticks) / 2;
 					} else break;
 					ticks = 0;
 				}

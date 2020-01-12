@@ -75,7 +75,7 @@ public class genloot {
 						found = true;
 						break;
 					}
-				if (!found) Reference.sendMessage(sender, TextFormatting.RED + "The given loottable could not be found.");
+				if (!found) Reference.sendMessage(sender, TextFormatting.RED + "The given loot table could not be found.");
 				else {
 					int x = sender.getPosition().getX();
 					int y = sender.getPosition().getY();
@@ -90,7 +90,7 @@ public class genloot {
 					else if (sender.getEntityWorld().getTileEntity(sender.getPosition()) != null) for (IProperty<?> prop : sender.getEntityWorld().getBlockState(sender.getEntityWorld().getTileEntity(sender.getPosition()).getPos()).getPropertyKeys())
 						if (((ParameterizedType) prop.getClass().getGenericSuperclass()).getActualTypeArguments()[0] == EnumFacing.class) facing = sender.getEntityWorld().getBlockState(sender.getEntityWorld().getTileEntity(sender.getPosition()).getPos()).getValue((IProperty<EnumFacing>) prop);
 					sender.getEntityWorld().setBlockState(new BlockPos(x, y, z), Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing == EnumFacing.UP ? EnumFacing.NORTH : facing == EnumFacing.DOWN ? EnumFacing.SOUTH : facing));
-					((TileEntityChest) sender.getEntityWorld().getTileEntity(new BlockPos(x, y, z))).setLootTable(loc, Random.randLong(Long.MIN_VALUE, Long.MAX_VALUE));
+					((TileEntityChest) sender.getEntityWorld().getTileEntity(new BlockPos(x, y, z))).setLootTable(loc, args.length >= 5 && Reference.isLong(args[4]) ? Long.parseLong(args[4]) == 0L ? Random.randLong(Long.MIN_VALUE, Long.MAX_VALUE) : Long.parseLong(args[4]) : 0L);
 					Reference.sendMessage(sender, "The loot chest has been created.");
 				}
 			}
@@ -106,7 +106,7 @@ public class genloot {
 			return new Permission(Reference.MOD_ID, "genloot", "Generate a chest with loot in it.", true);
 		}
 
-		private String usage = "/genloot <loot_table> [x] [y] [z] Generate a chest with loot from the given loot table at either your feet or the given location.";
+		private String usage = "/genloot <loot_table> [x] [y] [z] [seed] Generate a chest with loot from the given loot table at either your feet or the given location. Seed should be either 0 for a seed based on the current time, left blank for a seed based on the time when it's opened or a long (big integer).";
 
 	}
 

@@ -1,19 +1,7 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.io.*;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -23,14 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -93,11 +74,7 @@ import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.EnumSkyBlock;
@@ -124,6 +101,10 @@ import sun.reflect.Reflection;
 public class Reference {
 
 	protected Reference() {}
+
+	public static void init() {
+		return; // Just so the static constructor is called.
+	}
 
 	public static boolean isUUID(String s) {
 		try {
@@ -1437,8 +1418,7 @@ public class Reference {
 			Vec3d vec3d3 = null;
 			List<Entity> list = entity.getEntityWorld().getEntitiesInAABBexcluding(entity, entity.getEntityBoundingBox().expand(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0).grow(1.0D, 1.0D, 1.0D), Predicates.and(EntitySelectors.NOT_SPECTATING, (Predicate<Entity>) (@Nullable Entity p_apply_1_) -> p_apply_1_ != null && p_apply_1_.canBeCollidedWith()));
 			double d2 = d1;
-			for (int j = 0; j < list.size(); ++j) {
-				Entity entity1 = list.get(j);
+			for (Entity entity1 : list) {
 				AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow(entity1.getCollisionBorderSize());
 				RayTraceResult raytraceresult = axisalignedbb.calculateIntercept(vec3d, vec3d2);
 				if (axisalignedbb.contains(vec3d)) {
@@ -1727,8 +1707,8 @@ public class Reference {
 	private static <T> List<T> getReflectionObjects(T[] objects, T[] declaredObjects) {
 		List<T> list = Lists.newArrayList(objects);
 		Outer: for (T declaredObject : declaredObjects) {
-			for (int i = 0; i < list.size(); i++)
-				if (list.get(i).toString().equals(declaredObject.toString())) continue Outer;
+			for (T element : list)
+				if (element.toString().equals(declaredObject.toString())) continue Outer;
 			list.add(declaredObject);
 		}
 		return list;
@@ -1754,10 +1734,10 @@ public class Reference {
 
 	public static final String								MOD_ID						= "morecommands";
 	public static final String								MOD_NAME					= "MoreCommands";
-	public static final String								VERSION						= "2.1";
+	public static final String								VERSION						= "2.1.1";
 	public static final String								MC_VERSIONS					= "[1.12,1.12.2]";
 	public static final String								UPDATE_URL					= "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String								BUILD_DATE					= "May 24th 2019";
+	public static final String								BUILD_DATE					= "January 12th 2020";
 	public static final String[]							AUTHORS						= new String[] {"PlanetTeamSpeak"};
 	public static final List<CommandBase>					commands					= new ArrayList<>();
 	public static final boolean								yiss						= true;

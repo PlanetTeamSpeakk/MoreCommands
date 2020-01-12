@@ -53,7 +53,7 @@ public class descend {
 				BlockPos pos = entity.getPosition();
 				World world = entity.getEntityWorld();
 				Integer x = pos.getX();
-				Integer y = pos.getY();
+				Integer y = pos.getY() - 2;
 				Integer z = pos.getZ();
 				for (; y > 0; y--) {
 					Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();

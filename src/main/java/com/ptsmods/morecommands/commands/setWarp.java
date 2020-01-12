@@ -18,7 +18,7 @@ public class setWarp {
 
 	public setWarp() {}
 
-	public static class CommandsetHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class CommandsetWarp extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		@Override
 		public int getRequiredPermissionLevel() {

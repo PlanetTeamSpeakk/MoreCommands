@@ -14,8 +14,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class evalJavaScript {
 
-	public evalJavaScript() {
-	}
+	public evalJavaScript() {}
 
 	public static class CommandevalJavaScript extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
@@ -44,15 +43,12 @@ public class evalJavaScript {
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
 			else
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						String code = Reference.join(args);
-						try {
-							Reference.sendMessage(sender, "Input: " + TextFormatting.GRAY + TextFormatting.ITALIC + code + TextFormatting.RESET + "\n\nOutput: " + TextFormatting.GRAY + TextFormatting.ITALIC + Reference.evalJavaScript(code) + TextFormatting.RESET);
-						} catch (ScriptException e) {
-							Reference.sendMessage(sender, "An error occured while evaluating your code.");
-						}
+				new Thread(() -> {
+					String code = Reference.join(args);
+					try {
+						Reference.sendMessage(sender, "Input: " + TextFormatting.GRAY + TextFormatting.ITALIC + code + TextFormatting.RESET + "\n\nOutput: " + TextFormatting.GRAY + TextFormatting.ITALIC + Reference.evalJavaScript(code) + TextFormatting.RESET);
+					} catch (ScriptException e) {
+						Reference.sendMessage(sender, "An error occured while evaluating your code.");
 					}
 				}).start();
 		}

@@ -7,11 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.Permission;
-import com.ptsmods.morecommands.miscellaneous.Reference;
-import com.ptsmods.morecommands.miscellaneous.UsageMonitorer;
-import com.ptsmods.morecommands.miscellaneous.VMManagement;
+import com.ptsmods.morecommands.miscellaneous.*;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -23,7 +19,7 @@ public class sysinfo {
 
 	public sysinfo() {}
 
-	public static class Commandgc extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class Commandsysinfo extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		@Override
 		public java.util.List getAliases() {

@@ -5,6 +5,7 @@ import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.ExplosionEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class GameRuleDisableExplosions implements IGameRule<Boolean> {
 
@@ -35,6 +36,7 @@ public class GameRuleDisableExplosions implements IGameRule<Boolean> {
 	@Override
 	public void initServer(MinecraftServer server) {}
 
+	@SubscribeEvent
 	public void onExplosionStart(ExplosionEvent.Start event) {
 		if (getValue(event.getWorld())) event.setCanceled(true);
 	}

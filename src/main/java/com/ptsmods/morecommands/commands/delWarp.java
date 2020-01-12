@@ -17,7 +17,7 @@ public class delWarp {
 
 	public delWarp() {}
 
-	public static class CommanddelHome extends com.ptsmods.morecommands.miscellaneous.CommandBase {
+	public static class CommanddelWarp extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		@Override
 		public int getRequiredPermissionLevel() {
