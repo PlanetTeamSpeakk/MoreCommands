@@ -15,8 +15,16 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -41,6 +49,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class ServerEventHandler extends EventHandler {
@@ -131,6 +140,42 @@ public class ServerEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onBlockBreaking(PlayerEvent.BreakSpeed event) {}
+
+	@SubscribeEvent
+	public void onBlockBreak(BlockEvent.BreakEvent event) {
+		if (event.getWorld().getGameRules().getBoolean("dropSpawnersWithSilk") && event.getState().getBlock() == Blocks.MOB_SPAWNER && event.getPlayer() != null && !event.getPlayer().isCreative() && !event.getPlayer().isSpectator()) for (NBTBase nbt : event.getPlayer().getHeldItemMainhand().getEnchantmentTagList())
+			if (((NBTTagCompound) nbt).hasKey("id", 2) && ((NBTTagCompound) nbt).getInteger("id") == 33 || ((NBTTagCompound) nbt).hasKey("id", 8) && "minecraft:silk_touch".equals(((NBTTagCompound) nbt).getString("id"))) {
+				event.setExpToDrop(0);
+				ItemStack stack = new ItemStack(Blocks.MOB_SPAWNER, 1);
+				NBTTagCompound tileNBT = event.getWorld().getTileEntity(event.getPos()).serializeNBT();
+				if (tileNBT.hasKey("MinSpawnDelay") && tileNBT.hasKey("MaxSpawnDelay")) tileNBT.setShort("Delay", (short) ((tileNBT.getShort("MinSpawnDelay") + tileNBT.getShort("MaxSpawnDelay") * 2) / 3));
+				tileNBT.removeTag("x");
+				tileNBT.removeTag("y");
+				tileNBT.removeTag("z");
+				stack.setTagInfo("spawner_data", tileNBT);
+				NBTTagList lore = new NBTTagList();
+				lore.appendTag(new NBTTagString(ForgeRegistries.ENTITIES.getValue(new ResourceLocation(tileNBT.hasKey("SpawnData") ? tileNBT.getCompoundTag("SpawnData").getString("id") : "minecraft:pig")).getName()));
+				NBTTagCompound display = new NBTTagCompound();
+				display.setTag("Lore", lore);
+				stack.setTagInfo("display", display);
+				EntityItem itemEntity = new EntityItem(event.getWorld(), event.getPos().getX() + 0.5D, event.getPos().getY(), event.getPos().getZ() + 0.5D, stack);
+				itemEntity.setPickupDelay(40);
+				event.getWorld().spawnEntity(itemEntity);
+				break;
+			}
+	}
+
+	@SubscribeEvent
+	public void onBlockPlace(BlockEvent.PlaceEvent event) {
+		ItemStack held = event.getPlayer().getHeldItem(event.getHand());
+		if (event.getPlayer() != null && held.getItem() instanceof ItemBlock && ((ItemBlock) held.getItem()).getBlock() == Blocks.MOB_SPAWNER && held.hasTagCompound() && held.getTagCompound().hasKey("spawner_data")) {
+			NBTTagCompound nbt = held.getTagCompound().getCompoundTag("spawner_data");
+			nbt.setInteger("x", event.getPos().getX());
+			nbt.setInteger("y", event.getPos().getY());
+			nbt.setInteger("z", event.getPos().getZ());
+			event.getWorld().getTileEntity(event.getPos()).deserializeNBT(nbt);
+		}
+	}
 
 	@SubscribeEvent
 	public void onEntityHurt(LivingHurtEvent event) {

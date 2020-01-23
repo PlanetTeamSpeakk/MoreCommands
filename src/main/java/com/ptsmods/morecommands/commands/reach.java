@@ -2,11 +2,7 @@ package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
 
-import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.IReach;
-import com.ptsmods.morecommands.miscellaneous.Permission;
-import com.ptsmods.morecommands.miscellaneous.ReachProvider;
-import com.ptsmods.morecommands.miscellaneous.Reference;
+import com.ptsmods.morecommands.miscellaneous.*;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -58,9 +54,11 @@ public class reach {
 			if (args.length == 0) Reference.sendMessage(sender, "Your current reach is", (vanillaReach.getAttributeValue() == modReach.get() ? modReach.get() : "unsynchronized, please reset it") + ".");
 			else if (Reference.isFloat(args[0])) {
 				float old = modReach.get();
-				vanillaReach.setBaseValue(Double.parseDouble(args[0]));
-				modReach.set(player, Float.parseFloat(args[0]));
-				Reference.sendMessage(sender, "Your reach has been set from", old, "to", Float.parseFloat(args[0]) + ".");
+				double newValue = Double.parseDouble(args[0]);
+				if (newValue < 1) newValue = 1;
+				vanillaReach.setBaseValue(newValue);
+				modReach.set(player, (float) newValue);
+				Reference.sendMessage(sender, "Your reach has been set from", old, "to", newValue + ".");
 			} else Reference.sendMessage(sender, "The given argument was not a float.");
 		}
 

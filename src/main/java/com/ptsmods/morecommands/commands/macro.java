@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ptsmods.morecommands.miscellaneous.CommandType;
-import com.ptsmods.morecommands.miscellaneous.Permission;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.ICommand;
@@ -128,7 +127,7 @@ public class macro {
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 			try {
-				this.loadFile();
+				loadFile();
 			} catch (IOException e) {}
 			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
 			else if (args[0].equals("create")) {
@@ -231,10 +230,11 @@ public class macro {
 			} else if (args[0].equals("list")) {
 				if (macros.isEmpty()) Reference.sendMessage(sender, TextFormatting.RED + "It appears you have not made any macros yet.");
 				else Reference.sendMessage(sender, "You have made the following macros:\n" + joinNiceStringFromCollection(macros.keySet()));
-			} else if (macros.containsKey(Reference.join(args))) {
+			} else if (args[0].equals("silent") && macros.containsKey(Reference.join(Reference.removeArg(args, 0))) || macros.containsKey(Reference.join(args))) {
+				boolean silent = args[0].equals("silent");
 				int success = 0;
 				int fail = 0;
-				for (String command : macros.get(Reference.join(args)))
+				for (String command : macros.get(Reference.join(silent ? Reference.removeArg(args, 0) : args)))
 					try {
 						Reference.sendChatMessage("/" + command);
 						success++;
@@ -243,18 +243,13 @@ public class macro {
 						Reference.sendMessage(sender, TextFormatting.RED + "Command '" + command + "' of macro '" + Reference.join(args) + "' could not be run. Error message: " + e.getMessage() + ".");
 						fail++;
 					}
-				Reference.sendMessage(sender, success + " command" + (success == 1 ? "" : "s") + " of macro '" + Reference.join(args) + "' were " + TextFormatting.GREEN + "successfully" + Reference.dtf + " ran" + (fail == 0 ? "." : ", while " + fail + " command" + (fail == 1 ? "" : "s") + " w" + (fail == 1 ? "as" : "ere") + TextFormatting.RED + " not" + Reference.dtf + "."));
+				if (!silent) Reference.sendMessage(sender, success + " command" + (success == 1 ? "" : "s") + " of macro '" + Reference.join(args) + "' were " + TextFormatting.GREEN + "successfully" + Reference.dtf + " ran" + (fail == 0 ? "." : ", while " + fail + " command" + (fail == 1 ? "" : "s") + " w" + (fail == 1 ? "as" : "ere") + TextFormatting.RED + " not" + Reference.dtf + "."));
 			} else Reference.sendMessage(sender, TextFormatting.RED + "The given macro '" + Reference.join(args) + "' could not be found.");
 		}
 
 		@Override
 		public CommandType getCommandType() {
 			return CommandType.CLIENT;
-		}
-
-		@Override
-		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "PERMISSION", "DESCRIPTION", false);
 		}
 
 		private String usage = "/macro <create|add|remove|view|list|<name>> Manage or run your macros. To run a macro, type for example /macro god potion.";

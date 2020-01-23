@@ -9,19 +9,15 @@ import com.ptsmods.morecommands.miscellaneous.Reference;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityFireball;
 import net.minecraft.entity.projectile.EntityLargeFireball;
 import net.minecraft.entity.projectile.EntityWitherSkull;
-import net.minecraft.init.MobEffects;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.EnumDifficulty;
 
 public class fireball {
 
@@ -73,18 +69,10 @@ public class fireball {
 				public void onImpact(RayTraceResult result) {
 					// Copied from super onImpact so I can change the explosion power
 					if (!world.isRemote) {
-						if (result.entityHit != null) {
-							if (shootingEntity != null) {
-								if (result.entityHit.attackEntityFrom(DamageSource.causeMobDamage(shootingEntity), 8.0F)) if (result.entityHit.isEntityAlive()) applyEnchantments(shootingEntity, result.entityHit);
-								else shootingEntity.heal(5.0F);
-							} else result.entityHit.attackEntityFrom(DamageSource.MAGIC, 5.0F);
-							if (result.entityHit instanceof EntityLivingBase) {
-								int i = 0;
-								if (world.getDifficulty() == EnumDifficulty.NORMAL) i = 10;
-								else if (world.getDifficulty() == EnumDifficulty.HARD) i = 40;
-								if (i > 0) ((EntityLivingBase) result.entityHit).addPotionEffect(new PotionEffect(MobEffects.WITHER, 20 * i, 1));
-							}
-						}
+						if (result.entityHit != null) if (shootingEntity != null) {
+							if (result.entityHit.attackEntityFrom(DamageSource.causeMobDamage(shootingEntity), 8.0F)) if (result.entityHit.isEntityAlive()) applyEnchantments(shootingEntity, result.entityHit);
+							else shootingEntity.heal(5.0F);
+						} else result.entityHit.attackEntityFrom(DamageSource.MAGIC, 5.0F);
 						world.newExplosion(this, posX, posY, posZ, args.length != 0 && Reference.isInteger(args[0]) ? Integer.parseInt(args[0]) : 1F, false, net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(world, shootingEntity));
 						setDead();
 					}

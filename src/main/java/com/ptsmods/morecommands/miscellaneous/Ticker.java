@@ -22,7 +22,6 @@ public class Ticker extends EventHandler implements ITickable {
 	private long									lastTick		= -1;
 	public float									ctps			= -1, ctps5 = -1, ctps15 = -1;
 	private List<Long>								cticksPassed	= new ArrayList();
-	private long									lastCtick		= -1;
 	public static final Ticker						INSTANCE		= new Ticker();
 	private Map<TickEvent.Type, List<TickRunnable>>	runnables		= new HashMap();
 
@@ -70,15 +69,17 @@ public class Ticker extends EventHandler implements ITickable {
 
 	/**
 	 * Fired whenever a server tick runs.<br>
-	 * Has no extra objects.
+	 * Has one extra object:<br>
+	 * &emsp;1. Server, the {@link net.minecraft.server.MinecraftServer
+	 * MinecraftServer} instance.
 	 *
 	 * @param event
 	 */
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
-		run(TickEvent.Type.SERVER, event.phase);
+		run(TickEvent.Type.SERVER, event.phase, FMLCommonHandler.instance().getMinecraftServerInstance());
 		if (event.phase == Phase.END) {
-			if (lastCtick != -1 && System.currentTimeMillis() - lastTick > 0) tps = (int) (1000 / (System.currentTimeMillis() - lastTick));
+			if (lastTick != -1 && System.currentTimeMillis() - lastTick > 0) tps = (int) (1000 / (System.currentTimeMillis() - lastTick));
 			lastTick = System.currentTimeMillis();
 			ticksPassed.add(0, System.currentTimeMillis());
 			float ticks = 0;

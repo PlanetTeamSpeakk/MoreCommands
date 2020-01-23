@@ -21,9 +21,9 @@ public class ModEntityTracker extends EntityTracker {
 		Field f = null;
 		Field f0 = null;
 		try {
-			f = EntityTracker.class.getDeclaredField("trackedEntityHashTable");
+			f = Reference.getFieldMapped(EntityTracker.class, "trackedEntityHashTable", "field_72794_c");
 			f.setAccessible(true);
-			f0 = EntityTracker.class.getDeclaredField("entries");
+			f0 = Reference.getFieldMapped(EntityTracker.class, "entries", "field_72793_b");
 			f0.setAccessible(true);
 		} catch (Exception e) {
 			e.printStackTrace();

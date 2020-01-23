@@ -1,5 +1,9 @@
 package com.ptsmods.morecommands.net;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
+
 import com.ptsmods.morecommands.miscellaneous.ReachProvider;
 import com.ptsmods.morecommands.miscellaneous.Reference;
 
@@ -7,6 +11,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBlock;
@@ -28,8 +33,17 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 	private int		activity;
 	private boolean	place;
 	private boolean	holdingctrl;
+	private UUID	entityHit;
 
+	/**
+	 * @deprecated Only meant for internal use.
+	 */
+	@Deprecated
 	public ClientExtendedReachPacket() {}
+
+	public ClientExtendedReachPacket(UUID entityHit) {
+		this(0, false, false, entityHit);
+	}
 
 	public ClientExtendedReachPacket(int activity) {
 		this(activity, false);
@@ -39,13 +53,14 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 													 * 0 = destroy block/damage entity, 1 = place block/entity interact, 2 = pick
 													 * block
 													 */, boolean place) {
-		this(activity, place, false);
+		this(activity, place, false, null);
 	}
 
-	public ClientExtendedReachPacket(int activity, boolean place, boolean holdingctrl) {
+	public ClientExtendedReachPacket(int activity, boolean place, boolean holdingctrl, UUID entityHit) {
 		this.activity = activity;
 		this.place = place;
 		this.holdingctrl = holdingctrl;
+		this.entityHit = entityHit;
 	}
 
 	@Override
@@ -53,6 +68,8 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 		activity = buf.readByte();
 		place = buf.readBoolean();
 		holdingctrl = buf.readBoolean();
+		int length;
+		if ((length = buf.readInt()) >= 0) entityHit = UUID.fromString(buf.readCharSequence(length, StandardCharsets.UTF_8).toString());
 	}
 
 	@Override
@@ -60,12 +77,15 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 		buf.writeByte(activity);
 		buf.writeBoolean(place);
 		buf.writeBoolean(holdingctrl);
+		buf.writeInt(entityHit == null ? -1 : entityHit.toString().length());
+		if (entityHit != null) buf.writeCharSequence(entityHit.toString(), StandardCharsets.UTF_8);
 	}
 
 	@Override
 	public IMessage run(MessageContext ctx) {
 		ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
-			RayTraceResult result = Reference.rayTrace(ctx.getServerHandler().player, ctx.getServerHandler().player.getCapability(ReachProvider.reachCap, null).get() + 0.1F);
+			float reach = ctx.getServerHandler().player.getCapability(ReachProvider.reachCap, null).get() + 0.1F;
+			RayTraceResult result = Reference.rayTrace(ctx.getServerHandler().player, reach);
 			BlockPos pos = result.getBlockPos() == null ? result.entityHit == null ? new BlockPos(result.hitVec.x, result.hitVec.y, result.hitVec.z) : result.entityHit.getPosition() : result.getBlockPos();
 			if (pos == null || !ctx.getServerHandler().player.getEntityWorld().isBlockLoaded(pos) || ctx.getServerHandler().player.getEntityWorld().isOutsideBuildHeight(pos)) return;
 			int x = pos.getX();
@@ -94,10 +114,10 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 			}
 			pos = new BlockPos(x, y, z);
 			if (activity == 0) {
-				boolean te = result.typeOfHit == RayTraceResult.Type.ENTITY;
-				if (te && result.entityHit != null) ctx.getServerHandler().player.attackTargetEntityWithCurrentItem(result.entityHit); // result.entityHit could be null if the entity is for example a falling sand
-																																		 // entity which is often gone before the packet arrives.
-				else if (!te && ctx.getServerHandler().player.isCreative() && !(ctx.getServerHandler().player.getHeldItemMainhand().getItem() instanceof ItemSword)) ctx.getServerHandler().player.getEntityWorld().destroyBlock(pos, false);
+				if (entityHit != null) {
+					List<Entity> entities = ctx.getServerHandler().player.getEntityWorld().getEntities(Entity.class, (entity) -> entity.getUniqueID().equals(entityHit));
+					if (entities.size() != 0 && Reference.confirmEntityHit(ctx.getServerHandler().player, entities.get(0), reach, 0, 5D)) ctx.getServerHandler().player.attackTargetEntityWithCurrentItem(entities.get(0));
+				} else if (ctx.getServerHandler().player.isCreative() && !(ctx.getServerHandler().player.getHeldItemMainhand().getItem() instanceof ItemSword)) ctx.getServerHandler().player.getEntityWorld().destroyBlock(pos, false);
 			} else if (activity == 1) {
 				// This should open any containers the player might have clicked on; however,
 				// due to Minecraft standards, the container will automatically close if the
@@ -135,7 +155,7 @@ public class ClientExtendedReachPacket extends AbstractPacket {
 				if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
 					TileEntity te = ctx.getServerHandler().player.getEntityWorld().getBlockState(pos).getBlock().hasTileEntity(ctx.getServerHandler().player.getEntityWorld().getBlockState(pos)) ? ctx.getServerHandler().player.getEntityWorld().getTileEntity(pos) : null;
 					stack = ctx.getServerHandler().player.getEntityWorld().getBlockState(pos).getBlock().getPickBlock(ctx.getServerHandler().player.getEntityWorld().getBlockState(pos), result, ctx.getServerHandler().player.getEntityWorld(), pos, ctx.getServerHandler().player);
-					stack = te != null && holdingctrl ? Reference.storeTE(stack, te) : stack;
+					stack = te != null && holdingctrl ? Reference.storeTE(stack, te, true) : stack;
 				} else stack = result.entityHit.getPickedResult(result);
 				int i0 = -1;// Checking it again on the server in case the client has different knowledge of
 							// the stack in question than the server does, e.g. a chest with nbt.

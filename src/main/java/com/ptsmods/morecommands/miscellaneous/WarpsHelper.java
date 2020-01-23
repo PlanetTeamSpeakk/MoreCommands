@@ -87,12 +87,9 @@ public class WarpsHelper {
 				warpMap.put("yaw", (double) warp.yaw);
 				warpMap.put("pitch", (double) warp.pitch);
 				warps1.put(warp.name, warpMap);
-				Reference.print(LogType.INFO, "WarpMap" + warpMap);
 			}
 			warps.put(warps0.getKey(), warps1);
-			Reference.print(LogType.INFO, "Warps1" + warps1);
 		}
-		Reference.print(LogType.INFO, "Warps" + warps);
 		PrintWriter writer = new PrintWriter(new FileWriter(new File("config/MoreCommands/warps.json")), true);
 		new GsonBuilder().setPrettyPrinting().create().toJson(warps, writer);
 		writer.flush();

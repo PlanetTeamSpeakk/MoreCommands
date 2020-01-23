@@ -1,35 +1,30 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import com.ptsmods.morecommands.miscellaneous.Reference.LogType;
 import com.ptsmods.morecommands.net.ServerRecipePacket.Type;
 
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class RecipeGUI extends GuiContainer {
+public class AddRecipeGUI extends GuiContainer {
 
 	private Type	type;
 	private String	playerInvName;
 
-	public RecipeGUI(Type type, List<ItemStack> stacks, InventoryPlayer playerInventory) {
-		super(type == Type.WORKBENCH ? new RecipeBenchContainer(stacks, playerInventory) : type == Type.FURNACE ? new RecipeFurnaceContainer(stacks, playerInventory) : new RecipeBrewingContainer(stacks, playerInventory));
+	public AddRecipeGUI(Type type, InventoryPlayer playerInventory) {
+		super(type == Type.WORKBENCH ? new AddRecipeBenchContainer(playerInventory) : type == Type.FURNACE ? new AddRecipeFurnaceContainer(playerInventory) : new AddRecipeBrewingContainer(playerInventory));
 		this.type = type;
 		playerInvName = playerInventory.getDisplayName().getUnformattedText();
 	}
-
-	@Override
-	public void actionPerformed(GuiButton button) {}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -65,14 +60,19 @@ public class RecipeGUI extends GuiContainer {
 
 	@Override
 	public void handleInput() throws IOException {
-		// Do handle keyboard events, but do not handle mouse events because of dupes.
-		// Even though the dupes would be client side only, it would still work on
-		// singleplayer.
+		if (Mouse.isCreated()) while (Mouse.next()) {
+			Reference.print(LogType.INFO, "Mouse event ");
+			mouseHandled = false;
+			if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.MouseInputEvent.Pre(this))) continue;
+			handleMouseInput();
+			if (equals(mc.currentScreen) && !mouseHandled) net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.MouseInputEvent.Post(this));
+		}
+
 		if (Keyboard.isCreated()) while (Keyboard.next()) {
 			keyHandled = false;
-			char c0 = Keyboard.getEventCharacter();
-			if (Keyboard.getEventKey() == 0 && c0 >= ' ' || Keyboard.getEventKeyState()) keyTyped(c0, Keyboard.getEventKey());
-			mc.dispatchKeypresses();
+			if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.KeyboardInputEvent.Pre(this))) continue;
+			handleKeyboardInput();
+			if (equals(mc.currentScreen) && !keyHandled) net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.KeyboardInputEvent.Post(this));
 		}
 	}
 

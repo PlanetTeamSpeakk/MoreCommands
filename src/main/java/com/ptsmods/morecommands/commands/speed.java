@@ -31,6 +31,7 @@ public class speed {
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
 			aliases.add("sp");
+			aliases.add("fast");
 			aliases.add("amfast");
 			aliases.add("fastasfuckboii");
 			return aliases;
@@ -71,7 +72,7 @@ public class speed {
 			case WALK:
 			case FLY:
 				try {
-					Field f = type == SpeedType.FLY ? PlayerCapabilities.class.getDeclaredField("flySpeed") : PlayerCapabilities.class.getDeclaredField("walkSpeed");
+					Field f = type == SpeedType.FLY ? Reference.getFieldMapped(PlayerCapabilities.class, "flySpeed", "field_149116_e", "field_149497_e", "field_75096_f") : Reference.getFieldMapped(PlayerCapabilities.class, "walkSpeed", "field_149114_f", "field_149495_f", "field_75097_g");
 					f.setAccessible(true);
 					speed = f.getFloat(player.capabilities) * (type == SpeedType.FLY ? 20 : 10);
 				} catch (Exception e) {
@@ -91,7 +92,7 @@ public class speed {
 			case WALK:
 			case FLY:
 				try {
-					Field f = type == SpeedType.FLY ? PlayerCapabilities.class.getDeclaredField("flySpeed") : PlayerCapabilities.class.getDeclaredField("walkSpeed");
+					Field f = type == SpeedType.FLY ? Reference.getFieldMapped(PlayerCapabilities.class, "flySpeed", "field_149116_e", "field_149497_e", "field_75096_f") : Reference.getFieldMapped(PlayerCapabilities.class, "walkSpeed", "field_149114_f", "field_149495_f", "field_75097_g");
 					f.setAccessible(true);
 					f.set(player.capabilities, (float) speed / 10 / (type == SpeedType.FLY ? 2 : 1));
 					player.sendPlayerAbilities();
@@ -113,7 +114,7 @@ public class speed {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "speed", "Permission to use the speed command.", true);
+			return new Permission(Reference.MOD_ID, "speed", "Change your walk, fly and even swim speed.", true);
 		}
 
 		@Override
@@ -132,16 +133,9 @@ public class speed {
 			}
 
 			public static SpeedType fromString(String s) {
-				switch (s.toLowerCase()) {
-				case "walk":
-					return WALK;
-				case "fly":
-					return FLY;
-				case "swim":
-					return SWIM;
-				default:
-					return null;
-				}
+				for (SpeedType type : values())
+					if (type.toString().equalsIgnoreCase(s)) return type;
+				return null;
 			}
 
 		}

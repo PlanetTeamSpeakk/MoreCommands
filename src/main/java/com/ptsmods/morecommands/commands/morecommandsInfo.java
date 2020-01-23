@@ -12,14 +12,14 @@ import net.minecraft.util.math.BlockPos;
 
 public class morecommandsInfo {
 
-	public morecommandsInfo() {
-	}
+	public morecommandsInfo() {}
 
 	public static class CommandmorecommandsInfo extends com.ptsmods.morecommands.miscellaneous.CommandBase {
 
 		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("strike");
 			return aliases;
 		}
 
@@ -40,7 +40,7 @@ public class morecommandsInfo {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-			Reference.sendMessage(sender, "You have MoreCommands version " + Reference.VERSION + ", built on " + Reference.BUILD_DATE + ", by " + joinNiceString(Reference.AUTHORS) + ".");
+			Reference.sendMessage(sender, "You are running MoreCommands version " + Reference.VERSION + ", built on " + Reference.BUILD_DATE + ", by " + joinNiceString(Reference.AUTHORS) + ".");
 		}
 
 		@Override

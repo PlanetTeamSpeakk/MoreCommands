@@ -3,7 +3,9 @@ package com.ptsmods.morecommands;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,12 +23,20 @@ import com.ptsmods.morecommands.miscellaneous.Reference.LogType;
 import com.ptsmods.morecommands.miscellaneous.Reference.Random;
 import com.ptsmods.morecommands.miscellaneous.Ticker.TickRunnable;
 import com.ptsmods.morecommands.net.ClientCurrentItemUpdatePacket;
+import com.ptsmods.morecommands.net.ServerRecipePacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.*;
@@ -35,7 +45,10 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Type;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkCheckHandler;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -146,6 +159,49 @@ public class MoreCommands {
 		GameRegistry.registerWorldGenerator(new EEGenerator(), 0);
 		CapabilityManager.INSTANCE.register(IReach.class, new ReachStorage(), () -> new Reach());
 		CapabilityManager.INSTANCE.register(FP.class, new FPStorage(), () -> new FP());
+		NetworkRegistry.INSTANCE.registerGuiHandler(this, new IGuiHandler() {
+
+			@Override
+			public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+				switch (ID) {
+				case 0:
+					return new AddRecipeBenchContainer(player.inventory);
+				case 1:
+					return new AddRecipeFurnaceContainer(player.inventory);
+				case 2:
+					return new AddRecipeBrewingContainer(player.inventory);
+				default:
+					return null;
+				}
+			}
+
+			@Override
+			public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+				switch (ID) {
+				case 0:
+				case 1:
+				case 2:
+					return new AddRecipeGUI(ServerRecipePacket.Type.values()[ID], player.inventory);
+				default:
+					return null;
+				}
+			}
+		});
+		Field f = Reference.getFieldMapped(ClientCommandHandler.class, "instance");
+		Reference.removeFinalModifier(f);
+		try {
+			f.set(null, new ClientCommandHandler() {
+				@Override
+				public int executeCommand(ICommandSender sender, String message) {
+					// For some reason, plain messages can also be seen as commands.
+					// E.g. when you say chelp rather than /chelp, this method gets called either
+					// way.
+					return message != null && message.startsWith("/") ? super.executeCommand(sender, message) : 0;
+				}
+			});
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 		AtomicInteger rainbowCounter = new AtomicInteger();
 		TickRunnable runnable = extraArgs -> {
 			if (ClientEventHandler.rainbowHighlight && rainbowCounter.getAndIncrement() % 2 == 0) {
@@ -165,6 +221,19 @@ public class MoreCommands {
 			} else lastItem = -1;
 		};
 		Ticker.INSTANCE.addRunnable(Type.CLIENT, runnable0.setRemoveWhenRan(false));
+		List<EntityPlayer> howled = new ArrayList();
+		TickRunnable runnable1 = extraArgs -> {
+			MinecraftServer server = (MinecraftServer) extraArgs[0];
+			double angle = server.getWorld(0).getCelestialAngle(0) * 360;
+			if (angle > 90 && angle < 270 && server.getWorld(0).provider.getMoonPhase(server.getWorld(0).getWorldTime()) == 0) for (EntityPlayerMP player : server.getPlayerList().getPlayers())
+				if (Reference.isLookingAtMoon(player, angle) && player.isSneaking() && player.getEntityWorld().provider.getDimension() == 0) {
+					if (!howled.contains(player)) {
+						player.getEntityWorld().playSound(null, player.getPosition().getX() + 0.5D, player.getPosition().getY() + player.getEyeHeight(), player.getPosition().getZ() + 0.5D, ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.wolf.howl")), SoundCategory.PLAYERS, 4, 1);
+						howled.add(player);
+					}
+				} else howled.remove(player);
+		};
+		Ticker.INSTANCE.addRunnable(Type.SERVER, runnable1.setRemoveWhenRan(false));
 	}
 
 	@Subscribe

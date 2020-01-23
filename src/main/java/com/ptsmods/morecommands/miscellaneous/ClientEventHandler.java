@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,7 +40,10 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -81,16 +84,18 @@ public class ClientEventHandler extends EventHandler {
 	@SubscribeEvent
 	public void onMouseInput(MouseInputEvent event) {
 		if (MoreCommands.modInstalledServerSide) {
+			Minecraft.getMinecraft().playerController.updateController(); // Sending held item update, this should fix the bug that causes attacks to be
+																			// weak.
 			GameSettings gs = Minecraft.getMinecraft().gameSettings;
 			RayTraceResult result = Reference.rayTrace(Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null).get());
 			if (result == null) return;
-			if (result.typeOfHit == RayTraceResult.Type.ENTITY && Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed() && Minecraft.getMinecraft().player.isCreative()) {
+			if (result.typeOfHit != RayTraceResult.Type.MISS && Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed() && Minecraft.getMinecraft().player.isCreative()) {
 				boolean flag = false;
 				ItemStack stack;
 				if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
 					TileEntity te = Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()).getBlock().hasTileEntity(Minecraft.getMinecraft().world.getBlockState(result.getBlockPos())) ? Minecraft.getMinecraft().world.getTileEntity(result.getBlockPos()) : null;
 					stack = Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()).getBlock().getPickBlock(Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()), result, Minecraft.getMinecraft().world, result.getBlockPos(), Minecraft.getMinecraft().player);
-					stack = te != null && GuiScreen.isCtrlKeyDown() ? Reference.storeTE(stack, te) : stack;
+					stack = te != null && GuiScreen.isCtrlKeyDown() ? Reference.storeTE(stack, te, true) : stack;
 				} else stack = result.entityHit.getPickedResult(result);
 				int i = Minecraft.getMinecraft().player.inventory.getSlotFor(stack); // This does not seem to work for tile entities as the client has different
 																						// information about tile entities than the server does, e.g. it doesn't know
@@ -100,7 +105,7 @@ public class ClientEventHandler extends EventHandler {
 					Minecraft.getMinecraft().player.inventory.currentItem = i;
 					flag = true;
 				}
-				if (!flag) Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(2, false, GuiScreen.isCtrlKeyDown()));
+				if (!flag) Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(2, false, GuiScreen.isCtrlKeyDown(), null));
 				net.minecraft.client.settings.KeyBinding.setKeyBindState(gs.keyBindPickBlock.getKeyCode(), false);
 			}
 			boolean rightclick = false;
@@ -111,8 +116,15 @@ public class ClientEventHandler extends EventHandler {
 				net.minecraft.client.settings.KeyBinding.setKeyBindState(rightclick ? gs.keyBindUseItem.getKeyCode() : gs.keyBindAttack.getKeyCode(), false); // C O N S U M E
 				if (rightclick) gs.keyBindUseItem.isPressed(); // C O N S U M E
 				else gs.keyBindAttack.isPressed(); // C O N S U M E
-				if (!rightclick) Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
-				if (rightclick && !MinecraftForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(Minecraft.getMinecraft().player, EnumHand.MAIN_HAND, result.entityHit)) || !rightclick && !MinecraftForge.EVENT_BUS.post(new AttackEntityEvent(Minecraft.getMinecraft().player, result.entityHit))) Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(rightclick ? 1 : 0, false));
+				UUID entityHit = null;
+				if (!rightclick) {
+					Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
+					entityHit = result.entityHit.getUniqueID();
+				}
+				if (rightclick && !MinecraftForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(Minecraft.getMinecraft().player, EnumHand.MAIN_HAND, result.entityHit)) || !rightclick && !MinecraftForge.EVENT_BUS.post(new AttackEntityEvent(Minecraft.getMinecraft().player, result.entityHit))) {
+					if (!rightclick) Minecraft.getMinecraft().player.attackTargetEntityWithCurrentItem(result.entityHit);
+					Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(rightclick ? 1 : 0, false, false, entityHit));
+				}
 			}
 		}
 	}
@@ -182,50 +194,45 @@ public class ClientEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
-		if (MoreCommands.modInstalledServerSide) event.setCanceled(true); // With extended reach Minecraft cannot raytrace entities or some bs like that
-																			// so I have to make sure the bounding box does not show when hovering over an
-																			// entity.
-	}
-
-	@SubscribeEvent
-	public void onRenderWorldLast(RenderWorldLastEvent event) {
-		RayTraceResult result;
-		if ((result = customHighlight()) != null) {
-			EntityPlayer player = Minecraft.getMinecraft().player;
-			World theWorld = player.getEntityWorld();
-			// Thanks to RenderGlobal#drawSelectionBox for this one
-			GlStateManager.pushMatrix();
-			GlStateManager.enableBlend();
-			GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-			GlStateManager.glLineWidth(2F);
-			GlStateManager.disableTexture2D();
-			GlStateManager.depthMask(false);
-			BlockPos blockpos = result.getBlockPos();
-			IBlockState iblockstate = theWorld.isBlockLoaded(blockpos) ? theWorld.getBlockState(blockpos) : null;
-			if (iblockstate != null && theWorld.getWorldBorder().contains(blockpos)) {
-				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.getPartialTicks();
-				double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.getPartialTicks();
-				double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.getPartialTicks();
-				float redAmountHighlight = rainbowHighlight ? ClientEventHandler.redAmountHighlight : 0;
-				float greenAmountHighlight = rainbowHighlight ? ClientEventHandler.greenAmountHighlight : 0;
-				float blueAmountHighlight = rainbowHighlight ? ClientEventHandler.blueAmountHighlight : 0;
-				float alphaAmountHighlight = 0.4F;
-				RenderGlobal.drawSelectionBoundingBox(iblockstate.getSelectedBoundingBox(theWorld, blockpos).grow(0.0020000000949949026D).offset(-d0, -d1, -d2), redAmountHighlight, greenAmountHighlight, blueAmountHighlight, alphaAmountHighlight);
+		if (MoreCommands.modInstalledServerSide) {
+			event.setCanceled(true); // With extended reach Minecraft cannot raytrace entities or some bs like that
+										// so I have to make sure the bounding box does not show when hovering over an
+										// entity.
+			RayTraceResult result;
+			if ((result = customHighlight()) != null) {
+				EntityPlayer player = Minecraft.getMinecraft().player;
+				World theWorld = player.getEntityWorld();
+				// Thanks to RenderGlobal#drawSelectionBox for this one
+				GlStateManager.pushMatrix();
+				GlStateManager.enableBlend();
+				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+				GlStateManager.glLineWidth(2F);
+				GlStateManager.disableTexture2D();
+				GlStateManager.depthMask(false);
+				BlockPos blockpos = result.getBlockPos();
+				IBlockState iblockstate = theWorld.isBlockLoaded(blockpos) ? theWorld.getBlockState(blockpos) : null;
+				if (iblockstate != null && theWorld.getWorldBorder().contains(blockpos)) {
+					double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.getPartialTicks();
+					double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.getPartialTicks();
+					double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.getPartialTicks();
+					float redAmountHighlight = rainbowHighlight ? ClientEventHandler.redAmountHighlight : 0;
+					float greenAmountHighlight = rainbowHighlight ? ClientEventHandler.greenAmountHighlight : 0;
+					float blueAmountHighlight = rainbowHighlight ? ClientEventHandler.blueAmountHighlight : 0;
+					float alphaAmountHighlight = 0.4F;
+					RenderGlobal.drawSelectionBoundingBox(iblockstate.getSelectedBoundingBox(theWorld, blockpos).grow(0.0020000000949949026D).offset(-d0, -d1, -d2), redAmountHighlight, greenAmountHighlight, blueAmountHighlight, alphaAmountHighlight);
+				}
+				GlStateManager.glLineWidth(1F);
+				GlStateManager.depthMask(true);
+				GlStateManager.enableTexture2D();
+				GlStateManager.disableBlend();
+				GlStateManager.popMatrix();
 			}
-			GlStateManager.glLineWidth(1F);
-			GlStateManager.depthMask(true);
-			GlStateManager.enableTexture2D();
-			GlStateManager.disableBlend();
-			GlStateManager.popMatrix();
 		}
 	}
 
 	@SubscribeEvent
 	public void onRenderTick(RenderTickEvent event) {
-		if (Commandptime.time != -1) try {
-			Minecraft.getMinecraft().world.setWorldTime(Commandptime.time);
-		} catch (NullPointerException e) {} // NullPointerExceptions can occur when logging out from a server, these will
-											// crash your game.
+		if (Commandptime.time != -1 && Minecraft.getMinecraft() != null && Minecraft.getMinecraft().world != null) Minecraft.getMinecraft().world.setWorldTime(Commandptime.time);
 		boolean flag = false;
 		isGamePaused1 = Minecraft.getMinecraft().currentScreen instanceof GuiIngameMenu;
 		if (isGamePaused1 && !isGamePaused) {
@@ -317,7 +324,7 @@ public class ClientEventHandler extends EventHandler {
 			event.setCanceled(true);
 			// END RAINBOW WATER
 			// BEGIN ALIASES
-		} else if (Reference.doesAliasExist(event.getOriginalMessage().split(" ")[0].substring(1))) {
+		} else if (Reference.doesAliasExist(event.getOriginalMessage().split(" ")[0].substring(1)) && event.getOriginalMessage().startsWith("/")) {
 			// Minecraft#currentScreen should *always* be an instance of GuiChat when this
 			// event is ran as any messages in GuiChat are first sent, which fires this
 			// event, before it's closed, but you may never be too careful.
@@ -345,7 +352,7 @@ public class ClientEventHandler extends EventHandler {
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) {
 		if (event.getType() == ElementType.EXPERIENCE && Reference.isInfoOverlayEnabled()) {
-			new InfoOverlay();
+			InfoOverlay.INSTANCE.draw();
 			Reference.updated += 1;
 		}
 	}
@@ -411,7 +418,7 @@ public class ClientEventHandler extends EventHandler {
 	}
 
 	private int getRandomColor() {
-		return new Color(Random.randInt(255), Random.randInt(255), Random.randInt(255)).getRGB();
+		return Reference.shiftRGB(Random.randInt(255), Random.randInt(255), Random.randInt(255), 255);
 	}
 
 	@SubscribeEvent

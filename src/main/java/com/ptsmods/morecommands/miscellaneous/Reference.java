@@ -83,6 +83,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -215,7 +216,10 @@ public class Reference {
 
 	@SideOnly(Side.CLIENT)
 	public static void sendChatMessage(String message) {
-		Minecraft.getMinecraft().player.sendChatMessage(message);
+		// Minecraft.getMinecraft().player.sendChatMessage(message);
+		GuiScreen screen = new GuiScreen() {};
+		screen.setWorldAndResolution(Minecraft.getMinecraft(), 0, 0);
+		screen.sendChatMessage(message, false);
 	}
 
 	public static void sendServerMessage(MinecraftServer server, String message) {
@@ -253,6 +257,25 @@ public class Reference {
 		return !blockAbove;
 	}
 
+	public static boolean inRange(double d, double min, double max) {
+		return d >= min && d <= max;
+	}
+
+	public static String getLookDirectionFromPitchAndYaw(float pitch, float yaw) {
+		String direction = "unknown";
+		if (pitch <= -30) direction = "up";
+		else if (pitch >= 30) direction = "down";
+		else if (inRange(yaw, 0, 22.5D) || inRange(yaw, -22.5D, 0)) direction = "south";
+		else if (inRange(yaw, 22.5D, 67.5D)) direction = "south-west";
+		else if (inRange(yaw, 67.5D, 112.5D)) direction = "west";
+		else if (inRange(yaw, 112.5D, 157.5D)) direction = "north-west";
+		else if (inRange(yaw, 157.5D, 180D) || inRange(yaw, -180D, -157.5D)) direction = "north";
+		else if (inRange(yaw, -157.5D, -112.5D)) direction = "north-east";
+		else if (inRange(yaw, -112.5D, -67.5D)) direction = "east";
+		else if (inRange(yaw, -67.5D, -22.5D)) direction = "south-east";
+		return direction;
+	}
+
 	public static String getLookDirectionFromLookVec(Vec3d lookvec) {
 		return getLookDirectionFromLookVec(lookvec, true);
 	}
@@ -283,7 +306,7 @@ public class Reference {
 			NBTTagCompound nbt = holding.getTagCompound();
 			if (nbt.hasKey("ptcmd") && player.getUniqueID().equals(nbt.getUniqueId("ptowner"))) {
 				if (event != null && event.isCancelable()) event.setCanceled(true);
-				if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> FMLCommonHandler.instance().getMinecraftServerInstance().commandManager.executeCommand(player, nbt.getString("ptcmd")));
+				if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> player.getServer().commandManager.executeCommand(player, nbt.getString("ptcmd")));
 				return true;
 			}
 		}
@@ -305,7 +328,7 @@ public class Reference {
 
 	public static void superPickaxeBreak(EntityPlayer player) throws CommandException {
 		if (CommandsuperPickaxe.enabledFor.contains(player.getUniqueID().toString()) && player.getHeldItemMainhand().getItem() instanceof ItemPickaxe) {
-			BlockPos lookingAt = rayTrace(player, player.isCreative() ? player.getCapability(ReachProvider.reachCap, null).get() : 4.5f).getBlockPos();
+			BlockPos lookingAt = rayTrace(player, player.getCapability(ReachProvider.reachCap, null).get()).getBlockPos();
 			if (lookingAt != null && player.getEntityWorld().isBlockLoaded(lookingAt)) player.getServer().addScheduledTask(() -> player.getEntityWorld().destroyBlock(lookingAt, !player.isCreative()));
 		}
 	}
@@ -612,7 +635,7 @@ public class Reference {
 	public static void setupBiomeList() {
 		BiomeDictionary.Type[] types;
 		try {
-			Field f = BiomeDictionary.Type.class.getDeclaredField("byName");
+			Field f = BiomeDictionary.Type.class.getDeclaredField("byName"); // FIXME
 			f.setAccessible(true);
 			types = ((Map<String, BiomeDictionary.Type>) f.get(null)).values().toArray(new BiomeDictionary.Type[0]);
 		} catch (Exception e) {
@@ -690,7 +713,6 @@ public class Reference {
 		KeyBinding[] keyBindings = new KeyBinding[] {new KeyBinding("toggleOverlay", Keyboard.KEY_Z) {
 			@Override
 			public void run() {
-				print(LogType.INFO, Minecraft.getMinecraft().world.getScoreboard().getTeams());
 				executeClientCommand("toggleoverlay");
 			}
 		}};
@@ -742,8 +764,8 @@ public class Reference {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public static void executeClientCommand(String command) {
-		ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().player, command);
+	public static int executeClientCommand(String command) {
+		return ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().player, command);
 	}
 
 	public static void executeServerCommand(String command, Entity entity, MinecraftServer server) {
@@ -809,7 +831,7 @@ public class Reference {
 				return;
 			}
 		}
-		infoOverlayConfig = infoOverlayConfig.size() == 0 ? setupDefaultInfoOverlayConfig() : infoOverlayConfig; // just making sure when the file is empty no NullPointerExceptions occurs.
+		infoOverlayConfig = infoOverlayConfig.size() == 0 ? setupDefaultInfoOverlayConfig() : infoOverlayConfig; // just making sure when the file is empty no NullPointerExceptions occur.
 		if (shouldSaveInfoOverlayConfig) {
 			PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream("config/MoreCommands/infoOverlay.txt"), StandardCharsets.UTF_8));
 			try {
@@ -1446,6 +1468,32 @@ public class Reference {
 		return result;
 	}
 
+	public static boolean confirmEntityHit(Entity hitter, Entity entity, float reach, float partialTicks, double bounds) {
+		if (hitter != null && hitter.getEntityWorld() != null) {
+			double d0 = reach;
+			Vec3d vec3d = hitter.getPositionEyes(partialTicks);
+			double d1 = d0;
+			Vec3d vec3d1 = hitter.getLook(1.0F);
+			Vec3d vec3d2 = vec3d.add(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0);
+			List<Entity> list = hitter.getEntityWorld().getEntitiesInAABBexcluding(hitter, hitter.getEntityBoundingBox().expand(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0).grow(bounds, bounds, bounds), Predicates.and(EntitySelectors.NOT_SPECTATING, (Predicate<Entity>) (@Nullable Entity p_apply_1_) -> p_apply_1_ != null && p_apply_1_.canBeCollidedWith()));
+			double d2 = d1;
+			if (list.contains(entity)) {
+				AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().grow(entity.getCollisionBorderSize());
+				RayTraceResult raytraceresult = axisalignedbb.calculateIntercept(vec3d, vec3d2);
+				if (axisalignedbb.contains(vec3d)) {
+					if (d2 >= 0.0D) return true;
+				} else if (raytraceresult != null) {
+					double d3 = vec3d.distanceTo(raytraceresult.hitVec);
+					if (d3 < d2 || d2 == 0.0D)
+						if (entity.getLowestRidingEntity() == hitter.getLowestRidingEntity() && !entity.canRiderInteract()) {
+							if (d2 == 0.0D) return true;
+						} else return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	@SideOnly(Side.SERVER)
 	public static ChannelPipeline getPipeline(EntityPlayerMP player) {
 		return player.connection.getNetworkManager().channel().pipeline();
@@ -1583,7 +1631,7 @@ public class Reference {
 			double x1 = result0.hitVec.x - entity.posX;
 			double y1 = result0.hitVec.y - entity.posY;
 			double z1 = result0.hitVec.z - entity.posZ;
-			return x0 * x0 + y0 * y0 + z0 * z0 > x1 * x1 + y1 * y1 + z1 * z1 ? result0 : result;
+			return Math.sqrt(x0 * x0 + y0 * y0 + z0 * z0) > Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1) ? result0 : result;
 		}
 	}
 
@@ -1631,7 +1679,7 @@ public class Reference {
 	}
 
 	// Copied from Minecraft#storeTEInStack(ItemStack, TileEntity)
-	public static ItemStack storeTE(ItemStack stack, TileEntity te) {
+	public static ItemStack storeTE(ItemStack stack, TileEntity te, boolean addLore) {
 		NBTTagCompound nbttagcompound = te.writeToNBT(new NBTTagCompound());
 		if (stack.getItem() == Items.SKULL && nbttagcompound.hasKey("Owner")) {
 			NBTTagCompound nbttagcompound2 = nbttagcompound.getCompoundTag("Owner");
@@ -1641,11 +1689,13 @@ public class Reference {
 			return stack;
 		} else {
 			stack.setTagInfo("BlockEntityTag", nbttagcompound);
-			NBTTagCompound nbttagcompound1 = new NBTTagCompound();
-			NBTTagList nbttaglist = new NBTTagList();
-			nbttaglist.appendTag(new NBTTagString("(+NBT)"));
-			nbttagcompound1.setTag("Lore", nbttaglist);
-			stack.setTagInfo("display", nbttagcompound1);
+			if (addLore) {
+				NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+				NBTTagList nbttaglist = new NBTTagList();
+				nbttaglist.appendTag(new NBTTagString("(+NBT)"));
+				nbttagcompound1.setTag("Lore", nbttaglist);
+				stack.setTagInfo("display", nbttagcompound1);
+			}
 			return stack;
 		}
 	}
@@ -1686,6 +1736,24 @@ public class Reference {
 		for (Class c : classes)
 			if (clazz.isAssignableFrom(c) && c != clazz) clazzes.add(c);
 		return clazzes;
+	}
+
+	public static Field getFieldMapped(Class clazz, String mainName, String... possibilities) {
+		List<String> posList = Lists.newArrayList(possibilities);
+		for (Field field : getFields(clazz))
+			if (field.getName().equals(mainName)) return field;
+		for (Field field : getFields(clazz))
+			if (posList.contains(field.getName())) return field;
+		return null;
+	}
+
+	public static Method getMethodMapped(Class clazz, String mainName, String... possibilities) {
+		List<String> posList = Lists.newArrayList(possibilities);
+		for (Method method : getMethods(clazz))
+			if (method.getName().equals(mainName)) return method;
+		for (Method method : getMethods(clazz))
+			if (posList.contains(method.getName())) return method;
+		return null;
 	}
 
 	public static boolean fieldExists(Class clazz, String name) {
@@ -1732,12 +1800,33 @@ public class Reference {
 		return removeArg(array, index);
 	}
 
+	public static int findFreeDimensionID() {
+		for (int i = 2; i < Integer.MAX_VALUE; i++)
+			if (!DimensionManager.isDimensionRegistered(i)) return i;
+		return -1;
+	}
+
+	public static boolean isLookingAtMoon(EntityPlayer player, double angle/* degrees, 0-360 */) {
+		angle -= 90;
+		float yaw = player.rotationYaw;
+		float pitch = player.rotationPitch;
+		if (yaw >= 85 && yaw <= 95) angle = 180 - angle;
+		return (yaw >= 265 && yaw <= 275 || yaw >= 85 && yaw <= 95) && angle + pitch < 3.5 && angle + pitch >= -2.5;
+	}
+
+	public static int shiftRGB(int r, int g, int b, int a) {
+		return (a & 0xFF) << 24 | // Alpha
+				(r & 0xFF) << 16 | // Red
+				(g & 0xFF) << 8 | // Green
+				(b & 0xFF) << 0; // Blue
+	}
+
 	public static final String								MOD_ID						= "morecommands";
 	public static final String								MOD_NAME					= "MoreCommands";
-	public static final String								VERSION						= "2.1.1";
+	public static final String								VERSION						= "2.2";
 	public static final String								MC_VERSIONS					= "[1.12,1.12.2]";
 	public static final String								UPDATE_URL					= "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String								BUILD_DATE					= "January 12th 2020";
+	public static final String								BUILD_DATE					= "January 23rd 2020";
 	public static final String[]							AUTHORS						= new String[] {"PlanetTeamSpeak"};
 	public static final List<CommandBase>					commands					= new ArrayList<>();
 	public static final boolean								yiss						= true;
@@ -1818,14 +1907,10 @@ public class Reference {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			biomeNameField = Biome.class.getDeclaredField("biomeName");
-			biomeNameField.setAccessible(true);
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
+		biomeNameField = getFieldMapped(Biome.class, "biomeName", "field_185412_a", "field_76791_y");
+		biomeNameField.setAccessible(true);
 		apiKeys.put("w3hills", "5D58B696-7AF3-4DD0-1251-B5D24E16668C");
-		apiKeys.put("geocoding", "AIzaSyCXkFcW0v8XJWGK2Im2_fApsbh3I8OGCDI"); // they're all free, anyway.
+		apiKeys.put("geocoding", "AIzaSyCXkFcW0v8XJWGK2Im2_fApsbh3I8OGCDI"); // they're all free anyway.
 		apiKeys.put("timezone", "AIzaSyCXkFcW0v8XJWGK2Im2_fApsbh3I8OGCDI");
 	}
 
@@ -1881,7 +1966,6 @@ public class Reference {
 		}
 
 		public static double randDouble(double min, double max) {
-			// Tbh I don't even have a single clue of what I am doing here.
 			double rng = (Math.random() * max + min) * (min < 0D ? Math.random() * 10 >= 5 ? 1 : -1 : 1);
 			while (rng < min)
 				rng += 1D;

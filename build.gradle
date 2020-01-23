@@ -14,7 +14,7 @@ plugins {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "2.1"
+version = "2.2"
 group = "com.ptsmods.morecommands"
 archivesBaseName = "MoreCommands_" + version + "_mc1.12-1.12.2"
 

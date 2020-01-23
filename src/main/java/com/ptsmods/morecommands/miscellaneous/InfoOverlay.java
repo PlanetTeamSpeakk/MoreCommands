@@ -22,17 +22,24 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class InfoOverlay extends Gui {
 
-	private Minecraft mc;
+	public static InfoOverlay	INSTANCE	= new InfoOverlay();
+	private Minecraft			mc;
+	private RayTraceResult		result;
 
-	public InfoOverlay() {
-		mc = Minecraft.getMinecraft();
+	private InfoOverlay() {
 		zLevel = Float.MAX_VALUE;
+	}
+
+	public void draw() {
+		mc = Minecraft.getMinecraft();
+		if (mc == null) return;
 		try {
 			Reference.loadInfoOverlayConfig();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		drawStrings(parseInfoOverlayConfig(Reference.getInfoOverlayConfig()).toArray(new String[0]));
+		result = Reference.rayTrace(160); // There seems to be some kind of maximum and I think it is 160.
+		drawStrings(parseInfoOverlayConfig(Reference.getInfoOverlayConfig()));
 	}
 
 	private void drawString(String string, int row) {
@@ -43,9 +50,9 @@ public class InfoOverlay extends Gui {
 		drawString(mc.fontRenderer, string, xOffset, row * 10 + yOffset, Integer.parseInt("FFFFFF", 16));
 	}
 
-	private void drawStrings(String... strings) {
-		for (int x = 0; x < strings.length; x++)
-			drawString(strings[x], x);
+	private void drawStrings(List<String> strings) {
+		for (int x = 0; x < strings.size(); x++)
+			drawString(strings.get(x), x);
 	}
 
 	private static TextFormatting getRandomColor() {
@@ -53,8 +60,7 @@ public class InfoOverlay extends Gui {
 		return Reference.lastColor;
 	}
 
-	private static List<String> parseInfoOverlayConfig(List<String> config) {
-		Minecraft.getMinecraft();
+	private List<String> parseInfoOverlayConfig(List<String> config) {
 		List<String> output = new ArrayList<>();
 		Reference.setVariables = new HashMap<>();
 		try {
@@ -111,9 +117,7 @@ public class InfoOverlay extends Gui {
 		return output;
 	}
 
-	private static String translate(String key) {
-		Minecraft mc = Minecraft.getMinecraft();
-		RayTraceResult result = Reference.rayTrace(160); // There seems to be some kind of maximum and I think it is 160.
+	private String translate(String key) {
 		String output = "{" + key + "}";
 		try {//@formatter:off
 			switch (key) {
@@ -131,7 +135,7 @@ public class InfoOverlay extends Gui {
 			case "blocksPerSec": {output = Reference.formatBlocksPerSecond(); break;}
 			case "toggleKey": {output = Reference.getKeyBindingByName(I18n.format("key.morecommands.toggleOverlay")).getDisplayName(); break;}
 			case "configFile": {output = new File("config/MoreCommands/infoOverlay.txt").getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"); break;}
-			case "facing": {output = Reference.getLookDirectionFromLookVec(mc.player.getLookVec()); break;}
+			case "facing": {output = Reference.getLookDirectionFromPitchAndYaw(mc.player.rotationPitch, MathHelper.wrapDegrees(mc.player.rotationYaw)); break;}
 			case "time": {output = Reference.parseTime(Minecraft.getMinecraft().world.getWorldTime() % 24000L, false); break;}
 			case "time12": {output = Reference.parseTime(Minecraft.getMinecraft().world.getWorldTime() % 24000L, true); break;}
 			case "UUID": {output = mc.player.getUniqueID().toString(); break;}

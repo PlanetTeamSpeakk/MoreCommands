@@ -37,7 +37,7 @@ public class more {
 
 		@Override
 		public String getName() {
-			return "moar";
+			return "more";
 		}
 
 		@Override

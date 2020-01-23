@@ -15,6 +15,7 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 public class smite {
@@ -52,8 +53,11 @@ public class smite {
 
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-			if (args.length == 0) Reference.sendCommandUsage(sender, usage);
-			else try {
+			if (args.length == 0) {
+				RayTraceResult result = Reference.rayTrace(getCommandSenderAsPlayer(sender), 160F);
+				BlockPos pos = result.getBlockPos() == null && result.entityHit != null ? result.entityHit.getPosition() : result.getBlockPos();
+				getCommandSenderAsPlayer(sender).getEntityWorld().addWeatherEffect(new EntityLightningBolt(getCommandSenderAsPlayer(sender).getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(), false));
+			} else try {
 				List<EntityPlayer> victims = new ArrayList();
 				if (args[0].startsWith("@")) victims.addAll(EntitySelector.matchEntities(sender, args[0], EntityPlayer.class));
 				else victims.add(getPlayer(server, sender, args[0]));
@@ -77,10 +81,10 @@ public class smite {
 
 		@Override
 		public Permission getPermission() {
-			return new Permission(Reference.MOD_ID, "smite", "Permission to use the smite command.", true);
+			return new Permission(Reference.MOD_ID, "smite", "Strike stuff with lightning.", true);
 		}
 
-		protected String usage = "/smite <player> Strikes someone with lightning.";
+		protected String usage = "/smite [player] Strikes someone with lightning. If no player is giving, strikes wherever you're looking.";
 
 	}
 

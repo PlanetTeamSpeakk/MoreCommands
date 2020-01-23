@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.commands.alias.Commandalias;
 import com.ptsmods.morecommands.commands.ascend.Commandascend;
 import com.ptsmods.morecommands.commands.barrier.Commandbarrier;
+import com.ptsmods.morecommands.commands.bind.Commandbind;
 import com.ptsmods.morecommands.commands.biomeTeleport.CommandbiomeTeleport;
 import com.ptsmods.morecommands.commands.breakBlock.Commandbreak;
 import com.ptsmods.morecommands.commands.broadcast.Commandbroadcast;
@@ -94,6 +95,7 @@ import com.ptsmods.morecommands.commands.repair.Commandrepair;
 import com.ptsmods.morecommands.commands.resetNBT.CommandresetNBT;
 import com.ptsmods.morecommands.commands.runcmd.Commandruncmd;
 import com.ptsmods.morecommands.commands.save.Commandsave;
+import com.ptsmods.morecommands.commands.screenshot.Commandscreenshot;
 import com.ptsmods.morecommands.commands.serverStatus.CommandserverStatus;
 import com.ptsmods.morecommands.commands.setBuildLimit.CommandsetBuildLimit;
 import com.ptsmods.morecommands.commands.setFOV.CommandsetFOV;
@@ -156,7 +158,7 @@ public class Initialize {
 	public static void registerCommands(MinecraftServer server) {
 		Reference.print(LogType.INFO, "Registering MoreCommands server sided commands.");
 		ICommand[] nonRegistryCommands = new ICommand[] {new CommandfixTime(), new Commandenchant()};
-		ICommand[] commands = Reference.getCommandRegistry(CommandType.SERVER).toArray(new ICommand[0]);
+		List<ICommand> commands = Reference.getCommandRegistry(CommandType.SERVER);
 		Integer counter = 0;
 		Integer fails = 0;
 		List<String> failList = new ArrayList<>();
@@ -189,7 +191,7 @@ public class Initialize {
 	@SideOnly(Side.CLIENT)
 	public static void registerClientCommands() {
 		Reference.print(LogType.INFO, "Registering MoreCommands client sided commands.");
-		ICommand[] commands = Lists.asList(new Commandchelp(), Reference.getCommandRegistry(CommandType.CLIENT).toArray(new ICommand[0])).toArray(new ICommand[0]);
+		List<ICommand> commands = Lists.asList(new Commandchelp(), Reference.getCommandRegistry(CommandType.CLIENT).toArray(new ICommand[0]));
 		Integer counter = 0;
 		Integer fails = 0;
 		List<String> failList = new ArrayList<>();
@@ -219,6 +221,7 @@ public class Initialize {
 						Commandalias.class,
 						Commandascend.class,
 						Commandbarrier.class,
+						Commandbind.class,
 						CommandbiomeTeleport.class,
 						Commandbreak.class,
 						Commandbroadcast.class,
@@ -292,12 +295,15 @@ public class Initialize {
 						Commandptime.class,
 						Commandreach.class,
 						Commandrecipe.class,
+						// Commandrecipes.class, // GUI only registers some clicks, most clicks don't
+						// even go through to the handleInput method. No clue why.
 						CommandreloadMoreCommands.class,
 						Commandrename.class,
 						Commandrepair.class,
 						CommandresetNBT.class,
 						Commandruncmd.class,
 						Commandsave.class,
+						Commandscreenshot.class,
 						CommandserverStatus.class,
 						CommandsetBuildLimit.class,
 						CommandsetFOV.class,
@@ -352,7 +358,15 @@ public class Initialize {
 
 	public static void setupGameRules(MinecraftServer server) {
 		if (!Reference.gameRules.isEmpty()) return;
-		List<Class<? extends IGameRule>> clazzes = Reference.getSubTypesOf(IGameRule.class);
+		List<Class<? extends IGameRule>> clazzes = useReflections() ? Reference.getSubTypesOf(IGameRule.class)
+				: Lists.newArrayList(
+						GameRuleCreateLavaSource.class,
+						GameRuleDisableEntitySpawning.class,
+						GameRuleDisableExplosions.class,
+						GameRuleMeltBlocks.class,
+						GameRuleNoDownFall.class,
+						GameRuleSilkSpawners.class,
+						GameRuleWildLimit.class);
 		Reference.print(LogType.INFO, "Setting up gamerules...");
 		Map<String, Map<IGameRule, List<Field>>> fieldsToInject = new HashMap();
 		for (Class clazz : clazzes)
