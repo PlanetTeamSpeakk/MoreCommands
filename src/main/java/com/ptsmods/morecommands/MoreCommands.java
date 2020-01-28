@@ -26,6 +26,8 @@ import com.ptsmods.morecommands.net.ClientCurrentItemUpdatePacket;
 import com.ptsmods.morecommands.net.ServerRecipePacket;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -140,6 +142,13 @@ public class MoreCommands {
 	@SideOnly(Side.CLIENT)
 	public void postInit(FMLPostInitializationEvent event) {
 		Initialize.registerClientCommands();
+		try {
+			Field f = Reference.getFieldMapped(EntityRenderer.class, "resourceManager", "field_110451_am", "field_110582_d", "field_147695_g", "field_147711_ac", "field_148033_b", "field_177598_f");
+			f.setAccessible(true);
+			Minecraft.getMinecraft().entityRenderer = new ReachingEntityRenderer(Minecraft.getMinecraft(), (IResourceManager) f.get(Minecraft.getMinecraft().entityRenderer));
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@EventHandler()

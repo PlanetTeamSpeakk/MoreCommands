@@ -100,7 +100,7 @@ public class recipe {
 							}
 					} else try {
 						Class ph = PotionHelper.class;
-						Field f = ph.getDeclaredField("POTION_TYPE_CONVERSIONS");
+						Field f = Reference.getFieldMapped(ph, "POTION_TYPE_CONVERSIONS", "field_185213_a");
 						f.setAccessible(true);
 						List vanPredicates = (List) f.get(null);
 						// f = ph.getDeclaredField("POTION_ITEM_CONVERSIONS");
@@ -108,11 +108,11 @@ public class recipe {
 						// vanPredicates.addAll((List) f.get(null));
 						List<PotionMixPredicate> predicates = new ArrayList();
 						for (Object o : vanPredicates) {
-							Field input = o.getClass().getDeclaredField("input");
+							Field input = Reference.getFieldMapped(o.getClass(), "input", "field_185198_a");
 							input.setAccessible(true);
-							Field reagent = o.getClass().getDeclaredField("reagent");
+							Field reagent = Reference.getFieldMapped(o.getClass(), "reagent", "field_185199_b");
 							reagent.setAccessible(true);
-							Field output = o.getClass().getDeclaredField("output");
+							Field output = Reference.getFieldMapped(o.getClass(), "output", "field_185200_c");
 							output.setAccessible(true);
 							predicates.add(new PotionMixPredicate((IRegistryDelegate) input.get(o), (Ingredient) reagent.get(o), (IRegistryDelegate) output.get(o)));
 						}

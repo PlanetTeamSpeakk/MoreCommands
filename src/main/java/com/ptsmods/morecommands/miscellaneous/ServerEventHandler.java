@@ -25,6 +25,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -197,6 +198,8 @@ public class ServerEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onPlayerLoggedIn(PlayerLoggedInEvent event) {
+		NetHandlerPlayServer con = ((EntityPlayerMP) event.player).connection;
+		((EntityPlayerMP) event.player).connection = new ReachingNetHandlerPlayServer(con.player.server, con.netManager, con.player);
 		if (event.player.getCapability(FPProvider.fpCap, null).isFake && event.player instanceof EntityPlayerMP && ((EntityPlayerMP) event.player).connection.netManager.channel().pipeline().get("packet_handler") != null) event.player.getCapability(FPProvider.fpCap, null).isFake = false;
 		if (event.player.getCapability(ReachProvider.reachCap, null).get() != event.player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()) {
 			Reference.sendMessage(event.player, TextFormatting.RED + "Your reach distance is unsynchronized, the main value is", event.player.getCapability(ReachProvider.reachCap, null).get(), "but your secondary value is", event.player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getBaseValue() + ", thus it has been reset to your main value, feel free to change this back if you want to.");
@@ -265,8 +268,7 @@ public class ServerEventHandler extends EventHandler {
 	}
 
 	private boolean runOnTicker(ICommand command) {
-		if (command instanceof CommandBase && ((CommandBase) command).runOnTicker()) return true;
-		else if (!(command instanceof CommandBase)) return true;
+		if (!(command instanceof CommandBase) || command instanceof CommandBase && ((CommandBase) command).runOnTicker()) return true;
 		else return false;
 	}
 }

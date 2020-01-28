@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.miscellaneous;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -11,25 +10,19 @@ import com.mojang.text2speech.Narrator;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.ptime.Commandptime;
 import com.ptsmods.morecommands.miscellaneous.Reference.Random;
-import com.ptsmods.morecommands.net.ClientExtendedReachPacket;
 import com.ptsmods.morecommands.net.NetHandler;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngameMenu;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -55,7 +48,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent.MouseInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
@@ -82,54 +74,6 @@ public class ClientEventHandler extends EventHandler {
 	private boolean					checker					= false;
 
 	@SubscribeEvent
-	public void onMouseInput(MouseInputEvent event) {
-		if (MoreCommands.modInstalledServerSide) {
-			Minecraft.getMinecraft().playerController.updateController(); // Sending held item update, this should fix the bug that causes attacks to be
-																			// weak.
-			GameSettings gs = Minecraft.getMinecraft().gameSettings;
-			RayTraceResult result = Reference.rayTrace(Minecraft.getMinecraft().player.getCapability(ReachProvider.reachCap, null).get());
-			if (result == null) return;
-			if (result.typeOfHit != RayTraceResult.Type.MISS && Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed() && Minecraft.getMinecraft().player.isCreative()) {
-				boolean flag = false;
-				ItemStack stack;
-				if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
-					TileEntity te = Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()).getBlock().hasTileEntity(Minecraft.getMinecraft().world.getBlockState(result.getBlockPos())) ? Minecraft.getMinecraft().world.getTileEntity(result.getBlockPos()) : null;
-					stack = Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()).getBlock().getPickBlock(Minecraft.getMinecraft().world.getBlockState(result.getBlockPos()), result, Minecraft.getMinecraft().world, result.getBlockPos(), Minecraft.getMinecraft().player);
-					stack = te != null && GuiScreen.isCtrlKeyDown() ? Reference.storeTE(stack, te, true) : stack;
-				} else stack = result.entityHit.getPickedResult(result);
-				int i = Minecraft.getMinecraft().player.inventory.getSlotFor(stack); // This does not seem to work for tile entities as the client has different
-																						// information about tile entities than the server does, e.g. it doesn't know
-																						// its contents and thus the nbt is not the same. Which is why it's also checked
-																						// on the server
-				if (InventoryPlayer.isHotbar(i)) {
-					Minecraft.getMinecraft().player.inventory.currentItem = i;
-					flag = true;
-				}
-				if (!flag) Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(2, false, GuiScreen.isCtrlKeyDown(), null));
-				net.minecraft.client.settings.KeyBinding.setKeyBindState(gs.keyBindPickBlock.getKeyCode(), false);
-			}
-			boolean rightclick = false;
-			if ((gs.keyBindAttack.isKeyDown() || (rightclick = gs.keyBindUseItem.isKeyDown())) && result.typeOfHit == RayTraceResult.Type.ENTITY) {
-				// Minecraft raytracing only raytraces blocks further than the default reach if
-				// a custom reach is set, it does not raytrace entities.
-				// So that is done right here.
-				net.minecraft.client.settings.KeyBinding.setKeyBindState(rightclick ? gs.keyBindUseItem.getKeyCode() : gs.keyBindAttack.getKeyCode(), false); // C O N S U M E
-				if (rightclick) gs.keyBindUseItem.isPressed(); // C O N S U M E
-				else gs.keyBindAttack.isPressed(); // C O N S U M E
-				UUID entityHit = null;
-				if (!rightclick) {
-					Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
-					entityHit = result.entityHit.getUniqueID();
-				}
-				if (rightclick && !MinecraftForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(Minecraft.getMinecraft().player, EnumHand.MAIN_HAND, result.entityHit)) || !rightclick && !MinecraftForge.EVENT_BUS.post(new AttackEntityEvent(Minecraft.getMinecraft().player, result.entityHit))) {
-					if (!rightclick) Minecraft.getMinecraft().player.attackTargetEntityWithCurrentItem(result.entityHit);
-					Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(rightclick ? 1 : 0, false, false, entityHit));
-				}
-			}
-		}
-	}
-
-	@SubscribeEvent
 	public void onPlayerAttackEntity(AttackEntityEvent event) throws CommandException {
 		checker = Reference.isSingleplayer() ? !checker : false;
 		if (!checker) Reference.powerToolCommand(EnumHand.MAIN_HAND, event);
@@ -137,52 +81,15 @@ public class ClientEventHandler extends EventHandler {
 
 	@SubscribeEvent
 	public void onPlayerLeftClickAir(PlayerInteractEvent.LeftClickEmpty event) throws CommandException {
-		if (!Reference.powerToolCommand(event.getHand(), event)) {
-			RayTraceResult result = Reference.rayTrace(event.getEntityPlayer().getCapability(ReachProvider.reachCap, null).get());
-			BlockPos pos = result.typeOfHit == RayTraceResult.Type.BLOCK ? result.getBlockPos() : result.typeOfHit == RayTraceResult.Type.ENTITY ? result.entityHit.getPosition() : null;
-			if (pos != null && !event.isCanceled()) Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(0, false));
-		}
+		Reference.powerToolCommand(event.getHand(), event);
 	}
 
 	@SubscribeEvent
 	public void onPlayerRightClickAir(PlayerInteractEvent.RightClickEmpty event) throws CommandException {
-		if (!Reference.powerToolCommand(EnumHand.MAIN_HAND /*
-															 * event#getHand() seems to always return OFF_HAND even though it is the main
-															 * hand.
-															 */, event) && MoreCommands.modInstalledServerSide) {
-			RayTraceResult result = Reference.rayTrace(event.getEntityPlayer().getCapability(ReachProvider.reachCap, null).get());
-			if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
-				int x = result.getBlockPos().getX();
-				int y = result.getBlockPos().getY();
-				int z = result.getBlockPos().getZ();
-				BlockPos pos = new BlockPos(x, y, z);
-				if (!event.getWorld().getBlockState(pos).getBlock().isReplaceable(event.getWorld(), pos)) switch (result.sideHit) {
-				case DOWN:
-					pos = new BlockPos(x, y - 1, z);
-					break;
-				case UP:
-					pos = new BlockPos(x, y + 1, z);
-					break;
-				case NORTH:
-					pos = new BlockPos(x, y, z - 1);
-					break;
-				case SOUTH:
-					pos = new BlockPos(x, y, z + 1);
-					break;
-				case WEST:
-					pos = new BlockPos(x - 1, y, z);
-					break;
-				case EAST:
-					pos = new BlockPos(x + 1, y, z);
-					break;
-				default:
-					return;
-				}
-				boolean flag = !event.getEntityPlayer().isSneaking() && event.getWorld().getBlockState(new BlockPos(x, y, z)).getBlock().onBlockActivated(event.getWorld(), new BlockPos(x, y, z), event.getWorld().getBlockState(new BlockPos(x, y, z)), event.getEntityPlayer(), event.getHand(), result.sideHit, (float) result.hitVec.x, (float) result.hitVec.y, (float) result.hitVec.z);
-				Reference.netWrapper.sendToServer(new ClientExtendedReachPacket(1, !flag));
-				Minecraft.getMinecraft().player.swingArm(EnumHand.MAIN_HAND);
-			}
-		}
+		Reference.powerToolCommand(EnumHand.MAIN_HAND /*
+														 * event#getHand() seems to always return OFF_HAND even though it is the main
+														 * hand.
+														 */, event);
 	}
 
 	private RayTraceResult customHighlight() {

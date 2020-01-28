@@ -19,7 +19,6 @@ public class morecommandsInfo {
 		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
-			aliases.add("strike");
 			return aliases;
 		}
 

@@ -23,7 +23,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.reflections.Reflections;
@@ -35,6 +34,7 @@ import org.yaml.snakeyaml.parser.ParserException;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.util.UUIDTypeAdapter;
 import com.ptsmods.morecommands.Initialize;
@@ -82,7 +82,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
@@ -94,6 +93,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import sun.misc.Unsafe;
@@ -632,28 +632,13 @@ public class Reference {
 		MinecraftForge.EVENT_BUS.register(handler);
 	}
 
-	public static void setupBiomeList() {
-		BiomeDictionary.Type[] types;
-		try {
-			Field f = BiomeDictionary.Type.class.getDeclaredField("byName"); // FIXME
-			f.setAccessible(true);
-			types = ((Map<String, BiomeDictionary.Type>) f.get(null)).values().toArray(new BiomeDictionary.Type[0]);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-		for (BiomeDictionary.Type type : types)
-			for (Biome biome : BiomeDictionary.getBiomes(type))
-				if (!biomes.contains(biome)) biomes.add(biome);
-	}
-
 	public static List<Biome> getBiomes() {
-		return biomes;
+		return ImmutableList.copyOf(ForgeRegistries.BIOMES.getValuesCollection());
 	}
 
 	public static List<String> getBiomeNames() {
 		List<String> names = new ArrayList<>();
-		for (Biome biome : biomes)
+		for (Biome biome : getBiomes())
 			names.add(getBiomeName(biome).replaceAll(" ", "_")); // just because otherwise everything will get messed up if you'd press tab.
 		return names;
 	}
@@ -661,8 +646,8 @@ public class Reference {
 	@Nullable
 	public static Biome getBiomeByName(String name) {
 		Biome biome = null;
-		for (Biome biome2 : biomes)
-			if (getBiomeName(biome2).toLowerCase().equals(name.toLowerCase()) || getBiomeName(biome2).toLowerCase().equals(name.toLowerCase().replaceAll("_", " "))) biome = biome2;
+		for (Biome biome0 : getBiomes())
+			if (getBiomeName(biome0).toLowerCase().equals(name.toLowerCase()) || getBiomeName(biome0).toLowerCase().equals(name.toLowerCase().replaceAll("_", " "))) biome = biome0;
 		return biome;
 	}
 
@@ -1282,7 +1267,9 @@ public class Reference {
 	public static double factorial(Double d) {
 		Double[] doubles = range(d);
 		doubles = castDoubleArray(removeArg(doubles, 0));
-		ArrayUtils.reverse(doubles);
+		Double[] doubles0 = range(d);
+		for (int i = 0; i < doubles0.length; i++)
+			doubles[i] = doubles0[doubles0.length - i - 1];
 		for (double x : doubles)
 			d *= x;
 		return d;
@@ -1823,10 +1810,10 @@ public class Reference {
 
 	public static final String								MOD_ID						= "morecommands";
 	public static final String								MOD_NAME					= "MoreCommands";
-	public static final String								VERSION						= "2.2";
+	public static final String								VERSION						= "2.2.1";
 	public static final String								MC_VERSIONS					= "[1.12,1.12.2]";
 	public static final String								UPDATE_URL					= "https://raw.githubusercontent.com/PlanetTeamSpeakk/MoreCommands/master/version.json";
-	public static final String								BUILD_DATE					= "January 23rd 2020";
+	public static final String								BUILD_DATE					= "January 28th 2020";
 	public static final String[]							AUTHORS						= new String[] {"PlanetTeamSpeak"};
 	public static final List<CommandBase>					commands					= new ArrayList<>();
 	public static final boolean								yiss						= true;
@@ -1873,7 +1860,6 @@ public class Reference {
 	private static Map<String, List<String>>				groups						= new HashMap<>();
 	private static Map<String, String>						aliases						= new HashMap<>();
 	private static Map<String, String>						config						= new HashMap<>();
-	private static List<Biome>								biomes						= new ArrayList<>();
 	private static List<ICommand>							serverCommands				= new ArrayList<>();
 	private static List<ICommand>							clientCommands				= new ArrayList<>();
 	private static String									narratorMessage				= "";
@@ -1895,7 +1881,6 @@ public class Reference {
 		if (System.console() == null) System.setProperty("jansi.passthrough", "true");
 		Initialize.setupCommandRegistry();
 		if (FMLCommonHandler.instance().getSide() == Side.CLIENT) setDisplayTitle(Display.getTitle() + " with MinecraftForge");
-		setupBiomeList();
 		if (!new File("config/MoreCommands/").isDirectory()) new File("config/MoreCommands/").mkdirs();
 		if (!new File("config/MoreCommands/Permissions/").isDirectory()) new File("config/MoreCommands/Permissions/").mkdirs();
 		createFileIfNotExisting("config/MoreCommands/homes.yaml");

@@ -32,6 +32,7 @@ public class smite {
 		@Override
 		public java.util.List getAliases() {
 			ArrayList aliases = new ArrayList();
+			aliases.add("strike");
 			return aliases;
 		}
 

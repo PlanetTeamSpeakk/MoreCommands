@@ -36,6 +36,7 @@ public class Permission {
 	 */
 	public Permission(String modName, String permission, String description, boolean reqPerms, ICommand command) {
 		Permission found = null;
+		if (modName == null) modName = "minecraft";
 		if (reqPerms && permission != null && modName != null && !permission.isEmpty() && !modName.isEmpty() && !permission.equals("PERMISSION")) {
 			this.modName = modName;
 			this.permission = permission;
@@ -60,7 +61,7 @@ public class Permission {
 
 	@Override
 	public String toString() {
-		return modName.endsWith("*") ? modName : (modName == null ? "null" : modName) + "." + (permission == null ? "null" : permission);
+		return modName == null && permission == null ? "*" : modName.endsWith("*") ? modName : (modName == null ? "null" : modName) + "." + (permission == null ? "null" : permission);
 	}
 
 	public boolean reqPerms() {

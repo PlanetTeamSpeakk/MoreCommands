@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
-import net.minecraft.util.NonNullList;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -31,7 +30,9 @@ public class ServerRecipePacket extends AbstractPacket {
 	public ServerRecipePacket() {}
 
 	public ServerRecipePacket(IRecipe recipe) {
-		stacks = NonNullList.withSize(9, ItemStack.EMPTY);
+		stacks = new ArrayList(9);
+		for (int i = 0; i <= 9; i++)
+			stacks.add(ItemStack.EMPTY);
 		List<Ingredient> ingredients = recipe.getIngredients();
 		if (recipe instanceof ShapedRecipes) {
 			ShapedRecipes shaped = (ShapedRecipes) recipe;
@@ -74,7 +75,10 @@ public class ServerRecipePacket extends AbstractPacket {
 				// No change needed for a width of 3.
 				}
 				if (shaped.recipeWidth == 1 && shaped.recipeHeight == 1) i = 4;
-				if (i0 < ingredients.size()) stacks.add(i, ingredients.get(i0).getMatchingStacks().length == 0 ? ItemStack.EMPTY : ingredients.get(i0).getMatchingStacks()[0]);
+				if (i0 < ingredients.size()) {
+					stacks.remove(i);
+					stacks.add(i, ingredients.get(i0).getMatchingStacks().length == 0 ? ItemStack.EMPTY : ingredients.get(i0).getMatchingStacks()[0]);
+				}
 				i = i0;
 			}
 		} else for (int i = 0; i < ingredients.size(); i++)

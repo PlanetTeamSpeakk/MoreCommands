@@ -1,8 +1,6 @@
 package com.ptsmods.morecommands.commands;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.ptsmods.morecommands.miscellaneous.CommandType;
 import com.ptsmods.morecommands.miscellaneous.Permission;
@@ -51,8 +49,6 @@ public class biomeTeleport {
 			return usage;
 		}
 
-		private static final ExecutorService executor = Executors.newCachedThreadPool();
-
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			EntityPlayer player = getCommandSenderAsPlayer(sender);
@@ -60,7 +56,7 @@ public class biomeTeleport {
 			else if (Reference.getBiomeByName(Reference.join(args).replaceAll("_", " ")) == null) Reference.sendMessage(sender, "The given biome does not exist.");
 			else {
 				Reference.sendMessage(sender, "Looking for the requested biome...");
-				executor.execute(() -> { // Don't wanna freeze the server for like up to 7 seconds.
+				Reference.execute(() -> { // Don't wanna freeze the server for like up to 7 seconds.
 					Biome biome = Reference.getBiomeByName(Reference.join(args).replaceAll("_", " "));
 					long begin = System.nanoTime();
 					float time = 0;

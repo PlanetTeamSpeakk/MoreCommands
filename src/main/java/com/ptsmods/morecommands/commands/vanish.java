@@ -111,7 +111,7 @@ public class vanish {
 		// enter a different world where the command has not yet been ran.
 		public static boolean modEntityTracker(WorldServer world) {
 			try {
-				Field f = WorldServer.class.getDeclaredField("entityTracker");
+				Field f = Reference.getFieldMapped(WorldServer.class, "entityTracker", "field_73062_L");
 				f.setAccessible(true);
 				Field f0 = Field.class.getDeclaredField("modifiers");
 				f0.setAccessible(true);

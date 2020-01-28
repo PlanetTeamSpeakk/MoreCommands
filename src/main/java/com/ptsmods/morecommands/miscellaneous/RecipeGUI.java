@@ -6,13 +6,16 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import com.ptsmods.morecommands.miscellaneous.Ticker.TickRunnable;
 import com.ptsmods.morecommands.net.ServerRecipePacket.Type;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -21,11 +24,19 @@ public class RecipeGUI extends GuiContainer {
 
 	private Type	type;
 	private String	playerInvName;
+	private int		tick	= 0;
 
 	public RecipeGUI(Type type, List<ItemStack> stacks, InventoryPlayer playerInventory) {
 		super(type == Type.WORKBENCH ? new RecipeBenchContainer(stacks, playerInventory) : type == Type.FURNACE ? new RecipeFurnaceContainer(stacks, playerInventory) : new RecipeBrewingContainer(stacks, playerInventory));
 		this.type = type;
 		playerInvName = playerInventory.getDisplayName().getUnformattedText();
+		TickRunnable[] run = new TickRunnable[1];
+		run[0] = extraArgs -> {
+			tick += 1;
+			tick %= 40;
+			if (Minecraft.getMinecraft().currentScreen == this) Ticker.INSTANCE.addRunnable(TickEvent.Type.CLIENT, run[0]);
+		};
+		Ticker.INSTANCE.addRunnable(TickEvent.Type.CLIENT, run[0]);
 	}
 
 	@Override
@@ -54,12 +65,12 @@ public class RecipeGUI extends GuiContainer {
 		int l = height / 2 - ySize / 2;
 		drawTexturedModalRect(k, l, 0, 0, xSize, ySize);
 		if (type == Type.FURNACE) {
-			drawTexturedModalRect(k + 56, l + 36, 176, 0, 14, 14);
-			drawTexturedModalRect(k + 78, l + 35, 176, 14, 24, 17);
+			drawTexturedModalRect(k + 56, l + 36 + 14 - (int) (tick / 40F * 14), 176, 14 - (int) (tick / 40F * 14), 14, (int) (tick / 40F * 14));
+			drawTexturedModalRect(k + 78, l + 35, 176, 14, (int) (tick / 40F * 24), 17);
 		} else if (type == Type.BREWING) {
-			drawTexturedModalRect(k + 98, l + 17, 176, 0, 9, 28);
+			drawTexturedModalRect(k + 97, l + 17, 176, 0, 9, (int) (tick / 40F * 28));
 			drawTexturedModalRect(k + 60, l + 44, 176, 29, 18, 4);
-			drawTexturedModalRect(k + 62, l + 14, 185, 0, 12, 29);
+			drawTexturedModalRect(k + 62, l + 14 + 29 - (int) (tick % 20 / 20F * 29), 185, 29 - (int) (tick % 20 / 20F * 29), 12, (int) (tick % 20 / 20F * 29));
 		}
 	}
 
