@@ -1,0 +1,872 @@
+package com.ptsmods.morecommands;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mojang.authlib.Environment;
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.ptsmods.morecommands.arguments.*;
+import com.ptsmods.morecommands.commands.server.elevated.*;
+import com.ptsmods.morecommands.miscellaneous.*;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.network.C2SPacketTypeCallback;
+import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
+import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.loader.ModContainer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.launch.common.FabricLauncherBase;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Material;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.command.arguments.ArgumentTypes;
+import net.minecraft.command.arguments.serialize.ConstantArgumentSerializer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.MobEntityWithAi;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Packet;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.*;
+import net.minecraft.util.registry.MutableRegistry;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
+import net.minecraft.world.border.WorldBorder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import sun.misc.Unsafe;
+
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import static net.minecraft.block.Blocks.*;
+
+public class MoreCommands implements ModInitializer {
+
+	public static final Logger log = LogManager.getLogger();
+	public static Formatting DF = Formatting.GOLD;
+	public static Formatting SF = Formatting.YELLOW;
+	public static Style DS = Style.EMPTY.withColor(DF);
+	public static Style SS = Style.EMPTY.withColor(SF);
+	public static GameRules.Key<EnumRule<FormattingColour>> DFrule;
+	public static GameRules.Key<EnumRule<FormattingColour>> SFrule;
+	public static GameRules.Key<GameRules.BooleanRule> doMeltRule;
+	public static GameRules.Key<GameRules.IntRule> maxHomesRule;
+	public static GameRules.Key<GameRules.BooleanRule> silkSpawnersRule;
+	public static GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule;
+	public static GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule;
+	public static GameRules.Key<GameRules.IntRule> hopperTransferRateRule;
+	public static GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule;
+	public static GameRules.Key<GameRules.BooleanRule> doJoinMessageRule;
+	public static GameRules.Key<GameRules.BooleanRule> doExplosionsRule;
+	public static GameRules.Key<GameRules.IntRule> wildLimitRule;
+	public static GameRules.Key<GameRules.IntRule> tpaTimeoutRule;
+	public static GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule;
+	public static GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule;
+	public static GameRules.Key<GameRules.IntRule> vaultRowsRule;
+	public static GameRules.Key<GameRules.IntRule> vaultsRule;
+	public static GameRules.Key<GameRules.IntRule> nicknameLimitRule;
+	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
+	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
+	public static final Map<UUID, List<String>> playerPerms = new HashMap<>();
+	public static final ServerSidePacketRegistry SPR = ServerSidePacketRegistry.INSTANCE;
+	public static final Block lockedChest = new Block(FabricBlockSettings.of(Material.WOOD));
+	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
+	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).appendItems(l -> {
+		Registry.ITEM.forEach(item -> {
+			if (item.getGroup() == null && item != Items.AIR)
+				l.add(new ItemStack(item));
+		});
+	}).build();
+	public static MinecraftServer serverInstance = null;
+	public static final TrackedData<Boolean> MAY_FLY = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<Boolean> INVULNERABLE = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<Boolean> SUPERPICKAXE = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<Boolean> VANISH = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<Boolean> VANISH_TOGGLED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<Optional<BlockPos>> CHAIR = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
+	public static final TrackedData<CompoundTag> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
+	public static final TrackedData<Optional<Text>> NICKNAME = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT);
+	private static final Executor executor = Executors.newCachedThreadPool();
+	private static Unsafe theUnsafe = null;
+	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private static final Field childrenField, literalsField, argumentsField;
+	private static Environment environment = null;
+
+	static {
+		try {
+			Field f = Unsafe.class.getDeclaredField("theUnsafe");
+			f.setAccessible(true);
+			theUnsafe = (Unsafe) f.get(null);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			log.catching(e);
+		}
+		childrenField = getField(CommandNode.class, "children");
+		childrenField.setAccessible(true);
+		literalsField = getField(CommandNode.class, "literals");
+		literalsField.setAccessible(true);
+		argumentsField = getField(CommandNode.class, "arguments");
+	}
+
+
+	@Override
+	public void onInitialize() {
+		File dir = new File("config/MoreCommands");
+		if (!dir.exists()) dir.mkdirs();
+		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
+		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:easteregg"), new SoundEvent(new Identifier("morecommands:easteregg")));
+		Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
+		Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
+		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
+		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedType.swimSpeedAttribute);
+		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+			for (Class<? extends Command> cmd : getCommandClasses("server", Command.class))
+				try {
+					Command instance = getInstance(cmd);
+					if (!instance.forDedicated() || dedicated) instance.register(dispatcher);
+				} catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+					log.catching(e);
+				}
+		});
+		C2SPacketTypeCallback.REGISTERED.register((player, types) -> {
+			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(player);
+		});
+		SPR.register(new Identifier("morecommands:sit_on_stairs"), (ctx, buffer) -> {
+			ServerPlayerEntity player = (ServerPlayerEntity) ctx.getPlayer();
+			BlockPos pos = buffer.readBlockPos();
+			BlockState state = player.getServerWorld().getBlockState(pos);
+			if (Chair.isValid(state))
+				Chair.createAndPlace(pos, player, player.getServerWorld());
+		});
+		ArgumentTypes.register("morecommands:registry_argument", RegistryArgumentType.class, new RegistryArgumentType.Serialiser());
+		ArgumentTypes.register("morecommands:limited_string", LimitedStringArgumentType.class, new LimitedStringArgumentType.Serialiser());
+		ArgumentTypes.register("morecommands:enum_argument", EnumArgumentType.class, new EnumArgumentType.Serialiser());
+		ArgumentTypes.register("morecommands:cramped_string", CrampedStringArgumentType.class, new CrampedStringArgumentType.Serialiser());
+		ArgumentTypes.register("morecommands:time_argument", TimeArgumentType.class, new ConstantArgumentSerializer<>(TimeArgumentType::new));
+		ArgumentTypes.register("morecommands:hexinteger", HexIntegerArgumentType.class, new ConstantArgumentSerializer<>(HexIntegerArgumentType::new));
+		ArgumentTypes.register("morecommands:ignorant_string", IgnorantStringArgumentType.class, new IgnorantStringArgumentType.Serialiser());
+		CustomGameRuleCategory cat = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(Formatting.GOLD).withBold(true)));
+		DFrule = GameRuleRegistry.register("defaultFormatting", cat, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));
+		SFrule = GameRuleRegistry.register("secondaryFormatting", cat, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
+		doMeltRule = GameRuleRegistry.register("doMelt", cat, GameRuleFactory.createBooleanRule(true));
+		maxHomesRule = GameRuleRegistry.register("maxHomes", cat, GameRuleFactory.createIntRule(3, -1));
+		silkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", cat, GameRuleFactory.createBooleanRule(false));
+		randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", cat, GameRuleFactory.createBooleanRule(true));
+		hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", cat, GameRuleFactory.createIntRule(8, 0));
+		hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", cat, GameRuleFactory.createIntRule(1, 1, 64));
+		doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", cat, GameRuleFactory.createBooleanRule(true));
+		doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", cat, GameRuleFactory.createBooleanRule(true));
+		doExplosionsRule = GameRuleRegistry.register("doExplosions", cat, GameRuleFactory.createBooleanRule(true));
+		wildLimitRule = GameRuleRegistry.register("wildLimit", cat, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
+		tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", cat, GameRuleFactory.createIntRule(2400, 600));
+		fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", cat, GameRuleFactory.createBooleanRule(false));
+		doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", cat, GameRuleFactory.createBooleanRule(true));
+		vaultRowsRule = GameRuleRegistry.register("vaultRows", cat, GameRuleFactory.createIntRule(6, 1, 6));
+		vaultsRule = GameRuleRegistry.register("vaults", cat, GameRuleFactory.createIntRule(3, 0));
+		nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", cat, GameRuleFactory.createIntRule(16, 0));
+	}
+
+	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
+		List<Class<T>> classes = new ArrayList<>();
+		File jar = getJar();
+		try {
+			List<Path> classNames = new ArrayList<>();
+			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
+			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + "com" + File.separator + "ptsmods" + File.separator + "morecommands" + File.separator + "commands" + File.separator + type + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
+			else {
+                ZipFile zip = new ZipFile(jar);
+                Enumeration<? extends ZipEntry> entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
+                        classNames.add(Paths.get(entry.getName()));
+                }
+            }
+			classNames.forEach(path -> {
+				String name = "com.ptsmods.morecommands.commands." + type + ("server".equals(type) ? "." + path.toFile().getParentFile().getName() : "") + "." + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.'));
+				try {
+					Class<?> clazz0 = Class.forName(name);
+					if (clazz.isAssignableFrom(clazz0)) classes.add((Class<T>) clazz0);
+				} catch (ClassNotFoundException e) {
+					log.error("Could not find class " + name, e);
+				}
+			});
+			log.info("Found " + classes.size() + " commands to load for type " + type + ".");
+		} catch (IOException e) {
+			log.error("Couldn't find commands for type " + type + " this means none of said type will be loaded.", e);
+		}
+		return classes;
+	}
+
+	static File getJar() {
+		File jar;
+		try {
+			jar = new File(((ModContainer) FabricLoader.getInstance().getModContainer("morecommands").get()).getOriginUrl().toURI().getPath());
+		} catch (URISyntaxException e) {
+			log.catching(e);
+			return null;
+		}
+		if (jar.isDirectory() && jar.getName().equals("main")) jar = new File(jar.getParentFile().getParentFile().getAbsolutePath() + File.separator + "classes" + File.separator + "java" + File.separator + "main" + File.separator);
+		return jar;
+	}
+
+	public static void setFormattings(Formatting def, Formatting sec) {
+		if (def != null) {
+			DF = Command.DF = def;
+			DS = Command.DS = DS.withColor(DF);
+		}
+		if (sec != null) {
+			SF = Command.SF = sec;
+			SS = Command.SS = SS.withColor(SF);
+		}
+	}
+
+	public static boolean updateFormatting(MinecraftServer server, int id, FormattingColour value) {
+		switch (id) {
+			case 0:
+				value = value == null ? server.getGameRules().get(DFrule).get() : value;
+				if (value.toFormatting() != DF) {
+					setFormattings(value.toFormatting(), null);
+					sendFormattingUpdate(server, 0, DF);
+					return true;
+				}
+				break;
+			case 1:
+				value = value == null ? server.getGameRules().get(SFrule).get() : value;
+				if (value.toFormatting() != SF) {
+					setFormattings(null, value.toFormatting());
+					sendFormattingUpdate(server, 1, SF);
+					return true;
+				}
+				break;
+		}
+		return false;
+	}
+
+	public static void sendFormattingUpdates(PlayerEntity p) {
+		sendFormattingUpdate(p, 0, DF);
+		sendFormattingUpdate(p, 1, SF);
+	}
+
+	private static void sendFormattingUpdate(MinecraftServer server, int id, Formatting colour) {
+		Identifier pid = new Identifier("morecommands:formatting_update");
+		Packet<?> packet = SPR.toPacket(pid, new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex())));
+		for (PlayerEntity p : server.getPlayerManager().getPlayerList())
+			sendFormattingUpdate(p, packet);
+	}
+
+	private static void sendFormattingUpdate(PlayerEntity p, int id, Formatting colour) {
+		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex()))));
+	}
+
+	private static void sendFormattingUpdate(PlayerEntity p, Packet<?> packet) {
+		if (SPR.canPlayerReceive(p, new Identifier("morecommands:formatting_update"))) SPR.sendToPlayer(p, packet);
+	}
+
+	static <T extends Command> T getInstance(Class<T> cmd) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+		Constructor<T> con = cmd.getDeclaredConstructor();
+		con.setAccessible(true);
+		Command instance = con.newInstance();
+		Method m = getMethod(instance.getClass(), "init");
+		if (m != null || (m = getMethod(instance.getClass(), "init", MinecraftServer.class)) != null) {
+			try {
+				m.setAccessible(true);
+				Object[] args = m.getParameterCount() == 0 ? new Object[0] : new Object[] {serverInstance};
+				m.invoke(Modifier.isStatic(m.getModifiers()) ? null : instance, args);
+			} catch (Exception e) {
+				log.error("Error invoking initialisation method on class " + cmd.getName() + ".", e);
+			}
+		}
+		return (T) instance;
+	}
+
+	public static String textToString(Text text, Style parentStyle) {
+		return textToString(text, parentStyle, FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+	}
+
+	public static String textToString(Text text, Style parentStyle, boolean translate) {
+		if (parentStyle == null) parentStyle = Style.EMPTY;
+		StringBuilder s = new StringBuilder();
+		Style style = text.getStyle();
+		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
+		TextColor c = style.getColor();
+		if (c != null) {
+			Formatting f = null;
+			for (Formatting form : Formatting.values())
+				if (form.getColorValue() != null && form.getColorValue().equals(c.getRgb())) {
+					f = form;
+					break;
+				}
+			if (f != null) s.append(f.toString());
+		}
+		if (style.isBold()) s.append(Formatting.BOLD);
+		if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
+		if (style.isUnderlined()) s.append(Formatting.UNDERLINE);
+		if (style.isItalic()) s.append(Formatting.ITALIC);
+		if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
+		if (text instanceof TranslatableText && translate) {
+			TranslatableText tt = (TranslatableText) text;
+			Object[] args = new Object[tt.getArgs().length];
+			for (int i = 0; i < args.length; i++)
+				if (tt.getArgs()[i] instanceof Text)
+					args[i] = MoreCommands.textToString((Text) tt.getArgs()[i], style, true);
+				else args[i] = tt.getArgs()[i];
+			s.append(I18n.translate(tt.getKey(), args));
+		} else s.append(text.asString());
+		if (!text.getSiblings().isEmpty())
+			for (Text t : text.getSiblings())
+				s.append(textToString(t, style, translate));
+		return s.append(Formatting.RESET).toString();
+	}
+
+	public static void saveJson(File f, Object data) throws IOException {
+		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
+			writer.print(gson.toJson(data));
+			writer.flush();
+		}
+	}
+
+	public static <T> T readJson(File f, Class<? extends T> type) throws IOException {
+		if (!f.exists()) f.createNewFile();
+		return gson.fromJson(Files.newReader(f, StandardCharsets.UTF_8), type);
+	}
+
+	public static Method getMethod(Class<?> clazz, String method, Class<?>... classes) {
+		try {
+			return clazz.getMethod(method, classes);
+		} catch (NoSuchMethodException e) {
+			try {
+				return clazz.getDeclaredMethod(method, classes);
+			} catch (NoSuchMethodException e0) {
+				return null;
+			}
+		}
+	}
+
+	public static Field getField(Class<?> clazz, String field) {
+		try {
+			return clazz.getField(field);
+		} catch (NoSuchFieldException e) {
+			try {
+				return clazz.getDeclaredField(field);
+			} catch (NoSuchFieldException e0) {
+				return null;
+			}
+		}
+	}
+
+	public static char getChar(Formatting f) {
+		return f.toString().charAt(1);
+	}
+
+	public static double factorial(double d) {
+		double d0 = d - 1;
+		while (d0 > 0)
+			d *= d0--;
+		return d;
+	}
+
+	/**
+	 * Evaluates a math equation in a String. It does addition, subtraction,
+	 * multiplication, division, exponentiation (using the ^ symbol), factorial (!
+	 * <b>before</b> a number), and a few basic functions like sqrt. It supports
+	 * grouping using (...), and it gets the operator precedence and associativity
+	 * rules correct.
+	 *
+	 * @param str
+	 * @return The answer to the equation.
+	 * @author Boann (https://stackoverflow.com/a/26227947)
+	 */
+	public static double eval(final String str) {
+		return new Object() {
+			int pos = -1, ch;
+
+			void nextChar() {
+				ch = ++pos < str.length() ? str.charAt(pos) : -1;
+			}
+
+			boolean eat(int charToEat) {
+				while (ch == ' ')
+					nextChar();
+				if (ch == charToEat) {
+					nextChar();
+					return true;
+				}
+				return false;
+			}
+
+			double parse() {
+				nextChar();
+				double x = parseExpression();
+				if (pos < str.length()) throw new RuntimeException("Unexpected character: " + (char) ch);
+				return x;
+			}
+
+			double parseExpression() {
+				double x = parseTerm();
+				for (; ; )
+					if (eat('+')) x += parseTerm(); // addition
+					else if (eat('-')) x -= parseTerm(); // subtraction
+					else return x;
+			}
+
+			double parseTerm() {
+				double x = parseFactor();
+				for (; ; )
+					if (eat('*')) x *= parseFactor(); // multiplication
+					else if (eat('/')) x /= parseFactor(); // division
+					else return x;
+			}
+
+			double parseFactor() {
+				if (eat('+')) return parseFactor(); // unary plus
+				if (eat('-')) return -parseFactor(); // unary minus
+
+				double x;
+				int startPos = pos;
+				if (eat('(')) { // parentheses
+					x = parseExpression();
+					eat(')');
+				} else if (ch >= '0' && ch <= '9' || ch == '.') { // numbers
+					while (ch >= '0' && ch <= '9' || ch == '.')
+						nextChar();
+					x = Double.parseDouble(str.substring(startPos, pos));
+				} else if (ch >= 'a' && ch <= 'z' || ch == '!') { // functions
+					while (ch >= 'a' && ch <= 'z' || ch == '!')
+						nextChar();
+					String func = str.substring(startPos, pos);
+					x = parseFactor();
+					if (func.equals("sqrt")) x = Math.sqrt(x);
+					else if (func.equals("cbrt")) x = Math.cbrt(x);
+					else if (func.equals("sin")) x = Math.sin(Math.toRadians(x));
+					else if (func.equals("cos")) x = Math.cos(Math.toRadians(x));
+					else if (func.equals("tan")) x = Math.tan(Math.toRadians(x));
+					else if (func.equals("pi")) x = Math.PI * (x == 0D ? 1D : x);
+					else if (func.equals("!")) x = factorial(x);
+					else throw new RuntimeException("Unknown function: " + func);
+				} else if (ch != -1) throw new RuntimeException("Unexpected character: " + (char) ch);
+				else x = 0D;
+
+				if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
+				return x;
+			}
+		}.parse();
+	}
+
+	// Blatantly copied from GameRenderer, can raytrace both entities and blocks.
+	public static HitResult getRayTraceTarget(Entity entity, World world, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
+		HitResult crosshairTarget = null;
+		if (entity != null && world != null) {
+			float td = MinecraftClient.getInstance().getTickDelta();
+			crosshairTarget = entity.rayTrace(reach, td, !ignoreLiquids);
+			if (!ignoreEntities) {
+				Vec3d vec3d = entity.getCameraPosVec(td);
+				double e = reach;
+				e *= e;
+				if (crosshairTarget != null)
+					e = crosshairTarget.getPos().squaredDistanceTo(vec3d);
+				Vec3d vec3d2 = entity.getRotationVec(td);
+				Vec3d vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
+				Box box = entity.getBoundingBox().stretch(vec3d2.multiply(reach)).expand(1.0D, 1.0D, 1.0D);
+				EntityHitResult entityHitResult = ProjectileUtil.rayTrace(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
+				if (entityHitResult != null) crosshairTarget = entityHitResult;
+			}
+		}
+		return crosshairTarget;
+	}
+
+	public static Entity cloneEntity(Entity entity, boolean summon) {
+		CompoundTag nbt = new CompoundTag();
+		entity.saveSelfToTag(nbt);
+		Entity e = EntityType.loadEntityWithPassengers(nbt, entity.getEntityWorld(), e0 -> {
+			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
+			return e0;
+		});
+		if (e != null) {
+			e.setUuid(UUID.randomUUID());
+			if (summon) entity.getEntityWorld().spawnEntity(e);
+		}
+		return e;
+	}
+
+	public static String readTilSpaceOrEnd(StringReader reader) {
+		StringBuilder s = new StringBuilder();
+		while (reader.getRemainingLength() > 0 && reader.peek() != ' ')
+			s.append(reader.read());
+		return s.toString();
+	}
+
+	public static void teleport(Entity target, ServerWorld world, Vec3d pos, float yaw, float pitch) {
+		teleport(target, world, pos.x, pos.y, pos.z, yaw, pitch);
+	}
+
+	// Blatantly copied from TeleportCommand#teleport.
+	public static void teleport(Entity target, ServerWorld world, double x, double y, double z, float yaw, float pitch) {
+		if (target instanceof ServerPlayerEntity) {
+			ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
+			world.getChunkManager().addTicket(ChunkTicketType.field_19347, chunkPos, 1, target.getEntityId());
+			target.stopRiding();
+			if (((ServerPlayerEntity) target).isSleeping()) ((ServerPlayerEntity) target).wakeUp(true, true);
+			if (world == target.world)
+				((ServerPlayerEntity) target).networkHandler.teleportRequest(x, y, z, yaw, pitch, Collections.emptySet());
+			else ((ServerPlayerEntity) target).teleport(world, x, y, z, yaw, pitch);
+			target.setHeadYaw(yaw);
+		} else {
+			float f = MathHelper.wrapDegrees(yaw);
+			float g = MathHelper.wrapDegrees(pitch);
+			g = MathHelper.clamp(g, -90.0F, 90.0F);
+			if (world == target.world) {
+				target.refreshPositionAndAngles(x, y, z, f, g);
+				target.setHeadYaw(f);
+			} else {
+				target.detach();
+				Entity entity = target;
+				target = target.getType().create(world);
+				if (target == null) return;
+				target.copyFrom(entity);
+				target.refreshPositionAndAngles(x, y, z, f, g);
+				target.setHeadYaw(f);
+				world.onDimensionChanged(target);
+				entity.removed = true;
+			}
+		}
+		if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
+			target.setVelocity(target.getVelocity().multiply(1.0D, 0.0D, 1.0D));
+			target.setOnGround(true);
+		}
+		if (target instanceof MobEntityWithAi) ((MobEntityWithAi) target).getNavigation().stop();
+	}
+
+	public static <T> Registry<T> getRegistry(RegistryKey<T> key) {
+		try {
+			return (Registry<T>) getRootRegistry().get((RegistryKey<MutableRegistry<?>>) key);
+		} catch (IllegalAccessException e) {
+			return null;
+		}
+	}
+
+	public static <T> RegistryKey<MutableRegistry<?>> getKey(MutableRegistry<T> registry) {
+		try {
+			return getRootRegistry().getKey(registry).get();
+		} catch (IllegalAccessException e) {
+			log.info(e);
+		}
+		return null;
+	}
+
+	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() throws IllegalAccessException {
+		Field rootField = getYarnField(Registry.class, "ROOT", "field_25101");
+		rootField.setAccessible(true);
+		return (MutableRegistry<MutableRegistry<?>>) rootField.get(null);
+	}
+
+	public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
+		removeNode(dispatcher.getRoot(), child);
+	}
+
+	public static <S> void removeNode(CommandNode<S> parent, CommandNode<S> child) {
+		if (parent.getChildren().contains(child)) {
+			try {
+				((Map<String, CommandNode<S>>) childrenField.get(parent)).remove(child.getName());
+				if (child instanceof LiteralCommandNode)
+					((Map<String, LiteralCommandNode<S>>) literalsField.get(parent)).remove(child);
+				else if (child instanceof ArgumentCommandNode)
+					((Map<String, ArgumentCommandNode<S, ?>>) argumentsField.get(parent)).remove(child);
+			} catch (IllegalAccessException e) {
+				log.catching(e);
+			}
+		}
+	}
+
+	public static String getHTML(String url) throws IOException {
+		StringBuilder result = new StringBuilder();
+		URL URL = new URL(url);
+		URLConnection connection = URL.openConnection();
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
+		BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		String line;
+		while ((line = rd.readLine()) != null)
+			result.append(line);
+		rd.close();
+		return result.toString();
+	}
+
+	public static Environment getEnvironment() {
+		if (environment == null)
+			try {
+				Method determineEnvironment = YggdrasilAuthenticationService.class.getDeclaredMethod("determineEnvironment");
+				determineEnvironment.setAccessible(true);
+				environment = (Environment) determineEnvironment.invoke(null);
+			} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+				log.catching(e);
+			}
+		return environment;
+	}
+
+	public static void setServerInstance(MinecraftServer server) {
+		serverInstance = server;
+	}
+
+	public static Field getYarnField(Class<?> clazz, String yarnName, String name) {
+		return MoreObjects.firstNonNull(getField(clazz, yarnName), getField(clazz, name));
+	}
+
+	public static Method getYarnMethod(Class<?> clazz, String yarnName, String name, Class<?>... classes) {
+		return MoreObjects.firstNonNull(getMethod(clazz, yarnName, classes), getMethod(clazz, name, classes));
+	}
+
+	public static void removeFinalModifier(Field f) {
+		try {
+			Field modifiers = Field.class.getDeclaredField("modifiers");
+			modifiers.setAccessible(true);
+			modifiers.set(f, f.getModifiers() & ~Modifier.FINAL);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			log.catching(e);
+		}
+	}
+
+	public static boolean isAprilFirst() {
+		return Calendar.getInstance().get(Calendar.MONTH) == Calendar.APRIL && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 1;
+	}
+
+	public static boolean isInteger(String s) {
+		try {
+			Integer.parseInt(s);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	public static boolean isInteger(String s, int base) {
+		try {
+			Integer.parseInt(s, base);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	public static boolean isBoolean(String s) {
+		return s != null && ("true".equals(s.toLowerCase()) || "false".equals(s.toLowerCase()));
+	}
+
+	// For mixins :)
+	// Thanks to https://github.com/FabricMC/fabric/blob/1.16/fabric-events-lifecycle-v0/src/main/java/net/fabricmc/fabric/mixin/event/lifecycle/MixinMinecraftServer.java#L36
+	public static <T> T cast(Object o) {
+		return (T) o;
+	}
+
+	public static String translateFormattings(String s) {
+		for (Formatting f : Formatting.values())
+			s = s.replaceAll("&" + f.toString().charAt(1), f.toString());
+		return s;
+	}
+
+	public static boolean inRange(double d, double min, double max) {
+		return d >= min && d <= max;
+	}
+
+	public static String getLookDirection(float pitch, float yaw) {
+		String direction = "unknown";
+		if (pitch <= -30) direction = "up";
+		else if (pitch >= 30) direction = "down";
+		else if (inRange(yaw, 0, 22.5D) || inRange(yaw, -22.5D, 0)) direction = "south";
+		else if (inRange(yaw, 22.5D, 67.5D)) direction = "south-west";
+		else if (inRange(yaw, 67.5D, 112.5D)) direction = "west";
+		else if (inRange(yaw, 112.5D, 157.5D)) direction = "north-west";
+		else if (inRange(yaw, 157.5D, 180D) || inRange(yaw, -180D, -157.5D)) direction = "north";
+		else if (inRange(yaw, -157.5D, -112.5D)) direction = "north-east";
+		else if (inRange(yaw, -112.5D, -67.5D)) direction = "east";
+		else if (inRange(yaw, -67.5D, -22.5D)) direction = "south-east";
+		return direction;
+	}
+
+	public static String parseTime(long gameTime, boolean muricanClock) {
+		long hours = gameTime / 1000 + 6;
+		long minutes = gameTime % 1000 * 60 / 1000;
+		String ampm = "AM";
+		if (muricanClock) {
+			if (hours > 12) {
+				hours -= 12;
+				ampm = "PM";
+			}
+			if (hours > 12) {
+				hours -= 12;
+				ampm = "AM";
+			}
+			if (hours == 0) hours = 12;
+		} else if (hours >= 24) hours -= 24;
+		String mm = "0" + minutes;
+		mm = mm.substring(mm.length() - 2);
+		return hours + ":" + mm + (muricanClock ? " " + ampm : "");
+	}
+
+	public static String formatDouble(Double dbl) {
+		String dblString = dbl.toString();
+		String dblString1 = dblString.split("\\.").length == 2 ? dblString.split("\\.")[1] : "";
+		while (dblString1.endsWith("0"))
+			dblString1 = dblString1.substring(0, dblString1.length() - 1);
+		dblString1 = dblString1.length() >= 5 ? dblString1.substring(0, 5) : dblString1;
+		if (dblString1.equals("")) dblString = dblString.split("\\.")[0];
+		else dblString = dblString.split("\\.")[0] + "." + dblString1;
+		return dblString;
+	}
+
+	public static <S> LiteralCommandNode<S> createAlias(String alias, LiteralCommandNode<S> node) {
+		LiteralCommandNode<S> node0 = new LiteralCommandNode<S>(alias, node.getCommand(), node.getRequirement(), node, ctx -> Collections.singletonList(ctx.getSource()), false);
+		node.getChildren().forEach(node0::addChild);
+		return node0;
+	}
+
+	public static <T> T allocateInstance(Class<T> clazz) throws InstantiationException {
+		return (T) theUnsafe.allocateInstance(clazz);
+	}
+
+	public static void throwWithoutDeclaration(Throwable t) {
+		theUnsafe.throwException(t);
+	}
+
+	public static void execute(Runnable runnable) {
+		executor.execute(runnable);
+	}
+
+	public static String formatFileSize(long bytes) {
+		String output;
+		if (bytes / 1024F / 1024F / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024 / 1024F / 1024F + " terabytes";
+		else if (bytes / 1024F / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024F / 1024F + " gigabytes";
+		else if (bytes / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024F + " megabytes";
+		else if (bytes / 1024F >= 1F) output = bytes / 1024L + " kilobytes";
+		else output = bytes + " bytes";
+		return output;
+	}
+
+	public static boolean isCool(Entity entity) {
+		return entity instanceof PlayerEntity && "1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getUuidAsString());
+	}
+
+	public static boolean isCute(Entity entity) {
+		return entity instanceof PlayerEntity && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getUuidAsString());
+	}
+
+	public static CompoundTag getDefaultTag(EntityType<?> type) {
+		CompoundTag tag = new CompoundTag();
+		tag.putString("id", Registry.ENTITY_TYPE.getId(type).toString());
+		return tag;
+	}
+
+	public static Entity summon(CompoundTag tag, ServerWorld world, Vec3d pos) {
+		return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
+			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, entityx.yaw, entityx.pitch);
+			return !world.tryLoadEntity(entityx) ? null : entityx;
+		});
+	}
+
+	public static Vec3d getRotationVector(Vec2f rotation) {
+		return getRotationVector(rotation.x, rotation.y);
+	}
+
+	public static Vec3d getRotationVector(float pitch, float yaw) {
+		float f = pitch * 0.017453292F;
+		float g = -yaw * 0.017453292F;
+		float h = MathHelper.cos(g);
+		float i = MathHelper.sin(g);
+		float j = MathHelper.cos(f);
+		float k = MathHelper.sin(f);
+		return new Vec3d(i * j, -k, h * j);
+	}
+
+	public static boolean teleportSafely(Entity entity) {
+		World world = entity.getEntityWorld();
+		double x = entity.getPos().x;
+		double y;
+		double z = entity.getPos().z;
+		boolean found = false;
+		boolean blockAbove = world.isSkyVisible(entity.getBlockPos());
+		if (!world.isClient) while (!found && !blockAbove) {
+			for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getHeight(); y += 1) {
+				Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
+				Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
+				if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.isSkyVisible(new BlockPos(x, y, z)))) {
+					entity.updatePosition(x + 0.5, y, z + 0.5);
+					found = true;
+					break;
+				}
+			}
+			x -= 1;
+			z -= 1;
+		}
+		return !blockAbove;
+	}
+
+	// Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
+	public static int getY(BlockView blockView, double x, double z) {
+		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getHeight(), z);
+		boolean bl = blockView.getBlockState(mutable).isAir();
+		mutable.move(Direction.DOWN);
+		boolean bl3;
+		for (boolean bl2 = blockView.getBlockState(mutable).isAir(); mutable.getY() > 0; bl2 = bl3) {
+			mutable.move(Direction.DOWN);
+			bl3 = blockView.getBlockState(mutable).isAir();
+			if (!bl3 && bl2 && bl) return mutable.getY() + 1;
+			bl = bl2;
+		}
+		return blockView.getHeight();
+	}
+
+	public static CompoundTag wrapTag(String key, Tag tag) {
+		CompoundTag compound = new CompoundTag();
+		compound.put(key, tag);
+		return compound;
+	}
+
+}

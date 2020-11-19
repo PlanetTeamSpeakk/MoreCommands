@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.client",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MixinClientPlayNetworkHandler",
+    "MixinClientPlayerEntity",
+    "MixinChatScreen",
+    "MixinChatHud",
+    "MixinGameRenderer",
+    "MixinKeyboard",
+    "MixinLanguage",
+    "MixinClientPlayerInteractionManager",
+    "MixinEntityRenderer",
+    "MixinInventoryScreen",
+    "MixinPlayerEntityRenderer",
+    "MixinLivingEntityRenderer",
+    "MixinEntity",
+    "MixinPlayerListHud",
+    "MixinOptionsScreen",
+    "MixinMinecraftClient",
+    "MixinItemRenderer",
+    "MixinWindow",
+    "MixinMouse",
+    "MixinParticleManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

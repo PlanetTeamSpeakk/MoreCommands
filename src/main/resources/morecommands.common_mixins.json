@@ -1,0 +1,42 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.common",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinPlayerManager",
+    "MixinServerCommandSource",
+    "MixinPlayerEntity",
+    "MixinServerPlayNetworkHandler",
+    "MixinServerPlayerInteractionManager",
+    "MixinIceBlock",
+    "MixinSnowBlock",
+    "MixinEnchantCommand",
+    "MixinItemStack",
+    "MixinMinecraftServer",
+    "MixinScreenHandler",
+    "MixinTimeCommand",
+    "MixinBlock",
+    "MixinSpawnerBlock",
+    "MixinBlockItem",
+    "MixinPlayerInventory",
+    "MixinHopperBlockEntity",
+    "MixinFarmlandBlock",
+    "MixinThreadedAnvilChunkStorage",
+    "MixinEntityTrackerEntry",
+    "MixinExplosion",
+    "MixinLivingEntity",
+    "MixinLootableContainerBlockEntity",
+    "MixinClientConnection",
+    "MixinCommandManager",
+    "MixinFlowableFluid",
+    "MixinServerWorld",
+    "MixinItem",
+    "MixinServerNetworkIo",
+    "MixinFillCommand",
+    "MixinServerPlayerEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
