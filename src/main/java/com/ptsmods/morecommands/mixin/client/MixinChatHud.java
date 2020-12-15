@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
 import com.ptsmods.morecommands.miscellaneous.ChatHudLineWithContent;
@@ -10,14 +9,12 @@ import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.StringRenderable;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;

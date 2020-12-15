@@ -149,11 +149,12 @@ public final class DiscordRPC {
         finalPath = "/" + dir + "/" + name;
 
         File file = new File(tempPath);
-
         // Fixed line below so it puts the library in a directory with a random name so that you can open two instances of Minecraft
         // (or just applications that use the same dependency)
         // without it saying that it cannot open that file because it's open in a different process on Windows. (Goddamn Windows...)
-        try (InputStream in = DiscordRPC.class.getResourceAsStream(finalPath); OutputStream out = openOutputStream(new File(file.getParentFile().getAbsolutePath() + File.separator + RandomStringUtils.randomAlphanumeric(16) + File.separator + file.getName()))) {
+        file = new File(file.getParentFile().getAbsolutePath() + File.separator + RandomStringUtils.randomAlphanumeric(16) + File.separator + file.getName());
+
+        try (InputStream in = DiscordRPC.class.getResourceAsStream(finalPath); OutputStream out = openOutputStream(file)) {
             copyFile(in, out);
             file.deleteOnExit();
             file.getParentFile().deleteOnExit(); // Making sure we delete the randomly named directory as well.

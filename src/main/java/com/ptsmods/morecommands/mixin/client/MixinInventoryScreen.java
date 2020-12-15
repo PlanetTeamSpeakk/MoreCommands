@@ -1,9 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

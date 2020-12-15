@@ -2,7 +2,6 @@ package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 
 public class ScoreCommand extends ClientCommand {

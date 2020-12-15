@@ -1,7 +1,6 @@
 package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.command.ServerCommandSource;
 

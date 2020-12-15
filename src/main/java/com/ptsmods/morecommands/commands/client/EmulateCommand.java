@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
@@ -11,6 +10,7 @@ import com.ptsmods.morecommands.arguments.KeyArgumentType;
 import com.ptsmods.morecommands.callbacks.KeyCallback;
 import com.ptsmods.morecommands.callbacks.MouseCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
@@ -35,12 +35,9 @@ public class EmulateCommand extends ClientCommand {
     private static final Field mouseX, mouseY;
 
     static {
-        onMouseButton = MoreCommands.getYarnMethod(Mouse.class, "onMouseButton", "method_1601", long.class, int.class, int.class, int.class);
-        onMouseButton.setAccessible(true);
-        mouseX = MoreCommands.getYarnField(Mouse.class, "x", "field_1794");
-        mouseX.setAccessible(true);
-        mouseY = MoreCommands.getYarnField(Mouse.class, "y", "field_1795");
-        mouseY.setAccessible(true);
+        onMouseButton = ReflectionHelper.getYarnMethod(Mouse.class, "onMouseButton", "method_1601", long.class, int.class, int.class, int.class);
+        mouseX = ReflectionHelper.getYarnField(Mouse.class, "x", "field_1794");
+        mouseY = ReflectionHelper.getYarnField(Mouse.class, "y", "field_1795");
     }
 
     private enum Type {

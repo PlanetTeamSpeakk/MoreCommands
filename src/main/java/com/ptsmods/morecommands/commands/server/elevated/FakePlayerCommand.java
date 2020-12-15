@@ -11,6 +11,7 @@ import com.mojang.util.UUIDTypeAdapter;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.arguments.CrampedStringArgumentType;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import io.netty.channel.*;
 import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.command.arguments.UuidArgumentType;
@@ -107,8 +108,7 @@ public class FakePlayerCommand extends Command {
                 }
                 ServerPlayerEntity player = new ServerPlayerEntity(ctx.getSource().getMinecraftServer(), ctx.getSource().getWorld(), profile, new ServerPlayerInteractionManager(ctx.getSource().getWorld()));
                 ClientConnection ccon = new ClientConnection(NetworkSide.SERVERBOUND);
-                Field f = MoreCommands.getYarnField(ClientConnection.class, "channel", "field_11651");
-                f.setAccessible(true);
+                Field f = ReflectionHelper.getYarnField(ClientConnection.class, "channel", "field_11651");
                 // I beg you, do not look at the following line. Please!
                 f.set(ccon, new AbstractChannel(null) {@Override public ChannelConfig config() {return new DefaultChannelConfig(this);} @Override public boolean isOpen() {return false;} @Override public boolean isActive() {return false;} @Override public ChannelMetadata metadata() {return new ChannelMetadata(true);} @Override protected AbstractUnsafe newUnsafe() {return null;} @Override protected boolean isCompatible(EventLoop loop) {return false;} @Override protected SocketAddress localAddress0() {return null;} @Override protected SocketAddress remoteAddress0() {return null;} @Override protected void doBind(SocketAddress localAddress) throws Exception {} @Override protected void doDisconnect() throws Exception {} @Override protected void doClose() throws Exception {} @Override protected void doBeginRead() throws Exception {} @Override protected void doWrite(ChannelOutboundBuffer in) throws Exception {}});
                 // Yuck

@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.SpeedType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;

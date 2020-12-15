@@ -6,17 +6,12 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.command.TeleportCommand;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 import java.io.File;
@@ -31,7 +26,7 @@ public class HomeCommand extends Command {
     private Map<UUID, List<Home>> homes = new HashMap<>();
 
     private void init() throws IOException {
-        Map<String, Map<String, Map<String, Object>>> data = MoreCommands.readJson(dataFile, Map.class);
+        Map<String, Map<String, Map<String, Object>>> data = MoreCommands.readJson(dataFile);
         if (data == null) return;
         data.entrySet().forEach(entry -> {
             List<Home> homes = new ArrayList<>();

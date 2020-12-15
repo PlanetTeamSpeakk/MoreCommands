@@ -33,9 +33,15 @@
   "gamerule.fluidsInfinite": "Fluids Infinite",
   "gamerule.fluidsInfinite.description": "Whether all fluids can create new source blocks like water.",
   "gamerule.randomOrderPlayerTick": "Random Order Player Tick",
-  "gamerule.randomOrderPlayerTick.description": "Whether players should be ticked in a random order rather than starting at whomever joined first. Makes things like dropparties more fair."
+  "gamerule.randomOrderPlayerTick.description": "Whether players should be ticked in a random order rather than starting at whomever joined first. Makes things like dropparties more fair.",
   "gamerule.vaultRows": "Vault Rows",
   "gamerule.vaultRows.description": "The amount of rows vaults may have.",
   "gamerule.vaults": "Vaults",
-  "gamerule.vaults.description": "How many vaults each player has. Set to 0 to disable vaults."
+  "gamerule.vaults.description": "How many vaults each player has. Set to 0 to disable vaults.",
+  "gamerule.doSignColours": "Do Sign Colours",
+  "gamerule.doSignColours.description": "Whether normal players may use colours on signs. Operators ignore this value.",
+  "gamerule.doBookColours": "Do Book Colours",
+  "gamerule.doBookColours.description": "Whether normal players may use colours in books. Operators ignore this value.",
+  "gamerule.doChatColours": "Do Chat Colours",
+  "gamerule.doChatColours.description": "Whether normal players may use colours in chat messages. Operators ignore this value."
 }

@@ -34,7 +34,8 @@
     "MixinItem",
     "MixinServerNetworkIo",
     "MixinFillCommand",
-    "MixinServerPlayerEntity"
+    "MixinServerPlayerEntity",
+    "MixinFluidBlock"
   ],
   "injectors": {
     "defaultRequire": 1

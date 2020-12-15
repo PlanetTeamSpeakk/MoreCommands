@@ -9,7 +9,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,7 +22,6 @@ import net.minecraft.util.registry.RegistryKey;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +40,7 @@ public class WarpCommand extends Command {
             UUID owner = UUID.fromString(f.getName().split("\\.")[0]);
             Map<String, Map<String, ?>> data;
             try {
-                data = MoreCommands.readJson(getWarpsFile(owner), Map.class);
+                data = MoreCommands.readJson(getWarpsFile(owner));
             } catch (IOException e) {
                 log.error("Unknown error while reading warps file of player " + owner + ".", e);
                 continue;

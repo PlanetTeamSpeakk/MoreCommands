@@ -4,6 +4,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.CopySound;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.options.ChatVisibility;
 import net.minecraft.client.util.Clipboard;
-import net.minecraft.text.StringRenderable;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -32,22 +32,16 @@ import static com.ptsmods.morecommands.MoreCommands.log;
 public class MixinChatScreen {
 
     private static final Clipboard clipboard = new Clipboard();
-    private static final Field mc_visibleMessagesField = MoreCommands.getYarnField(ChatHud.class, "visibleMessages", "field_2064");
-    private static final Field mc_messagesField = MoreCommands.getYarnField(ChatHud.class, "messages", "field_2061");
-    private static final Field mc_scrolledLinesField = MoreCommands.getYarnField(ChatHud.class, "scrolledLines", "field_2066");
-
-    static {
-        mc_visibleMessagesField.setAccessible(true);
-        mc_messagesField.setAccessible(true);
-        mc_scrolledLinesField.setAccessible(true);
-    }
+    private static final Field mc_visibleMessagesField = ReflectionHelper.getYarnField(ChatHud.class, "visibleMessages", "field_2064");
+    private static final Field mc_messagesField = ReflectionHelper.getYarnField(ChatHud.class, "messages", "field_2061");
+    private static final Field mc_scrolledLinesField = ReflectionHelper.getYarnField(ChatHud.class, "scrolledLines", "field_2066");
 
     @Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z")
     public boolean mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cbi) {
         boolean b = cbi.getReturnValue();
         if (!b) {
             ChatHud chatHud = MinecraftClient.getInstance().inGameHud.getChatHud();
-            ChatHudLine line = getLine(chatHud, mouseX, mouseY);
+            ChatHudLine line = mc_getLine(chatHud, mouseX, mouseY);
             if (line != null)
                 if (button == 0 && ClientOptions.Chat.chatMsgCopy) {
                     // Copies a message's content when you click on it in the chat.
@@ -70,7 +64,7 @@ public class MixinChatScreen {
     }
 
     // Just the same as ChatHud#getText, but actually returns a ChatHudLine object rather than a Style object.
-    public ChatHudLine getLine(ChatHud hud, double x, double y) {
+    public ChatHudLine mc_getLine(ChatHud hud, double x, double y) {
         MinecraftClient client = MinecraftClient.getInstance();
         List<ChatHudLine> visibleMessages = null;
         List<ChatHudLine> messages = null;

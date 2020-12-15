@@ -23,7 +23,7 @@ public class AliasCommand extends ClientCommand {
 
     private void init() throws IOException {
         if (aliasesFile.exists()) {
-            aliases.putAll(MoreCommands.readJson(aliasesFile, Map.class));
+            aliases.putAll(MoreCommands.readJson(aliasesFile));
             aliases.keySet().forEach(this::register);
         } else saveData();
         ChatMessageSendCallback.EVENT.register(message -> aliases.getOrDefault(message == null ? null : message.substring(1).split(" ")[0], message));

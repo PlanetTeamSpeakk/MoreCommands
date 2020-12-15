@@ -1,12 +1,8 @@
 package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
 
 public class CdataCommand extends ClientCommand {
     @Override

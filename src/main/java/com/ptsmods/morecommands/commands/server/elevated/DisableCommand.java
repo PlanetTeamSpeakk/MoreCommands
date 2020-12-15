@@ -9,6 +9,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.CommandsRegisteredCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -22,16 +23,14 @@ import java.util.*;
 public class DisableCommand extends Command {
 
     private static final SimpleCommandExceptionType DISABLED = new SimpleCommandExceptionType(new LiteralText("This command is currently disabled."));
-    private static Field commandField;
+    private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");;
     private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
     private final List<String> disabledPaths = new ArrayList<>();
     private static final File file = new File("config/MoreCommands/disabled.json");
 
     private void init() throws IOException {
-        commandField = MoreCommands.getField(CommandNode.class, "command");
-        commandField.setAccessible(true);
         if (!file.exists()) saveData();
-        else disabledPaths.addAll(MoreCommands.readJson(file, List.class));
+        else disabledPaths.addAll(MoreCommands.readJson(file));
         CommandsRegisteredCallback.EVENT.register(dispatcher -> {
             disabledCommands.clear();
             disabledPaths.forEach(path -> {

@@ -2,7 +2,6 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.commands.client.PtimeCommand;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;

@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.VanishCommand;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -31,11 +32,8 @@ public class MixinThreadedAnvilChunkStorage {
             cbi.cancel();
             Object tracker = entityTrackers.remove(entity.getEntityId());
             if (tracker != null) {
-                if (mc_stopTrackingMethod == null) mc_stopTrackingMethod = MoreCommands.getYarnMethod(tracker.getClass(), "stopTracking", "method_18733");
-                if (mc_entryField == null) {
-                    mc_entryField = MoreCommands.getYarnField(tracker.getClass(), "entry", "field_18246");
-                    mc_entryField.setAccessible(true);
-                }
+                if (mc_stopTrackingMethod == null) mc_stopTrackingMethod = ReflectionHelper.getYarnMethod(tracker.getClass(), "stopTracking", "method_18733");
+                if (mc_entryField == null) mc_entryField = ReflectionHelper.getYarnField(tracker.getClass(), "entry", "field_18246");
                 try {
                     mc_stopTrackingMethod.invoke(tracker);
                     VanishCommand.trackers.put((ServerPlayerEntity) entity, (EntityTrackerEntry) mc_entryField.get(tracker));

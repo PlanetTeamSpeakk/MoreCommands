@@ -5,11 +5,8 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.command.SpreadPlayersCommand;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.border.WorldBorder;
-
-import java.util.Random;
 
 public class WildCommand extends Command {
     @Override

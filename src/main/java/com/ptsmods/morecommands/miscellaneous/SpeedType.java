@@ -12,10 +12,7 @@ import java.util.function.Function;
 
 public enum SpeedType {
     WALK((player, speed) -> {
-        if (Nested.walkSpeedField == null) {
-            Nested.walkSpeedField = MoreCommands.getYarnField(PlayerAbilities.class, "walkSpeed", "field_7482");
-            Nested.walkSpeedField.setAccessible(true);
-        }
+        if (Nested.walkSpeedField == null) Nested.walkSpeedField = ReflectionHelper.getYarnField(PlayerAbilities.class, "walkSpeed", "field_7482");
         try {
             Nested.walkSpeedField.set(player.abilities, speed / 10);
         } catch (IllegalAccessException e) {
@@ -24,10 +21,7 @@ public enum SpeedType {
         player.sendAbilitiesUpdate();
     }, player -> player.abilities.getWalkSpeed() * 10),
     FLY((player, speed) -> {
-        if (Nested.flySpeedField == null) {
-            Nested.flySpeedField = MoreCommands.getYarnField(PlayerAbilities.class, "flySpeed", "field_7481");
-            Nested.flySpeedField.setAccessible(true);
-        }
+        if (Nested.flySpeedField == null) Nested.flySpeedField = ReflectionHelper.getYarnField(PlayerAbilities.class, "flySpeed", "field_7481");
         try {
             Nested.flySpeedField.set(player.abilities, speed / 20);
         } catch (IllegalAccessException e) {

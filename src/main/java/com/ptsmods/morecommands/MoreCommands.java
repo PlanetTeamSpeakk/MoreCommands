@@ -1,10 +1,9 @@
 package com.ptsmods.morecommands;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.Environment;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.brigadier.CommandDispatcher;
@@ -16,6 +15,7 @@ import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.commands.server.elevated.*;
 import com.ptsmods.morecommands.miscellaneous.*;
 import io.netty.buffer.Unpooled;
+import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
@@ -29,7 +29,6 @@ import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.launch.common.FabricLauncherBase;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
@@ -51,7 +50,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.TestCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
@@ -73,15 +74,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sun.misc.Unsafe;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -115,6 +119,9 @@ public class MoreCommands implements ModInitializer {
 	public static GameRules.Key<GameRules.IntRule> vaultRowsRule;
 	public static GameRules.Key<GameRules.IntRule> vaultsRule;
 	public static GameRules.Key<GameRules.IntRule> nicknameLimitRule;
+	public static GameRules.Key<GameRules.BooleanRule> doSignColoursRule;
+	public static GameRules.Key<GameRules.BooleanRule> doBookColoursRule;
+	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule;
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
 	public static final Map<UUID, List<String>> playerPerms = new HashMap<>();
@@ -136,9 +143,12 @@ public class MoreCommands implements ModInitializer {
 	public static final TrackedData<Optional<BlockPos>> CHAIR = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
 	public static final TrackedData<CompoundTag> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
 	public static final TrackedData<Optional<Text>> NICKNAME = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT);
+	public static final ScoreboardCriterion LATENCY;
+	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
+	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static Unsafe theUnsafe = null;
-	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private static final Field childrenField, literalsField, argumentsField;
 	private static Environment environment = null;
 
@@ -150,11 +160,19 @@ public class MoreCommands implements ModInitializer {
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			log.catching(e);
 		}
-		childrenField = getField(CommandNode.class, "children");
-		childrenField.setAccessible(true);
-		literalsField = getField(CommandNode.class, "literals");
-		literalsField.setAccessible(true);
-		argumentsField = getField(CommandNode.class, "arguments");
+		childrenField = ReflectionHelper.getField(CommandNode.class, "children");
+		literalsField = ReflectionHelper.getField(CommandNode.class, "literals");
+		argumentsField = ReflectionHelper.getField(CommandNode.class, "arguments");
+		ScoreboardCriterion sc = null;
+		try {
+			Constructor<ScoreboardCriterion> struc = ScoreboardCriterion.class.getDeclaredConstructor(String.class, boolean.class, ScoreboardCriterion.RenderType.class);
+			struc.setAccessible(true);
+			sc = struc.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER);
+			ScoreboardCriterion.OBJECTIVES.put("latency", sc);
+		} catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+			log.catching(e);
+		}
+		LATENCY = sc;
 	}
 
 
@@ -176,6 +194,7 @@ public class MoreCommands implements ModInitializer {
 				} catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 					log.catching(e);
 				}
+			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
 		C2SPacketTypeCallback.REGISTERED.register((player, types) -> {
 			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(player);
@@ -186,6 +205,16 @@ public class MoreCommands implements ModInitializer {
 			BlockState state = player.getServerWorld().getBlockState(pos);
 			if (Chair.isValid(state))
 				Chair.createAndPlace(pos, player, player.getServerWorld());
+		});
+		SPR.register(new Identifier("morecommands:discord_data"), (ctx, buffer) -> {
+			DiscordUser user = new DiscordUser();
+			if (buffer.readBoolean()) discordTagNoPerm.add(ctx.getPlayer());
+			else discordTagNoPerm.remove(ctx.getPlayer());
+			user.userId = buffer.readString();
+			user.username = buffer.readString();
+			user.discriminator = buffer.readString();
+			user.avatar = buffer.readString();
+			discordTags.put(ctx.getPlayer(), user);
 		});
 		ArgumentTypes.register("morecommands:registry_argument", RegistryArgumentType.class, new RegistryArgumentType.Serialiser());
 		ArgumentTypes.register("morecommands:limited_string", LimitedStringArgumentType.class, new LimitedStringArgumentType.Serialiser());
@@ -213,6 +242,9 @@ public class MoreCommands implements ModInitializer {
 		vaultRowsRule = GameRuleRegistry.register("vaultRows", cat, GameRuleFactory.createIntRule(6, 1, 6));
 		vaultsRule = GameRuleRegistry.register("vaults", cat, GameRuleFactory.createIntRule(3, 0));
 		nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", cat, GameRuleFactory.createIntRule(16, 0));
+		doSignColoursRule = GameRuleRegistry.register("doSignColours", cat, GameRuleFactory.createBooleanRule(true));
+		doBookColoursRule = GameRuleRegistry.register("doBookColours", cat, GameRuleFactory.createBooleanRule(true));
+		doChatColoursRule = GameRuleRegistry.register("doChatColours", cat, GameRuleFactory.createBooleanRule(true));
 	}
 
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
@@ -316,8 +348,8 @@ public class MoreCommands implements ModInitializer {
 		Constructor<T> con = cmd.getDeclaredConstructor();
 		con.setAccessible(true);
 		Command instance = con.newInstance();
-		Method m = getMethod(instance.getClass(), "init");
-		if (m != null || (m = getMethod(instance.getClass(), "init", MinecraftServer.class)) != null) {
+		Method m = ReflectionHelper.getMethod(instance.getClass(), "init");
+		if (m != null || (m = ReflectionHelper.getMethod(instance.getClass(), "init", MinecraftServer.class)) != null) {
 			try {
 				m.setAccessible(true);
 				Object[] args = m.getParameterCount() == 0 ? new Object[0] : new Object[] {serverInstance};
@@ -365,43 +397,27 @@ public class MoreCommands implements ModInitializer {
 		if (!text.getSiblings().isEmpty())
 			for (Text t : text.getSiblings())
 				s.append(textToString(t, style, translate));
-		return s.append(Formatting.RESET).toString();
+		return s.toString();
 	}
 
 	public static void saveJson(File f, Object data) throws IOException {
+		saveString(f, gson.toJson(data));
+	}
+
+	public static <T> T readJson(File f) throws IOException {
+		return gson.fromJson(readString(f), new TypeToken<T>(){}.getType());
+	}
+
+	public static void saveString(File f, String s) throws IOException {
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
-			writer.print(gson.toJson(data));
+			writer.print(s);
 			writer.flush();
 		}
 	}
 
-	public static <T> T readJson(File f, Class<? extends T> type) throws IOException {
+	public static String readString(File f) throws IOException {
 		if (!f.exists()) f.createNewFile();
-		return gson.fromJson(Files.newReader(f, StandardCharsets.UTF_8), type);
-	}
-
-	public static Method getMethod(Class<?> clazz, String method, Class<?>... classes) {
-		try {
-			return clazz.getMethod(method, classes);
-		} catch (NoSuchMethodException e) {
-			try {
-				return clazz.getDeclaredMethod(method, classes);
-			} catch (NoSuchMethodException e0) {
-				return null;
-			}
-		}
-	}
-
-	public static Field getField(Class<?> clazz, String field) {
-		try {
-			return clazz.getField(field);
-		} catch (NoSuchFieldException e) {
-			try {
-				return clazz.getDeclaredField(field);
-			} catch (NoSuchFieldException e0) {
-				return null;
-			}
-		}
+		return String.join("\n", Files.readAllLines(f.toPath()));
 	}
 
 	public static char getChar(Formatting f) {
@@ -506,7 +522,7 @@ public class MoreCommands implements ModInitializer {
 	public static HitResult getRayTraceTarget(Entity entity, World world, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
 		HitResult crosshairTarget = null;
 		if (entity != null && world != null) {
-			float td = MinecraftClient.getInstance().getTickDelta();
+			float td = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
 			crosshairTarget = entity.rayTrace(reach, td, !ignoreLiquids);
 			if (!ignoreEntities) {
 				Vec3d vec3d = entity.getCameraPosVec(td);
@@ -604,9 +620,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() throws IllegalAccessException {
-		Field rootField = getYarnField(Registry.class, "ROOT", "field_25101");
-		rootField.setAccessible(true);
-		return (MutableRegistry<MutableRegistry<?>>) rootField.get(null);
+		return (MutableRegistry<MutableRegistry<?>>) ReflectionHelper.getYarnField(Registry.class, "ROOT", "field_25101").get(null);
 	}
 
 	public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
@@ -654,24 +668,6 @@ public class MoreCommands implements ModInitializer {
 
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
-	}
-
-	public static Field getYarnField(Class<?> clazz, String yarnName, String name) {
-		return MoreObjects.firstNonNull(getField(clazz, yarnName), getField(clazz, name));
-	}
-
-	public static Method getYarnMethod(Class<?> clazz, String yarnName, String name, Class<?>... classes) {
-		return MoreObjects.firstNonNull(getMethod(clazz, yarnName, classes), getMethod(clazz, name, classes));
-	}
-
-	public static void removeFinalModifier(Field f) {
-		try {
-			Field modifiers = Field.class.getDeclaredField("modifiers");
-			modifiers.setAccessible(true);
-			modifiers.set(f, f.getModifiers() & ~Modifier.FINAL);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			log.catching(e);
-		}
 	}
 
 	public static boolean isAprilFirst() {
@@ -867,6 +863,34 @@ public class MoreCommands implements ModInitializer {
 		CompoundTag compound = new CompoundTag();
 		compound.put(key, tag);
 		return compound;
+	}
+
+	public static String camelCase(String s, boolean retainSpaces) {
+		s = pascalCase(s, retainSpaces);
+		return s.isEmpty() ? s : s.length() == 1 ? s.toLowerCase() : s.substring(0, 1).toLowerCase() + s.substring(1);
+	}
+
+	public static String pascalCase(String s, boolean retainSpaces) {
+		String[] parts = s.split(" ");
+		StringBuilder sb = new StringBuilder();
+		for (String part : parts) {
+			if (part.length() == 1) sb.append(part.toUpperCase());
+			else sb.append(part.substring(0, 1).toUpperCase()).append(part.substring(1));
+			if (retainSpaces) sb.append(' ');
+		}
+		return sb.toString();
+	}
+
+	public static BufferedImage rotateClockwise90(BufferedImage src) {
+		int width = src.getWidth();
+		int height = src.getHeight();
+		BufferedImage dest = new BufferedImage(height, width, src.getType());
+		Graphics2D graphics2D = dest.createGraphics();
+		graphics2D.translate((height - width) / 2, (height - width) / 2);
+		graphics2D.rotate(Math.PI / 2, height / 2, width / 2);
+		graphics2D.drawRenderedImage(src, null);
+
+		return dest;
 	}
 
 }

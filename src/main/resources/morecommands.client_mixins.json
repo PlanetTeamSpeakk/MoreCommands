@@ -23,7 +23,8 @@
     "MixinItemRenderer",
     "MixinWindow",
     "MixinMouse",
-    "MixinParticleManager"
+    "MixinParticleManager",
+    "MixinSignEditScreen"
   ],
   "injectors": {
     "defaultRequire": 1

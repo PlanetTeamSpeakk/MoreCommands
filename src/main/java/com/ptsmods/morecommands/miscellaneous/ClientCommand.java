@@ -11,6 +11,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -54,6 +55,10 @@ public abstract class ClientCommand extends Command {
 
     public static MinecraftClient getClient() {
         return MinecraftClient.getInstance();
+    }
+
+    public static ServerCommandSource getServerCommandSource() {
+        return new ServerCommandSource(CommandOutput.DUMMY, getPlayer().getPos(), getPlayer().getRotationClient(), null, 0, getPlayer().getEntityName(), getPlayer().getDisplayName(), null, getPlayer());
     }
 
 }

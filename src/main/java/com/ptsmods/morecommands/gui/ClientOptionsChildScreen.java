@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -179,7 +180,7 @@ public class ClientOptionsChildScreen extends Screen {
 
     private void checkChangeCallback(Field f, Object oldValue) {
         if (f.isAnnotationPresent(ClientOptions.ChangeCallback.class)) {
-            Method method = MoreObjects.firstNonNull(MoreCommands.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value(), f.getType(), f.getType()), MoreCommands.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value()));
+            Method method = MoreObjects.firstNonNull(ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value(), f.getType(), f.getType()), ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value()));
             if (method != null && Modifier.isStatic(method.getModifiers()))
                 try {
                     method.setAccessible(true);

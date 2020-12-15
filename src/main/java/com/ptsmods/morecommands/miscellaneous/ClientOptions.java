@@ -41,12 +41,16 @@ public class ClientOptions {
         public static boolean sitOnStairs = true;
         @Comment({"Prevent your elytra from opening when you press space.", "For if you want to wear it, but not use it.", "(In e.g. pvp areas of survival servers or during parkour)"})
         public static boolean disableElytra = false;
+        @Comment({"Allows you to make the lines on signs longer.", "Lines are still cut when rendering, but", "it's very useful for putting colours on signs."})
+        public static boolean noSignLimit = true;
+        @Comment({"Whether you can target fluids with your cursor.", "Useful to place blocks on water."})
+        public static boolean targetFluids = false;
     }
 
     public static class Chat {
-        @Comment("Copies a chatmessage when you left-click on it.")
+        @Comment({"Copy a chatmessage when you left-click on it.", "Holding control while doing so will also copy formattings."})
         public static boolean chatMsgCopy = true;
-        @Comment("Removes a chatmessage when you right-click on it.")
+        @Comment("Remove a chatmessage when you right-click on it.")
         public static boolean chatMsgRemove = true;
         @Comment("Do not show messages that have no content in chat.")
         public static boolean ignoreEmptyMsgs = true;
@@ -61,18 +65,26 @@ public class ClientOptions {
     }
 
     public static class RichPresence {
-        @ChangeCallback("update")
+        @ChangeCallback("updateRPC")
         @Comment({"Toggle Discord Rich Presence", "May not work on Mac."})
         public static boolean enableRPC = true;
-        @ChangeCallback("update")
+        @ChangeCallback("updateRPC")
         @Comment({"Whether I may advertise this mod on the RPC.", "It would be kindly appreciated if you left this enabled. :)"})
         public static boolean advertiseMC = true;
-        @ChangeCallback("update")
-        @Comment({"Whether to show either the ip of the server", "you're on or the name of the world you're in", "in the details section of the RPC."})
+        @ChangeCallback("updateRPC")
+        @Comment({"Whether to show either the ip of the server, you're on", "or the name of the world you're in in the details section of the RPC."})
         public static boolean showDetails = true;
+        @Comment({"Whether your Discord tag should be sent to the server for others to see.", "Only works if the mod is installed on the server too."})
+        public static boolean shareTag = true;
+        @Comment({"Whether players need your permission to view your tag."})
+        public static boolean askPermission = true;
 
-        private static void update() {
+        private static void updateRPC() {
             MoreCommandsClient.updatePresence();
+        }
+
+        private static void updateTag() {
+
         }
     }
 

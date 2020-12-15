@@ -1,28 +1,17 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.mojang.datafixers.util.Function4;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.RenderTickCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.resource.DataPackSettings;
-import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.registry.RegistryTracker;
-import net.minecraft.world.SaveProperties;
-import net.minecraft.world.gen.GeneratorOptions;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.function.Function;
 
 @Mixin(MinecraftClient.class)
 public class MixinMinecraftClient {

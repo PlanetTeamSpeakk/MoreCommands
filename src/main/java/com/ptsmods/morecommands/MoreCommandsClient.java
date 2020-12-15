@@ -4,28 +4,27 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
-import com.ptsmods.morecommands.commands.client.*;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
+import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.event.network.S2CPacketTypeCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.options.KeyBinding;
-import net.minecraft.client.particle.ParticleFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -34,7 +33,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -54,6 +52,7 @@ public class MoreCommandsClient implements ClientModInitializer {
     public static final CommandDispatcher<ClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
     private static final Map<String, Integer> keys = new LinkedHashMap<>();
     private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
+    private static DiscordUser discordUser = null;
 
     static {
         for (Field f : GLFW.class.getFields())
@@ -78,10 +77,14 @@ public class MoreCommandsClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientOptions.read();
         DiscordRPC.discordInitialize("754048885755871272", new DiscordEventHandlers.Builder()
-                .setReadyEventHandler(user -> log.info("Connected to Discord RPC as " + user.username + "#" + user.discriminator + " (" + user.userId + ")."))
+                .setReadyEventHandler(user -> {
+                    discordUser = user;
+                    log.info("Connected to Discord RPC as " + user.username + "#" + user.discriminator + " (" + user.userId + ").");
+                })
                 .setDisconnectedEventHandler((errorCode, message) -> log.info("Disconnected from Discord RPC with error code " + errorCode + ": " + message))
                 .setErroredEventHandler((errorCode, message) -> log.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
         updatePresence();
+        S2CPacketTypeCallback.REGISTERED.register(types -> updateTag());
         Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
         Language.setInstance(Language.getInstance()); // Wrap the current instance so it can translate all enchant levels and spawner names. :3 (Look at MixinLanguage)
         KeyBindingHelper.registerKeyBinding(toggleInfoHudBinding);
@@ -135,7 +138,7 @@ public class MoreCommandsClient implements ClientModInitializer {
             return message;
         });
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (ClientOptions.Tweaks.sitOnStairs && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && CPR.canServerReceive(new Identifier("morecommands:sit_on_stairs"))) {
+            if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && CPR.canServerReceive(new Identifier("morecommands:sit_on_stairs"))) {
                 CPR.sendToServer(CPR.toPacket(new Identifier("morecommands:sit_on_stairs"), new PacketByteBuf(Unpooled.buffer()).writeBlockPos(hitResult.getBlockPos())));
                 return ActionResult.CONSUME;
             }
@@ -149,21 +152,34 @@ public class MoreCommandsClient implements ClientModInitializer {
         });
     }
 
+    public static String getWorldName() {
+        return MinecraftClient.getInstance().world == null ? null : MinecraftClient.getInstance().getCurrentServerEntry() == null ? Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getSaveProperties().getLevelName() : MinecraftClient.getInstance().getCurrentServerEntry().address;
+    }
+
     public static void updatePresence() {
         if (ClientOptions.RichPresence.enableRPC) {
             MinecraftClient client = MinecraftClient.getInstance();
             DiscordRichPresence.Builder builder;
             if (client.world == null) builder = new DiscordRichPresence.Builder("On the main menu").setBigImage("minecraft_logo", null);
-            else if (client.getCurrentServerEntry() != null) {
-                builder = new DiscordRichPresence.Builder("Multiplayer").setBigImage("in_game", null);
-                if (ClientOptions.RichPresence.showDetails) builder.setDetails(client.getCurrentServerEntry().address);
-            } else {
-                builder = new DiscordRichPresence.Builder("Singleplayer").setBigImage("in_game", null);
-                if (ClientOptions.RichPresence.showDetails) builder.setDetails(Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName());
+            else {
+                builder = new DiscordRichPresence.Builder(client.getCurrentServerEntry() == null ? "Singleplayer" : "Multiplayer").setBigImage("in_game", null);
+                if (ClientOptions.RichPresence.showDetails) builder.setDetails(getWorldName());
             }
             if (ClientOptions.RichPresence.advertiseMC) builder.setSmallImage("morecommands_logo", "Download at https://bit.ly/MoreCommands");
             DiscordRPC.discordUpdatePresence(builder.setStartTimestamps(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis() / 1000L).build());
         } else DiscordRPC.discordClearPresence();
+    }
+
+    public static void updateTag() {
+        if (CPR.canServerReceive(new Identifier("morecommands:discord_data")) && ClientOptions.RichPresence.shareTag && discordUser != null) {
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+            buf.writeBoolean(ClientOptions.RichPresence.askPermission);
+            buf.writeString(discordUser.userId);
+            buf.writeString(discordUser.username);
+            buf.writeString(discordUser.discriminator);
+            buf.writeString(discordUser.avatar);
+            CPR.sendToServer(new Identifier("morecommands:discord_data"), buf);
+        }
     }
 
     public static double getSpeed() {

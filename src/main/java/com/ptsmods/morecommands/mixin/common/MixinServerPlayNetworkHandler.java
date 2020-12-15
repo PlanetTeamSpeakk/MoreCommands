@@ -2,20 +2,16 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.minecraft.advancement.criterion.Criteria;
+import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.MessageType;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.MinecraftServer;
@@ -30,11 +26,11 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,7 +40,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(ServerPlayNetworkHandler.class)
@@ -85,48 +80,9 @@ public class MixinServerPlayNetworkHandler {
         player.networkHandler.sendPacket(new BlockUpdateS2CPacket(serverWorld, blockPos.offset(direction)));
     }
 
-    // Copied from super method, but uses reach.
-    // Injects rather than overwrites cuz the Fabric API injects into the same method. -_-
-    @Inject(at = @At("HEAD"), method = "onPlayerInteractEntity(Lnet/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket;)V", cancellable = true)
-    public void onPlayerInteractEntity(PlayerInteractEntityC2SPacket packet, CallbackInfo cbi) {
-        cbi.cancel();
-        NetworkThreadUtils.forceMainThread(packet, player.networkHandler, player.getServerWorld());
-        ServerWorld serverWorld = player.getServerWorld();
-        Entity entity = packet.getEntity(serverWorld);
-        player.updateLastActionTime();
-        player.setSneaking(packet.isPlayerSneaking());
-        if (entity != null) {
-            if (player.squaredDistanceTo(entity) < ReachCommand.getReach(player, true)) {
-                Hand hand = packet.getHand();
-                ItemStack itemStack = hand != null ? player.getStackInHand(hand).copy() : ItemStack.EMPTY;
-                Optional<ActionResult> optional = Optional.empty();
-                if (packet.getType() == PlayerInteractEntityC2SPacket.InteractionType.INTERACT) {
-                    optional = Optional.of(player.interact(entity, hand));
-                } else if (packet.getType() == PlayerInteractEntityC2SPacket.InteractionType.INTERACT_AT) {
-                    World world = player.getEntityWorld();
-                    Entity e = packet.getEntity(world);
-                    if (e != null) { // Manually adding the callback from the api, you're welcome. :3
-                        EntityHitResult hitResult = new EntityHitResult(e, packet.getHitPosition().add(e.getX(), e.getY(), e.getZ()));
-                        ActionResult result = UseEntityCallback.EVENT.invoker().interact(player, world, packet.getHand(), e, hitResult);
-                        if (result != ActionResult.PASS) return;
-                    }
-                    optional = Optional.of(entity.interactAt(player, packet.getHitPosition(), hand));
-                } else if (packet.getType() == PlayerInteractEntityC2SPacket.InteractionType.ATTACK) {
-                    if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof PersistentProjectileEntity || entity == player) {
-                        player.networkHandler.disconnect(new TranslatableText("multiplayer.disconnect.invalid_entity_attacked"));
-                        LOGGER.warn("Player {} tried to attack an invalid entity", player.getName().getString());
-                        return;
-                    }
-                    player.attack(entity);
-                }
-                if (optional.isPresent() && optional.get().isAccepted()) {
-                    Criteria.PLAYER_INTERACTED_WITH_ENTITY.test(player, itemStack, entity);
-                    if (optional.get().shouldSwingHand()) {
-                        player.swingHand(hand, true);
-                    }
-                }
-            }
-        }
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; squaredDistanceTo(Lnet/minecraft/entity/Entity;)D", ordinal = 0), method = "onPlayerInteractEntity(Lnet/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket;)V")
+    public double onPlayerInteractEntity_squaredDistanceTo(ServerPlayerEntity player, Entity entity) {
+        return player.squaredDistanceTo(entity) < ReachCommand.getReach(player, true) ? 0 : 36;
     }
 
     // Straight up copied from the super class since that's easier than trying to shadow it somehow.
@@ -142,6 +98,42 @@ public class MixinServerPlayNetworkHandler {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
     public void onDisconnected_broadcastChatMessage(PlayerManager playerManager, Text msg, MessageType type, UUID id, Text reason) {
         if (playerManager.getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) playerManager.broadcastChatMessage(msg, type, id);
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Formatting; strip(Ljava/lang/String;)Ljava/lang/String;"), method = "onSignUpdate(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
+    public String onSignUpdate_strip(String s) {
+        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
+            s = Command.translateFormats(s);
+        else s = Formatting.strip(s);
+        return s;
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/ListTag; getString(I)Ljava/lang/String;"), method = "onBookUpdate(Lnet/minecraft/network/packet/c2s/play/BookUpdateC2SPacket;)V")
+    public String onBookUpdate_getString(ListTag list, int index) {
+        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        String s = list.getString(index);
+        if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
+            s = Command.translateFormats(s);
+        return s;
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/StringUtils; normalizeSpace(Ljava/lang/String;)Ljava/lang/String;", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
+    public String onGameMessage_normalizeSpace(String str) {
+        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        String s = StringUtils.normalizeSpace(str);
+        if (!str.startsWith("/") && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
+            s = Command.translateFormats(s);
+        return s;
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
+    public char onGameMessage_charAt(String string, int index) {
+        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        char ch = string.charAt(index);
+        if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
+            ch = '&';
+        return ch;
     }
 
 }

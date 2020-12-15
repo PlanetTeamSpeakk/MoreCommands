@@ -16,7 +16,7 @@ public abstract class MixinFlowableFluid {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/FlowableFluid; isInfinite()Z"), method = "getUpdatedState(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/fluid/FluidState;")
     private boolean getUpdatedState_isInfinite(FlowableFluid thiz, WorldView world, BlockPos pos, BlockState state) {
-        return world instanceof World ? ((World) world).getGameRules().getBoolean(MoreCommands.fluidsInfiniteRule) : callIsInfinite();
+        return world instanceof World && ((World) world).getGameRules().getBoolean(MoreCommands.fluidsInfiniteRule) || callIsInfinite();
     }
 
     @Invoker

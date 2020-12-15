@@ -9,7 +9,6 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -28,14 +27,8 @@ public class MixinEntityRenderer<T extends Entity> {
     @Shadow @Final protected EntityRenderDispatcher dispatcher;
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderer; renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"), method = "render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
-    public void render_renderLabelIfPresent(EntityRenderer thiz, T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-        if (MoreCommands.isCute(entity)) {
-            Text t = new LiteralText("");
-            t.getSiblings().add(text);
-            t.getSiblings().add(new LiteralText(" \u2764").setStyle(Style.EMPTY.withFormatting(Formatting.DARK_PURPLE)));
-            t.getSiblings().add(new LiteralText(" cutie").setStyle(Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE, Formatting.BOLD)));
-            text = t;
-        }
+    public void render_renderLabelIfPresent(EntityRenderer<?> thiz, T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+        if (MoreCommands.isCute(entity)) text = new LiteralText("").append(text).append(new LiteralText(" \u2764").setStyle(Style.EMPTY.withFormatting(Formatting.DARK_PURPLE))).append(new LiteralText(" cutie").setStyle(Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE, Formatting.BOLD)));
         renderLabelIfPresent(entity, text, matrices, vertexConsumers, light);
     }
 

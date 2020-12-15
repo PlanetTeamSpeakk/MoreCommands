@@ -8,7 +8,6 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 
 import java.io.File;
@@ -25,7 +24,7 @@ public class MacroCommand extends ClientCommand {
 
     private void init() throws IOException {
         if (!file.exists()) saveData();
-        else macros.putAll(MoreCommands.readJson(file, Map.class));
+        else macros.putAll(MoreCommands.readJson(file));
     }
 
     @Override

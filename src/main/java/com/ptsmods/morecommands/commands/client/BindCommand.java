@@ -3,24 +3,19 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.arguments.KeyArgumentType;
 import com.ptsmods.morecommands.callbacks.MouseCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.callbacks.KeyCallback;
-import com.ptsmods.morecommands.arguments.LimitedStringArgumentType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.Mouse;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
 
 public class BindCommand extends ClientCommand {
@@ -31,7 +26,7 @@ public class BindCommand extends ClientCommand {
     private static int record = 0;
 
     private void init() throws IOException {
-        if (bindingsFile.exists()) bindings.putAll(MoreCommands.readJson(bindingsFile, Map.class));
+        if (bindingsFile.exists()) bindings.putAll(MoreCommands.readJson(bindingsFile));
         else saveData();
         KeyCallback.EVENT.register((keyCode, scancode, action, mods) -> checkBind(keyCode, action));
         MouseCallback.EVENT.register((button, action, mods) -> checkBind(button + GLFW.GLFW_KEY_LAST+1, action));
