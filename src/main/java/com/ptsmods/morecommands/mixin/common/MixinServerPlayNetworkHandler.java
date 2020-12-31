@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.mixin.common;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
@@ -102,7 +103,7 @@ public class MixinServerPlayNetworkHandler {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Formatting; strip(Ljava/lang/String;)Ljava/lang/String;"), method = "onSignUpdate(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
     public String onSignUpdate_strip(String s) {
-        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
             s = Command.translateFormats(s);
         else s = Formatting.strip(s);
@@ -111,7 +112,7 @@ public class MixinServerPlayNetworkHandler {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/ListTag; getString(I)Ljava/lang/String;"), method = "onBookUpdate(Lnet/minecraft/network/packet/c2s/play/BookUpdateC2SPacket;)V")
     public String onBookUpdate_getString(ListTag list, int index) {
-        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         String s = list.getString(index);
         if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
             s = Command.translateFormats(s);
@@ -120,7 +121,7 @@ public class MixinServerPlayNetworkHandler {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/StringUtils; normalizeSpace(Ljava/lang/String;)Ljava/lang/String;", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
     public String onGameMessage_normalizeSpace(String str) {
-        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         String s = StringUtils.normalizeSpace(str);
         if (!str.startsWith("/") && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
             s = Command.translateFormats(s);
@@ -129,7 +130,7 @@ public class MixinServerPlayNetworkHandler {
 
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
     public char onGameMessage_charAt(String string, int index) {
-        ServerPlayNetworkHandler thiz = MoreCommands.cast(this);
+        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         char ch = string.charAt(index);
         if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
             ch = '&';

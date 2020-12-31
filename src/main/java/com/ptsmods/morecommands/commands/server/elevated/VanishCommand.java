@@ -26,9 +26,9 @@ public class VanishCommand extends Command {
 
     public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
 
-    private void init() {
+    public void preinit() {
         // Gotta tick them manually since they don't get ticked when they're not tracked which breaks stuff like altering attributes (and thus altering reach).
-        ServerTickEvents.START_SERVER_TICK.register(server -> trackers.values().forEach(EntityTrackerEntry::tick));
+        registerCallback(ServerTickEvents.START_SERVER_TICK, server -> trackers.values().forEach(EntityTrackerEntry::tick));
     }
 
     @Override

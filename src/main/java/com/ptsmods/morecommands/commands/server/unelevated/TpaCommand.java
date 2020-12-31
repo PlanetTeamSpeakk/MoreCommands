@@ -17,8 +17,8 @@ public class TpaCommand extends Command {
 
     private static final List<TpaRequest> requests = new ArrayList<>();
 
-    private void init() {
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
+    public void preinit() {
+        registerCallback(ServerTickEvents.END_WORLD_TICK, world -> {
             for (TpaRequest request : new ArrayList<>(requests))
                 if (world == request.to.getServerWorld() && world.getTime() - request.creationTick >= world.getGameRules().getInt(MoreCommands.tpaTimeoutRule)) {
                     request.timeout();

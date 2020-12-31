@@ -71,7 +71,7 @@ public class InfoHud extends DrawableHelper {
         lines.add("{DF}Yaw: {SF}{yaw}");
         lines.add("{DF}Facing: {SF}{facing}");
         lines.add("{DF}Biome: {SF}{biome}");
-        lines.add("{DF}Speed: {SF}{blocksPerSec}");
+        lines.add("{DF}Speed: {SF}{avgSpeed}");
         try {
             saveLines();
         } catch (FileNotFoundException e) {
@@ -82,7 +82,6 @@ public class InfoHud extends DrawableHelper {
     private void loadLines() throws IOException {
         if (!file.exists()) {
            setupDefaultLines();
-           saveLines();
         } else {
             lines.clear();
             lines.addAll(Files.readAllLines(file.toPath()));
@@ -135,6 +134,7 @@ public class InfoHud extends DrawableHelper {
         BlockHitResult bResult = result instanceof BlockHitResult ? (BlockHitResult) result : null;
         EntityHitResult eResult = result instanceof EntityHitResult ? (EntityHitResult) result : null;
         MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player != null && mc.world != null)
         try {
             switch (key) {
                 case "DF": {output = MoreCommands.DF.toString(); break;}
@@ -151,6 +151,7 @@ public class InfoHud extends DrawableHelper {
                 case "biome": {output = Registry.BIOME.getId(mc.world.getBiome(mc.player.getBlockPos())).toString(); break;}
                 case "difficulty": {output = mc.world.getLevelProperties().getDifficulty().name(); break;}
                 case "blocksPerSec": {output = MoreCommands.formatDouble(MoreCommandsClient.getSpeed()) + " blocks/sec"; break;}
+                case "avgSpeed": {output = MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed()) + " blocks/sec"; break;}
                 case "toggleKey": {output = MoreCommands.textToString(MoreCommandsClient.toggleInfoHudBinding.getBoundKeyLocalizedText(), null); break;}
                 case "configFile": {output = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"); break;}
                 case "facing": {output = MoreCommands.getLookDirection(mc.player.pitch, MathHelper.wrapDegrees(mc.player.yaw)); break;}

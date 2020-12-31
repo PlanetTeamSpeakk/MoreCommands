@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.ScheduledTick;
@@ -14,7 +15,7 @@ public class MixinServerWorld {
 
     @Inject(at = @At("HEAD"), method = "tickFluid(Lnet/minecraft/world/ScheduledTick;)V", cancellable = true)
     private void tickFluid(ScheduledTick<Fluid> tick, CallbackInfo cbi) {
-        if (!MoreCommands.<ServerWorld>cast(this).getGameRules().getBoolean(MoreCommands.doLiquidFlowRule)) cbi.cancel();
+        if (!ReflectionHelper.<ServerWorld>cast(this).getGameRules().getBoolean(MoreCommands.doLiquidFlowRule)) cbi.cancel();
     }
 
 }

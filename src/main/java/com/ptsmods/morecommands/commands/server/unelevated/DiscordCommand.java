@@ -22,11 +22,13 @@ import java.net.URL;
 
 public class DiscordCommand extends Command {
 
-    private static final File dataFile = new File("config/MoreCommands/discordUrl.url");
+    private static File dataFile = null;
     private static String discordUrl = null;
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        if (new File("config/MoreCommands/discordUrl.url").exists()) MoreCommands.tryMove("config/MoreCommands/discordUrl.url", MoreCommands.getRelativePath() + "discordUrl.url");
+        dataFile = new File(MoreCommands.getRelativePath() + "discordUrl.url");
         try {
             discordUrl = MoreCommands.readString(dataFile).split("\n")[1].split("=", 2)[1];
         } catch (IOException e) {

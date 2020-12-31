@@ -43,5 +43,7 @@
   "gamerule.doBookColours": "Do Book Colours",
   "gamerule.doBookColours.description": "Whether normal players may use colours in books. Operators ignore this value.",
   "gamerule.doChatColours": "Do Chat Colours",
-  "gamerule.doChatColours.description": "Whether normal players may use colours in chat messages. Operators ignore this value."
+  "gamerule.doChatColours.description": "Whether normal players may use colours in chat messages. Operators ignore this value.",
+  "commands.data.item.query": "%s has the following item data: %s",
+  "commands.data.item.get": "%s on item stack %s after scale factor of %s is %s"
 }

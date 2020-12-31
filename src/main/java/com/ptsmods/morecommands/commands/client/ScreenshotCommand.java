@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.callbacks.RenderTickCallback;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.client.MixinWindow;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
@@ -30,14 +31,14 @@ public class ScreenshotCommand extends ClientCommand {
     private Map<String, Object> queue = null;
     private Map<String, Object> task = null;
 
-    private void init() {
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+    public void preinit() {
+        registerCallback(ClientTickEvents.END_CLIENT_TICK, client -> {
             if (queue != null) {
                 task = queue;
                 queue = null;
             }
         });
-        RenderTickCallback.POST.register(tick -> {
+        registerCallback(RenderTickCallback.POST, tick -> {
             if (task != null) {
                 long startTake = System.currentTimeMillis();
                 task.put("tries", (int) task.get("tries") + 1);
@@ -53,12 +54,12 @@ public class ScreenshotCommand extends ClientCommand {
                 Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.colorAttachment);
                 GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buf);
-                MoreCommands.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), (int) task.get("ogWidth"), (int) task.get("ogHeight"));
+                ReflectionHelper.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), (int) task.get("ogWidth"), (int) task.get("ogHeight"));
                 Map<String, Object> task = this.task;
                 this.task = null;
                 long takeTime = System.currentTimeMillis() - startTake;
                 MoreCommands.execute(() -> {
-                    sendMsg("Saving the screenshot, this may take a while depending on its dimensions…");
+                    sendMsg("Saving the screenshot, this may take a while depending on its dimensions...");
                     long start = System.currentTimeMillis();
                     try {
                         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -70,16 +71,8 @@ public class ScreenshotCommand extends ClientCommand {
                         String fileName = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss_" + task.get("width") + "'x'" + task.get("height") + ".'png'").format(new Date());
                         File out = Paths.get(MinecraftClient.getInstance().runDirectory.getAbsolutePath(), "screenshots", fileName).toFile();
                         ImageIO.write(img, "png", out);
-                        LiteralText text = new LiteralText("Saved screenshot as ");
-                        text.setStyle(DS);
-                        LiteralText text0 = new LiteralText(fileName);
-                        text0.setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath())));
-                        text.append(text0);
                         long saveTime = System.currentTimeMillis() - start;
-                        LiteralText text1 = new LiteralText(", took " + (saveTime / 1000 + takeTime / 1000) + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).");
-                        text1.setStyle(DS);
-                        text.append(text1);
-                        sendMsg(text);
+                        sendMsg(new LiteralText("Saved screenshot as ").setStyle(DS).append(new LiteralText(fileName).setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath())))).append(new LiteralText(", took " + (saveTime / 1000 + takeTime / 1000) + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).").setStyle(DS)));
                     } catch (IOException e) {
                         log.catching(e);
                         sendMsg(Formatting.RED + "An unknown error occurred while saving the image: " + SF + e.getMessage() + DF + ".");
@@ -103,7 +96,7 @@ public class ScreenshotCommand extends ClientCommand {
         int ogHeight = MinecraftClient.getInstance().getWindow().getHeight();
         if (width * height * 3 < 0) sendMsg(Formatting.RED + "The given dimensions are too big. The product of the width and height may at most be " + Integer.MAX_VALUE / 3 + " (product was " + (long) width * (long) height + ").");
         else {
-            Map<String, Object> task = new HashMap();
+            Map<String, Object> task = new HashMap<>();
             task.put("context", ctx);
             task.put("ogWidth", ogWidth);
             task.put("ogHeight", ogHeight);
@@ -111,7 +104,7 @@ public class ScreenshotCommand extends ClientCommand {
             task.put("height", height);
             task.put("tries", 0);
             queue = task;
-            MoreCommands.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), width, height);
+            ReflectionHelper.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), width, height);
         }
         return 1;
     }

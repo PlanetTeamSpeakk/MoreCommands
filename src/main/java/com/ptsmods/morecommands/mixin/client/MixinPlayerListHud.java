@@ -3,8 +3,8 @@ package com.ptsmods.morecommands.mixin.client;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.PlayerListHud;
@@ -45,7 +45,7 @@ public abstract class MixinPlayerListHud {
     protected void renderLatencyIcon(MatrixStack matrixStack, int i, int j, int k, PlayerListEntry playerListEntry, CallbackInfo cbi) {
         if (ClientOptions.Rendering.showExactLatency) {
             cbi.cancel();
-            PlayerListHud thiz = MoreCommands.cast(this);
+            PlayerListHud thiz = ReflectionHelper.cast(this);
             thiz.setZOffset(thiz.getZOffset() + 100);
             int latency = playerListEntry.getLatency();
             float p = latency < 0 ? 100f : Math.min(100f / 900f * Math.max(latency-100, 0), 100f);
@@ -58,7 +58,7 @@ public abstract class MixinPlayerListHud {
     @Overwrite
     public void render(MatrixStack matrixStack, int i, Scoreboard scoreboard, ScoreboardObjective scoreboardObjective) {
         MinecraftClient client = MinecraftClient.getInstance();
-        PlayerListHud thiz = MoreCommands.cast(this);
+        PlayerListHud thiz = ReflectionHelper.cast(this);
         ClientPlayNetworkHandler clientPlayNetworkHandler = client.player.networkHandler;
         List<PlayerListEntry> list = ENTRY_ORDERING.sortedCopy(clientPlayNetworkHandler.getPlayerList());
         int j = 0;

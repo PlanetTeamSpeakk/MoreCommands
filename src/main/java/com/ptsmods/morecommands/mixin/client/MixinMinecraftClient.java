@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.mixin.client;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.RenderTickCallback;
+import com.ptsmods.morecommands.commands.client.SearchCommand;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ServerInfo;
@@ -20,6 +21,7 @@ public class MixinMinecraftClient {
     public void disconnect(Screen screen, CallbackInfo cbi) {
         // Reset to defaults when leaving the world.
         MoreCommands.setFormattings(Formatting.GOLD, Formatting.YELLOW);
+        SearchCommand.lines.clear();
         MoreCommandsClient.updatePresence();
     }
 

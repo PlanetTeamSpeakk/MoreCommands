@@ -25,5 +25,5 @@ public class SignCommand extends Command {
             }
             return 0;
         }));
-    } // TODO finish this, add cache to ReflectionHelper and finish mappic stitching
+    }
 }

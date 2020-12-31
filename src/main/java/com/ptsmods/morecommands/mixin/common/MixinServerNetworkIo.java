@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.server.ServerNetworkIo;
@@ -29,7 +30,7 @@ public class MixinServerNetworkIo {
     public void tick() {
         synchronized (connections) {
             List<ClientConnection> connections = new ArrayList<>(this.connections);
-            if (MoreCommands.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.randomOrderPlayerTickRule)) Collections.shuffle(connections);
+            if (ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.randomOrderPlayerTickRule)) Collections.shuffle(connections);
             for (ClientConnection clientConnection : connections) {
                 if (clientConnection.hasChannel()) continue;
                 if (clientConnection.isOpen()) {

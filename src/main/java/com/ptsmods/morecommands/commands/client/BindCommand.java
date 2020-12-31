@@ -25,11 +25,17 @@ public class BindCommand extends ClientCommand {
     private static final Map<String, String> bindings = new HashMap<>();
     private static int record = 0;
 
-    private void init() throws IOException {
-        if (bindingsFile.exists()) bindings.putAll(MoreCommands.readJson(bindingsFile));
+    public void preinit() {
+        if (bindingsFile.exists()) {
+            try {
+                bindings.putAll(MoreCommands.readJson(bindingsFile));
+            } catch (IOException e) {
+                log.catching(e);
+            } catch (NullPointerException ignored) {}
+        }
         else saveData();
-        KeyCallback.EVENT.register((keyCode, scancode, action, mods) -> checkBind(keyCode, action));
-        MouseCallback.EVENT.register((button, action, mods) -> checkBind(button + GLFW.GLFW_KEY_LAST+1, action));
+        registerCallback(KeyCallback.EVENT, (keyCode, scancode, action, mods) -> checkBind(keyCode, action));
+        registerCallback(MouseCallback.EVENT, (button, action, mods) -> checkBind(button + GLFW.GLFW_KEY_LAST+1, action));
     }
 
     private boolean checkBind(int keyCode, int action) {

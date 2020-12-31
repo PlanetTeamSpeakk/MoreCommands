@@ -21,8 +21,8 @@ public class PtimeCommand extends ClientCommand {
         serverTime = (int) time;
     }
 
-    private void init() {
-        ClientTickEvents.START_WORLD_TICK.register(world -> {
+    public void preinit() {
+        registerCallback(ClientTickEvents.START_WORLD_TICK, world -> {
             if (isEnabled()) {
                 world.setTimeOfDay(fixed ? time : (time = (time+1) % 24000));
                 serverTime++;

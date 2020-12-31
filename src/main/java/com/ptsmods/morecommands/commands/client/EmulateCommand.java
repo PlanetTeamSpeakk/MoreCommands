@@ -63,13 +63,13 @@ public class EmulateCommand extends ClientCommand {
     private static final List<Integer> ignoreKeys = new ArrayList<>();
     private static final Object lock = new Object();
 
-    private void init() {
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+    public void preinit() {
+        registerCallback(ClientTickEvents.END_CLIENT_TICK, client -> {
             pendingTasks.forEach(EmulateTask::start);
             tasks.addAll(pendingTasks);
             pendingTasks.clear();
         });
-        MouseCallback.EVENT.register((button, action, mods) -> {
+        registerCallback(MouseCallback.EVENT, (button, action, mods) -> {
             if (!ignoreMouse)
                 // Remove all mouse tasks when the actual player presses a button on the mouse.
                 synchronized (lock) {
@@ -81,7 +81,7 @@ public class EmulateCommand extends ClientCommand {
                 }
             return ignoreMouse = false;
         });
-        KeyCallback.EVENT.register((key, scancode, action, mods) -> {
+        registerCallback(KeyCallback.EVENT, (key, scancode, action, mods) -> {
             if (ignoreKeys.contains(key))
                 synchronized (lock) {
                     tasks.removeIf(task -> {

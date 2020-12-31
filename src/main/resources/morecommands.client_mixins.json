@@ -24,7 +24,16 @@
     "MixinWindow",
     "MixinMouse",
     "MixinParticleManager",
-    "MixinSignEditScreen"
+    "MixinSignEditScreen",
+    "MixinCactusBlock",
+    "MixinAbstractBlock",
+    "MixinEntitySelector",
+    "MixinTextVisitFactory",
+    "MixinStyle",
+    "MixinBiome",
+    "MixinWorldRenderer",
+    "MixinInGameHud",
+    "MixinTitleScreen"
   ],
   "injectors": {
     "defaultRequire": 1

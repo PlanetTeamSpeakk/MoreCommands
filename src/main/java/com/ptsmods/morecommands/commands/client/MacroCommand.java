@@ -22,9 +22,15 @@ public class MacroCommand extends ClientCommand {
     private static final File file = new File("config/MoreCommands/macros.json");
     private final Map<String, List<String>> macros = new HashMap<>();
 
-    private void init() throws IOException {
+    public void preinit() {
         if (!file.exists()) saveData();
-        else macros.putAll(MoreCommands.readJson(file));
+        else {
+            try {
+                macros.putAll(MoreCommands.readJson(file));
+            } catch (IOException e) {
+                log.catching(e);
+            } catch (NullPointerException ignored) {}
+        }
     }
 
     @Override

@@ -7,6 +7,8 @@ import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
@@ -21,6 +23,7 @@ import net.fabricmc.fabric.api.event.network.S2CPacketTypeCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -46,8 +49,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 
     public static final Logger log = LogManager.getLogger();
     public static final ClientSidePacketRegistry CPR = ClientSidePacketRegistry.INSTANCE;
-    public static final KeyBinding toggleInfoHudBinding = new KeyBinding("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, "MoreCommands");;
+    public static final KeyBinding toggleInfoHudBinding = new KeyBinding("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");;
     private static double speed = 0d;
+    private static double avgSpeed = 0d;
+    private static final DoubleList lastSpeeds = new DoubleArrayList();
     private static EasterEggSound easterEggSound = null;
     public static final CommandDispatcher<ClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
     private static final Map<String, Integer> keys = new LinkedHashMap<>();
@@ -102,13 +107,19 @@ public class MoreCommandsClient implements ClientModInitializer {
                 double y = p.getY() - p.prevY;
                 double z = p.getZ() - p.prevZ;
                 speed = MathHelper.sqrt(x * x + y * y + z * z) * 20; // Apparently, Pythagoras' theorem does have some use. Who would've thunk?
+                lastSpeeds.add(speed);
+                if (lastSpeeds.size() > 20) lastSpeeds.removeDouble(0);
+                double speedSum = 0d;
+                for (double speed : lastSpeeds)
+                    speedSum += speed;
+                avgSpeed = speedSum / lastSpeeds.size();
             }
         });
         ClientCommandRegistrationCallback.EVENT.register(dispatcher -> {
             for (Class<? extends ClientCommand> cmd : MoreCommands.getCommandClasses("client", ClientCommand.class))
                 try {
                      MoreCommands.getInstance(cmd).cRegister(dispatcher);
-                } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                } catch (Exception e) {
                     log.catching(e);
                 }
         });
@@ -184,6 +195,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 
     public static double getSpeed() {
         return speed;
+    }
+
+    public static double getAvgSpeed() {
+        return avgSpeed;
     }
 
     public static int getKeyCodeForKey(String key) {

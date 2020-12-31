@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -32,11 +33,16 @@ public class WarpCommand extends Command {
     private final List<Warp> allWarps = new ArrayList<>();
     private final List<UUID> dirty = new ArrayList<>();
 
-    private void init(MinecraftServer server) {
-        File dir = new File("config/MoreCommands/warps/");
+    public void init(MinecraftServer server) {
+        File oldDir = new File("config/MoreCommands/warps/");
+        if (oldDir.exists()) {
+            for (File f : MoreObjects.firstNonNull(oldDir.listFiles(), new File[0]))
+                MoreCommands.tryMove(f.getAbsolutePath(), MoreCommands.getRelativePath() + "warps/" + f.getName());
+            oldDir.delete();
+        }
+        File dir = new File(MoreCommands.getRelativePath() + "warps/");
         if (!dir.exists()) dir.mkdirs();
-        File[] files = dir.listFiles();
-        for (File f : files == null ? new File[0] : files) {
+        for (File f : MoreObjects.firstNonNull(dir.listFiles(), new File[0])) {
             UUID owner = UUID.fromString(f.getName().split("\\.")[0]);
             Map<String, Map<String, ?>> data;
             try {
@@ -45,6 +51,7 @@ public class WarpCommand extends Command {
                 log.error("Unknown error while reading warps file of player " + owner + ".", e);
                 continue;
             }
+            if (data == null) data = new HashMap<>();
             List<Warp> warpList = new ArrayList<>();
             for (String name : data.keySet())
                 warpList.add(fromMap(server, name, owner, data.get(name)));
@@ -161,7 +168,7 @@ public class WarpCommand extends Command {
             if (getWarp(name) != null) sendMsg(ctx, Formatting.RED + "A warp by that name already exists, please delete it first.");
             else {
                 Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getMinecraftServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
-                sendMsg(ctx, "The warp has been created! You can teleport to with with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF + "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to use by only other operators with " + SF + "/limitwarp " + warp.getName() + DF + "." : ""));
+                sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF + "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to use by only other operators with " + SF + "/limitwarp " + warp.getName() + DF + "." : ""));
                 return 1;
             }
             return 0;
@@ -184,7 +191,7 @@ public class WarpCommand extends Command {
             if (warp == null) sendMsg(ctx, Formatting.RED + "A warp by that name could not be found.");
             else {
                 warp.setLimited(!warp.isLimited());
-                sendMsg(ctx, "The given warp is now " + formatFromBool(warp.isLimited(), "limited", "unlimited") + DF + ".");
+                sendMsg(ctx, "The given warp is now " + formatFromBool(warp.isLimited(), Formatting.GREEN + "limited", Formatting.RED + "unlimited") + DF + ".");
                 return 1;
             }
             return 0;

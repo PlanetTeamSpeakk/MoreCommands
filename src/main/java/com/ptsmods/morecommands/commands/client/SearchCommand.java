@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ChatHudLineWithContent;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
@@ -26,20 +27,9 @@ public class SearchCommand extends ClientCommand {
     public static Map<Integer, ChatHudLineWithContent> lines = new HashMap<>();
     public static ClickEvent.Action SCROLL_ACTION = null;
 
-    private void init() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void preinit() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (SCROLL_ACTION == null) {
-            Class<ClickEvent.Action> c = ClickEvent.Action.class;
-            Constructor<ClickEvent.Action> con = (Constructor<ClickEvent.Action>) c.getDeclaredConstructors()[0];
-            con.setAccessible(true);
-            Field constructorAccessorField = Constructor.class.getDeclaredField("constructorAccessor");
-            constructorAccessorField.setAccessible(true);
-            ConstructorAccessor ca = (ConstructorAccessor) constructorAccessorField.get(con);
-            if (ca == null) {
-                Method acquireConstructorAccessorMethod = Constructor.class.getDeclaredMethod("acquireConstructorAccessor");
-                acquireConstructorAccessorMethod.setAccessible(true);
-                ca = (ConstructorAccessor) acquireConstructorAccessorMethod.invoke(con);
-            }
-            SCROLL_ACTION = (ClickEvent.Action) ca.newInstance(new Object[] {"SCROLL", ClickEvent.Action.values().length, "scroll", false});
+            SCROLL_ACTION = ReflectionHelper.newEnumInstance(ClickEvent.Action.class, new Class[] {String.class, boolean.class}, "SCROLL", "scroll", false);
         }
     }
 

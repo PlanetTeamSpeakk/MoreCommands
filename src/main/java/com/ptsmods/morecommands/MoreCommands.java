@@ -31,6 +31,7 @@ import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Material;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
@@ -60,12 +61,15 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -74,8 +78,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sun.misc.Unsafe;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.URISyntaxException;
@@ -88,6 +90,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -124,7 +127,6 @@ public class MoreCommands implements ModInitializer {
 	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule;
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
-	public static final Map<UUID, List<String>> playerPerms = new HashMap<>();
 	public static final ServerSidePacketRegistry SPR = ServerSidePacketRegistry.INSTANCE;
 	public static final Block lockedChest = new Block(FabricBlockSettings.of(Material.WOOD));
 	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
@@ -147,37 +149,19 @@ public class MoreCommands implements ModInitializer {
 	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
+	public static final Formatting RAINBOW = Rainbow.RAINBOW;
 	private static final Executor executor = Executors.newCachedThreadPool();
-	private static Unsafe theUnsafe = null;
-	private static final Field childrenField, literalsField, argumentsField;
+	public static Unsafe theUnsafe = ReflectionHelper.getFieldValue(Unsafe.class, "theUnsafe", null);
 	private static Environment environment = null;
 
 	static {
-		try {
-			Field f = Unsafe.class.getDeclaredField("theUnsafe");
-			f.setAccessible(true);
-			theUnsafe = (Unsafe) f.get(null);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			log.catching(e);
-		}
-		childrenField = ReflectionHelper.getField(CommandNode.class, "children");
-		literalsField = ReflectionHelper.getField(CommandNode.class, "literals");
-		argumentsField = ReflectionHelper.getField(CommandNode.class, "arguments");
-		ScoreboardCriterion sc = null;
-		try {
-			Constructor<ScoreboardCriterion> struc = ScoreboardCriterion.class.getDeclaredConstructor(String.class, boolean.class, ScoreboardCriterion.RenderType.class);
-			struc.setAccessible(true);
-			sc = struc.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER);
-			ScoreboardCriterion.OBJECTIVES.put("latency", sc);
-		} catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-			log.catching(e);
-		}
-		LATENCY = sc;
+		LATENCY = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(ScoreboardCriterion.class, String.class, boolean.class, ScoreboardCriterion.RenderType.class)), "latency", true, ScoreboardCriterion.RenderType.INTEGER);
+		ScoreboardCriterion.OBJECTIVES.put("latency", LATENCY);
 	}
-
 
 	@Override
 	public void onInitialize() {
+		ReflectionHelper.setYarnFieldValue(Formatting.class, "FORMATTING_CODE_PATTERN", "field_1066", null, Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]"));
 		File dir = new File("config/MoreCommands");
 		if (!dir.exists()) dir.mkdirs();
 		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
@@ -191,7 +175,7 @@ public class MoreCommands implements ModInitializer {
 				try {
 					Command instance = getInstance(cmd);
 					if (!instance.forDedicated() || dedicated) instance.register(dispatcher);
-				} catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+				} catch (Exception e) {
 					log.catching(e);
 				}
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
@@ -250,6 +234,10 @@ public class MoreCommands implements ModInitializer {
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
 		List<Class<T>> classes = new ArrayList<>();
 		File jar = getJar();
+		if (jar == null) {
+			log.error("Could not find the jarfile of the mod, no commands will be registered.");
+			return classes;
+		}
 		try {
 			List<Path> classNames = new ArrayList<>();
 			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
@@ -267,7 +255,7 @@ public class MoreCommands implements ModInitializer {
 				String name = "com.ptsmods.morecommands.commands." + type + ("server".equals(type) ? "." + path.toFile().getParentFile().getName() : "") + "." + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.'));
 				try {
 					Class<?> clazz0 = Class.forName(name);
-					if (clazz.isAssignableFrom(clazz0)) classes.add((Class<T>) clazz0);
+					if (clazz.isAssignableFrom(clazz0)) classes.add(ReflectionHelper.cast(clazz0));
 				} catch (ClassNotFoundException e) {
 					log.error("Could not find class " + name, e);
 				}
@@ -282,7 +270,7 @@ public class MoreCommands implements ModInitializer {
 	static File getJar() {
 		File jar;
 		try {
-			jar = new File(((ModContainer) FabricLoader.getInstance().getModContainer("morecommands").get()).getOriginUrl().toURI().getPath());
+			jar = new File(((ModContainer) FabricLoader.getInstance().getModContainer("morecommands").orElseThrow(NullPointerException::new)).getOriginUrl().toURI().getPath());
 		} catch (URISyntaxException e) {
 			log.catching(e);
 			return null;
@@ -348,17 +336,13 @@ public class MoreCommands implements ModInitializer {
 		Constructor<T> con = cmd.getDeclaredConstructor();
 		con.setAccessible(true);
 		Command instance = con.newInstance();
-		Method m = ReflectionHelper.getMethod(instance.getClass(), "init");
-		if (m != null || (m = ReflectionHelper.getMethod(instance.getClass(), "init", MinecraftServer.class)) != null) {
-			try {
-				m.setAccessible(true);
-				Object[] args = m.getParameterCount() == 0 ? new Object[0] : new Object[] {serverInstance};
-				m.invoke(Modifier.isStatic(m.getModifiers()) ? null : instance, args);
-			} catch (Exception e) {
-				log.error("Error invoking initialisation method on class " + cmd.getName() + ".", e);
-			}
+		instance.setActiveInstance();
+		try {
+			instance.preinit();
+		} catch (Exception e) {
+			log.error("Error invoking pre-initialisation method on class " + cmd.getName() + ".", e);
 		}
-		return (T) instance;
+		return ReflectionHelper.cast(instance);
 	}
 
 	public static String textToString(Text text, Style parentStyle) {
@@ -501,14 +485,31 @@ public class MoreCommands implements ModInitializer {
 						nextChar();
 					String func = str.substring(startPos, pos);
 					x = parseFactor();
-					if (func.equals("sqrt")) x = Math.sqrt(x);
-					else if (func.equals("cbrt")) x = Math.cbrt(x);
-					else if (func.equals("sin")) x = Math.sin(Math.toRadians(x));
-					else if (func.equals("cos")) x = Math.cos(Math.toRadians(x));
-					else if (func.equals("tan")) x = Math.tan(Math.toRadians(x));
-					else if (func.equals("pi")) x = Math.PI * (x == 0D ? 1D : x);
-					else if (func.equals("!")) x = factorial(x);
-					else throw new RuntimeException("Unknown function: " + func);
+					switch (func) {
+						case "sqrt":
+							x = Math.sqrt(x);
+							break;
+						case "cbrt":
+							x = Math.cbrt(x);
+							break;
+						case "sin":
+							x = Math.sin(Math.toRadians(x));
+							break;
+						case "cos":
+							x = Math.cos(Math.toRadians(x));
+							break;
+						case "tan":
+							x = Math.tan(Math.toRadians(x));
+							break;
+						case "pi":
+							x = Math.PI * (x == 0D ? 1D : x);
+							break;
+						case "!":
+							x = factorial(x);
+							break;
+						default:
+							throw new RuntimeException("Unknown function: " + func);
+					}
 				} else if (ch != -1) throw new RuntimeException("Unexpected character: " + (char) ch);
 				else x = 0D;
 
@@ -604,7 +605,7 @@ public class MoreCommands implements ModInitializer {
 
 	public static <T> Registry<T> getRegistry(RegistryKey<T> key) {
 		try {
-			return (Registry<T>) getRootRegistry().get((RegistryKey<MutableRegistry<?>>) key);
+			return ReflectionHelper.cast(getRootRegistry().get(ReflectionHelper.<RegistryKey<MutableRegistry<?>>>cast(key)));
 		} catch (IllegalAccessException e) {
 			return null;
 		}
@@ -612,7 +613,7 @@ public class MoreCommands implements ModInitializer {
 
 	public static <T> RegistryKey<MutableRegistry<?>> getKey(MutableRegistry<T> registry) {
 		try {
-			return getRootRegistry().getKey(registry).get();
+			return getRootRegistry().getKey(registry).orElse(null);
 		} catch (IllegalAccessException e) {
 			log.info(e);
 		}
@@ -620,7 +621,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() throws IllegalAccessException {
-		return (MutableRegistry<MutableRegistry<?>>) ReflectionHelper.getYarnField(Registry.class, "ROOT", "field_25101").get(null);
+		return ReflectionHelper.getYarnFieldValue(Registry.class, "ROOT", "field_25101", null);
 	}
 
 	public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
@@ -629,15 +630,11 @@ public class MoreCommands implements ModInitializer {
 
 	public static <S> void removeNode(CommandNode<S> parent, CommandNode<S> child) {
 		if (parent.getChildren().contains(child)) {
-			try {
-				((Map<String, CommandNode<S>>) childrenField.get(parent)).remove(child.getName());
-				if (child instanceof LiteralCommandNode)
-					((Map<String, LiteralCommandNode<S>>) literalsField.get(parent)).remove(child);
-				else if (child instanceof ArgumentCommandNode)
-					((Map<String, ArgumentCommandNode<S, ?>>) argumentsField.get(parent)).remove(child);
-			} catch (IllegalAccessException e) {
-				log.catching(e);
-			}
+			Objects.requireNonNull(ReflectionHelper.<Map<String, CommandNode<S>>, Object>getFieldValue(CommandNode.class, "children", parent)).remove(child.getName());
+			if (child instanceof LiteralCommandNode)
+				Objects.requireNonNull(ReflectionHelper.<Map<String, LiteralCommandNode<S>>, Object>getFieldValue(CommandNode.class, "literals", parent)).remove(child.getName());
+			else if (child instanceof ArgumentCommandNode)
+				Objects.requireNonNull(ReflectionHelper.<Map<String, ArgumentCommandNode<S, ?>>, Object>getFieldValue(CommandNode.class, "arguments", parent)).remove(child.getName());
 		}
 	}
 
@@ -655,19 +652,14 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static Environment getEnvironment() {
-		if (environment == null)
-			try {
-				Method determineEnvironment = YggdrasilAuthenticationService.class.getDeclaredMethod("determineEnvironment");
-				determineEnvironment.setAccessible(true);
-				environment = (Environment) determineEnvironment.invoke(null);
-			} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-				log.catching(e);
-			}
+		if (environment == null) environment = ReflectionHelper.invokeMethod(YggdrasilAuthenticationService.class, "determineEnvironment", null, null);
 		return environment;
 	}
 
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
+		Command.doInitialisations(server);
+		log.info("MoreCommands data path: " + getRelativePath(server));
 	}
 
 	public static boolean isAprilFirst() {
@@ -693,13 +685,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static boolean isBoolean(String s) {
-		return s != null && ("true".equals(s.toLowerCase()) || "false".equals(s.toLowerCase()));
-	}
-
-	// For mixins :)
-	// Thanks to https://github.com/FabricMC/fabric/blob/1.16/fabric-events-lifecycle-v0/src/main/java/net/fabricmc/fabric/mixin/event/lifecycle/MixinMinecraftServer.java#L36
-	public static <T> T cast(Object o) {
-		return (T) o;
+		return "true".equalsIgnoreCase(s) || "false".equalsIgnoreCase(s);
 	}
 
 	public static String translateFormattings(String s) {
@@ -759,13 +745,13 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static <S> LiteralCommandNode<S> createAlias(String alias, LiteralCommandNode<S> node) {
-		LiteralCommandNode<S> node0 = new LiteralCommandNode<S>(alias, node.getCommand(), node.getRequirement(), node, ctx -> Collections.singletonList(ctx.getSource()), false);
+		LiteralCommandNode<S> node0 = new LiteralCommandNode<>(alias, node.getCommand(), node.getRequirement(), node, ctx -> Collections.singletonList(ctx.getSource()), false);
 		node.getChildren().forEach(node0::addChild);
 		return node0;
 	}
 
 	public static <T> T allocateInstance(Class<T> clazz) throws InstantiationException {
-		return (T) theUnsafe.allocateInstance(clazz);
+		return ReflectionHelper.cast(theUnsafe.allocateInstance(clazz));
 	}
 
 	public static void throwWithoutDeclaration(Throwable t) {
@@ -881,16 +867,28 @@ public class MoreCommands implements ModInitializer {
 		return sb.toString();
 	}
 
-	public static BufferedImage rotateClockwise90(BufferedImage src) {
-		int width = src.getWidth();
-		int height = src.getHeight();
-		BufferedImage dest = new BufferedImage(height, width, src.getType());
-		Graphics2D graphics2D = dest.createGraphics();
-		graphics2D.translate((height - width) / 2, (height - width) / 2);
-		graphics2D.rotate(Math.PI / 2, height / 2, width / 2);
-		graphics2D.drawRenderedImage(src, null);
+	public static VoxelShape getFluidShape(BlockState state) {
+		return VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8*(8-state.get(FluidBlock.LEVEL)), 1);
+	}
 
-		return dest;
+	public static String getRelativePath() {
+		return getRelativePath(serverInstance);
+	}
+	
+	public static String getRelativePath(MinecraftServer server) {
+		return server.getSavePath(WorldSavePath.ROOT).toAbsolutePath().toString() + File.separator + "MoreCommands" + File.separator;
+	}
+
+	public static void tryMove(String from, String to) {
+		try {
+			Files.move(Paths.get(from), Paths.get(to));
+		} catch (IOException e) {
+			log.catching(e);
+		}
+	}
+
+	public static boolean isSingleplayer() {
+		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
 	}
 
 }

@@ -70,8 +70,8 @@ public class MixinChatScreen {
         List<ChatHudLine> messages = null;
         int scrolledLines = -1;
         try {
-            visibleMessages = (List<ChatHudLine>) mc_visibleMessagesField.get(hud);
-            messages = (List<ChatHudLine>) mc_messagesField.get(hud);
+            visibleMessages = ReflectionHelper.getFieldValue(mc_visibleMessagesField, hud);
+            messages = ReflectionHelper.getFieldValue(mc_messagesField, hud);
             scrolledLines = mc_scrolledLinesField.getInt(hud);
         } catch (IllegalAccessException e) {
             MoreCommands.log.catching(e);
@@ -114,12 +114,7 @@ public class MixinChatScreen {
             }
             int id = Integer.parseInt(style.getClickEvent().getValue());
             List<ChatHudLine> messages;
-            try {
-                messages = (List<ChatHudLine>) mc_visibleMessagesField.get(chat);
-            } catch (IllegalAccessException e) {
-                log.catching(e);
-                return false;
-            }
+            messages = ReflectionHelper.getFieldValue(mc_visibleMessagesField, chat);
             int index = -1;
             for (int i = 0; i < messages.size(); i++)
                 if (messages.get(i).getId() == id) {

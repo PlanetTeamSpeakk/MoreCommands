@@ -10,6 +10,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.CommandsRegisteredCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -26,12 +27,20 @@ public class DisableCommand extends Command {
     private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");;
     private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
     private final List<String> disabledPaths = new ArrayList<>();
-    private static final File file = new File("config/MoreCommands/disabled.json");
+    private static File file = null;
 
-    private void init() throws IOException {
+    public void init(MinecraftServer server) {
+        if (new File("config/MoreCommands/disabled.json").exists()) MoreCommands.tryMove("config/MoreCommands/disabled.json", MoreCommands.getRelativePath() + "disabled.json");
+        file = new File(MoreCommands.getRelativePath() + "disabled.json");
         if (!file.exists()) saveData();
-        else disabledPaths.addAll(MoreCommands.readJson(file));
-        CommandsRegisteredCallback.EVENT.register(dispatcher -> {
+        else {
+            try {
+                disabledPaths.addAll(MoreCommands.readJson(file));
+            } catch (IOException e) {
+                log.catching(e);
+            } catch (NullPointerException ignored) {}
+        }
+        registerCallback(CommandsRegisteredCallback.EVENT, dispatcher -> {
             disabledCommands.clear();
             disabledPaths.forEach(path -> {
                 String[] parts = path.split("\\.");
@@ -66,7 +75,6 @@ public class DisableCommand extends Command {
         CommandNode<ServerCommandSource> node = nodes.get(nodes.size()-1);
         String path = getPath(nodes);
         if (disabledCommands.containsKey(path)) {
-            log.info("removing " + path);
             disabledPaths.remove(path);
             setCommand(node, disabledCommands.remove(path));
             disableChildren(path, node, update);
@@ -74,7 +82,6 @@ public class DisableCommand extends Command {
             return false;
         } else {
             if (update) {
-                log.info("adding " + path);
                 disabledPaths.add(path);
                 saveData();
             }
@@ -92,22 +99,18 @@ public class DisableCommand extends Command {
         StringBuilder path = new StringBuilder();
         for (CommandNode<ServerCommandSource> node : nodes)
             path.append('.').append(node.getName());
-        return path.toString().substring(1);
+        return path.substring(1);
     }
 
     private void disableChildren(String parentPath, CommandNode<ServerCommandSource> parent, boolean update) {
         for (CommandNode<ServerCommandSource> child : parent.getChildren()) {
             String path = parentPath + "." + child.getName();
             if (disabledCommands.containsKey(path)) {
-                log.info("removing " + path);
                 disabledPaths.remove(path);
                 setCommand(child, disabledCommands.remove(path));
             }
             else {
-                if (update) {
-                    log.info("adding " + path);
-                    disabledPaths.add(path);
-                }
+                if (update) disabledPaths.add(path);
                 disabledCommands.put(path, child.getCommand());
                 if (child.getCommand() != null) setCommand(child, createDisabledCommand(child.getCommand()));
             }
@@ -131,10 +134,6 @@ public class DisableCommand extends Command {
     }
 
     private void setCommand(CommandNode<ServerCommandSource> node, com.mojang.brigadier.Command<ServerCommandSource> cmd) {
-        try {
-            commandField.set(node, cmd);
-        } catch (IllegalAccessException e) {
-            log.catching(e);
-        }
+        ReflectionHelper.setFieldValue(commandField, node, cmd);
     }
 }

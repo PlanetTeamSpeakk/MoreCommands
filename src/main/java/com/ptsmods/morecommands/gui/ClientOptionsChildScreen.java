@@ -11,11 +11,9 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.StringRenderable;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 
 import java.lang.reflect.Field;
@@ -34,6 +32,9 @@ public class ClientOptionsChildScreen extends Screen {
     private final Class<?> c;
     private final Map<AbstractButtonWidget, Field> btnFields = new HashMap<>();
     private final ClientOptionsScreen parent;
+    private final List<List<Pair<AbstractButtonWidget, Field>>> pages = new ArrayList<>();
+    private ButtonWidget seekLeft = null, seekRight = null;
+    private int page = 0;
 
     ClientOptionsChildScreen(ClientOptionsScreen parent, Class<?> c) {
         super(new LiteralText("MoreCommands").setStyle(MoreCommands.DS).append(new LiteralText(" client options").setStyle(MoreCommands.SS)).append(new LiteralText(" " + getCleanName(c.getSimpleName()).trim()).setStyle(Style.EMPTY.withFormatting(Formatting.WHITE))));
@@ -42,21 +43,34 @@ public class ClientOptionsChildScreen extends Screen {
     }
 
     protected void init() {
+        btnFields.clear();
+        buttons.clear();
+        pages.clear();
         boolean right = false;
         int row = 0;
+        List<Pair<AbstractButtonWidget, Field>> page = new ArrayList<>();
         for (Field f : c.getFields()) {
-            if (Modifier.isFinal(f.getModifiers())) continue; // There are none rn, but just in case I want to make a public field that is not a setting, I can do that by making it final.
+            if (Modifier.isFinal(f.getModifiers()) || isHidden(f)) continue;
+            if (page.size() == 10) {
+                pages.add(page);
+                page = new ArrayList<>();
+                right = false;
+                row = 0;
+            }
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24*(row+1) - 6;
+            AbstractButtonWidget btn = null;
             if (f.getType() == boolean.class)
-                btnFields.put(addButton(new ButtonWidget(x, y, 150, 20, getBoolText(f), button -> {
+                btn = addButton(new ButtonWidget(x, y, 150, 20, getBoolText(f), button -> {
                     boolean oldValue = getBoolValue(f);
                     setValue(f, !getBoolValue(f));
                     checkChangeCallback(f, oldValue);
                     button.setMessage(getBoolText(f));
-                })), f);
+                    parent.init();
+                    init();
+                }));
             else if (f.getType() == int.class)
-                btnFields.put(addButton(new SliderWidget(x, y, 150, 20, new LiteralText(getCleanName(f) + " : " + getIntValue(f)), getSliderValue(f)) {
+                btn = addButton(new SliderWidget(x, y, 150, 20, new LiteralText(getCleanName(f) + " : " + getIntValue(f)), getSliderValue(f)) {
                     @Override
                     protected void updateMessage() {
                         setMessage(new LiteralText(getCleanName(f) + " : " + getIntValue(f)));
@@ -74,11 +88,41 @@ public class ClientOptionsChildScreen extends Screen {
                         setValue(f, (int) MathHelper.lerp(value, cramp[0], cramp[1]));
                         checkChangeCallback(f, oldValue);
                     }
-                }), f);
+                });
+            if (btn != null) {
+                page.add(new Pair<>(btn, f));
+                btnFields.put(btn, f);
+            }
             if (right) row++;
             right = !right;
         }
-        addButton(new ButtonWidget(width / 2 - 100, height / 6 + 168, 200, 20, ScreenTexts.DONE, (buttonWidget) -> client.openScreen(this.parent)));
+        if (!page.isEmpty()) pages.add(page);
+        if (pages.size() > 1) {
+            seekLeft = addButton(new ButtonWidget(width / 4 - 30, height / 6 + 145, 120, 20, new LiteralText("<---"), button -> {
+                this.page -= 1;
+                updatePage();
+            }) {
+                @Override
+                protected MutableText getNarrationMessage() {
+                    return new TranslatableText("gui.narrate.button", new LiteralText("previous page"));
+                }
+            });
+            seekRight = addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 145, 120, 20, new LiteralText("--->"), button -> {
+                this.page += 1;
+                updatePage();
+            }) {
+                @Override
+                protected MutableText getNarrationMessage() {
+                    return new TranslatableText("gui.narrate.button", new LiteralText("next page"));
+                }
+            });
+        }
+        updatePage();
+        addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), button -> {
+            ClientOptions.reset();
+            init();
+        }));
+        addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> client.openScreen(this.parent)));
     }
 
     @Override
@@ -87,9 +131,10 @@ public class ClientOptionsChildScreen extends Screen {
         drawCenteredText(matrices, client.textRenderer, getTitle(), width / 2, 10, 0);
         super.render(matrices, mouseX, mouseY, delta);
         btnFields.forEach((btn, field) -> {
-            if (btn.isMouseOver(mouseX, mouseY) && getComment(field) != null) {
+            String[] comment;
+            if (btn.isMouseOver(mouseX, mouseY) && (comment = getComment(field)) != null) {
                 List<StringRenderable> texts = new ArrayList<>();
-                for (String s : getComment(field))
+                for (String s : comment)
                     texts.add(new LiteralText(s));
                 renderTooltip(matrices, texts, mouseX, mouseY);
             }
@@ -99,6 +144,17 @@ public class ClientOptionsChildScreen extends Screen {
     @Override
     public void onClose() {
         client.openScreen(parent);
+    }
+
+    private void updatePage() {
+        if (pages.size() > 1) {
+            seekLeft.active = page > 0;
+            seekRight.active = page < pages.size() - 1;
+            for (AbstractButtonWidget btn : btnFields.keySet())
+                btn.visible = false;
+            for (Pair<AbstractButtonWidget, Field> pair : pages.get(page))
+                pair.getLeft().visible = true;
+        }
     }
 
     private String getCleanName(Field f) {
@@ -176,6 +232,10 @@ public class ClientOptionsChildScreen extends Screen {
 
     private String[] getComment(Field f) {
         return f.isAnnotationPresent(ClientOptions.Comment.class) ? f.getAnnotation(ClientOptions.Comment.class).value() : null;
+    }
+
+    private boolean isHidden(Field f) {
+        return f.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOption(f.getAnnotation(ClientOptions.IsHidden.class).value()));
     }
 
     private void checkChangeCallback(Field f, Object oldValue) {

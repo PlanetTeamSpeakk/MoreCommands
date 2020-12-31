@@ -19,12 +19,12 @@ import java.util.UUID;
 
 public class PowerToolCommand extends Command {
 
-    private void init() {
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-        AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> toResult(checkPowerTool(player, world, hand), false));
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-        UseItemCallback.EVENT.register((player, world, hand) -> toTypedResult(checkPowerTool(player, world, hand), world.isClient, player, hand));
+    public void preinit() {
+        registerCallback(AttackEntityCallback.EVENT, (player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
+        registerCallback(AttackBlockCallback.EVENT, (player, world, hand, pos, direction) -> toResult(checkPowerTool(player, world, hand), world.isClient));
+        registerCallback(UseBlockCallback.EVENT, (player, world, hand, hitResult) -> toResult(checkPowerTool(player, world, hand), false));
+        registerCallback(UseEntityCallback.EVENT, (player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
+        registerCallback(UseItemCallback.EVENT, (player, world, hand) -> toTypedResult(checkPowerTool(player, world, hand), world.isClient, player, hand));
     }
 
     private ActionResult toResult(boolean b, boolean isClient) {

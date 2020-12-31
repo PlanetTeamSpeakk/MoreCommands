@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
+import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
@@ -16,7 +17,7 @@ public class MixinFluidBlock {
 
     @Overwrite
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return ClientOptions.Tweaks.targetFluids ? VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8*(8-state.get(FluidBlock.LEVEL)), 1) : VoxelShapes.empty();
+        return ClientOptions.Tweaks.targetFluids ? MoreCommands.getFluidShape(state) : VoxelShapes.empty();
     }
 
 }

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -18,12 +19,12 @@ public class MixinServerPlayerEntity {
 
     @Overwrite
     public Text getPlayerListName() {
-        return MoreCommands.<ServerPlayerEntity>cast(this).getDisplayName();
+        return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
     }
 
     @Inject(at = @At("HEAD"), method = "playerTick()V")
     public void playerTick(CallbackInfo cbi) {
-        ServerPlayerEntity thiz = MoreCommands.cast(this);
+        ServerPlayerEntity thiz = ReflectionHelper.cast(this);
         if (thiz.pingMilliseconds != mc_lastPing) {
             mc_lastPing = thiz.pingMilliseconds;
             updateScores(MoreCommands.LATENCY, mc_lastPing);

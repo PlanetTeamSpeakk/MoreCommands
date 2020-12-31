@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.UnlimitedCommand;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.item.ItemStack;
@@ -19,7 +19,7 @@ public class MixinItemRenderer {
             if (countLabel != null) countLabel = countLabel.replace("" + stack.getCount(), "111");
             else countLabel = "111";
             cbi.cancel();
-            MoreCommands.<ItemRenderer>cast(this).renderGuiItemOverlay(renderer, stack, x, y, countLabel);
+            ReflectionHelper.<ItemRenderer>cast(this).renderGuiItemOverlay(renderer, stack, x, y, countLabel);
         }
     }
 

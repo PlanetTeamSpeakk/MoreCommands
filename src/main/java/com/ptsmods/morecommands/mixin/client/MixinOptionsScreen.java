@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.gui.ClientOptionsScreen;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.options.OptionsScreen;
@@ -23,7 +24,7 @@ public class MixinOptionsScreen extends Screen {
 
     @Inject(at = @At("TAIL"), method = "init()V")
     public void init(CallbackInfo cbi) {
-        OptionsScreen thiz = MoreCommands.cast(this);
+        OptionsScreen thiz = ReflectionHelper.cast(this);
         int x, y;
         //  under accessibility settings                                                  under resourcepacks
         if (getButtonAt(x = this.width / 2 + 5, y = this.height / 6 + 144 - 6) != null && getButtonAt(x = this.width / 2 - 155, y) != null) {

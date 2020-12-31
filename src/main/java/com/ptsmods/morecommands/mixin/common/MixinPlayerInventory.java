@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.PickaxeItem;
@@ -14,7 +15,7 @@ public class MixinPlayerInventory {
 
     @Inject(at = @At("RETURN"), method = "getBlockBreakingSpeed(Lnet/minecraft/block/BlockState;)F")
     public float getBlockBreakingSpeed(BlockState block, CallbackInfoReturnable<Float> cbi) {
-        PlayerInventory thiz = MoreCommands.<PlayerInventory>cast(this);
+        PlayerInventory thiz = ReflectionHelper.<PlayerInventory>cast(this);
         if (thiz.main.get(thiz.selectedSlot).getItem() instanceof PickaxeItem && thiz.player.getDataTracker().get(MoreCommands.SUPERPICKAXE)) return Float.MAX_VALUE;
         else return cbi.getReturnValue();
     }

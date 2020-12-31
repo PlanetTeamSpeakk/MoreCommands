@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.server.command.ServerCommandSource;
 
 import java.lang.reflect.Field;
@@ -12,15 +13,7 @@ import java.lang.reflect.Modifier;
 
 public class GmCommand extends Command {
 
-    private Field literalField = null;
-
-    private void init() throws Exception {
-        literalField = LiteralArgumentBuilder.class.getDeclaredField("literal");
-        literalField.setAccessible(true);
-        Field modifiers = Field.class.getDeclaredField("modifiers");
-        modifiers.setAccessible(true);
-        modifiers.set(literalField, literalField.getModifiers() & ~Modifier.FINAL);
-    }
+    private final Field literalField = ReflectionHelper.getField(LiteralArgumentBuilder.class, "literal");
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -32,11 +25,7 @@ public class GmCommand extends Command {
     }
 
     private LiteralArgumentBuilder<ServerCommandSource> setLiteral(LiteralArgumentBuilder<ServerCommandSource> builder, String literal) {
-        try {
-            literalField.set(builder, literal);
-        } catch (IllegalAccessException e) {
-            log.catching(e);
-        }
+        ReflectionHelper.setFieldValue(literalField, builder, literal);
         return builder;
     }
 

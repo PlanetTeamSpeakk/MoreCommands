@@ -48,7 +48,7 @@ public class MixinSignEditScreen {
 
     @Inject(at = @At("RETURN"), method = "init()V")
     private void init(CallbackInfo cbi) {
-        SignEditScreen thiz = MoreCommands.cast(this);
+        SignEditScreen thiz = ReflectionHelper.cast(this);
         try {
             mc_addButtonMethod.invoke(thiz, mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, new LiteralText("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
                 mc_translateFormattings = !mc_translateFormattings;

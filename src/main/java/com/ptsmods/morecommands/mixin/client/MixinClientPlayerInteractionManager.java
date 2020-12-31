@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.enums.DoorHinge;
@@ -114,10 +115,15 @@ public class MixinClientPlayerInteractionManager {
             BlockState state0 = world.getBlockState(other);
             if (BlockTags.WOODEN_DOORS.contains(state0.getBlock()) && state0.get(DoorBlock.FACING) == state.get(DoorBlock.FACING) && state0.get(DoorBlock.HINGE) != state.get(DoorBlock.HINGE) && state0.get(DoorBlock.OPEN) != state.get(DoorBlock.OPEN)) { // Open must not be equal cuz the other door already got opened at this stage.
                 mc_ignore = true;
-                MoreCommands.<ClientPlayerInteractionManager>cast(this).interactBlock(player, world, hand, new BlockHitResult(pos, hitResult.getSide(), other, hitResult.isInsideBlock()));
+                ReflectionHelper.<ClientPlayerInteractionManager>cast(this).interactBlock(player, world, hand, new BlockHitResult(pos, hitResult.getSide(), other, hitResult.isInsideBlock()));
             }
         }
         return cbi.getReturnValue();
+    }
+
+    @Inject(at = @At("RETURN"), method = "isFlyingLocked()Z")
+    public boolean isFlyingLocked(CallbackInfoReturnable<Boolean> cbi) {
+        return cbi.getReturnValueZ() || ClientOptions.Tweaks.lockFlying;
     }
 
 }

@@ -19,14 +19,18 @@ import java.util.Map;
 public class AliasCommand extends ClientCommand {
 
     private static final File aliasesFile = new File("config/MoreCommands/aliases.json");
-    private Map<String, String> aliases = new HashMap<>();
+    private final Map<String, String> aliases = new HashMap<>();
 
-    private void init() throws IOException {
+    public void preinit() {
         if (aliasesFile.exists()) {
-            aliases.putAll(MoreCommands.readJson(aliasesFile));
+            try {
+                aliases.putAll(MoreCommands.readJson(aliasesFile));
+            } catch (IOException e) {
+                log.catching(e);
+            } catch (NullPointerException ignored) {}
             aliases.keySet().forEach(this::register);
         } else saveData();
-        ChatMessageSendCallback.EVENT.register(message -> aliases.getOrDefault(message == null ? null : message.substring(1).split(" ")[0], message));
+        registerCallback(ChatMessageSendCallback.EVENT, message -> aliases.getOrDefault(message == null ? null : message.substring(1).split(" ")[0], message));
     }
 
     @Override

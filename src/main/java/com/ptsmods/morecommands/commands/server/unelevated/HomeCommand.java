@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -22,17 +23,25 @@ import java.util.stream.Collector;
 
 public class HomeCommand extends Command {
 
-    private static final File dataFile = new File("config/MoreCommands/homes.json");
-    private Map<UUID, List<Home>> homes = new HashMap<>();
+    private static File dataFile = null;
+    private final Map<UUID, List<Home>> homes = new HashMap<>();
 
-    private void init() throws IOException {
-        Map<String, Map<String, Map<String, Object>>> data = MoreCommands.readJson(dataFile);
-        if (data == null) return;
-        data.entrySet().forEach(entry -> {
-            List<Home> homes = new ArrayList<>();
-            entry.getValue().entrySet().forEach(entry0 -> homes.add(Home.fromMap(entry0)));
-            this.homes.put(UUID.fromString(entry.getKey()), homes);
-        });
+    public void init(MinecraftServer server) {
+        if (new File("config/MoreCommands/homes.json").exists()) MoreCommands.tryMove("config/MoreCommands/homes.json", MoreCommands.getRelativePath() + "homes.json");
+        dataFile = new File(MoreCommands.getRelativePath() + "homes.json");
+        Map<String, Map<String, Map<String, Object>>> data = null;
+        try {
+            data = MoreCommands.readJson(dataFile);
+        } catch (IOException e) {
+            log.catching(e);
+        } catch (NullPointerException ignored) {}
+        homes.clear();
+        if (data != null)
+            data.forEach((key, value) -> {
+                List<Home> homes = new ArrayList<>();
+                value.entrySet().forEach(entry0 -> homes.add(Home.fromMap(entry0)));
+                this.homes.put(UUID.fromString(key), homes);
+            });
     }
 
     @Override

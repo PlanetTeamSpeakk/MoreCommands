@@ -6,11 +6,13 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
+import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)
 public class MixinClientPlayerEntity {
+
+    private boolean mc_moveStopped = false;
 
     @Inject(at = @At("HEAD"), method = "sendChatMessage(Ljava/lang/String;)V", cancellable = true)
     public void sendChatMessage(String message, CallbackInfo cbi) {
@@ -34,12 +38,11 @@ public class MixinClientPlayerEntity {
             if (MoreCommandsClient.clientCommandDispatcher.getRoot().getChild(message.substring(1).split(" ")[0]) != null) {
                 cbi.cancel();
                 try {
-                    MoreCommandsClient.clientCommandDispatcher.execute(reader, MinecraftClient.getInstance().player.networkHandler.getCommandSource());
+                    MoreCommandsClient.clientCommandDispatcher.execute(reader, ReflectionHelper.<ClientPlayerEntity>cast(this).networkHandler.getCommandSource());
                 } catch (CommandSyntaxException e) {
-                    ClientCommand.sendMsg(new LiteralText(e.getMessage()));
+                    ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
                 } catch (Exception e) {
-                    LiteralText msg = new LiteralText("Unknown or incomplete command, see below for error.");
-                    msg.setStyle(Style.EMPTY.withFormatting(Formatting.RED));
+                    Text msg = new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED));
                     ClientCommand.sendMsg(msg);
                     MoreCommands.log.catching(e);
                 }
@@ -48,8 +51,25 @@ public class MixinClientPlayerEntity {
         }
         if (!message.equals(oldMessage)) {
             cbi.cancel();
-            MoreCommands.<ClientPlayerEntity>cast(this).networkHandler.sendPacket(new ChatMessageC2SPacket(message));
+            ReflectionHelper.<ClientPlayerEntity>cast(this).networkHandler.sendPacket(new ChatMessageC2SPacket(message));
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "pushOutOfBlocks(DDD)V", cancellable = true)
+    protected void pushOutOfBlocks(double x, double y, double z, CallbackInfo cbi) {
+        if (!ClientOptions.Tweaks.doBlockPush) cbi.cancel();
+    }
+
+    @Inject(at = @At("HEAD"), method = "tickMovement()V")
+    private void tickMovement(CallbackInfo cbi) {
+        ClientPlayerEntity thiz = ReflectionHelper.cast(this);
+        if (!thiz.input.sneaking && !thiz.input.jumping) {
+            if (!mc_moveStopped && ClientOptions.Tweaks.immediateMoveStop) {
+                thiz.setVelocity(thiz.getVelocity().getX(), Math.min(0d, thiz.getVelocity().getY()), thiz.getVelocity().getZ());
+                mc_moveStopped = true; // Without this variable, you would be able to bhop by combining sprintAutoJump and immediateMoveStop and immediateMoveStop would also act as anti-kb.
+            }
+        } else mc_moveStopped = false;
+        if (ClientOptions.Cheats.sprintAutoJump && MoreCommands.isSingleplayer() && thiz.isSprinting() && (thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking()) thiz.jump();
     }
 
 }

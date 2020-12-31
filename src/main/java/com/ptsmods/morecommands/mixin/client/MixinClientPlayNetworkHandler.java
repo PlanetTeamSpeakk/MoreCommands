@@ -3,25 +3,31 @@ package com.ptsmods.morecommands.mixin.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.callbacks.PlayerListCallback;
 import com.ptsmods.morecommands.commands.client.PtimeCommand;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
 import com.ptsmods.morecommands.commands.client.PweatherCommand;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.s2c.play.CommandTreeS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import net.minecraft.server.command.CommandSource;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class MixinClientPlayNetworkHandler {
 
-    @Shadow
-    private CommandDispatcher<CommandSource> commandDispatcher;
+    @Shadow private CommandDispatcher<CommandSource> commandDispatcher;
     private boolean mc_isInitialised = false;
 
     @Inject(at = @At("TAIL"), method = "onCommandTree(Lnet/minecraft/network/packet/s2c/play/CommandTreeS2CPacket;)V")
@@ -63,6 +69,20 @@ public class MixinClientPlayNetworkHandler {
                 cbi.cancel();
             }
         }
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map; remove(Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
+    public Object onPlayerList_remove(Map<?, ?> map, Object key) {
+        Object entry = map.remove(key);
+        PlayerListCallback.REMOVE.invoker().call((PlayerListEntry) entry);
+        return entry;
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map; put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
+    public Object onPlayerList_put(Map<Object, Object> map, Object key, Object value) {
+        map.put(key, value);
+        PlayerListCallback.ADD.invoker().call((PlayerListEntry) value);
+        return value;
     }
 
 }

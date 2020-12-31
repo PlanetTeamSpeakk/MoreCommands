@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
+import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -17,11 +18,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static com.ptsmods.morecommands.MoreCommands.*;
@@ -34,8 +33,13 @@ public abstract class Command {
     public static Style SS = MoreCommands.SS;
     public static final Logger log = MoreCommands.log;
     public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getMinecraftServer().getOpPermissionLevel());
+    private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
 
-    public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher);
+    public void preinit() throws Exception {}
+
+    public void init(MinecraftServer server) throws Exception {}
+
+    public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
 
     public boolean forDedicated() {
         return false;
@@ -51,7 +55,7 @@ public abstract class Command {
     }
 
     static String fixResets(String s) {
-        return s.replaceAll(Formatting.RESET.toString(), Formatting.RESET.toString() + DF).replaceAll("\n", "\n" + DF);
+        return s.replace(Formatting.RESET.toString(), Formatting.RESET.toString() + DF).replaceAll("\n", "\n" + DF);
     }
 
     public static int sendMsg(Entity entity, String msg) {
@@ -85,7 +89,7 @@ public abstract class Command {
     public static String translateFormats(String s) {
         for (Formatting f : Formatting.values())
             s = s.replaceAll("&" + getChar(f), f.toString());
-        return s;
+        return s.replaceAll("&#", "\u00A7#");
     }
 
     public static String joinNicely(Collection<String> strings) {
@@ -114,11 +118,59 @@ public abstract class Command {
     }
 
     public static boolean isOp(CommandContext<ServerCommandSource> ctx) {
-        return ctx.getSource().hasPermissionLevel(ctx.getSource().getMinecraftServer().getOpPermissionLevel());
+        return IS_OP.test(ctx.getSource());
+    }
+
+    public void setActiveInstance() {
+        activeInstances.put(getClass(), this);
+    }
+
+    protected boolean isActiveInstance() {
+        return activeInstances.get(getClass()) == this;
     }
 
     public static UUID getServerUuid(MinecraftServer server) {
         return UUID.nameUUIDFromBytes(server.getCommandSource().getName().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static void doInitialisations(MinecraftServer server) {
+        for (Command cmd : activeInstances.values())
+            try {
+                cmd.init(server);
+            } catch (Exception e) {
+                log.error("Error invoking initialisation method on class " + cmd.getClass().getName() + ".", e);
+            }
+    }
+
+    // I made the dumb mistake to register callbacks in the init method of commands even though
+    // every command class gets initialised again whenever a server loads so also whenever you
+    // join a new world.
+    // Which means that exiting and joining a world would cause the same callback to be
+    // registered twice.
+    protected <T> void registerCallback(Event<T> event, T callback) {
+        if (callback.getClass().getInterfaces().length == 0) log.error("Tried to register callback " + callback + " for event " + event + ", but it did not implement an interface.");
+        else {
+            Class<?> inter = callback.getClass().getInterfaces()[0];
+            T proxy = ReflectionHelper.cast(Proxy.newProxyInstance(inter.getClassLoader(), new Class[] {inter}, (proxyObj, method, args) -> {
+                if (isActiveInstance())
+                    return method.invoke(callback, args);
+                switch (method.getReturnType().getName()) {
+                    case "byte":
+                    case "char":
+                    case "double":
+                    case "float":
+                    case "int":
+                    case "long":
+                    case "short":
+                        return 0;
+                    case "boolean":
+                        return false;
+                    default:
+                        return null;
+                }
+            }));
+            event.register(proxy);
+        }
     }
 
 }

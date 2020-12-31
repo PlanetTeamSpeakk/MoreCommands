@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -45,14 +45,14 @@ public abstract class MixinItemStack {
 
     @Inject(at = @At("RETURN"), method = "getTranslationKey()Ljava/lang/String;")
     public String getTranslationKey(CallbackInfoReturnable<String> cbi) {
-        ItemStack thiz = MoreCommands.cast(this);
+        ItemStack thiz = ReflectionHelper.cast(this);
         if (thiz.getItem() == Items.SPAWNER) return "block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new Identifier(thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultId()).getTranslationKey();
         else return cbi.getReturnValue();
     }
 
     @Inject(at = @At("TAIL"), method = "getName()Lnet/minecraft/text/Text;")
     public Text getName(CallbackInfoReturnable<Text> cbi) {
-        ItemStack thiz = MoreCommands.cast(this);
+        ItemStack thiz = ReflectionHelper.cast(this);
         CompoundTag compoundTag = thiz.getSubTag("display");
         if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER) return new TranslatableText(thiz.getTranslationKey()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW));
         return cbi.getReturnValue();
@@ -60,7 +60,7 @@ public abstract class MixinItemStack {
 
     @Inject(at = @At("RETURN"), method = "hasGlint()Z")
     public boolean hasGlint(CallbackInfoReturnable<Boolean> cbi) {
-        return ClientOptions.Rendering.powertoolsGlint && PowerToolCommand.isPowerTool(MoreCommands.cast(this)) || cbi.getReturnValue();
+        return ClientOptions.Rendering.powertoolsGlint && PowerToolCommand.isPowerTool(ReflectionHelper.cast(this)) || cbi.getReturnValue();
     }
 
 }

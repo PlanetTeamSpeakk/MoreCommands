@@ -186,10 +186,22 @@ public class MapPicCommand extends ClientCommand {
             if (mcolour != MaterialColor.CLEAR) img.setRGB(i % dim, i / dim, getRGB(mcolour, ac));
         }
         while (rotation != 0) {
-            img = MoreCommands.rotateClockwise90(img);
+            img = rotateClockwise90(img);
             rotation -= 1;
         }
         return img;
+    }
+
+    private BufferedImage rotateClockwise90(BufferedImage src) {
+        int height = src.getWidth();
+        int width = src.getHeight();
+        BufferedImage dest = new BufferedImage(width, height, src.getType());
+        Graphics2D g = dest.createGraphics();
+        g.translate((height - width) / 2, (height - width) / 2);
+        g.rotate(Math.PI / 2, height / 2f, width / 2f);
+        g.drawRenderedImage(src, null);
+        g.dispose();
+        return dest;
     }
 
     private int getRGB(MaterialColor color, int shade) {

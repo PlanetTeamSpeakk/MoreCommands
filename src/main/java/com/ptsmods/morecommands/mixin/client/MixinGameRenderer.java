@@ -19,7 +19,6 @@ public class MixinGameRenderer {
 
     @Shadow @Final private MinecraftClient client;
 
-    //@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager; getReachDistance()F"), method = "updateTargetedEntity(F)V")
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
     public double updateTargetedEntity_d(double d) {
         return ReachCommand.getReach(client.player, false);

@@ -3,7 +3,9 @@ package com.ptsmods.morecommands.mixin.common;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import com.ptsmods.morecommands.miscellaneous.SpeedType;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,7 +37,7 @@ public abstract class MixinPlayerEntity {
 
     @Inject(at = @At("HEAD"), method = "initDataTracker()V")
     public void initDataTracker(CallbackInfo cbi) {
-        DataTracker tracker = MoreCommands.<PlayerEntity>cast(this).getDataTracker();
+        DataTracker tracker = ReflectionHelper.<PlayerEntity>cast(this).getDataTracker();
         tracker.startTracking(MoreCommands.MAY_FLY, false);
         tracker.startTracking(MoreCommands.INVULNERABLE, false);
         tracker.startTracking(MoreCommands.SUPERPICKAXE, false);
@@ -50,7 +52,7 @@ public abstract class MixinPlayerEntity {
 
     @Inject(at = @At("TAIL"), method = "readCustomDataFromTag(Lnet/minecraft/nbt/CompoundTag;)V")
     public void readCustomDataFromTag(CompoundTag tag, CallbackInfo cbi) {
-        DataTracker dataTracker = MoreCommands.<PlayerEntity>cast(this).getDataTracker();
+        DataTracker dataTracker = ReflectionHelper.<PlayerEntity>cast(this).getDataTracker();
         if (tag.contains("MayFly", 1)) dataTracker.set(MoreCommands.MAY_FLY, tag.getBoolean("MayFly"));
         if (tag.contains("Invulnerable", 1)) dataTracker.set(MoreCommands.INVULNERABLE, tag.getBoolean("Invulnerable"));
         if (tag.contains("SuperPickaxe", 1)) dataTracker.set(MoreCommands.SUPERPICKAXE, tag.getBoolean("SuperPickaxe"));
@@ -62,7 +64,7 @@ public abstract class MixinPlayerEntity {
 
     @Inject(at = @At("TAIL"), method = "writeCustomDataToTag(Lnet/minecraft/nbt/CompoundTag;)V")
     public void writeCustomDataToTag(CompoundTag tag, CallbackInfo cbi) {
-        DataTracker dataTracker = MoreCommands.<PlayerEntity>cast(this).getDataTracker();
+        DataTracker dataTracker = ReflectionHelper.<PlayerEntity>cast(this).getDataTracker();
         tag.putBoolean("MayFly", dataTracker.get(MoreCommands.MAY_FLY));
         tag.putBoolean("Invulnerable", dataTracker.get(MoreCommands.INVULNERABLE));
         tag.putBoolean("SuperPickaxe", dataTracker.get(MoreCommands.SUPERPICKAXE));
@@ -75,19 +77,25 @@ public abstract class MixinPlayerEntity {
     @Inject(at = @At("RETURN"), method = "getName()Lnet/minecraft/text/Text;")
     public Text getName(CallbackInfoReturnable<Text> cbi) {
         LiteralText t = (LiteralText) cbi.getReturnValue();
-        if (MoreCommands.isCute(MoreCommands.cast(this))) t.setStyle(t.getStyle().withFormatting(Formatting.LIGHT_PURPLE));
+        if (MoreCommands.isCute(ReflectionHelper.cast(this))) t.setStyle(t.getStyle().withFormatting(Formatting.LIGHT_PURPLE));
         return t;
     }
 
     @Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)
     public boolean checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {
-        if (MoreCommands.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra) cbi.setReturnValue(false);
+        if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra) cbi.setReturnValue(false);
         return cbi.getReturnValue() != null && cbi.getReturnValue();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
     public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
-        return Team.modifyText(team, MoreCommands.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
+        return Team.modifyText(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
+    }
+
+    @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")
+    protected float getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
+        PlayerEntity thiz = ReflectionHelper.cast(this);
+        return thiz instanceof ClientPlayerEntity && ((ClientPlayerEntity) thiz).input.movementForward == 0 && ((ClientPlayerEntity) thiz).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop ? 0f : cbi.getReturnValueF();
     }
 
 }

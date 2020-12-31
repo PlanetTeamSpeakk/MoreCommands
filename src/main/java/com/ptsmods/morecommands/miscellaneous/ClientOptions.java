@@ -1,9 +1,12 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.util.Identifier;
 
 import java.io.File;
 import java.io.FileReader;
@@ -14,14 +17,56 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 @Environment(EnvType.CLIENT)
 public class ClientOptions {
 
+    public static final Map<Field, Object> defaultValues;
+
+    static {
+        ImmutableMap.Builder<Field, Object> builder = ImmutableMap.builder();
+        for (Class<?> clazz : ClientOptions.class.getClasses())
+            for (Field f : clazz.getFields())
+                builder.put(f, ReflectionHelper.getFieldValue(f, null));
+        defaultValues = builder.build();
+    }
+
+    @Comment({"Discord Rich Presence support.", "To let everyone on Discord know", "that you've been playing Minecraft for three days straight."})
+    public static class RichPresence {
+        public static final int ordinal = 0;
+        @ChangeCallback("updateRPC")
+        @Comment({"Toggle Discord Rich Presence", "May not work on Mac."})
+        public static boolean enableRPC = true;
+        @ChangeCallback("updateRPC")
+        @Comment({"Whether I may advertise this mod on the RPC.", "It would be kindly appreciated if you left this enabled. :)"})
+        public static boolean advertiseMC = true;
+        @ChangeCallback("updateRPC")
+        @Comment({"Whether to show either the ip of the server you're on", "or the name of the world you're in in the details section of the RPC."})
+        public static boolean showDetails = true;
+        @ChangeCallback("updateTag")
+        @Comment({"Whether your Discord tag should be sent to the server", "for others to see.", "Only works if the mod is installed on the server too."})
+        public static boolean shareTag = true;
+        @ChangeCallback("updateTag")
+        @Comment({"Whether players need your permission to view your tag."})
+        public static boolean askPermission = true;
+
+        private static void updateRPC() {
+            MoreCommandsClient.updatePresence();
+        }
+
+        private static void updateTag() {
+            MoreCommandsClient.updateTag();
+        }
+    }
+
+    @Comment("These options change or add things regarding rendering.")
     public static class Rendering {
+        public static final int ordinal = 1;
         @Comment({"See player nametags through blocks", "when they're sneaking."})
         public static boolean seeTagSneaking = true;
         @Comment({"Render your own tag in third person mode", "and the inventory screen."})
@@ -32,7 +77,9 @@ public class ClientOptions {
         public static boolean powertoolsGlint = true;
     }
 
+    @Comment({"Some tweaks to change your game.", "These are harmless, but can be very useful."})
     public static class Tweaks {
+        public static final int ordinal = 2;
         @Comment({"Draw general information in the top-left corner.", "Can be toggled by pressing the O key on your keyboard."})
         public static boolean enableInfoHud = false;
         @Comment({"When using (right-clicking) a door that has", "a corresponding door next to it, use both of them.", "Works on servers without the mod too."})
@@ -43,11 +90,37 @@ public class ClientOptions {
         public static boolean disableElytra = false;
         @Comment({"Allows you to make the lines on signs longer.", "Lines are still cut when rendering, but", "it's very useful for putting colours on signs."})
         public static boolean noSignLimit = true;
-        @Comment({"Whether you can target fluids with your cursor.", "Useful to place blocks on water."})
+        @Comment({"Whether flying should be locked.", "When true, you will always be flying.", "It is recommended to bind this option to a key."})
+        public static boolean lockFlying = false;
+        @Comment({"Whether you can target fluids with your cursor.", "Useful for placing blocks on water."})
         public static boolean targetFluids = false;
+        @Comment("Whether blocks should push you out when you're inside them.")
+        public static boolean doBlockPush = true;
+        @Comment({"Whether you should immediately come to a halt", "when you release all movement keys while moving."})
+        public static boolean immediateMoveStop = false;
+        @Comment({"Whether hidden options should be shown.", "You're highly discouraged to enable this."})
+        public static boolean hiddenOptions = false;
+        @Comment({"Whether splash texts should be rainbow coloured.", "\u00A7cRequires restart"})
+        public static boolean rainbowSplash = false;
+        @Comment({"Whether to make the title screen always say", "'Minceraft' instead of 'Minecraft'.", "As you may or may not know, by default it has a 0.1% chance.", "\u00A7cRequires restart"})
+        public static boolean alwaysMinceraft = false;
     }
 
+    @Comment({"Some less harmless tweaks.", "All of them are set to mimic the default behaviour of Minecraft.", "Meaning that their default values don't change anything.", "", "\u00A7cTo prevent you getting an unfair advantage,", "\u00A7cthese options only affect singleplayer worlds."})
+    @IsHidden("hiddenOptions")
+    public static class Cheats {
+        public static final int ordinal = 3;
+        @Comment({"Lets you jump as soon as you hit the ground while sprinting.", "Gives you a slight speed boost when holding space too."})
+        public static boolean sprintAutoJump = false;
+        @Comment({"Prevents you from taking damage from cacti by making their", "collision box a little bigger than usual."})
+        public static boolean avoidCactusDmg = false;
+        @Comment({"Allows you to collide with (almost) every block in the game.", "Allows you to i.e. walk on cobweb, bushes, grass, etc...", "But not fluids, that's just too much."})
+        public static boolean collideAll = false;
+    }
+
+    @Comment({"Chat related tweaks.", "Most of these are enabled by default."})
     public static class Chat {
+        public static final int ordinal = 4;
         @Comment({"Copy a chatmessage when you left-click on it.", "Holding control while doing so will also copy formattings."})
         public static boolean chatMsgCopy = true;
         @Comment("Remove a chatmessage when you right-click on it.")
@@ -64,28 +137,12 @@ public class ClientOptions {
         public static boolean showSeconds = false;
     }
 
-    public static class RichPresence {
-        @ChangeCallback("updateRPC")
-        @Comment({"Toggle Discord Rich Presence", "May not work on Mac."})
-        public static boolean enableRPC = true;
-        @ChangeCallback("updateRPC")
-        @Comment({"Whether I may advertise this mod on the RPC.", "It would be kindly appreciated if you left this enabled. :)"})
-        public static boolean advertiseMC = true;
-        @ChangeCallback("updateRPC")
-        @Comment({"Whether to show either the ip of the server, you're on", "or the name of the world you're in in the details section of the RPC."})
-        public static boolean showDetails = true;
-        @Comment({"Whether your Discord tag should be sent to the server for others to see.", "Only works if the mod is installed on the server too."})
-        public static boolean shareTag = true;
-        @Comment({"Whether players need your permission to view your tag."})
-        public static boolean askPermission = true;
-
-        private static void updateRPC() {
-            MoreCommandsClient.updatePresence();
-        }
-
-        private static void updateTag() {
-
-        }
+    @Comment({"Don't look in here.", "Stay away.", "", "Keep \u00A7c\u00A7lOUT\u00A7r!! >:c"})
+    @IsHidden("hiddenOptions")
+    public static class EasterEggs {
+        public static final int ordinal = 5;
+        @Comment({"Everything is \u00A7urainbows\u00A7r.", "\u00A7lEverything"})
+        public static boolean rainbows = false;
     }
 
     private static final Properties props = new Properties();
@@ -93,11 +150,8 @@ public class ClientOptions {
 
     public static void update() {
         for (Class<?> c : ClientOptions.class.getClasses())
-            for (Field f : c.getFields()) {
-                try {
-                    props.setProperty(f.getName(), String.valueOf(f.get(null)));
-                } catch (IllegalAccessException ignored) {}
-            }
+            for (Field f : c.getFields())
+                props.setProperty(f.getName(), String.valueOf(ReflectionHelper.<Object, Object>getFieldValue(f, null)));
     }
 
     public static boolean write() {
@@ -143,7 +197,7 @@ public class ClientOptions {
                             }
                         }
             } catch (IOException e) {
-                e.printStackTrace();
+                MoreCommands.log.catching(e);
             }
         else write();
     }
@@ -172,9 +226,19 @@ public class ClientOptions {
     }
 
     public static void setOption(String name, Object value) {
+        update();
         props.setProperty(name, String.valueOf(value));
         write0();
         read();
+    }
+
+    public static List<Field> getFields() {
+        return new ArrayList<>(defaultValues.keySet());
+    }
+
+    public static void reset() {
+        for (Field f : getFields())
+            if (!Modifier.isFinal(f.getModifiers())) ReflectionHelper.setFieldValue(f, null, defaultValues.get(f));
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -185,7 +249,7 @@ public class ClientOptions {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD, ElementType.TYPE})
     public @interface Comment {
         String[] value();
     }
@@ -193,6 +257,15 @@ public class ClientOptions {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface ChangeCallback {
+        String value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.TYPE})
+    public @interface IsHidden {
+        /**
+         * @return The name of the boolean option used to determine whether this option or class should be shown.
+         */
         String value();
     }
 
