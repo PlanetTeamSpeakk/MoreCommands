@@ -18,6 +18,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.network.S2CPacketTypeCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -89,7 +90,7 @@ public class MoreCommandsClient implements ClientModInitializer {
                 .setDisconnectedEventHandler((errorCode, message) -> log.info("Disconnected from Discord RPC with error code " + errorCode + ": " + message))
                 .setErroredEventHandler((errorCode, message) -> log.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
         updatePresence();
-        S2CPacketTypeCallback.REGISTERED.register(types -> updateTag());
+        //C2SPlayChannelEvents.REGISTER.register(((handler, sender, client, channels) -> updateTag()));
         Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
         Language.setInstance(Language.getInstance()); // Wrap the current instance so it can translate all enchant levels and spawner names. :3 (Look at MixinLanguage)
         KeyBindingHelper.registerKeyBinding(toggleInfoHudBinding);

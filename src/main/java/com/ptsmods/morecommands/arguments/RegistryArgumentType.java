@@ -11,7 +11,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ptsmods.morecommands.MoreCommands;
-import net.minecraft.command.arguments.serialize.ArgumentSerializer;
+import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.MutableRegistry;
@@ -59,7 +59,7 @@ public class RegistryArgumentType<T> implements ArgumentType<T> {
 
     @Override
     public T parse(StringReader reader) throws CommandSyntaxException {
-        String s = MoreCommands.readTilSpaceOrEnd(reader).toLowerCase();
+        String s = MoreCommands.readTillSpaceOrEnd(reader).toLowerCase();
         for (Identifier id : ids)
             if (id.getPath().equalsIgnoreCase(s) || id.toString().equalsIgnoreCase(s)) return registry.get(id);
         throw exc.createWithContext(reader);

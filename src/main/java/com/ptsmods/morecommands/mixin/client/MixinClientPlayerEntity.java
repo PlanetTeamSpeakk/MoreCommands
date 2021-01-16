@@ -55,8 +55,8 @@ public class MixinClientPlayerEntity {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "pushOutOfBlocks(DDD)V", cancellable = true)
-    protected void pushOutOfBlocks(double x, double y, double z, CallbackInfo cbi) {
+    @Inject(at = @At("HEAD"), method = "pushOutOfBlocks(DD)V", cancellable = true)
+    protected void pushOutOfBlocks(double x, double z, CallbackInfo cbi) {
         if (!ClientOptions.Tweaks.doBlockPush) cbi.cancel();
     }
 

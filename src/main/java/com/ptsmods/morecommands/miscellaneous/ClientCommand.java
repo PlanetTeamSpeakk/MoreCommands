@@ -18,9 +18,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.EntitySelector;
-import net.minecraft.command.arguments.BlockPosArgumentType;
-import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.command.arguments.PosArgument;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.PosArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
@@ -199,8 +199,10 @@ public abstract class ClientCommand extends Command {
     }
 
     private static void appendEntitiesFromWorld(MixinEntitySelector mselector, List<Entity> list, ClientWorld world, Vec3d vec3d, Predicate<Entity> predicate) {
-        if (mselector.getBox() != null) list.addAll(world.getEntities(mselector.getType(), mselector.getBox().offset(vec3d), predicate));
-        else list.addAll(world.getEntities(mselector.getType(), new Box(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE), predicate));
+        List<Entity> entities = Lists.newArrayList(world.getEntities());
+        Box box = mselector.getBox() == null ? new Box(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE) : mselector.getBox().offset(vec3d);
+        entities.removeIf(entity -> !box.contains(entity.getPos()) || !predicate.test(entity));
+        list.addAll(entities);
     }
 
     private static <T extends Entity> List<T> getEntities(EntitySelector selector, MixinEntitySelector mselector, Vec3d vec3d, List<T> list) {
@@ -217,7 +219,7 @@ public abstract class ClientCommand extends Command {
         if (!getWorld().isChunkLoaded(blockPos)) {
             throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
         } else {
-            if (!ServerWorld.method_24794(blockPos)) {
+            if (!ServerWorld.isInBuildLimit(blockPos)) {
                 throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
             } else {
                 return blockPos;

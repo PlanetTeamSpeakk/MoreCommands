@@ -1,5 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
 import net.minecraft.util.Language;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -46,8 +48,8 @@ public class MixinLanguage {
             }
 
             @Override
-            public String reorder(String string, boolean allowTokens) {
-                return language.reorder(string, allowTokens);
+            public OrderedText reorder(StringVisitable text) {
+                return language.reorder(text);
             }
 
             private String toRoman(int number) {

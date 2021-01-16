@@ -15,7 +15,7 @@ public class MixinLivingEntityRenderer<T extends LivingEntity, M extends EntityM
 
     @Overwrite
     public boolean hasLabel(T livingEntity) {
-        double d = MinecraftClient.getInstance().getEntityRenderManager().getSquaredDistanceToCamera(livingEntity);
+        double d = MinecraftClient.getInstance().getEntityRenderDispatcher().getSquaredDistanceToCamera(livingEntity);
         float f = livingEntity.isSneaky() && !ClientOptions.Rendering.seeTagSneaking ? 32.0F : 64.0F;
         if (d >= (double)(f * f)) {
             return false;

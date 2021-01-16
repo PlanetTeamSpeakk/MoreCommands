@@ -133,7 +133,7 @@ public class ClientOptionsChildScreen extends Screen {
         btnFields.forEach((btn, field) -> {
             String[] comment;
             if (btn.isMouseOver(mouseX, mouseY) && (comment = getComment(field)) != null) {
-                List<StringRenderable> texts = new ArrayList<>();
+                List<Text> texts = new ArrayList<>();
                 for (String s : comment)
                     texts.add(new LiteralText(s));
                 renderTooltip(matrices, texts, mouseX, mouseY);

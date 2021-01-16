@@ -6,7 +6,7 @@ import com.ptsmods.morecommands.callbacks.PlayerListCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.command.arguments.EntityArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.util.Formatting;
 
 import java.io.File;

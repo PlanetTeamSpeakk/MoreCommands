@@ -8,7 +8,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.StringRenderable;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
@@ -34,8 +35,8 @@ public abstract class MixinChatHud {
     private static final DateTimeFormatter twelve = new DateTimeFormatterBuilder().appendPattern("h").appendLiteral(':').appendPattern("mm").appendLiteral(' ').appendPattern("a").toFormatter(Locale.ENGLISH);
     private static final DateTimeFormatter twentyfourSec = new DateTimeFormatterBuilder().appendPattern("HH").appendLiteral(':').appendPattern("mm").appendLiteral(':').appendPattern("ss").toFormatter(Locale.ENGLISH);
     private static final DateTimeFormatter twelveSec = new DateTimeFormatterBuilder().appendPattern("h").appendLiteral(':').appendPattern("mm").appendLiteral(':').appendPattern("ss").appendLiteral(' ').appendPattern("a").toFormatter(Locale.ENGLISH);
-    @Shadow @Final private List<ChatHudLine> messages;
-    @Shadow @Final private List<ChatHudLine> visibleMessages;
+    @Shadow @Final private List<ChatHudLine<Text>> messages;
+    @Shadow @Final private List<ChatHudLine<OrderedText>> visibleMessages;
     @Shadow @Final private MinecraftClient client;
 
     @Overwrite
@@ -47,29 +48,26 @@ public abstract class MixinChatHud {
 
     @Shadow abstract void addMessage(Text message, int messageId);
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud; addMessage(Lnet/minecraft/text/StringRenderable;IIZ)V"), method = "addMessage(Lnet/minecraft/text/Text;I)V")
-    public void addMessage_addMessage(ChatHud thiz, StringRenderable stringRenderable, int messageId, int timestamp, boolean bl) {
-        if (ClientOptions.Chat.showMsgTime && stringRenderable instanceof Text) {
-            Text message = (Text) stringRenderable;
-            stringRenderable = new LiteralText("[" + (ClientOptions.Chat.use12HourClock ? ClientOptions.Chat.showSeconds ? twelveSec : twelve : ClientOptions.Chat.showSeconds ? twentyfourSec : twentyfour).format(LocalDateTime.now()) +"] ").setStyle(MoreCommands.SS).append(message.shallowCopy().setStyle(message.getStyle().getColor() == null ? message.getStyle().withFormatting(Formatting.WHITE) : message.getStyle()));
-        }
-        addMessage(stringRenderable, messageId, timestamp, bl);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud; addMessage(Lnet/minecraft/text/Text;IIZ)V"), method = "addMessage(Lnet/minecraft/text/Text;I)V")
+    public void addMessage_addMessage(ChatHud thiz, Text text, int messageId, int timestamp, boolean bl) {
+        if (ClientOptions.Chat.showMsgTime && text != null) text = new LiteralText("[" + (ClientOptions.Chat.use12HourClock ? ClientOptions.Chat.showSeconds ? twelveSec : twelve : ClientOptions.Chat.showSeconds ? twentyfourSec : twentyfour).format(LocalDateTime.now()) +"] ").setStyle(MoreCommands.SS).append(text.shallowCopy().setStyle(text.getStyle().getColor() == null ? text.getStyle().withFormatting(Formatting.WHITE) : text.getStyle()));
+        addMessage(text, messageId, timestamp, bl);
     }
 
-    @Shadow abstract void addMessage(StringRenderable stringRenderable, int messageId, int timestamp, boolean bl);
+    @Shadow abstract void addMessage(Text test, int messageId, int timestamp, boolean bl);
 
-    @Inject(at = @At("TAIL"), method = "addMessage(Lnet/minecraft/text/StringRenderable;IIZ)V")
-    private void addMessage(StringRenderable stringRenderable, int messageId, int timestamp, boolean bl, CallbackInfo cbi) {
-        if (!messages.isEmpty() && !SearchCommand.lines.containsKey(messages.get(0).getId())) SearchCommand.lines.put(messages.get(0).getId(), new ChatHudLineWithContent(messages.get(0).getCreationTick(), messages.get(0).getText(), messages.get(0).getId(), MoreCommands.textToString((Text) messages.get(0).getText(), null)));
+    @Inject(at = @At("TAIL"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")
+    private void addMessage(Text stringVisitable, int messageId, int timestamp, boolean bl, CallbackInfo cbi) {
+        if (!messages.isEmpty() && !SearchCommand.lines.containsKey(messages.get(0).getId())) SearchCommand.lines.put(messages.get(0).getId(), new ChatHudLineWithContent<>(messages.get(0).getCreationTick(), messages.get(0).getText(), messages.get(0).getId(), MoreCommands.textToString((Text) messages.get(0).getText(), null)));
     }
 
     // Without this redirect the while loop would have no end.
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; size()I"), method = "addMessage(Lnet/minecraft/text/StringRenderable;IIZ)V")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; size()I"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")
     public int messagesSize(List<?> messages) {
         return ClientOptions.Chat.infiniteChat ? Math.min(messages.size(), 100) : messages.size();
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; remove(I)Ljava/lang/Object;"), method = "addMessage(Lnet/minecraft/text/StringRenderable;IIZ)V")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; remove(I)Ljava/lang/Object;"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")
     public Object messagesRemove(List<?> messages, int index) {
         return ClientOptions.Chat.infiniteChat ? messages.get(messages.size() - 1) : messages.remove(index);
     }

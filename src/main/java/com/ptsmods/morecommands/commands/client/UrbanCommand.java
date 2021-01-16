@@ -118,7 +118,7 @@ public class UrbanCommand extends ClientCommand {
             hoverTextChild = new LiteralText(".");
             hoverTextChild.setStyle(DS);
             hoverText.append(hoverTextChild);
-            child.setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + term)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)));
+            child.setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + term)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)));
             text.append(child);
         }
         return text;

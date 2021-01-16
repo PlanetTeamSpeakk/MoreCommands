@@ -16,7 +16,7 @@ public class HexIntegerArgumentType implements ArgumentType<Integer> {
 
     @Override
     public Integer parse(StringReader reader) throws CommandSyntaxException {
-        String s = MoreCommands.readTilSpaceOrEnd(reader);
+        String s = MoreCommands.readTillSpaceOrEnd(reader);
         if (s.startsWith("#")) s = s.substring(1);
         else if (s.toLowerCase().startsWith("0x")) s = s.substring(2);
         if (MoreCommands.isInteger(s) && Integer.parseInt(s) >= 0 && Integer.parseInt(s) <= 0xFFFFFF) return Integer.parseInt(s);

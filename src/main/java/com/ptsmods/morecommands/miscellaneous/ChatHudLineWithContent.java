@@ -1,16 +1,15 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.text.StringRenderable;
 import net.minecraft.util.Formatting;
 
-public class ChatHudLineWithContent extends ChatHudLine {
+public class ChatHudLineWithContent<T> extends ChatHudLine<T> {
 
     private String content = null;
     private String contentStripped = null;
 
-    public ChatHudLineWithContent(int creationTick, StringRenderable stringRenderable, int id, String content) {
-        super(creationTick, stringRenderable, id);
+    public ChatHudLineWithContent(int creationTick, T t, int id, String content) {
+        super(creationTick, t, id);
         setContent(content);
     }
 

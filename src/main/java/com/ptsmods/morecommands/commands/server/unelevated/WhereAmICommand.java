@@ -13,7 +13,7 @@ public class WhereAmICommand extends Command {
         dispatcher.register(literal("whereami").executes(ctx -> {
             World world = ctx.getSource().getEntityOrThrow().getEntityWorld();
             BlockPos pos = ctx.getSource().getEntityOrThrow().getBlockPos();
-            sendMsg(ctx, "You're currently in world " + SF + world.getRegistryKey().getValue().toString() + DF + " at " + SF + pos.getX() + DF + ", " + SF + pos.getY() + DF + ", " + SF + pos.getZ() + DF + " in biome " + SF + Registry.BIOME.getId(world.getBiome(pos)) + DF + ".");
+            sendMsg(ctx, "You're currently in world " + SF + world.getRegistryKey().getValue().toString() + DF + " at " + SF + pos.getX() + DF + ", " + SF + pos.getY() + DF + ", " + SF + pos.getZ() + DF + " in biome " + SF + world.getRegistryManager().get(Registry.BIOME_KEY).getId(world.getBiome(pos)) + DF + ".");
             return 1;
         }));
     }

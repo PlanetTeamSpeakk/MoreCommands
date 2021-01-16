@@ -11,7 +11,8 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.StringRenderable;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Text;
 
 import java.util.*;
 
@@ -55,7 +56,7 @@ public class ClientOptionsScreen extends Screen {
         super.render(matrices, mouseX, mouseY, delta);
         btnClasses.forEach((btn, clazz) -> {
             if (btn.isMouseOver(mouseX, mouseY) && getComment(clazz) != null) {
-                List<StringRenderable> texts = new ArrayList<>();
+                List<Text> texts = new ArrayList<>();
                 for (String s : getComment(clazz))
                     texts.add(new LiteralText(s));
                 renderTooltip(matrices, texts, mouseX, mouseY);

@@ -6,7 +6,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.arguments.EnumArgumentType;
-import net.minecraft.command.arguments.Vec3ArgumentType;
+import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;

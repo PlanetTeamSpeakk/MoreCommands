@@ -148,7 +148,7 @@ public class InfoHud extends DrawableHelper {
                 case "chunkZ": {output = "" + mc.player.chunkZ; break;}
                 case "yaw": {output = "" + MathHelper.wrapDegrees(mc.player.yaw); break;}
                 case "pitch": {output = "" + MathHelper.wrapDegrees(mc.player.pitch); break;}
-                case "biome": {output = Registry.BIOME.getId(mc.world.getBiome(mc.player.getBlockPos())).toString(); break;}
+                case "biome": {output = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).getId(mc.world.getBiome(mc.player.getBlockPos())).toString(); break;}
                 case "difficulty": {output = mc.world.getLevelProperties().getDifficulty().name(); break;}
                 case "blocksPerSec": {output = MoreCommands.formatDouble(MoreCommandsClient.getSpeed()) + " blocks/sec"; break;}
                 case "avgSpeed": {output = MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed()) + " blocks/sec"; break;}

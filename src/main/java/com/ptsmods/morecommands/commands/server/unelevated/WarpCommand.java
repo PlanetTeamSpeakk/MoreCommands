@@ -347,7 +347,7 @@ public class WarpCommand extends Command {
         public Map<String, Object> toMap() {
             Map<String, Object> map = new HashMap<>();
             map.put("counter", counter);
-            map.put("world", getWorld().getDimensionRegistryKey().getValue().toString());
+            map.put("world", getWorld().getRegistryKey().getValue().toString());
             map.put("x", loc.x);
             map.put("y", loc.y);
             map.put("z", loc.z);

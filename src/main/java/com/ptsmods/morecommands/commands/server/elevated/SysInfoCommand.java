@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.UsageMonitorer;
 import com.ptsmods.morecommands.miscellaneous.VMManagement;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import oshi.SystemInfo;
 

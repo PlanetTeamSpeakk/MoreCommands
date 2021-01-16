@@ -25,7 +25,7 @@ public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime
 
     @Override
     public WorldTime parse(StringReader reader) throws CommandSyntaxException {
-        String s = MoreCommands.readTilSpaceOrEnd(reader);
+        String s = MoreCommands.readTillSpaceOrEnd(reader);
         if (MoreCommands.isInteger(s)) {
             int i = Integer.parseInt(s);
             if (i >= 24000) throw TICKS_EXCEPTION.createWithContext(reader);

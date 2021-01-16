@@ -5,7 +5,7 @@ import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.gui.screen.ingame.BookScreen;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.StringRenderable;
+import net.minecraft.text.StringVisitable;
 
 public class FormattingsCommand extends ClientCommand {
     @Override
@@ -18,7 +18,7 @@ public class FormattingsCommand extends ClientCommand {
                 }
 
                 @Override
-                public StringRenderable getPageUnchecked(int index) {
+                public StringVisitable getPageUnchecked(int index) {
                     char ss = '\u00A7';
                     return new LiteralText(
                             ss + "00 " + ss + "11 " + ss + "22 " + ss + "33\n" +

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.options.Perspective;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.client.render.*;
@@ -80,7 +81,7 @@ public class VexParticle extends Particle {
 
     @Override
     public void buildGeometry(VertexConsumer vertex, Camera camera, float tickDelta) {
-        if (entity instanceof ClientPlayerEntity && MinecraftClient.getInstance().player == entity && MinecraftClient.getInstance().options.perspective == 0 && entity.getPos().add(0, 1, 0).squaredDistanceTo(x, y, z) < 3)
+        if (entity instanceof ClientPlayerEntity && MinecraftClient.getInstance().player == entity && MinecraftClient.getInstance().options.getPerspective() == Perspective.FIRST_PERSON && entity.getPos().add(0, 1, 0).squaredDistanceTo(x, y, z) < 3)
             return;
         Vec3d cam = camera.getPos();
         double x = entity.prevX + (cam.x - entity.prevX);

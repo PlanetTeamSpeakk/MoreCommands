@@ -42,6 +42,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class MixinServerPlayNetworkHandler {
@@ -101,13 +103,14 @@ public class MixinServerPlayNetworkHandler {
         if (playerManager.getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) playerManager.broadcastChatMessage(msg, type, id);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Formatting; strip(Ljava/lang/String;)Ljava/lang/String;"), method = "onSignUpdate(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
-    public String onSignUpdate_strip(String s) {
-        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
-        if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
-            s = Command.translateFormats(s);
-        else s = Formatting.strip(s);
-        return s;
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream; map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"), method = "onSignUpdate(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
+    public Stream<String> onSignUpdate_map(Stream<String> stream, Function<String, String> func) {
+        return stream.map(s -> {
+            ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
+            if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())) s = Command.translateFormats(s);
+            else s = Formatting.strip(s);
+            return s;
+        });
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/ListTag; getString(I)Ljava/lang/String;"), method = "onBookUpdate(Lnet/minecraft/network/packet/c2s/play/BookUpdateC2SPacket;)V")
@@ -128,8 +131,8 @@ public class MixinServerPlayNetworkHandler {
         return s;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
-    public char onGameMessage_charAt(String string, int index) {
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "method_31286(Ljava/lang/String;)V")
+    public char method_31286_charAt(String string, int index) {
         ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         char ch = string.charAt(index);
         if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))

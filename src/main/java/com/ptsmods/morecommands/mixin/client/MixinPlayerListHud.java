@@ -16,7 +16,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.text.StringRenderable;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Final;
@@ -97,24 +98,24 @@ public abstract class MixinPlayerListHud {
         int t = i / 2 - (s * o + (o - 1) * 5) / 2;
         int u = 10;
         int v = s * o + (o - 1) * 5;
-        List<StringRenderable> list2 = null;
+        List<OrderedText> list2 = null;
         if (header != null) {
             list2 = client.textRenderer.wrapLines(header, i - 50);
 
-            StringRenderable stringRenderable;
-            for(Iterator<StringRenderable> var19 = list2.iterator(); var19.hasNext(); v = Math.max(v, client.textRenderer.getWidth(stringRenderable))) {
-                stringRenderable = var19.next();
+            OrderedText stringVisitable;
+            for(Iterator<OrderedText> var19 = list2.iterator(); var19.hasNext(); v = Math.max(v, client.textRenderer.getWidth(stringVisitable))) {
+                stringVisitable = var19.next();
             }
         }
 
-        List<StringRenderable> list3 = null;
-        StringRenderable stringRenderable3;
-        Iterator<StringRenderable> var37;
+        List<OrderedText> list3 = null;
+        OrderedText stringVisitable3;
+        Iterator<OrderedText> var37;
         if (footer != null) {
             list3 = client.textRenderer.wrapLines(footer, i - 50);
 
-            for(var37 = list3.iterator(); var37.hasNext(); v = Math.max(v, client.textRenderer.getWidth(stringRenderable3))) {
-                stringRenderable3 = var37.next();
+            for(var37 = list3.iterator(); var37.hasNext(); v = Math.max(v, client.textRenderer.getWidth(stringVisitable3))) {
+                stringVisitable3 = var37.next();
             }
         }
 
@@ -132,9 +133,9 @@ public abstract class MixinPlayerListHud {
             fill(matrixStack, var10001, var10002, var10003, u + var10005 * 9, -2147483648);
 
             for(var37 = list2.iterator(); var37.hasNext(); u += 9) {
-                stringRenderable3 = var37.next();
-                z = client.textRenderer.getWidth(stringRenderable3);
-                client.textRenderer.drawWithShadow(matrixStack, stringRenderable3, (float)(i / 2 - z / 2), (float)u, -1);
+                stringVisitable3 = var37.next();
+                z = client.textRenderer.getWidth(stringVisitable3);
+                client.textRenderer.drawWithShadow(matrixStack, stringVisitable3, (float)(i / 2 - z / 2), (float)u, -1);
                 client.textRenderer.getClass();
             }
 
@@ -192,14 +193,12 @@ public abstract class MixinPlayerListHud {
             var10002 = u - 1;
             var10003 = i / 2 + v / 2 + 1;
             var10005 = list3.size();
-            client.textRenderer.getClass();
             fill(matrixStack, var10001, var10002, var10003, u + var10005 * 9, -2147483648);
 
-            for(Iterator<StringRenderable> var40 = list3.iterator(); var40.hasNext(); u += 9) {
-                StringRenderable stringRenderable4 = var40.next();
-                aj = client.textRenderer.getWidth(stringRenderable4);
-                client.textRenderer.drawWithShadow(matrixStack, stringRenderable4, (float)(i / 2 - aj / 2), (float)u, -1);
-                client.textRenderer.getClass();
+            for(Iterator<OrderedText> var40 = list3.iterator(); var40.hasNext(); u += 9) {
+                OrderedText stringVisitable4 = var40.next();
+                aj = client.textRenderer.getWidth(stringVisitable4);
+                client.textRenderer.drawWithShadow(matrixStack, stringVisitable4, (float)(i / 2 - aj / 2), (float)u, -1);
             }
         }
     }

@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.client.util.ScreenshotUtils;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -52,7 +53,7 @@ public class ScreenshotCommand extends ClientCommand {
                 GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
                 ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 3);
                 Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.colorAttachment);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.getColorAttachment());
                 GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buf);
                 ReflectionHelper.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), (int) task.get("ogWidth"), (int) task.get("ogHeight"));
                 Map<String, Object> task = this.task;

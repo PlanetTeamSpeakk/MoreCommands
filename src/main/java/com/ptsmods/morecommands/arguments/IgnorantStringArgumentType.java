@@ -8,7 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import net.minecraft.command.arguments.serialize.ArgumentSerializer;
+import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Collection;
@@ -49,7 +49,7 @@ public class IgnorantStringArgumentType implements ArgumentType<String> {
             reader.setCursor(reader.getTotalLength());
             return text;
         } else {
-            return this.type == StringArgumentType.StringType.SINGLE_WORD ? MoreCommands.readTilSpaceOrEnd(reader) : reader.readString();
+            return this.type == StringArgumentType.StringType.SINGLE_WORD ? MoreCommands.readTillSpaceOrEnd(reader) : reader.readString();
         }
     }
 

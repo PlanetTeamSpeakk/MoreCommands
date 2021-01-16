@@ -24,9 +24,9 @@ public class MixinGameRenderer {
         return ReachCommand.getReach(client.player, false);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity; rayTrace(DFZ)Lnet/minecraft/util/hit/HitResult;"), method = "updateTargetedEntity(F)V")
-    public HitResult updateTargetedEntity_rayTrace(Entity entity, double reach, float tickDelta, boolean includeFluids) {
-        return entity.rayTrace(reach, tickDelta, ClientOptions.Tweaks.targetFluids || includeFluids);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity; raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"), method = "updateTargetedEntity(F)V")
+    public HitResult updateTargetedEntity_raycast(Entity entity, double reach, float tickDelta, boolean includeFluids) {
+        return entity.raycast(reach, tickDelta, ClientOptions.Tweaks.targetFluids || includeFluids);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager; hasExtendedReach()Z"), method = "updateTargetedEntity(F)V")

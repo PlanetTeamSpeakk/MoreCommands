@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.arikia.dev.drpc.DiscordUser;
-import net.minecraft.command.arguments.EntityArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -79,7 +79,7 @@ public class DiscordCommand extends Command {
     private void sendDiscordTag(CommandContext<ServerCommandSource> ctx, PlayerEntity player) {
         DiscordUser user = MoreCommands.discordTags.get(player);
         String tag = user.username + "#" + user.discriminator;
-        sendMsg(ctx, player.getDisplayName().shallowCopy().append(new LiteralText("'s ").setStyle(SS).append(new LiteralText( "Discord tag is ").setStyle(DS).append(new LiteralText(tag).setStyle(SS.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to ").setStyle(DS).append(new LiteralText("copy").setStyle(SS).append(new LiteralText(".").setStyle(DS)))))).append(new LiteralText(".").setStyle(DS))))));
+        sendMsg(ctx, player.getDisplayName().shallowCopy().append(new LiteralText("'s ").setStyle(SS).append(new LiteralText( "Discord tag is ").setStyle(DS).append(new LiteralText(tag).setStyle(SS.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to ").setStyle(DS).append(new LiteralText("copy").setStyle(SS).append(new LiteralText(".").setStyle(DS)))))).append(new LiteralText(".").setStyle(DS))))));
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.server.command.CommandSource;
+import net.minecraft.command.CommandSource;
 import net.minecraft.util.Formatting;
 
 import java.io.File;

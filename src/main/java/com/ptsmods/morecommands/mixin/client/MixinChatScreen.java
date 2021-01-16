@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.options.ChatVisibility;
 import net.minecraft.client.util.Clipboard;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +59,8 @@ public class MixinChatScreen {
                     }
                 } else if (button == 1 && ClientOptions.Chat.chatMsgRemove) {
                     SearchCommand.lines.remove(line.getId());
-                    chatHud.removeMessage(line.getId());
+                    ReflectionHelper.invokeYarnMethod(ChatHud.class, "removeMessage", "method_1807", new Class[] {int.class}, chatHud, line.getId());
+                    //chatHud.removeMessage(line.getId());
                 }
         }
         return b;
@@ -113,15 +116,14 @@ public class MixinChatScreen {
                 return false;
             }
             int id = Integer.parseInt(style.getClickEvent().getValue());
-            List<ChatHudLine> messages;
-            messages = ReflectionHelper.getFieldValue(mc_visibleMessagesField, chat);
+            List<ChatHudLine<OrderedText>> messages = ReflectionHelper.getFieldValue(mc_visibleMessagesField, chat);
             int index = -1;
             for (int i = 0; i < messages.size(); i++)
                 if (messages.get(i).getId() == id) {
                     index = i;
                     break;
                 }
-            if (index >= 0) chat.scroll(index - scrolled - chat.getVisibleLineCount() + MinecraftClient.getInstance().textRenderer.getTextHandler().wrapLines(messages.get(index).getText(), chat.getWidth(), Style.EMPTY).size());
+            if (index >= 0) chat.scroll(index - scrolled - chat.getVisibleLineCount() + ( SearchCommand.lines.containsKey(id) ? MinecraftClient.getInstance().textRenderer.getTextHandler().wrapLines(SearchCommand.lines.get(id).getText(), chat.getWidth(), Style.EMPTY).size() : 0));
             return true;
         }
         return thiz.handleTextClick(style);

@@ -4,6 +4,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.miscellaneous.Rainbow;
 import net.minecraft.client.font.TextVisitFactory;
+import net.minecraft.text.CharacterVisitor;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 public class MixinTextVisitFactory {
 
     @Overwrite
-    public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style resetStyle, TextVisitFactory.CharacterVisitor visitor) {
+    public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style resetStyle, CharacterVisitor visitor) {
         int i = text.length();
         Style style = startingStyle;
         for (int j = startIndex; j < i; ++j) {
@@ -39,7 +40,7 @@ public class MixinTextVisitFactory {
                 }
             } else if (Character.isHighSurrogate(c)) {
                 if (j + 1 >= i) {
-                    if (!visitor.onChar(j, style, 65533)) {
+                    if (!visitor.accept(j, style, 65533)) {
                         return false;
                     }
                     break;
@@ -47,12 +48,12 @@ public class MixinTextVisitFactory {
 
                 e = text.charAt(j + 1);
                 if (Character.isLowSurrogate(e)) {
-                    if (!visitor.onChar(j, style, Character.toCodePoint(c, e))) {
+                    if (!visitor.accept(j, style, Character.toCodePoint(c, e))) {
                         return false;
                     }
 
                     ++j;
-                } else if (!visitor.onChar(j, style, 65533)) {
+                } else if (!visitor.accept(j, style, 65533)) {
                     return false;
                 }
             } else if (!visitRegularCharacter(style, visitor, j, c)) {
@@ -64,7 +65,7 @@ public class MixinTextVisitFactory {
     }
 
     @Shadow
-    private static boolean visitRegularCharacter(Style style, TextVisitFactory.CharacterVisitor visitor, int index, char c) {
+    private static boolean visitRegularCharacter(Style style, CharacterVisitor visitor, int index, char c) {
         return false;
     }
 

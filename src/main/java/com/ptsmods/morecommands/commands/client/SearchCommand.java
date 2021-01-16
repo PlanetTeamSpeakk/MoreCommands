@@ -9,6 +9,7 @@ import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import sun.reflect.ConstructorAccessor;
 
@@ -24,13 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SearchCommand extends ClientCommand {
 
-    public static Map<Integer, ChatHudLineWithContent> lines = new HashMap<>();
+    public static Map<Integer, ChatHudLineWithContent<Text>> lines = new HashMap<>();
     public static ClickEvent.Action SCROLL_ACTION = null;
 
     public void preinit() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (SCROLL_ACTION == null) {
-            SCROLL_ACTION = ReflectionHelper.newEnumInstance(ClickEvent.Action.class, new Class[] {String.class, boolean.class}, "SCROLL", "scroll", false);
-        }
+        if (SCROLL_ACTION == null) SCROLL_ACTION = ReflectionHelper.newEnumInstance(ClickEvent.Action.class, new Class[] {String.class, boolean.class}, "SCROLL", "scroll", false);
     }
 
     @Override
@@ -38,8 +37,8 @@ public class SearchCommand extends ClientCommand {
         // This class is just the tip of the iceberg of this feature. Have a look at MixinChatHud and MixinChatScreen to see the rest.
         dispatcher.register(cLiteral("search").then(cArgument("query", StringArgumentType.greedyString()).executes(ctx -> {
             String query = ctx.getArgument("query", String.class).toLowerCase();
-            List<ChatHudLineWithContent> results = new ArrayList<>();
-            for (ChatHudLineWithContent line : lines.values()) {
+            List<ChatHudLineWithContent<Text>> results = new ArrayList<>();
+            for (ChatHudLineWithContent<Text> line : lines.values()) {
                 if (line.getContent() != null && line.getContentStripped().contains(query))
                     results.add(line);
             }

@@ -26,7 +26,9 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.impl.networking.server.ServerNetworkingImpl;
 import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
@@ -35,15 +37,15 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Material;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.command.arguments.ArgumentTypes;
-import net.minecraft.command.arguments.serialize.ConstantArgumentSerializer;
+import net.minecraft.command.argument.ArgumentTypes;
+import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntityWithAi;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.*;
@@ -180,9 +182,10 @@ public class MoreCommands implements ModInitializer {
 				}
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
-		C2SPacketTypeCallback.REGISTERED.register((player, types) -> {
-			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(player);
+		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
+			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
 		});
+		//if (theUnsafe != null) return;
 		SPR.register(new Identifier("morecommands:sit_on_stairs"), (ctx, buffer) -> {
 			ServerPlayerEntity player = (ServerPlayerEntity) ctx.getPlayer();
 			BlockPos pos = buffer.readBlockPos();
@@ -329,7 +332,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	private static void sendFormattingUpdate(PlayerEntity p, Packet<?> packet) {
-		if (SPR.canPlayerReceive(p, new Identifier("morecommands:formatting_update"))) SPR.sendToPlayer(p, packet);
+		/*if (SPR.canPlayerReceive(p, new Identifier("morecommands:formatting_update")))*/ SPR.sendToPlayer(p, packet); // If-statement throws NPE cuz of a bug in the Fabric API (I think)
 	}
 
 	static <T extends Command> T getInstance(Class<T> cmd) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -393,6 +396,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void saveString(File f, String s) throws IOException {
+		if (!f.exists()) f.createNewFile();
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
 			writer.print(s);
 			writer.flush();
@@ -524,7 +528,7 @@ public class MoreCommands implements ModInitializer {
 		HitResult crosshairTarget = null;
 		if (entity != null && world != null) {
 			float td = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
-			crosshairTarget = entity.rayTrace(reach, td, !ignoreLiquids);
+			crosshairTarget = entity.raycast(reach, td, !ignoreLiquids);
 			if (!ignoreEntities) {
 				Vec3d vec3d = entity.getCameraPosVec(td);
 				double e = reach;
@@ -534,7 +538,7 @@ public class MoreCommands implements ModInitializer {
 				Vec3d vec3d2 = entity.getRotationVec(td);
 				Vec3d vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
 				Box box = entity.getBoundingBox().stretch(vec3d2.multiply(reach)).expand(1.0D, 1.0D, 1.0D);
-				EntityHitResult entityHitResult = ProjectileUtil.rayTrace(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
+				EntityHitResult entityHitResult = ProjectileUtil.raycast(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
 				if (entityHitResult != null) crosshairTarget = entityHitResult;
 			}
 		}
@@ -555,7 +559,7 @@ public class MoreCommands implements ModInitializer {
 		return e;
 	}
 
-	public static String readTilSpaceOrEnd(StringReader reader) {
+	public static String readTillSpaceOrEnd(StringReader reader) {
 		StringBuilder s = new StringBuilder();
 		while (reader.getRemainingLength() > 0 && reader.peek() != ' ')
 			s.append(reader.read());
@@ -570,7 +574,7 @@ public class MoreCommands implements ModInitializer {
 	public static void teleport(Entity target, ServerWorld world, double x, double y, double z, float yaw, float pitch) {
 		if (target instanceof ServerPlayerEntity) {
 			ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-			world.getChunkManager().addTicket(ChunkTicketType.field_19347, chunkPos, 1, target.getEntityId());
+			world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, target.getEntityId());
 			target.stopRiding();
 			if (((ServerPlayerEntity) target).isSleeping()) ((ServerPlayerEntity) target).wakeUp(true, true);
 			if (world == target.world)
@@ -600,7 +604,7 @@ public class MoreCommands implements ModInitializer {
 			target.setVelocity(target.getVelocity().multiply(1.0D, 0.0D, 1.0D));
 			target.setOnGround(true);
 		}
-		if (target instanceof MobEntityWithAi) ((MobEntityWithAi) target).getNavigation().stop();
+		if (target instanceof PathAwareEntity) ((PathAwareEntity) target).getNavigation().stop();
 	}
 
 	public static <T> Registry<T> getRegistry(RegistryKey<T> key) {
