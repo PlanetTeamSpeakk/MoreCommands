@@ -126,7 +126,9 @@ public class MoreCommandsClient implements ClientModInitializer {
         });
         CPR.register(new Identifier("morecommands:formatting_update"), (ctx, buf) -> {
             int id = buf.readByte();
-            Formatting colour = FormattingColour.values()[buf.readByte()].toFormatting();
+            int index = buf.readByte();
+            if (index < 0) return;
+            Formatting colour = FormattingColour.values()[index].toFormatting();
             switch (id) {
                 case 0:
                     MoreCommands.DF = Command.DF = colour;

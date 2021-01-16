@@ -34,7 +34,7 @@ public class VexParticle extends Particle {
             RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
             RenderSystem.lineWidth(2.0F);
             RenderSystem.disableTexture();
-            builder.begin(3, VertexFormats.POSITION_COLOR_LIGHT);
+            builder.begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.POSITION_COLOR_LIGHT);
         }
 
         @Override

@@ -143,9 +143,9 @@ public class InfoHud extends DrawableHelper {
                 case "x": {output = String.format("%f", mc.player.getPos().x); break;}
                 case "y": {output = String.format("%f", mc.player.getPos().y); break;}
                 case "z": {output = String.format("%f", mc.player.getPos().z); break;}
-                case "chunkX": {output = "" + mc.player.chunkX; break;}
-                case "chunkY": {output = "" + mc.player.chunkY; break;}
-                case "chunkZ": {output = "" + mc.player.chunkZ; break;}
+                case "chunkX": {output = "" + mc.player.getChunkPos().x; break;}
+                case "chunkY": {output = "" + (int) mc.player.getY() / 16; break;}
+                case "chunkZ": {output = "" + mc.player.getChunkPos().z; break;}
                 case "yaw": {output = "" + MathHelper.wrapDegrees(mc.player.yaw); break;}
                 case "pitch": {output = "" + MathHelper.wrapDegrees(mc.player.pitch); break;}
                 case "biome": {output = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).getId(mc.world.getBiome(mc.player.getBlockPos())).toString(); break;}

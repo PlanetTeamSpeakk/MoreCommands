@@ -37,17 +37,17 @@ public class DropstoreCommand extends Command {
         int i0 = 0;
         int i;
         for (i = 9; i < 36; i++, i0++)
-            chest.setStack(i0, player.inventory.getStack(i));
+            chest.setStack(i0, player.getInventory().getStack(i));
         i0 %= 27;
         chest = (ChestBlockEntity) player.getEntityWorld().getBlockEntity(pos);
         for (i = 0; i < 9; i++, i0++)
-            chest.setStack(i0, player.inventory.getStack(i));
-        List<ItemStack> armorInv = new ArrayList<>(player.inventory.armor);
+            chest.setStack(i0, player.getInventory().getStack(i));
+        List<ItemStack> armorInv = new ArrayList<>(player.getInventory().armor);
         Collections.reverse(armorInv);
         for (ItemStack stack : armorInv)
             chest.setStack(i0++, stack);
-        chest.setStack(i0++, player.inventory.offHand.get(0));
-        if (clear) player.inventory.clear();
+        chest.setStack(i0++, player.getInventory().offHand.get(0));
+        if (clear) player.getInventory().clear();
         sendMsg(ctx, "Your inventory has been transferred into a double chest placed at X: " + pos.getX() + ", Y: " + pos.getY() + ", Z: " + pos.getZ() + ".");
         return i0;
     }

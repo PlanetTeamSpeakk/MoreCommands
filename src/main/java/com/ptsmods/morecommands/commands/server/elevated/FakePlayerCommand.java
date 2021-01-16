@@ -106,7 +106,7 @@ public class FakePlayerCommand extends Command {
                         else profile.getProperties().put("textures", new Property("textures", data, signature));
                     }
                 }
-                ServerPlayerEntity player = new ServerPlayerEntity(ctx.getSource().getMinecraftServer(), ctx.getSource().getWorld(), profile, new ServerPlayerInteractionManager(ctx.getSource().getWorld()));
+                ServerPlayerEntity player = new ServerPlayerEntity(ctx.getSource().getMinecraftServer(), ctx.getSource().getWorld(), profile);
                 ClientConnection ccon = new ClientConnection(NetworkSide.SERVERBOUND);
                 Field f = ReflectionHelper.getYarnField(ClientConnection.class, "channel", "field_11651");
                 // I beg you, do not look at the following line. Please!
@@ -119,8 +119,8 @@ public class FakePlayerCommand extends Command {
                 player.networkHandler = new ServerPlayNetworkHandler(ctx.getSource().getMinecraftServer(), ccon, player);
                 ctx.getSource().getMinecraftServer().getPlayerManager().onPlayerConnect(ccon, player);
                 player.updatePosition(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z);
-                player.setGameMode(GameMode.CREATIVE);
-                player.abilities.invulnerable = true;
+                player.changeGameMode(GameMode.CREATIVE);
+                player.getAbilities().invulnerable = true;
                 player.setInvulnerable(true);
                 player.sendAbilitiesUpdate();
                 MoreCommands.teleport(player, ctx.getSource().getWorld(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, player.yaw, player.pitch);

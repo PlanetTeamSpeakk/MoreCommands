@@ -11,10 +11,10 @@ public class GodCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("god").requires(IS_OP).executes(ctx -> {
             PlayerEntity player = ctx.getSource().getPlayer();
-            player.abilities.invulnerable = !player.abilities.invulnerable;
+            player.getAbilities().invulnerable = !player.getAbilities().invulnerable;
             player.sendAbilitiesUpdate();
-            player.getDataTracker().set(MoreCommands.INVULNERABLE, player.abilities.invulnerable);
-            sendMsg(player, "You're now " + formatFromBool(player.abilities.invulnerable, "in", "") + "vulnerable" + DF + ".");
+            player.getDataTracker().set(MoreCommands.INVULNERABLE, player.getAbilities().invulnerable);
+            sendMsg(player, "You're now " + formatFromBool(player.getAbilities().invulnerable, "in", "") + "vulnerable" + DF + ".");
             return 1;
         }));
     }

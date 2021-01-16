@@ -41,7 +41,7 @@ public class CannonCommand extends Command {
 
                 --this.fuseTimer;
                 if (this.fuseTimer <= 0) {
-                    this.remove();
+                    this.remove(RemovalReason.DISCARDED);
                     if (!world.isClient)
                         world.createExplosion(this, this.getX(), this.getBodyY(0.0625D), this.getZ(), power, Explosion.DestructionType.BREAK);
                 } else {

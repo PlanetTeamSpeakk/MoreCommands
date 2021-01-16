@@ -26,28 +26,17 @@ public class SpawnerCommand extends Command {
             BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160, true, true);
             BlockState state = ctx.getSource().getWorld().getBlockState(result.getBlockPos());
             EntityType<?> type = ctx.getArgument("type", EntityType.class);
+            World world = ctx.getSource().getWorld();
+            BlockPos pos = new BlockPos(ctx.getSource().getPosition());
             if (!state.isOf(Blocks.SPAWNER)) {
                 if (ctx.getSource().getPlayer().getMainHandStack().getItem() == Items.SPAWNER) {
-                    MobSpawnerLogic logic = new MobSpawnerLogic() {
-                        @Override
-                        public void sendStatus(int status) {}
-
-                        @Override
-                        public World getWorld() {
-                            return ctx.getSource().getWorld();
-                        }
-
-                        @Override
-                        public BlockPos getPos() {
-                            return new BlockPos(ctx.getSource().getPosition());
-                        }
-                    };
+                    MobSpawnerLogic logic = new MobSpawnerLogic() {@Override public void sendStatus(World world, BlockPos blockPos, int i) {}};
                     ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
                     CompoundTag tag = stack.getOrCreateTag();
                     if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
-                        logic.fromTag(tag);
+                        logic.fromTag(world, pos, tag);
                     logic.setEntityId(type);
-                    (tag = new CompoundTag()).put("BlockEntityTag", logic.toTag(new CompoundTag()));
+                    (tag = new CompoundTag()).put("BlockEntityTag", logic.toTag(world, pos, new CompoundTag()));
                     ((CompoundTag) tag.getCompound("BlockEntityTag").getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
                     stack.setTag(tag);
                     sendMsg(ctx, "Poof!");
@@ -57,9 +46,9 @@ public class SpawnerCommand extends Command {
                 MobSpawnerBlockEntity be = (MobSpawnerBlockEntity) ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
                 MobSpawnerLogic logic = be.getLogic();
                 logic.setEntityId(type);
-                CompoundTag tag = logic.toTag(new CompoundTag());
+                CompoundTag tag = logic.toTag(world, pos, new CompoundTag());
                 ((CompoundTag) tag.getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
-                logic.fromTag(tag);
+                logic.fromTag(world, pos, tag);
                 be.markDirty();
                 ctx.getSource().getWorld().updateListeners(result.getBlockPos(), state, state, 3);
                 sendMsg(ctx, "Poof!");

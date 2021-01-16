@@ -14,21 +14,21 @@ public enum SpeedType {
     WALK((player, speed) -> {
         if (Nested.walkSpeedField == null) Nested.walkSpeedField = ReflectionHelper.getYarnField(PlayerAbilities.class, "walkSpeed", "field_7482");
         try {
-            Nested.walkSpeedField.set(player.abilities, speed / 10);
+            Nested.walkSpeedField.set(player.getAbilities(), speed / 10);
         } catch (IllegalAccessException e) {
             MoreCommands.log.catching(e);
         }
         player.sendAbilitiesUpdate();
-    }, player -> player.abilities.getWalkSpeed() * 10),
+    }, player -> player.getAbilities().getWalkSpeed() * 10),
     FLY((player, speed) -> {
         if (Nested.flySpeedField == null) Nested.flySpeedField = ReflectionHelper.getYarnField(PlayerAbilities.class, "flySpeed", "field_7481");
         try {
-            Nested.flySpeedField.set(player.abilities, speed / 20);
+            Nested.flySpeedField.set(player.getAbilities(), speed / 20);
         } catch (IllegalAccessException e) {
             MoreCommands.log.catching(e);
         }
         player.sendAbilitiesUpdate();
-    }, player -> player.abilities.getFlySpeed() * 20),
+    }, player -> player.getAbilities().getFlySpeed() * 20),
     SWIM((player, speed) -> {
         player.getAttributeInstance(Nested.swimSpeedAttribute).setBaseValue(speed);
     }, player -> (float) player.getAttributeValue(Nested.swimSpeedAttribute));

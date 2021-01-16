@@ -134,7 +134,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Text feedbackQuery(Tag tag) {
-            return new TranslatableText("commands.data.entity.query", this.entity.getDisplayName(), tag.toText());
+            return new TranslatableText("commands.data.entity.query", this.entity.getDisplayName(), NbtHelper.toPrettyPrintedText(tag));
         }
 
         public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
@@ -169,7 +169,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Text feedbackQuery(Tag tag) {
-            return new TranslatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), tag.toText());
+            return new TranslatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtHelper.toPrettyPrintedText(tag));
         }
 
         public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
@@ -203,7 +203,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Text feedbackQuery(Tag tag) {
-            return new TranslatableText("commands.data.item.query", stack.getName(), tag.toText());
+            return new TranslatableText("commands.data.item.query", stack.getName(), NbtHelper.toPrettyPrintedText(tag));
         }
 
         public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {

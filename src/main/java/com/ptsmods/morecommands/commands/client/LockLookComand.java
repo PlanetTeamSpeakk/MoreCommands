@@ -21,7 +21,7 @@ public class LockLookComand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             if (target != null) {
-                if (target.removed) target = null;
+                if (target.isRemoved()) target = null;
                 else {
                     Vec3d ctr = getPlayer().getPos();
                     Vec3d pos = target.getPos();

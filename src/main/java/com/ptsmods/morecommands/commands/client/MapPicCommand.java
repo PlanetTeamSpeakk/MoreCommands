@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
@@ -182,8 +182,8 @@ public class MapPicCommand extends ClientCommand {
         for (int i = 0; i < state.colors.length; i++) {
             int colour = Byte.toUnsignedInt(state.colors[i]);
             int ac = colour % 4;
-            MaterialColor mcolour = MaterialColor.COLORS[(colour-ac)/4];
-            if (mcolour != MaterialColor.CLEAR) img.setRGB(i % dim, i / dim, getRGB(mcolour, ac));
+            MapColor mcolour = MapColor.COLORS[(colour-ac)/4];
+            if (mcolour != MapColor.CLEAR) img.setRGB(i % dim, i / dim, getRGB(mcolour, ac));
         }
         while (rotation != 0) {
             img = rotateClockwise90(img);
@@ -204,7 +204,7 @@ public class MapPicCommand extends ClientCommand {
         return dest;
     }
 
-    private int getRGB(MaterialColor color, int shade) {
+    private int getRGB(MapColor color, int shade) {
         // The colour used for rendering (MaterialColor#getRenderColor) returns a value
         // that's not RGB, but this is, so we use this instead.
         Color c = new Color(color.color);

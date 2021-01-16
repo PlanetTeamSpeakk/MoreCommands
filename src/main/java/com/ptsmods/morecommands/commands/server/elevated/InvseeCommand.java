@@ -40,7 +40,7 @@ public class InvseeCommand extends Command {
 
             @Override
             public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, syncId, inv, target.inventory, 4) {
+                return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, syncId, inv, target.getInventory(), 4) {
                     @Override
                     public boolean canUse(PlayerEntity player) {
                         return true; // Making sure the container does not close if the distance is or becomes too large.

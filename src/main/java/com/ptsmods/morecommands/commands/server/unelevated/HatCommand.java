@@ -14,8 +14,8 @@ public class HatCommand extends Command {
         dispatcher.register(literal("hat").executes(ctx -> {
             PlayerEntity player = ctx.getSource().getPlayer();
             ItemStack stack = player.getEquippedStack(EquipmentSlot.HEAD);
-            player.inventory.armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());
-            if (PlayerInventory.isValidHotbarIndex(player.inventory.selectedSlot)) player.inventory.main.set(player.inventory.selectedSlot, stack);
+            player.getInventory().armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());
+            if (PlayerInventory.isValidHotbarIndex(player.getInventory().selectedSlot)) player.getInventory().main.set(player.getInventory().selectedSlot, stack);
             return 1;
         }));
     }

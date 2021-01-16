@@ -65,18 +65,18 @@ public class MixinServerPlayNetworkHandler {
         BlockPos blockPos = blockHitResult.getBlockPos();
         Direction direction = blockHitResult.getSide();
         player.updateLastActionTime();
-        if (blockPos.getY() < server.getWorldHeight()) {
+        if (blockPos.getY() < player.world.getTopHeightLimit()) {
             if (requestedTeleportPos == null && player.squaredDistanceTo((double)blockPos.getX() + 0.5D, (double)blockPos.getY() + 0.5D, (double)blockPos.getZ() + 0.5D) < ReachCommand.getReach(player, true) && serverWorld.canPlayerModifyAt(player, blockPos)) {
                 ActionResult actionResult = player.interactionManager.interactBlock(player, serverWorld, itemStack, hand, blockHitResult);
-                if (direction == Direction.UP && !actionResult.isAccepted() && blockPos.getY() >= server.getWorldHeight() - 1 && mc_canPlace(player, itemStack)) {
-                    Text text = (new TranslatableText("build.tooHigh", server.getWorldHeight())).formatted(Formatting.RED);
+                if (direction == Direction.UP && !actionResult.isAccepted() && blockPos.getY() >= player.world.getTopHeightLimit() - 1 && mc_canPlace(player, itemStack)) {
+                    Text text = (new TranslatableText("build.tooHigh", player.world.getTopHeightLimit())).formatted(Formatting.RED);
                     player.networkHandler.sendPacket(new GameMessageS2CPacket(text, MessageType.GAME_INFO, Util.NIL_UUID));
                 } else if (actionResult.shouldSwingHand()) {
                     player.swingHand(hand, true);
                 }
             }
         } else {
-            Text text2 = (new TranslatableText("build.tooHigh", server.getWorldHeight())).formatted(Formatting.RED);
+            Text text2 = (new TranslatableText("build.tooHigh", player.world.getTopHeightLimit())).formatted(Formatting.RED);
             player.networkHandler.sendPacket(new GameMessageS2CPacket(text2, MessageType.GAME_INFO, Util.NIL_UUID));
         }
         player.networkHandler.sendPacket(new BlockUpdateS2CPacket(serverWorld, blockPos));

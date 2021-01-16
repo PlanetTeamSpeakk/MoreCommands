@@ -158,7 +158,7 @@ public class MoreCommands implements ModInitializer {
 
 	static {
 		LATENCY = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(ScoreboardCriterion.class, String.class, boolean.class, ScoreboardCriterion.RenderType.class)), "latency", true, ScoreboardCriterion.RenderType.INTEGER);
-		ScoreboardCriterion.OBJECTIVES.put("latency", LATENCY);
+		ScoreboardCriterion.CRITERIA.put("latency", LATENCY);
 	}
 
 	@Override
@@ -185,7 +185,6 @@ public class MoreCommands implements ModInitializer {
 		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
 			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
 		});
-		//if (theUnsafe != null) return;
 		SPR.register(new Identifier("morecommands:sit_on_stairs"), (ctx, buffer) -> {
 			ServerPlayerEntity player = (ServerPlayerEntity) ctx.getPlayer();
 			BlockPos pos = buffer.readBlockPos();
@@ -328,7 +327,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	private static void sendFormattingUpdate(PlayerEntity p, int id, Formatting colour) {
-		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex()))));
+		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name()))))));
 	}
 
 	private static void sendFormattingUpdate(PlayerEntity p, Packet<?> packet) {
@@ -396,6 +395,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void saveString(File f, String s) throws IOException {
+		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
 		if (!f.exists()) f.createNewFile();
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
 			writer.print(s);
@@ -404,6 +404,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String readString(File f) throws IOException {
+		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
 		if (!f.exists()) f.createNewFile();
 		return String.join("\n", Files.readAllLines(f.toPath()));
 	}
@@ -597,7 +598,8 @@ public class MoreCommands implements ModInitializer {
 				target.refreshPositionAndAngles(x, y, z, f, g);
 				target.setHeadYaw(f);
 				world.onDimensionChanged(target);
-				entity.removed = true;
+				entity.kill();
+				entity.remove(Entity.RemovalReason.KILLED);
 			}
 		}
 		if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
@@ -819,7 +821,7 @@ public class MoreCommands implements ModInitializer {
 		boolean found = false;
 		boolean blockAbove = world.isSkyVisible(entity.getBlockPos());
 		if (!world.isClient) while (!found && !blockAbove) {
-			for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getHeight(); y += 1) {
+			for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getTopHeightLimit(); y += 1) {
 				Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
 				Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
 				if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.isSkyVisible(new BlockPos(x, y, z)))) {
@@ -836,7 +838,7 @@ public class MoreCommands implements ModInitializer {
 
 	// Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
 	public static int getY(BlockView blockView, double x, double z) {
-		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getHeight(), z);
+		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getTopHeightLimit(), z);
 		boolean bl = blockView.getBlockState(mutable).isAir();
 		mutable.move(Direction.DOWN);
 		boolean bl3;
@@ -846,7 +848,7 @@ public class MoreCommands implements ModInitializer {
 			if (!bl3 && bl2 && bl) return mutable.getY() + 1;
 			bl = bl2;
 		}
-		return blockView.getHeight();
+		return blockView.getTopHeightLimit();
 	}
 
 	public static CompoundTag wrapTag(String key, Tag tag) {

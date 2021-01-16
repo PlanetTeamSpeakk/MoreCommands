@@ -219,7 +219,7 @@ public abstract class ClientCommand extends Command {
         if (!getWorld().isChunkLoaded(blockPos)) {
             throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
         } else {
-            if (!ServerWorld.isInBuildLimit(blockPos)) {
+            if (!getWorld().isInBuildLimit(blockPos)) {
                 throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
             } else {
                 return blockPos;

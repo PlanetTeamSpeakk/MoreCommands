@@ -21,7 +21,7 @@ public class RemoveCommand extends Command {
 
     private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) {
         for (Entity entity : targets) {
-            entity.removed = true;
+            entity.setRemoved(Entity.RemovalReason.DISCARDED);
             if (entity instanceof LivingEntity)
                 ReflectionHelper.setYarnFieldValue(LivingEntity.class, "dead", "field_6272", entity, true);
         }

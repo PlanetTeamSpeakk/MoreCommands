@@ -26,7 +26,7 @@ public class SpeedCommand extends Command {
     }
 
     private SpeedType determineSpeedType(ServerPlayerEntity player) {
-        return player.isSubmergedInWater() ? SpeedType.SWIM : player.abilities.flying ? SpeedType.FLY : SpeedType.WALK;
+        return player.isSubmergedInWater() ? SpeedType.SWIM : player.getAbilities().flying ? SpeedType.FLY : SpeedType.WALK;
     }
 
     private int setSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, float speed, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {

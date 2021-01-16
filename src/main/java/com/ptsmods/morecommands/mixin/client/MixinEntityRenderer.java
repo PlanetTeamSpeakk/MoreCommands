@@ -46,7 +46,7 @@ public class MixinEntityRenderer<T extends Entity> {
             Matrix4f matrix4f = matrices.peek().getModel();
             float g = MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25F);
             int j = (int)(g * 255.0F) << 24;
-            TextRenderer textRenderer = dispatcher.getTextRenderer();
+            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             float h = (float)(-textRenderer.getWidth(text) / 2);
             textRenderer.draw(text, h, (float)i, 553648127, false, matrix4f, vertexConsumers, bl, j, light);
             if (bl) {

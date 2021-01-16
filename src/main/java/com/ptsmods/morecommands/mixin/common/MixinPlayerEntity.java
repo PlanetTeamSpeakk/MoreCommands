@@ -87,9 +87,9 @@ public abstract class MixinPlayerEntity {
         return cbi.getReturnValue() != null && cbi.getReturnValue();
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; modifyText(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; decorateName(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
     public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
-        return Team.modifyText(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
+        return Team.decorateName(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
     }
 
     @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")

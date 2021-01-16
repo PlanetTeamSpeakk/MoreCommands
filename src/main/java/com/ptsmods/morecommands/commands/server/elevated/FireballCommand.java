@@ -45,7 +45,7 @@ public class FireballCommand extends Command {
                 else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
                 if (!this.world.isClient) {
                     this.world.createExplosion(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY);
-                    removed = impactsDone.addAndGet(1) >= impacts;
+                    setRemoved(impactsDone.addAndGet(1) >= impacts ? RemovalReason.DISCARDED : null);
                 }
 
             }
@@ -60,7 +60,7 @@ public class FireballCommand extends Command {
                 else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
                 if (!this.world.isClient) {
                     this.world.createExplosion(null, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY );
-                    removed = impactsDone.addAndGet(1) >= impacts;
+                    setRemoved(impactsDone.addAndGet(1) >= impacts ? RemovalReason.DISCARDED : null);
                 }
             }
         };

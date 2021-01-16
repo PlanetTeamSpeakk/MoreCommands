@@ -43,11 +43,11 @@ public class MixinChatScreen {
         boolean b = cbi.getReturnValue();
         if (!b) {
             ChatHud chatHud = MinecraftClient.getInstance().inGameHud.getChatHud();
-            ChatHudLine line = mc_getLine(chatHud, mouseX, mouseY);
+            ChatHudLine<Text> line = mc_getLine(chatHud, mouseX, mouseY);
             if (line != null)
                 if (button == 0 && ClientOptions.Chat.chatMsgCopy) {
                     // Copies a message's content when you click on it in the chat.
-                    Text t = (Text) line.getText();
+                    Text t = line.getText();
                     if (t != null) {
                         try {
                             String s = MoreCommands.textToString(t, null, true);
@@ -67,10 +67,10 @@ public class MixinChatScreen {
     }
 
     // Just the same as ChatHud#getText, but actually returns a ChatHudLine object rather than a Style object.
-    public ChatHudLine mc_getLine(ChatHud hud, double x, double y) {
+    public ChatHudLine<Text> mc_getLine(ChatHud hud, double x, double y) {
         MinecraftClient client = MinecraftClient.getInstance();
-        List<ChatHudLine> visibleMessages = null;
-        List<ChatHudLine> messages = null;
+        List<ChatHudLine<OrderedText>> visibleMessages = null;
+        List<ChatHudLine<Text>> messages = null;
         int scrolledLines = -1;
         try {
             visibleMessages = ReflectionHelper.getFieldValue(mc_visibleMessagesField, hud);
@@ -87,13 +87,11 @@ public class MixinChatScreen {
             if (d >= 0.0D && e >= 0.0D) {
                 int i = Math.min(hud.getVisibleLineCount(), visibleMessages.size());
                 if (d <= (double) MathHelper.floor((double) hud.getWidth() / hud.getChatScale())) {
-                    client.textRenderer.getClass();
                     if (e < (double) (9 * i + i)) {
-                        client.textRenderer.getClass();
                         int j = (int)(e / 9.0D + (double) scrolledLines);
                         if (j >= 0 && j < visibleMessages.size()) {
-                            ChatHudLine chatHudLine = visibleMessages.get(j);
-                            for (ChatHudLine line : messages)
+                            ChatHudLine<OrderedText> chatHudLine = visibleMessages.get(j);
+                            for (ChatHudLine<Text> line : messages)
                                 if (line.getId() == chatHudLine.getId())
                                     return line;
                         }
@@ -123,7 +121,7 @@ public class MixinChatScreen {
                     index = i;
                     break;
                 }
-            if (index >= 0) chat.scroll(index - scrolled - chat.getVisibleLineCount() + ( SearchCommand.lines.containsKey(id) ? MinecraftClient.getInstance().textRenderer.getTextHandler().wrapLines(SearchCommand.lines.get(id).getText(), chat.getWidth(), Style.EMPTY).size() : 0));
+            if (index >= 0) chat.scroll(index - scrolled - chat.getVisibleLineCount() + (SearchCommand.lines.containsKey(id) ? MinecraftClient.getInstance().textRenderer.getTextHandler().wrapLines(SearchCommand.lines.get(id).getText(), chat.getWidth(), Style.EMPTY).size() : 0));
             return true;
         }
         return thiz.handleTextClick(style);
