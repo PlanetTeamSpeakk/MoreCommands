@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -16,8 +17,10 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -34,6 +37,7 @@ public abstract class Command {
     public static final Logger log = MoreCommands.log;
     public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getMinecraftServer().getOpPermissionLevel());
     private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
+    private static final Map<Class<?>, Map<Event<?>, Object>> registeredCallbacks = new HashMap<>();
 
     public void preinit() throws Exception {}
 
@@ -147,30 +151,26 @@ public abstract class Command {
     // join a new world.
     // Which means that exiting and joining a world would cause the same callback to be
     // registered twice.
+    // So to avoid that, I initially used the Proxy class, although that wasn't really working out for me,
+    // so I ended up just removing the previously registered callback instead.
     protected <T> void registerCallback(Event<T> event, T callback) {
-        if (callback.getClass().getInterfaces().length == 0) log.error("Tried to register callback " + callback + " for event " + event + ", but it did not implement an interface.");
-        else {
-            Class<?> inter = callback.getClass().getInterfaces()[0];
-            T proxy = ReflectionHelper.cast(Proxy.newProxyInstance(inter.getClassLoader(), new Class[] {inter}, (proxyObj, method, args) -> {
-                if (isActiveInstance())
-                    return method.invoke(callback, args);
-                switch (method.getReturnType().getName()) {
-                    case "byte":
-                    case "char":
-                    case "double":
-                    case "float":
-                    case "int":
-                    case "long":
-                    case "short":
-                        return 0;
-                    case "boolean":
-                        return false;
-                    default:
-                        return null;
-                }
-            }));
-            event.register(proxy);
+        Class<?> c = null;
+        try {
+            c = Class.forName("net.fabricmc.fabric.impl.base.event.ArrayBackedEvent");
+        } catch (ClassNotFoundException e) {
+            log.error("Could not find ArrayBackedEvent class.", e);
         }
+        if (event.getClass() == c && registeredCallbacks.containsKey(getClass()) && registeredCallbacks.get(getClass()).getOrDefault(event, null) != null) {
+            Field handlersField = ReflectionHelper.getField(c, "handlers");
+            T[] handlers = ReflectionHelper.getFieldValue(handlersField, event);
+            if (handlers != null) {
+                ReflectionHelper.setFieldValue(handlersField, event, ArrayUtils.removeElement(handlers, registeredCallbacks.get(getClass()).get(event)));
+                ReflectionHelper.invokeMethod(c, "update", null, event);
+            }
+        }
+        if (callback != null) event.register(callback); // So you can unregister callbacks by passing null as a callback to this method.
+        if (!registeredCallbacks.containsKey(getClass())) registeredCallbacks.put(getClass(), new HashMap<>());
+        registeredCallbacks.get(getClass()).put(event, callback);
     }
 
 }

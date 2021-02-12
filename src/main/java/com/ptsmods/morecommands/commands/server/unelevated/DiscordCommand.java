@@ -8,6 +8,7 @@ import com.ptsmods.morecommands.miscellaneous.Command;
 import net.arikia.dev.drpc.DiscordUser;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -26,20 +27,27 @@ public class DiscordCommand extends Command {
     private static String discordUrl = null;
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void init(MinecraftServer server) throws Exception {
         if (new File("config/MoreCommands/discordUrl.url").exists()) MoreCommands.tryMove("config/MoreCommands/discordUrl.url", MoreCommands.getRelativePath() + "discordUrl.url");
         dataFile = new File(MoreCommands.getRelativePath() + "discordUrl.url");
         try {
-            discordUrl = MoreCommands.readString(dataFile).split("\n")[1].split("=", 2)[1];
+            discordUrl = MoreCommands.readString(dataFile);
+            if (discordUrl.isEmpty()) discordUrl = null;
+            else discordUrl = discordUrl.split("\n")[1].split("=", 2)[1];
         } catch (IOException e) {
             log.catching(e);
         }
-        try {
-            new URL(discordUrl);
-        } catch (MalformedURLException e) {
-            discordUrl = null;
-            dataFile.delete();
-        }
+        if (discordUrl != null)
+            try {
+                new URL(discordUrl);
+            } catch (MalformedURLException e) {
+                discordUrl = null;
+                dataFile.delete();
+            }
+    }
+
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("discord").executes(ctx -> {
             sendMsg(ctx, discordUrl == null ? Formatting.RED + "This server does not have a Discord url set." : "Join our Discord server at " + Formatting.BLUE + Formatting.UNDERLINE + discordUrl + DF + ".");
             return 1;

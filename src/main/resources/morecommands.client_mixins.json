@@ -34,6 +34,7 @@
     "MixinWorldRenderer",
     "MixinInGameHud",
     "MixinTitleScreen",
+    "MixinPlayerEntity",
     "MixinTextColor"
   ],
   "injectors": {

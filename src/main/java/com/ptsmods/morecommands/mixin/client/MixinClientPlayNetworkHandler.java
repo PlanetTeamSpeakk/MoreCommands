@@ -26,7 +26,7 @@ import java.util.Map;
 public class MixinClientPlayNetworkHandler {
 
     @Shadow private CommandDispatcher<CommandSource> commandDispatcher;
-    private boolean mc_isInitialised = false;
+    private static boolean mc_isInitialised = false;
 
     @Inject(at = @At("TAIL"), method = "onCommandTree(Lnet/minecraft/network/packet/s2c/play/CommandTreeS2CPacket;)V")
     public void onCommandTree(CommandTreeS2CPacket packet, CallbackInfo cbi) {

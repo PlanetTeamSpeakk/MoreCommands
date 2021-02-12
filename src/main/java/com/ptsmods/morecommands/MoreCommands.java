@@ -151,7 +151,6 @@ public class MoreCommands implements ModInitializer {
 	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
-	public static final Formatting RAINBOW = Rainbow.RAINBOW;
 	private static final Executor executor = Executors.newCachedThreadPool();
 	public static Unsafe theUnsafe = ReflectionHelper.getFieldValue(Unsafe.class, "theUnsafe", null);
 	private static Environment environment = null;
@@ -895,10 +894,6 @@ public class MoreCommands implements ModInitializer {
 
 	public static boolean isSingleplayer() {
 		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
-	}
-
-	public static boolean checkImmediateMoveStop(PlayerEntity p) {
-		return p instanceof net.minecraft.client.network.ClientPlayerEntity && ((net.minecraft.client.network.ClientPlayerEntity) p).input.movementForward == 0 && ((net.minecraft.client.network.ClientPlayerEntity) p).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop;
 	}
 
 }

@@ -95,14 +95,4 @@ public abstract class MixinPlayerEntity {
         return Team.decorateName(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
     }
 
-    @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")
-    protected float getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
-        PlayerEntity thiz = ReflectionHelper.cast(this);
-        if (cpe == null && FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
-            try {
-                cpe = Class.forName("net.minecraft.client.network.ClientPlayerEntity");
-            } catch (Exception ignored) {}
-        return cpe != null && cpe.isAssignableFrom(thiz.getClass()) && MoreCommands.checkImmediateMoveStop(thiz) ? 0f : cbi.getReturnValueF();
-    }
-
 }
