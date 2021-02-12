@@ -20,7 +20,7 @@ public class AscendCommand extends Command {
             double x = pos.x;
             double y = pos.y + 2;
             double z = pos.z;
-            for (; y < world.getTopHeightLimit(); y++) {
+            for (; y < world.getHeight(); y++) {
                 Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
                 Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
                 Block tpblock2 = world.getBlockState(new BlockPos(x, y + 1, z)).getBlock();

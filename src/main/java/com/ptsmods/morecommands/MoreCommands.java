@@ -575,7 +575,7 @@ public class MoreCommands implements ModInitializer {
 	public static void teleport(Entity target, ServerWorld world, double x, double y, double z, float yaw, float pitch) {
 		if (target instanceof ServerPlayerEntity) {
 			ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-			world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, target.getEntityId());
+			world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, target.getId());
 			target.stopRiding();
 			if (((ServerPlayerEntity) target).isSleeping()) ((ServerPlayerEntity) target).wakeUp(true, true);
 			if (world == target.world)
@@ -821,7 +821,7 @@ public class MoreCommands implements ModInitializer {
 		boolean found = false;
 		boolean blockAbove = world.isSkyVisible(entity.getBlockPos());
 		if (!world.isClient) while (!found && !blockAbove) {
-			for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getTopHeightLimit(); y += 1) {
+			for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getHeight(); y += 1) {
 				Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
 				Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
 				if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.isSkyVisible(new BlockPos(x, y, z)))) {
@@ -838,7 +838,7 @@ public class MoreCommands implements ModInitializer {
 
 	// Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
 	public static int getY(BlockView blockView, double x, double z) {
-		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getTopHeightLimit(), z);
+		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getHeight(), z);
 		boolean bl = blockView.getBlockState(mutable).isAir();
 		mutable.move(Direction.DOWN);
 		boolean bl3;
@@ -848,7 +848,7 @@ public class MoreCommands implements ModInitializer {
 			if (!bl3 && bl2 && bl) return mutable.getY() + 1;
 			bl = bl2;
 		}
-		return blockView.getTopHeightLimit();
+		return blockView.getHeight();
 	}
 
 	public static CompoundTag wrapTag(String key, Tag tag) {
@@ -895,6 +895,10 @@ public class MoreCommands implements ModInitializer {
 
 	public static boolean isSingleplayer() {
 		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
+	}
+
+	public static boolean checkImmediateMoveStop(PlayerEntity p) {
+		return p instanceof net.minecraft.client.network.ClientPlayerEntity && ((net.minecraft.client.network.ClientPlayerEntity) p).input.movementForward == 0 && ((net.minecraft.client.network.ClientPlayerEntity) p).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop;
 	}
 
 }

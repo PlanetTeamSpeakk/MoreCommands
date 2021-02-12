@@ -18,17 +18,14 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.event.network.S2CPacketTypeCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -42,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @Environment(EnvType.CLIENT)

@@ -5,7 +5,7 @@ import com.ptsmods.morecommands.gui.ClientOptionsScreen;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.options.OptionsScreen;
+import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.LiteralText;

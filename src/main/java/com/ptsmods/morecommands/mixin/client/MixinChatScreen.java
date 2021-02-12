@@ -10,7 +10,7 @@ import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.options.ChatVisibility;
+import net.minecraft.client.option.ChatVisibility;
 import net.minecraft.client.util.Clipboard;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -24,7 +24,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 

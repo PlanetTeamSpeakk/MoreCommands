@@ -5,7 +5,8 @@ import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import com.ptsmods.morecommands.miscellaneous.SpeedType;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,6 +30,8 @@ import java.util.Optional;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity {
+
+    private static Class<?> cpe = null;
 
     @Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;")
     private static DefaultAttributeContainer.Builder createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
@@ -95,7 +98,11 @@ public abstract class MixinPlayerEntity {
     @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")
     protected float getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
         PlayerEntity thiz = ReflectionHelper.cast(this);
-        return thiz instanceof ClientPlayerEntity && ((ClientPlayerEntity) thiz).input.movementForward == 0 && ((ClientPlayerEntity) thiz).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop ? 0f : cbi.getReturnValueF();
+        if (cpe == null && FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+            try {
+                cpe = Class.forName("net.minecraft.client.network.ClientPlayerEntity");
+            } catch (Exception ignored) {}
+        return cpe != null && cpe.isAssignableFrom(thiz.getClass()) && MoreCommands.checkImmediateMoveStop(thiz) ? 0f : cbi.getReturnValueF();
     }
 
 }

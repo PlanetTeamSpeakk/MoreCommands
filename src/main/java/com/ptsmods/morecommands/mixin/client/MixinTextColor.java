@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Rainbow;

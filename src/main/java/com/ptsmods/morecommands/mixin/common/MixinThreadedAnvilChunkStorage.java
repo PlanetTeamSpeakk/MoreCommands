@@ -30,7 +30,7 @@ public class MixinThreadedAnvilChunkStorage {
     public void unloadEntity(Entity entity, CallbackInfo cbi) {
         if (entity instanceof ServerPlayerEntity && entity.getDataTracker().get(MoreCommands.VANISH_TOGGLED)) {
             cbi.cancel();
-            Object tracker = entityTrackers.remove(entity.getEntityId());
+            Object tracker = entityTrackers.remove(entity.getId());
             if (tracker != null) {
                 if (mc_stopTrackingMethod == null) mc_stopTrackingMethod = ReflectionHelper.getYarnMethod(tracker.getClass(), "stopTracking", "method_18733");
                 if (mc_entryField == null) mc_entryField = ReflectionHelper.getYarnField(tracker.getClass(), "entry", "field_18246");

@@ -85,7 +85,7 @@ public class MixinServerPlayerInteractionManager {
                     mining = true;
                     miningPos = pos.toImmutable();
                     int i = (int)(h * 10.0F);
-                    world.setBlockBreakingInfo(player.getEntityId(), pos, i);
+                    world.setBlockBreakingInfo(player.getId(), pos, i);
                     player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, true, "actual start of destroying"));
                     blockBreakingProgress = i;
                 }
@@ -97,7 +97,7 @@ public class MixinServerPlayerInteractionManager {
                         float k = blockState.calcBlockBreakingDelta(player, player.world, pos) * (float)(j + 1);
                         if (k >= 0.7F) {
                             mining = false;
-                            world.setBlockBreakingInfo(player.getEntityId(), pos, -1);
+                            world.setBlockBreakingInfo(player.getId(), pos, -1);
                             player.interactionManager.finishMining(pos, action, "destroyed");
                             return;
                         }
@@ -116,10 +116,10 @@ public class MixinServerPlayerInteractionManager {
                 mining = false;
                 if (!Objects.equals(miningPos, pos)) {
                     LOGGER.warn("Mismatch in destroy block pos: " + miningPos + " " + pos);
-                    world.setBlockBreakingInfo(player.getEntityId(), miningPos, -1);
+                    world.setBlockBreakingInfo(player.getId(), miningPos, -1);
                     player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(miningPos, world.getBlockState(miningPos), action, true, "aborted mismatched destroying"));
                 }
-                world.setBlockBreakingInfo(player.getEntityId(), pos, -1);
+                world.setBlockBreakingInfo(player.getId(), pos, -1);
                 player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, true, "aborted destroying"));
             }
 
