@@ -33,7 +33,9 @@
     "MixinBiome",
     "MixinWorldRenderer",
     "MixinInGameHud",
-    "MixinTitleScreen"
+    "MixinTitleScreen",
+    "MixinPlayerEntity",
+    "MixinTextColor"
   ],
   "injectors": {
     "defaultRequire": 1

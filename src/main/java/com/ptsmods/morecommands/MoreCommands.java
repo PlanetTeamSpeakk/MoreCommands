@@ -12,6 +12,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
+import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.commands.server.elevated.*;
 import com.ptsmods.morecommands.miscellaneous.*;
 import io.netty.buffer.Unpooled;
@@ -185,7 +186,6 @@ public class MoreCommands implements ModInitializer {
 		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
 			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
 		});
-		//if (theUnsafe != null) return;
 		SPR.register(new Identifier("morecommands:sit_on_stairs"), (ctx, buffer) -> {
 			ServerPlayerEntity player = (ServerPlayerEntity) ctx.getPlayer();
 			BlockPos pos = buffer.readBlockPos();
@@ -328,7 +328,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	private static void sendFormattingUpdate(PlayerEntity p, int id, Formatting colour) {
-		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex()))));
+		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name()))))));
 	}
 
 	private static void sendFormattingUpdate(PlayerEntity p, Packet<?> packet) {
@@ -396,6 +396,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void saveString(File f, String s) throws IOException {
+		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
 		if (!f.exists()) f.createNewFile();
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
 			writer.print(s);
@@ -404,6 +405,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String readString(File f) throws IOException {
+		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
 		if (!f.exists()) f.createNewFile();
 		return String.join("\n", Files.readAllLines(f.toPath()));
 	}

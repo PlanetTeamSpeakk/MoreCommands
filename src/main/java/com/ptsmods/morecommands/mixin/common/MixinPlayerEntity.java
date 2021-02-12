@@ -92,10 +92,4 @@ public abstract class MixinPlayerEntity {
         return Team.modifyText(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
     }
 
-    @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")
-    protected float getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
-        PlayerEntity thiz = ReflectionHelper.cast(this);
-        return thiz instanceof ClientPlayerEntity && ((ClientPlayerEntity) thiz).input.movementForward == 0 && ((ClientPlayerEntity) thiz).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop ? 0f : cbi.getReturnValueF();
-    }
-
 }

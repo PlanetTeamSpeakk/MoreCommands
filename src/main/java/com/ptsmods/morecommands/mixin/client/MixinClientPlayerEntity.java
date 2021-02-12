@@ -42,8 +42,7 @@ public class MixinClientPlayerEntity {
                 } catch (CommandSyntaxException e) {
                     ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
                 } catch (Exception e) {
-                    Text msg = new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED));
-                    ClientCommand.sendMsg(msg);
+                    ClientCommand.sendMsg(new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
                     MoreCommands.log.catching(e);
                 }
                 return;

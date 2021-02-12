@@ -15,6 +15,11 @@ import java.util.*;
 // Also take a look at MixinTextVisitFactory and MixinTextColor
 public class Rainbow {
 
+    public static int rainbowIndex = 0;
+    public static final List<Color> rainbowColours;
+    public static final Formatting RAINBOW = ReflectionHelper.newEnumInstance(Formatting.class, new Class[] {String.class, char.class, boolean.class}, "RAINBOW", "RAINBOW", 'u', true);;
+    public static final TextColor RAINBOW_TC = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(TextColor.class, int.class, String.class)), 0, "rainbow");
+
     static {
         List<Color> colours = new ArrayList<>();
         for (int r=0; r<=100; r++) colours.add(new Color(r*255/100,       255,         0));
@@ -26,22 +31,15 @@ public class Rainbow {
         rainbowColours = ImmutableList.copyOf(colours); // Looks better than just going through hue with HSB imo tbh.
         // No so-called 'private' or 'final' field is safe from reflection. >:D
         // Not even if it's 'immutable'. smhh
-        Formatting form = RAINBOW = ReflectionHelper.newEnumInstance(Formatting.class, new Class[] {String.class, char.class, boolean.class}, "RAINBOW", "RAINBOW", 'u', true); // Avoiding forward reference.
-        TextColor tc = RAINBOW_TC = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(TextColor.class, int.class, String.class)), 0, "rainbow"); // Avoiding forward reference.
         Field f = ReflectionHelper.getYarnField(TextColor.class, "FORMATTING_TO_COLOR", "field_24362");
         Map<Formatting, TextColor> formattingToColor = new HashMap<>(ReflectionHelper.getFieldValue(f, null));
-        formattingToColor.put(form, tc);
+        formattingToColor.put(RAINBOW, RAINBOW_TC);
         ReflectionHelper.setFieldValue(f, null, ImmutableMap.copyOf(formattingToColor));
         f = ReflectionHelper.getYarnField(TextColor.class, "BY_NAME", "field_24363");
         Map<String, TextColor> byName = new HashMap<>(ReflectionHelper.getFieldValue(f, null));
-        byName.put("rainbow", tc);
+        byName.put("rainbow", RAINBOW_TC);
         ReflectionHelper.setFieldValue(f, null, ImmutableMap.copyOf(byName));
     }
-
-    public static int rainbowIndex = 0;
-    public static final List<Color> rainbowColours;
-    public static final Formatting RAINBOW;
-    public static final TextColor RAINBOW_TC;
 
     public static int getRainbowColour(boolean includeIndex) {
         return getRainbowColour(includeIndex, 1f);

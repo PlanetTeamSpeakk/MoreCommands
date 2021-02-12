@@ -3,12 +3,10 @@ package com.ptsmods.morecommands.miscellaneous;
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import org.apache.commons.lang3.ArrayUtils;
-import sun.reflect.ConstructorAccessor;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class ReflectionHelper {
 
@@ -164,30 +162,23 @@ public class ReflectionHelper {
 
     public static <T extends Enum<T>> T newEnumInstance(Class<? extends T> clazz, Class<?>[] parameterTypes, String name, Object... parameterArguments) {
         Constructor<? extends T> cons = getConstructor(clazz, ArrayUtils.addAll(new Class[] {String.class, int.class}, parameterTypes));
-        ConstructorAccessor ca = getFieldValue(Constructor.class, "constructorAccessor", cons);
+        Object ca = getFieldValue(Constructor.class, "constructorAccessor", cons);
         if (ca == null) ca = invokeMethod(Constructor.class, "acquireConstructorAccessor", null, cons);
         if (ca == null) {
             MoreCommands.log.error("Could not acquire ConstructorAccessor for class " + clazz.getName() + ".");
             return null;
         }
-        T instance;
-        try {
-            instance = cast(ca.newInstance(ArrayUtils.addAll(new Object[] {name, clazz.getEnumConstants().length}, parameterArguments)));
-        } catch (InstantiationException | InvocationTargetException e) {
-            MoreCommands.log.catching(e);
-            return null;
-        }
+        T instance = cast(invokeMethod(ca.getClass(), "newInstance", new Class[] {Object[].class}, ca, new Object[] {ArrayUtils.addAll(new Object[] {name, clazz.getEnumConstants().length}, parameterArguments)}));
         // Following code gets the values field of the Enum class.
         // Thanks to Forge for this one https://github.com/ExtrabiomesXL/forge/blob/master/common/net/minecraftforge/common/EnumHelper.java#L205
         int flags = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL | 0x1000 /*SYNTHETIC*/;
         String valueType = String.format("[L%s;", clazz.getName().replace('.', '/'));
         Field valuesField = null;
-        for (Field field : clazz.getDeclaredFields()) {
+        for (Field field : clazz.getDeclaredFields())
             if ((field.getModifiers() & flags) == flags && field.getType().getName().replace('.', '/').equals(valueType)) { //Apparently some JVMs return .'s and some don't..
                 valuesField = field;
                 break;
             }
-        }
         if (valuesField == null) {
             MoreCommands.log.error("Could not find values field of Enum class.");
             return null;
