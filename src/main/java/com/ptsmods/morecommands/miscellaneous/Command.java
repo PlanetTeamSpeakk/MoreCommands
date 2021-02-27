@@ -45,6 +45,10 @@ public abstract class Command {
 
     public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
 
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) throws Exception {
+        register(dispatcher);
+    }
+
     public boolean forDedicated() {
         return false;
     }

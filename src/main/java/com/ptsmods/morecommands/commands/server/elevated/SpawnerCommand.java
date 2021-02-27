@@ -34,9 +34,9 @@ public class SpawnerCommand extends Command {
                     ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
                     CompoundTag tag = stack.getOrCreateTag();
                     if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
-                        logic.fromTag(world, pos, tag);
+                        logic.readNbt(world, pos, tag);
                     logic.setEntityId(type);
-                    (tag = new CompoundTag()).put("BlockEntityTag", logic.toTag(world, pos, new CompoundTag()));
+                    (tag = new CompoundTag()).put("BlockEntityTag", logic.writeNbt(world, pos, new CompoundTag()));
                     ((CompoundTag) tag.getCompound("BlockEntityTag").getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
                     stack.setTag(tag);
                     sendMsg(ctx, "Poof!");
@@ -46,9 +46,9 @@ public class SpawnerCommand extends Command {
                 MobSpawnerBlockEntity be = (MobSpawnerBlockEntity) ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
                 MobSpawnerLogic logic = be.getLogic();
                 logic.setEntityId(type);
-                CompoundTag tag = logic.toTag(world, pos, new CompoundTag());
+                CompoundTag tag = logic.writeNbt(world, pos, new CompoundTag());
                 ((CompoundTag) tag.getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
-                logic.fromTag(world, pos, tag);
+                logic.readNbt(world, pos, tag);
                 be.markDirty();
                 ctx.getSource().getWorld().updateListeners(result.getBlockPos(), state, state, 3);
                 sendMsg(ctx, "Poof!");

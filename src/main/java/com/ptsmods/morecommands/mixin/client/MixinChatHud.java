@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Mixin(ChatHud.class)
 public abstract class MixinChatHud {
@@ -41,7 +42,7 @@ public abstract class MixinChatHud {
 
     @Overwrite
     public void addMessage(Text message) {
-        if (ClientOptions.Chat.ignoreEmptyMsgs && Formatting.strip(MoreCommands.textToString(message, null)).trim().isEmpty()) return;
+        if (ClientOptions.Chat.ignoreEmptyMsgs && Objects.requireNonNull(Formatting.strip(MoreCommands.textToString(message, null))).trim().isEmpty()) return;
         if (message instanceof LiteralText && "\u00A0".equals(message.asString())) message = new LiteralText("");
         addMessage(message, mc_id++); // Making sure not all ChatHudLines have an id of 0 which breaks the getText method in MixinChatScreen.
     }

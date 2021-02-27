@@ -59,7 +59,7 @@ public class VanishCommand extends Command {
     public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
         player.getDataTracker().set(MoreCommands.VANISH, true);
         player.getDataTracker().set(MoreCommands.VANISH_TOGGLED, true);
-        player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.REMOVE_PLAYER, player));
+        player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.class_5893.field_29140, player));
         player.getServerWorld().getChunkManager().unloadEntity(player);
         if (sendmsg && player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.left", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
     }
@@ -67,7 +67,7 @@ public class VanishCommand extends Command {
     public static void unvanish(ServerPlayerEntity player) {
         if (player.getDataTracker().get(MoreCommands.VANISH)) {
             player.getDataTracker().set(MoreCommands.VANISH, false);
-            player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
+            player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.class_5893.field_29136, player));
             trackers.remove(player);
             player.getServerWorld().getChunkManager().loadEntity(player);
             if (player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.joined", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);

@@ -88,9 +88,9 @@ public class ClientOptions {
         public static boolean sitOnStairs = true;
         @Comment({"Prevent your elytra from opening when you press space.", "For if you want to wear it, but not use it.", "(In e.g. pvp areas of survival servers or during parkour)"})
         public static boolean disableElytra = false;
-        @Comment({"Allows you to make the lines on signs longer.", "Lines are still cut when rendering, but", "it's very useful for putting colours on signs."})
+        @Comment({"Allows you to make the lines on signs longer.", "Lines are still cut when rendering (so no giant lines),", "but it's very useful for putting colours on signs."})
         public static boolean noSignLimit = true;
-        @Comment({"Whether flying should be locked.", "When true, you will always be flying.", "It is recommended to bind this option to a key."})
+        @Comment({"Whether flying should be locked.", "When true, you will always be flying.", "It is recommended to bind this option to a key", "if you find yourself often needing it."})
         public static boolean lockFlying = false;
         @Comment({"Whether you can target fluids with your cursor.", "Useful for placing blocks on water."})
         public static boolean targetFluids = false;
@@ -104,6 +104,12 @@ public class ClientOptions {
         public static boolean rainbowSplash = false;
         @Comment({"Whether to make the title screen always say", "'Minceraft' instead of 'Minecraft'.", "As you may or may not know, by default it has a 0.1% chance.", "\u00A7cRequires restart"})
         public static boolean alwaysMinceraft = false;
+        @Comment({"Whether you want to be able to open screens like", "chat or inventory while teleporting in a nether portal."})
+        public static boolean screensInPortal = true;
+        @Comment({"Whether the 'Colours' button should be displayed", "on most GUIs that support colours in text input.", "(Signs, books, anvils and chat for now)"})
+        public static boolean textColourPicker = true;
+        @Comment({"Whether the 'Colours' button should always be expanded", "when first opening a GUI that has it."})
+        public static boolean colourPickerOpen = false;
     }
 
     @Comment({"Some less harmless tweaks.", "All of them are set to mimic the default behaviour of Minecraft.", "Meaning that their default values don't change anything.", "", "\u00A7cTo prevent you getting an unfair advantage,", "\u00A7cthese options only affect singleplayer worlds."})
@@ -141,7 +147,7 @@ public class ClientOptions {
     @IsHidden("hiddenOptions")
     public static class EasterEggs {
         public static final int ordinal = 5;
-        @Comment({"Everything is \u00A7urainbows\u00A7r.", "\u00A7lEverything"})
+        @Comment({"Everything is \u00A7urainbows\u00A7r.", "\u00A7lEverything", "\u00A74Not suitable for people prone to epileptic seizures!"})
         public static boolean rainbows = false;
     }
 

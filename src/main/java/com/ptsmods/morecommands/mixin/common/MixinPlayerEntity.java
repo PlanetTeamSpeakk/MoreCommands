@@ -53,8 +53,8 @@ public abstract class MixinPlayerEntity {
         tracker.startTracking(MoreCommands.VANISH_TOGGLED, false);
     }
 
-    @Inject(at = @At("TAIL"), method = "readCustomDataFromTag(Lnet/minecraft/nbt/CompoundTag;)V")
-    public void readCustomDataFromTag(CompoundTag tag, CallbackInfo cbi) {
+    @Inject(at = @At("TAIL"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/CompoundTag;)V")
+    public void readCustomDataFromNbt(CompoundTag tag, CallbackInfo cbi) {
         DataTracker dataTracker = ReflectionHelper.<PlayerEntity>cast(this).getDataTracker();
         if (tag.contains("MayFly", 1)) dataTracker.set(MoreCommands.MAY_FLY, tag.getBoolean("MayFly"));
         if (tag.contains("Invulnerable", 1)) dataTracker.set(MoreCommands.INVULNERABLE, tag.getBoolean("Invulnerable"));
@@ -65,8 +65,8 @@ public abstract class MixinPlayerEntity {
         if (tag.contains("Nickname",8)) dataTracker.set(MoreCommands.NICKNAME, Optional.ofNullable(Text.Serializer.fromJson(tag.getString("Nickname"))));
     }
 
-    @Inject(at = @At("TAIL"), method = "writeCustomDataToTag(Lnet/minecraft/nbt/CompoundTag;)V")
-    public void writeCustomDataToTag(CompoundTag tag, CallbackInfo cbi) {
+    @Inject(at = @At("TAIL"), method = "writeCustomDataToNbt(Lnet/minecraft/nbt/CompoundTag;)V")
+    public void writeCustomDataToNbt(CompoundTag tag, CallbackInfo cbi) {
         DataTracker dataTracker = ReflectionHelper.<PlayerEntity>cast(this).getDataTracker();
         tag.putBoolean("MayFly", dataTracker.get(MoreCommands.MAY_FLY));
         tag.putBoolean("Invulnerable", dataTracker.get(MoreCommands.INVULNERABLE));

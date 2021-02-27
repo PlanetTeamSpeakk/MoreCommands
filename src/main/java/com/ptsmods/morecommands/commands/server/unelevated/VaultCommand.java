@@ -58,12 +58,12 @@ public class VaultCommand extends Command {
         SimpleInventory inv = new SimpleInventory(rows * 9);
         ListTag vault = list.getList(id-1);
         for (int i = 0; i < vault.size(); i++)
-            inv.setStack(i, ItemStack.fromTag(vault.getCompound(i)));
+            inv.setStack(i, ItemStack.fromNbt(vault.getCompound(i)));
         inv.addListener(inventory -> {
             list.remove(id-1);
             ListTag stacks = new ListTag();
             for (int i = 0; i < inv.size(); i++)
-                stacks.add(inv.getStack(i).toTag(new CompoundTag()));
+                stacks.add(inv.getStack(i).writeNbt(new CompoundTag()));
             list.add(id-1, stacks);
             player.getDataTracker().set(MoreCommands.VAULTS, MoreCommands.wrapTag("Vaults", list));
         });

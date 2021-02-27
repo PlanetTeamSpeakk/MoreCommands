@@ -1,10 +1,9 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import net.minecraft.class_5575;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.predicate.NumberRange;
+import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +28,7 @@ public interface MixinEntitySelector {
     @Accessor Predicate<Entity> getBasePredicate();
     @Accessor Box getBox();
     @Accessor NumberRange.FloatRange getDistance();
-    @Accessor class_5575<Entity, ?> getType();
+    @Accessor TypeFilter<Entity, ?> getEntityFilter();
     @Invoker Predicate<Entity> callGetPositionPredicate(Vec3d vec);
 
 }

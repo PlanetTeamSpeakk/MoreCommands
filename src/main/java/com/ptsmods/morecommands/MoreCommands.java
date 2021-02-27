@@ -20,15 +20,15 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.network.C2SPacketTypeCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.impl.networking.server.ServerNetworkingImpl;
 import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
@@ -59,7 +59,9 @@ import net.minecraft.server.command.TestCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -106,38 +108,38 @@ public class MoreCommands implements ModInitializer {
 	public static Formatting SF = Formatting.YELLOW;
 	public static Style DS = Style.EMPTY.withColor(DF);
 	public static Style SS = Style.EMPTY.withColor(SF);
-	public static GameRules.Key<EnumRule<FormattingColour>> DFrule;
-	public static GameRules.Key<EnumRule<FormattingColour>> SFrule;
-	public static GameRules.Key<GameRules.BooleanRule> doMeltRule;
-	public static GameRules.Key<GameRules.IntRule> maxHomesRule;
-	public static GameRules.Key<GameRules.BooleanRule> silkSpawnersRule;
-	public static GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule;
-	public static GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule;
-	public static GameRules.Key<GameRules.IntRule> hopperTransferRateRule;
-	public static GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule;
-	public static GameRules.Key<GameRules.BooleanRule> doJoinMessageRule;
-	public static GameRules.Key<GameRules.BooleanRule> doExplosionsRule;
-	public static GameRules.Key<GameRules.IntRule> wildLimitRule;
-	public static GameRules.Key<GameRules.IntRule> tpaTimeoutRule;
-	public static GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule;
-	public static GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule;
-	public static GameRules.Key<GameRules.IntRule> vaultRowsRule;
-	public static GameRules.Key<GameRules.IntRule> vaultsRule;
-	public static GameRules.Key<GameRules.IntRule> nicknameLimitRule;
-	public static GameRules.Key<GameRules.BooleanRule> doSignColoursRule;
-	public static GameRules.Key<GameRules.BooleanRule> doBookColoursRule;
-	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule;
+	public static CustomGameRuleCategory grc = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(Formatting.GOLD).withBold(true)));
+	public static GameRules.Key<EnumRule<FormattingColour>> DFrule = GameRuleRegistry.register("defaultFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));;
+	public static GameRules.Key<EnumRule<FormattingColour>> SFrule = GameRuleRegistry.register("secondaryFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
+	public static GameRules.Key<GameRules.BooleanRule> doMeltRule = GameRuleRegistry.register("doMelt", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.IntRule> maxHomesRule = GameRuleRegistry.register("maxHomes", grc, GameRuleFactory.createIntRule(3, -1));
+	public static GameRules.Key<GameRules.BooleanRule> doSilkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", grc, GameRuleFactory.createBooleanRule(false));
+	public static GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", grc, GameRuleFactory.createIntRule(8, 0));
+	public static GameRules.Key<GameRules.IntRule> hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", grc, GameRuleFactory.createIntRule(1, 1, 64));
+	public static GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doExplosionsRule = GameRuleRegistry.register("doExplosions", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.IntRule> wildLimitRule = GameRuleRegistry.register("wildLimit", grc, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
+	public static GameRules.Key<GameRules.IntRule> tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", grc, GameRuleFactory.createIntRule(2400, 600));
+	public static GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", grc, GameRuleFactory.createBooleanRule(false));
+	public static GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.IntRule> vaultRowsRule = GameRuleRegistry.register("vaultRows", grc, GameRuleFactory.createIntRule(6, 1, 6));
+	public static GameRules.Key<GameRules.IntRule> vaultsRule = GameRuleRegistry.register("vaults", grc, GameRuleFactory.createIntRule(3, 0));
+	public static GameRules.Key<GameRules.IntRule> nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", grc, GameRuleFactory.createIntRule(16, 0));
+	public static GameRules.Key<GameRules.BooleanRule> doSignColoursRule = GameRuleRegistry.register("doSignColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doBookColoursRule = GameRuleRegistry.register("doBookColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule = GameRuleRegistry.register("doChatColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doEnchantLevelLimitRule = GameRuleRegistry.register("doEnchantLevelLimit", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doPriorWorkPenaltyRule = GameRuleRegistry.register("doPriorWorkPenalty", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
-	public static final ServerSidePacketRegistry SPR = ServerSidePacketRegistry.INSTANCE;
 	public static final Block lockedChest = new Block(FabricBlockSettings.of(Material.WOOD));
 	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
-	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).appendItems(l -> {
-		Registry.ITEM.forEach(item -> {
-			if (item.getGroup() == null && item != Items.AIR)
-				l.add(new ItemStack(item));
-		});
-	}).build();
+	public static final Item netherPortalItem = new BlockItem(NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
+	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).build();
 	public static MinecraftServer serverInstance = null;
 	public static final TrackedData<Boolean> MAY_FLY = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	public static final TrackedData<Boolean> INVULNERABLE = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -162,13 +164,14 @@ public class MoreCommands implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ReflectionHelper.setYarnFieldValue(Formatting.class, "FORMATTING_CODE_PATTERN", "field_1066", null, Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]"));
+		ReflectionHelper.setYarnFieldValue(Formatting.class, "FORMATTING_CODE_PATTERN", "field_1066", null, Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		File dir = new File("config/MoreCommands");
 		if (!dir.exists()) dir.mkdirs();
 		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
 		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:easteregg"), new SoundEvent(new Identifier("morecommands:easteregg")));
 		Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
 		Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
+		Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedType.swimSpeedAttribute);
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
@@ -184,22 +187,38 @@ public class MoreCommands implements ModInitializer {
 		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
 			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
 		});
-		SPR.register(new Identifier("morecommands:sit_on_stairs"), (ctx, buffer) -> {
-			ServerPlayerEntity player = (ServerPlayerEntity) ctx.getPlayer();
-			BlockPos pos = buffer.readBlockPos();
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:sit_on_stairs"), (server, player, handler, buf, responseSender) -> {
+			BlockPos pos = buf.readBlockPos();
 			BlockState state = player.getServerWorld().getBlockState(pos);
 			if (Chair.isValid(state))
 				Chair.createAndPlace(pos, player, player.getServerWorld());
 		});
-		SPR.register(new Identifier("morecommands:discord_data"), (ctx, buffer) -> {
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:discord_data"), (server, player, handler, buf, responseSender) -> {
 			DiscordUser user = new DiscordUser();
-			if (buffer.readBoolean()) discordTagNoPerm.add(ctx.getPlayer());
-			else discordTagNoPerm.remove(ctx.getPlayer());
-			user.userId = buffer.readString();
-			user.username = buffer.readString();
-			user.discriminator = buffer.readString();
-			user.avatar = buffer.readString();
-			discordTags.put(ctx.getPlayer(), user);
+			if (buf.readBoolean()) discordTagNoPerm.add(player);
+			else discordTagNoPerm.remove(player);
+			user.userId = buf.readString();
+			user.username = buf.readString();
+			user.discriminator = buf.readString();
+			user.avatar = buf.readString();
+			discordTags.put(player, user);
+		});
+		Set<ServerPlayerEntity> howlingPlayers = new HashSet<>();
+		ServerTickEvents.START_SERVER_TICK.register(server -> {
+			// This does absolutely nothing whatsoever, just pass along. :)
+			for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
+				if (p.isSneaking()) {
+					float pitch = MathHelper.wrapDegrees(p.pitch);
+					float yaw = MathHelper.wrapDegrees(p.yaw);
+					double moonWidth = Math.PI / 32 * -pitch;
+					if (!howlingPlayers.contains(p) && p.getServerWorld().getMoonPhase() == 0 && p.getServerWorld().getTimeOfDay() > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+						double moonPitch = -90 + Math.abs(p.getServerWorld().getTimeOfDay() - 18000) * 0.0175;
+						if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
+							p.getServerWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
+							howlingPlayers.add(p);
+						}
+					}
+				} else howlingPlayers.remove(p);
 		});
 		ArgumentTypes.register("morecommands:registry_argument", RegistryArgumentType.class, new RegistryArgumentType.Serialiser());
 		ArgumentTypes.register("morecommands:limited_string", LimitedStringArgumentType.class, new LimitedStringArgumentType.Serialiser());
@@ -208,28 +227,6 @@ public class MoreCommands implements ModInitializer {
 		ArgumentTypes.register("morecommands:time_argument", TimeArgumentType.class, new ConstantArgumentSerializer<>(TimeArgumentType::new));
 		ArgumentTypes.register("morecommands:hexinteger", HexIntegerArgumentType.class, new ConstantArgumentSerializer<>(HexIntegerArgumentType::new));
 		ArgumentTypes.register("morecommands:ignorant_string", IgnorantStringArgumentType.class, new IgnorantStringArgumentType.Serialiser());
-		CustomGameRuleCategory cat = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(Formatting.GOLD).withBold(true)));
-		DFrule = GameRuleRegistry.register("defaultFormatting", cat, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));
-		SFrule = GameRuleRegistry.register("secondaryFormatting", cat, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
-		doMeltRule = GameRuleRegistry.register("doMelt", cat, GameRuleFactory.createBooleanRule(true));
-		maxHomesRule = GameRuleRegistry.register("maxHomes", cat, GameRuleFactory.createIntRule(3, -1));
-		silkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", cat, GameRuleFactory.createBooleanRule(false));
-		randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", cat, GameRuleFactory.createBooleanRule(true));
-		hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", cat, GameRuleFactory.createIntRule(8, 0));
-		hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", cat, GameRuleFactory.createIntRule(1, 1, 64));
-		doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", cat, GameRuleFactory.createBooleanRule(true));
-		doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", cat, GameRuleFactory.createBooleanRule(true));
-		doExplosionsRule = GameRuleRegistry.register("doExplosions", cat, GameRuleFactory.createBooleanRule(true));
-		wildLimitRule = GameRuleRegistry.register("wildLimit", cat, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
-		tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", cat, GameRuleFactory.createIntRule(2400, 600));
-		fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", cat, GameRuleFactory.createBooleanRule(false));
-		doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", cat, GameRuleFactory.createBooleanRule(true));
-		vaultRowsRule = GameRuleRegistry.register("vaultRows", cat, GameRuleFactory.createIntRule(6, 1, 6));
-		vaultsRule = GameRuleRegistry.register("vaults", cat, GameRuleFactory.createIntRule(3, 0));
-		nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", cat, GameRuleFactory.createIntRule(16, 0));
-		doSignColoursRule = GameRuleRegistry.register("doSignColours", cat, GameRuleFactory.createBooleanRule(true));
-		doBookColoursRule = GameRuleRegistry.register("doBookColours", cat, GameRuleFactory.createBooleanRule(true));
-		doChatColoursRule = GameRuleRegistry.register("doChatColours", cat, GameRuleFactory.createBooleanRule(true));
 	}
 
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
@@ -313,24 +310,23 @@ public class MoreCommands implements ModInitializer {
 		return false;
 	}
 
-	public static void sendFormattingUpdates(PlayerEntity p) {
+	public static void sendFormattingUpdates(ServerPlayerEntity p) {
 		sendFormattingUpdate(p, 0, DF);
 		sendFormattingUpdate(p, 1, SF);
 	}
 
 	private static void sendFormattingUpdate(MinecraftServer server, int id, Formatting colour) {
-		Identifier pid = new Identifier("morecommands:formatting_update");
-		Packet<?> packet = SPR.toPacket(pid, new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex())));
-		for (PlayerEntity p : server.getPlayerManager().getPlayerList())
-			sendFormattingUpdate(p, packet);
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex()));
+		for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
+			sendFormattingUpdate(p, buf);
 	}
 
-	private static void sendFormattingUpdate(PlayerEntity p, int id, Formatting colour) {
-		sendFormattingUpdate(p, SPR.toPacket(new Identifier("morecommands:formatting_update"), new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name()))))));
+	private static void sendFormattingUpdate(ServerPlayerEntity p, int id, Formatting colour) {
+		sendFormattingUpdate(p, new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name())))));
 	}
 
-	private static void sendFormattingUpdate(PlayerEntity p, Packet<?> packet) {
-		/*if (SPR.canPlayerReceive(p, new Identifier("morecommands:formatting_update")))*/ SPR.sendToPlayer(p, packet); // If-statement throws NPE cuz of a bug in the Fabric API (I think)
+	private static void sendFormattingUpdate(ServerPlayerEntity p, PacketByteBuf buf) {
+		/*if (ServerPlayNetworking.canSend(p, new Identifier("morecommands:formatting_update")))*/ ServerPlayNetworking.send(p, new Identifier("morecommands:formatting_update"), buf); // Bug still does not seem to be fixed.
 	}
 
 	static <T extends Command> T getInstance(Class<T> cmd) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -375,7 +371,7 @@ public class MoreCommands implements ModInitializer {
 			Object[] args = new Object[tt.getArgs().length];
 			for (int i = 0; i < args.length; i++)
 				if (tt.getArgs()[i] instanceof Text)
-					args[i] = MoreCommands.textToString((Text) tt.getArgs()[i], style, true);
+					args[i] = textToString((Text) tt.getArgs()[i], style, true);
 				else args[i] = tt.getArgs()[i];
 			s.append(I18n.translate(tt.getKey(), args));
 		} else s.append(text.asString());
@@ -578,7 +574,7 @@ public class MoreCommands implements ModInitializer {
 			target.stopRiding();
 			if (((ServerPlayerEntity) target).isSleeping()) ((ServerPlayerEntity) target).wakeUp(true, true);
 			if (world == target.world)
-				((ServerPlayerEntity) target).networkHandler.teleportRequest(x, y, z, yaw, pitch, Collections.emptySet());
+				((ServerPlayerEntity) target).networkHandler.requestTeleport(x, y, z, yaw, pitch, Collections.emptySet());
 			else ((ServerPlayerEntity) target).teleport(world, x, y, z, yaw, pitch);
 			target.setHeadYaw(yaw);
 		} else {
@@ -777,10 +773,12 @@ public class MoreCommands implements ModInitializer {
 		return output;
 	}
 
+	// Me
 	public static boolean isCool(Entity entity) {
 		return entity instanceof PlayerEntity && "1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getUuidAsString());
 	}
 
+	// My best friend :3
 	public static boolean isCute(Entity entity) {
 		return entity instanceof PlayerEntity && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getUuidAsString());
 	}
@@ -869,7 +867,7 @@ public class MoreCommands implements ModInitializer {
 			else sb.append(part.substring(0, 1).toUpperCase()).append(part.substring(1));
 			if (retainSpaces) sb.append(' ');
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	public static VoxelShape getFluidShape(BlockState state) {

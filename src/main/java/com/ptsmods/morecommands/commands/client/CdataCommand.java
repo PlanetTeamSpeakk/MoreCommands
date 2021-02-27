@@ -130,7 +130,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public CompoundTag getTag() {
-            return NbtPredicate.entityToTag(this.entity);
+            return NbtPredicate.entityToNbt(this.entity);
         }
 
         public Text feedbackQuery(Tag tag) {
@@ -165,7 +165,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public CompoundTag getTag() {
-            return this.blockEntity.toTag(new CompoundTag());
+            return this.blockEntity.writeNbt(new CompoundTag());
         }
 
         public Text feedbackQuery(Tag tag) {

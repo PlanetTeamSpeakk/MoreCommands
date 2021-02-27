@@ -173,19 +173,12 @@ public class ReflectionHelper {
         // Thanks to Forge for this one https://github.com/ExtrabiomesXL/forge/blob/master/common/net/minecraftforge/common/EnumHelper.java#L205
         int flags = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL | 0x1000 /*SYNTHETIC*/;
         String valueType = String.format("[L%s;", clazz.getName().replace('.', '/'));
-        Field valuesField = null;
         for (Field field : clazz.getDeclaredFields())
             if ((field.getModifiers() & flags) == flags && field.getType().getName().replace('.', '/').equals(valueType)) { //Apparently some JVMs return .'s and some don't..
-                valuesField = field;
-                break;
+                removeModifier(field, Modifier.FINAL);
+                field.setAccessible(true);
+                setFieldValue(field, null, ArrayUtils.add(ReflectionHelper.<T[], T>getFieldValue(field, null), instance));
             }
-        if (valuesField == null) {
-            MoreCommands.log.error("Could not find values field of Enum class.");
-            return null;
-        }
-        removeModifier(valuesField, Modifier.FINAL);
-        valuesField.setAccessible(true);
-        setFieldValue(valuesField, null, ArrayUtils.add(ReflectionHelper.<T[], T>getFieldValue(valuesField, null), instance));
         return instance;
     }
 

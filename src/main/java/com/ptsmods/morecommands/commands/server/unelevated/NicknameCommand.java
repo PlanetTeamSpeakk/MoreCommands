@@ -29,7 +29,7 @@ public class NicknameCommand extends Command {
         if (nickname != null && Formatting.strip(nickname).length() > ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) && !isOp(ctx)) sendMsg(ctx, Formatting.RED + "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) + " characters which is exceeded by the length of the given nickname (" + Formatting.strip(nickname).length() + ").");
         else {
             player.getDataTracker().set(MoreCommands.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
-            ctx.getSource().getMinecraftServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player));
+            ctx.getSource().getMinecraftServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.class_5893.field_29139, player));
             sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
             return 1;
         }
