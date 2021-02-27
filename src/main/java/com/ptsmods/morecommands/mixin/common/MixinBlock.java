@@ -26,7 +26,7 @@ public class MixinBlock {
     @Inject(at = @At("RETURN"), method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)Ljava/util/List;")
     private static List<ItemStack> getDroppedStacks(BlockState state, ServerWorld world, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> cbi) {
         List<ItemStack> stacks = cbi.getReturnValue();
-        if (blockEntity instanceof MobSpawnerBlockEntity && world.getGameRules().getBoolean(MoreCommands.silkSpawnersRule) && EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, stack) > 0) {
+        if (blockEntity instanceof MobSpawnerBlockEntity && world.getGameRules().getBoolean(MoreCommands.doSilkSpawnersRule) && EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, stack) > 0) {
             ItemStack spawner = new ItemStack(Items.SPAWNER);
             CompoundTag tag = blockEntity.toTag(new CompoundTag());
             tag.remove("x");

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
@@ -14,8 +15,10 @@ import net.minecraft.network.MessageType;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
+import net.minecraft.network.packet.c2s.play.RenameItemC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -37,11 +40,10 @@ import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -53,35 +55,19 @@ public class MixinServerPlayNetworkHandler {
     @Shadow @Final private MinecraftServer server;
     @Shadow public ServerPlayerEntity player;
     @Shadow private Vec3d requestedTeleportPos;
+    private boolean mc_initialised = false;
 
-    // Injecting is always better than overwriting.
-    @Inject(at = @At("HEAD"), method = "onPlayerInteractBlock(Lnet/minecraft/network/packet/c2s/play/PlayerInteractBlockC2SPacket;)V", cancellable = true)
-    public void onPlayerInteractBlock(PlayerInteractBlockC2SPacket packet, CallbackInfo cbi) {
-        cbi.cancel();
-        NetworkThreadUtils.forceMainThread(packet, player.networkHandler, player.getServerWorld());
-        ServerWorld serverWorld = player.getServerWorld();
-        Hand hand = packet.getHand();
-        ItemStack itemStack = player.getStackInHand(hand);
-        BlockHitResult blockHitResult = packet.getBlockHitResult();
-        BlockPos blockPos = blockHitResult.getBlockPos();
-        Direction direction = blockHitResult.getSide();
-        player.updateLastActionTime();
-        if (blockPos.getY() < server.getWorldHeight()) {
-            if (requestedTeleportPos == null && player.squaredDistanceTo((double)blockPos.getX() + 0.5D, (double)blockPos.getY() + 0.5D, (double)blockPos.getZ() + 0.5D) < ReachCommand.getReach(player, true) && serverWorld.canPlayerModifyAt(player, blockPos)) {
-                ActionResult actionResult = player.interactionManager.interactBlock(player, serverWorld, itemStack, hand, blockHitResult);
-                if (direction == Direction.UP && !actionResult.isAccepted() && blockPos.getY() >= server.getWorldHeight() - 1 && mc_canPlace(player, itemStack)) {
-                    Text text = (new TranslatableText("build.tooHigh", server.getWorldHeight())).formatted(Formatting.RED);
-                    player.networkHandler.sendPacket(new GameMessageS2CPacket(text, MessageType.GAME_INFO, Util.NIL_UUID));
-                } else if (actionResult.shouldSwingHand()) {
-                    player.swingHand(hand, true);
-                }
-            }
-        } else {
-            Text text2 = (new TranslatableText("build.tooHigh", server.getWorldHeight())).formatted(Formatting.RED);
-            player.networkHandler.sendPacket(new GameMessageS2CPacket(text2, MessageType.GAME_INFO, Util.NIL_UUID));
+    @Inject(at = @At("HEAD"), method = "tick()V")
+    public void tick(CallbackInfo cbi) {
+        if (!mc_initialised) {
+            mc_initialised = true;
+            PlayerConnectionCallback.JOIN.invoker().call(player);
         }
-        player.networkHandler.sendPacket(new BlockUpdateS2CPacket(serverWorld, blockPos));
-        player.networkHandler.sendPacket(new BlockUpdateS2CPacket(serverWorld, blockPos.offset(direction)));
+    }
+
+    @ModifyConstant(method = "onPlayerInteractBlock(Lnet/minecraft/network/packet/c2s/play/PlayerInteractBlockC2SPacket;)V", constant = @Constant(doubleValue = 64.0D))
+    public double onPlayerInteractBlock_maxReach(double d) {
+        return ReachCommand.getReach(player, true);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; squaredDistanceTo(Lnet/minecraft/entity/Entity;)D", ordinal = 0), method = "onPlayerInteractEntity(Lnet/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket;)V")
@@ -89,26 +75,21 @@ public class MixinServerPlayNetworkHandler {
         return player.squaredDistanceTo(entity) < ReachCommand.getReach(player, true) ? 0 : 36;
     }
 
-    // Straight up copied from the super class since that's easier than trying to shadow it somehow.
-    private static boolean mc_canPlace(ServerPlayerEntity player, ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        } else {
-            Item item = stack.getItem();
-            return (item instanceof BlockItem || item instanceof BucketItem) && !player.getItemCooldownManager().isCoolingDown(item);
-        }
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
+    public void onDisconnected_broadcastChatMessage(PlayerManager playerManager, Text msg, MessageType type, UUID id) {
+        if (Objects.requireNonNull(playerManager.getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) playerManager.broadcastChatMessage(msg, type, id);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
-    public void onDisconnected_broadcastChatMessage(PlayerManager playerManager, Text msg, MessageType type, UUID id, Text reason) {
-        if (playerManager.getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) playerManager.broadcastChatMessage(msg, type, id);
+    @Inject(at = @At("TAIL"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
+    public void onDisconnected(Text reason, CallbackInfo cbi) {
+        PlayerConnectionCallback.LEAVE.invoker().call(player);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream; map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"), method = "onSignUpdate(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
     public Stream<String> onSignUpdate_map(Stream<String> stream, Function<String, String> func) {
         return stream.map(s -> {
             ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
-            if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())) s = Command.translateFormats(s);
+            if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doSignColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel())) s = Command.translateFormats(s);
             else s = Formatting.strip(s);
             return s;
         });
@@ -118,7 +99,7 @@ public class MixinServerPlayNetworkHandler {
     public String onBookUpdate_getString(ListTag list, int index) {
         ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         String s = list.getString(index);
-        if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile()))
+        if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel()))
             s = Command.translateFormats(s);
         return s;
     }
@@ -127,7 +108,7 @@ public class MixinServerPlayNetworkHandler {
     public String onGameMessage_normalizeSpace(String str) {
         ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         String s = StringUtils.normalizeSpace(str);
-        if (!str.startsWith("/") && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
+        if (!str.startsWith("/") && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel())))
             s = Command.translateFormats(s);
         return s;
     }
@@ -136,9 +117,19 @@ public class MixinServerPlayNetworkHandler {
     public char method_31286_charAt(String string, int index) {
         ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
         char ch = string.charAt(index);
-        if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || thiz.player.getServer().getPlayerManager().isOperator(thiz.player.getGameProfile())))
+        if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel())))
             ch = '&';
         return ch;
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; length()I", remap = false), method = "onRenameItem(Lnet/minecraft/network/packet/c2s/play/RenameItemC2SPacket;)V")
+    public int onRenameItem_length(String string) {
+        return Objects.requireNonNull(player.world.getGameRules().getBoolean(MoreCommands.doItemColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel()) ? Formatting.strip(MoreCommands.translateFormattings(string)) : string).length();
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/AnvilScreenHandler; setNewItemName(Ljava/lang/String;)V"), method = "onRenameItem(Lnet/minecraft/network/packet/c2s/play/RenameItemC2SPacket;)V")
+    public void onRenameItem_setNewName(AnvilScreenHandler anvil, String name) {
+        anvil.setNewItemName(player.world.getGameRules().getBoolean(MoreCommands.doItemColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel()) ? MoreCommands.translateFormattings(name) : name);
     }
 
 }

@@ -17,12 +17,8 @@ import java.util.List;
 @Mixin(ServerCommandSource.class)
 public abstract class MixinServerCommandSource {
 
-    @Shadow
-    @Final
-    private CommandOutput output;
-    @Shadow
-    @Final
-    private boolean silent;
+    @Shadow @Final private CommandOutput output;
+    @Shadow @Final private boolean silent;
 
     @Overwrite
     public void sendFeedback(Text message, boolean broadcastToOps) {

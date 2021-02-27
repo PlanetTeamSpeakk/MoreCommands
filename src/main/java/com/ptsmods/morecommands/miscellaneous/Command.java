@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -21,7 +20,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
@@ -44,6 +42,10 @@ public abstract class Command {
     public void init(MinecraftServer server) throws Exception {}
 
     public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
+
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) throws Exception {
+        register(dispatcher);
+    }
 
     public boolean forDedicated() {
         return false;

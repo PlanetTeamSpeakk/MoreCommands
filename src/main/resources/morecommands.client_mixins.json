@@ -35,7 +35,10 @@
     "MixinInGameHud",
     "MixinTitleScreen",
     "MixinPlayerEntity",
-    "MixinTextColor"
+    "MixinTextColor",
+    "MixinAnvilScreen",
+    "MixinBookEditScreen",
+    "MixinChatHudAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

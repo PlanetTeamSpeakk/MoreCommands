@@ -9,6 +9,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.Location;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -111,7 +112,7 @@ public class WarpCommand extends Command {
 
     public Warp createWarp(String name, UUID owner, Vec3d loc, Vec2f rotation, ServerWorld world, boolean isLimited) {
         if (getWarp(name) != null) return null;
-        Warp warp = new Warp(name, owner, loc, rotation, world, isLimited, 0, new Date());
+        Warp warp = new Warp(name, owner, new Location<>(world, loc, rotation), isLimited, 0, new Date());
         warp.setDirty(true);
         if (owner == null) owner = getServerUuid(world.getServer());
         if (!warps.containsKey(owner))
@@ -244,29 +245,25 @@ public class WarpCommand extends Command {
     }
 
     private Warp fromMap(MinecraftServer server, String name, UUID owner, Map<?, ?> data) {
-        return new Warp(name, owner, new Vec3d((Double) data.get("x"), (Double) data.get("y"), (Double) data.get("z")), new Vec2f(((Double) data.get("yaw")).floatValue(), ((Double) data.get("pitch")).floatValue()), server.getWorld(RegistryKey.of(Registry.DIMENSION, new Identifier((String) data.get("world")))), (Boolean) data.get("isLimited"), ((Double) data.get("counter")).intValue(), new Date(((Double) data.get("creationDate")).longValue()));
+        return new Warp(name, owner, new Location<>(server.getWorld(RegistryKey.of(Registry.DIMENSION, new Identifier((String) data.get("world")))), new Vec3d((Double) data.get("x"), (Double) data.get("y"), (Double) data.get("z")), new Vec2f(((Double) data.get("yaw")).floatValue(), ((Double) data.get("pitch")).floatValue())), (Boolean) data.get("isLimited"), ((Double) data.get("counter")).intValue(), new Date(((Double) data.get("creationDate")).longValue()));
     }
 
     public class Warp {
         private final String name;
         private final UUID owner;
-        private final Vec3d loc;
-        private final Vec2f rotation;
-        private final ServerWorld world;
+        private final Location<ServerWorld> loc;
         private boolean isLimited;
         private int counter;
         private final Date creationDate;
 
-        public Warp(String name, UUID owner, Vec3d loc, Vec2f rotation, ServerWorld world, boolean isLimited, int counter, Date creationDate) {
+        public Warp(String name, UUID owner, Location<ServerWorld> loc, boolean isLimited, int counter, Date creationDate) {
             this.name = name;
             this.owner = owner;
             this.loc = loc;
-            this.rotation = rotation;
-            this.world = world;
             this.isLimited = isLimited;
             this.counter = counter;
             this.creationDate = creationDate;
-            if (world == null) delete();
+            if (loc.getWorld() == null) delete();
         }
 
         public String getName() {
@@ -278,19 +275,19 @@ public class WarpCommand extends Command {
         }
 
         public Vec3d getPos() {
-            return loc;
+            return loc.getPos();
         }
 
         public float getYaw() {
-            return rotation.x;
+            return loc.getRot().x;
         }
 
         public float getPitch() {
-            return rotation.y;
+            return loc.getRot().y;
         }
 
         public ServerWorld getWorld() {
-            return world;
+            return loc.getWorld();
         }
 
         public boolean isLimited() {
@@ -348,9 +345,9 @@ public class WarpCommand extends Command {
             Map<String, Object> map = new HashMap<>();
             map.put("counter", counter);
             map.put("world", getWorld().getRegistryKey().getValue().toString());
-            map.put("x", loc.x);
-            map.put("y", loc.y);
-            map.put("z", loc.z);
+            map.put("x", loc.getPos().x);
+            map.put("y", loc.getPos().y);
+            map.put("z", loc.getPos().z);
             map.put("yaw", getYaw());
             map.put("pitch", getPitch());
             map.put("creationDate", creationDate.getTime());

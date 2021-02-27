@@ -35,7 +35,16 @@
     "MixinServerNetworkIo",
     "MixinFillCommand",
     "MixinServerPlayerEntity",
-    "MixinFluidBlock"
+    "MixinFluidBlock",
+    "MixinEnchantmentScreenHandler",
+    "MixinAnvilScreenHandler",
+    "MixinEntity",
+    "MixinItemAccessor",
+    "MixinItemEntity",
+    "MixinServerPlayerEntityAccessor",
+    "MixinForgingScreenHandler",
+    "MixinAbstractFurnaceBlockEntity",
+    "MixinBrewingStandBlockEntity"
   ],
   "injectors": {
     "defaultRequire": 1

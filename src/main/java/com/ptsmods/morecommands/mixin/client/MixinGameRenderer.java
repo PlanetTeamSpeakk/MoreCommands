@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.Objects;
+
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
 
@@ -21,7 +23,7 @@ public class MixinGameRenderer {
 
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
     public double updateTargetedEntity_d(double d) {
-        return ReachCommand.getReach(client.player, false);
+        return ReachCommand.getReach(Objects.requireNonNull(client.player), false);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity; raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"), method = "updateTargetedEntity(F)V")

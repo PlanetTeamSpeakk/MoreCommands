@@ -100,7 +100,7 @@ public class RegistryArgumentType<T> implements ArgumentType<T> {
             x = buf.readVarInt();
             for (int i = 0; i < x; i++)
                 ids.add(buf.readIdentifier());
-            return new RegistryArgumentType(Objects.requireNonNull(MoreCommands.getRegistry(RegistryKey.ofRegistry(registryId))), ids);
+            return new RegistryArgumentType(Objects.requireNonNull(MoreCommands.getRegistry(RegistryKey.ofRegistry(registryId))), examples, ids);
         }
 
         @Override
