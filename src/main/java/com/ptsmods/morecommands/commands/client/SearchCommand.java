@@ -24,8 +24,8 @@ public class SearchCommand extends ClientCommand {
     public static Map<Integer, ChatHudLineWithContent<Text>> lines = new HashMap<>();
     public static ClickEvent.Action SCROLL_ACTION = null;
 
-    public void preinit() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (SCROLL_ACTION == null) SCROLL_ACTION = ReflectionHelper.newEnumInstance(ClickEvent.Action.class, new Class[] {String.class, boolean.class}, "SCROLL", "scroll", false);
+    public void preinit() {
+        if (SCROLL_ACTION == null) SCROLL_ACTION = ClickEvent.Action.valueOf("SCROLL"); // Should've been registered in EarlyRiser.
     }
 
     @Override

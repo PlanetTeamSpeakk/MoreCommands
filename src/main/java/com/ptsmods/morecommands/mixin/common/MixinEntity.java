@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.mixin.common;
 import com.ptsmods.morecommands.callbacks.EntityDeathCallback;
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;

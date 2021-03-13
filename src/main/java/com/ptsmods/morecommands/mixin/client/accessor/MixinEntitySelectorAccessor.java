@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.client;
+package com.ptsmods.morecommands.mixin.client.accessor;
 
 import net.minecraft.command.EntitySelector;
 import net.minecraft.entity.Entity;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Mixin(EntitySelector.class)
-public interface MixinEntitySelector {
+public interface MixinEntitySelectorAccessor {
 
     @Accessor String getPlayerName();
     @Accessor UUID getUuid();

@@ -32,14 +32,17 @@ tasks.build.dependsOn fatJar
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
+	implementation 'org.jetbrains:annotations:20.1.0'
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	compile "com.github.Vatuu:discord-rpc:1.6.2"
+	compile "com.github.Chocohead:Fabric-ASM:v2.2"
 }
 
 processResources {

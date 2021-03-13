@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.common.accessor;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;

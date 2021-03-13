@@ -7,12 +7,11 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.callbacks.RenderTickCallback;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import com.ptsmods.morecommands.mixin.client.MixinWindow;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinWindowAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.client.util.ScreenshotUtils;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -55,7 +54,7 @@ public class ScreenshotCommand extends ClientCommand {
                 Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.getColorAttachment());
                 GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buf);
-                ReflectionHelper.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), (int) task.get("ogWidth"), (int) task.get("ogHeight"));
+                ReflectionHelper.<MixinWindowAccessor>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), (int) task.get("ogWidth"), (int) task.get("ogHeight"));
                 Map<String, Object> task = this.task;
                 this.task = null;
                 long takeTime = System.currentTimeMillis() - startTake;
@@ -105,7 +104,7 @@ public class ScreenshotCommand extends ClientCommand {
             task.put("height", height);
             task.put("tries", 0);
             queue = task;
-            ReflectionHelper.<MixinWindow>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), width, height);
+            ReflectionHelper.<MixinWindowAccessor>cast(MinecraftClient.getInstance().getWindow()).callOnFramebufferSizeChanged(MinecraftClient.getInstance().getWindow().getHandle(), width, height);
         }
         return 1;
     }

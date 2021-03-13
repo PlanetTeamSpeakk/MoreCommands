@@ -20,6 +20,9 @@
     ],
     "client": [
       "com.ptsmods.morecommands.MoreCommandsClient"
+    ],
+    "mm:early_risers": [
+      "com.ptsmods.morecommands.EarlyRiser"
     ]
   },
   "mixins": [

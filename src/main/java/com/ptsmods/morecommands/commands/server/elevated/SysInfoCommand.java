@@ -6,8 +6,6 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.UsageMonitorer;
-import com.ptsmods.morecommands.miscellaneous.VMManagement;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import oshi.SystemInfo;
 
@@ -29,43 +27,41 @@ public class SysInfoCommand extends Command {
     }
 
     public static int sendSysInfo(CommandContext<ServerCommandSource> ctx) {
-        VMManagement vmm = VMManagement.getVMM();
         // Copied from my Discord bot Impulse at https://github.com/PlanetTeamSpeakk/Impulse
         // Copied from Owner#sysinfo.
         String output = "Host PC OS:";
-        output += 	"\n    Name: " + SF + vmm.getOsName() +
-                "\n    Version: " + SF + vmm.getOsVersion() +
-                "\n    Architecture: " + SF + vmm.getOsArch();
+        output += "\n    Name: " + SF + UsageMonitorer.getOSName() +
+                "\n    Version: " + SF + UsageMonitorer.getOSVersion() +
+                "\n    Architecture: " + SF + UsageMonitorer.getOSArch();
         output += 	"\n\nJVM:" +
-                "\n    Loaded classes: " + SF + vmm.getLoadedClassCount() +
-                "\n    Unloaded classes: " + SF + vmm.getUnloadedClassCount() +
-                "\n    Total classes: " + SF + vmm.getTotalClassCount() +
-                "\n    Classes initialized: " + SF + vmm.getInitializedClassCount() +
-                "\n    Live threads: " + SF + vmm.getLiveThreadCount() +
-                "\n    Daemon threads: " + SF + vmm.getDaemonThreadCount() +
-                "\n    Total threads: " + SF + vmm.getTotalThreadCount() +
-                "\n    Peak livethreadcount: " + SF + vmm.getPeakThreadCount();
+                "\n    Loaded classes: " + SF + UsageMonitorer.getCurrentLoadedClassCount() +
+                "\n    Unloaded classes: " + SF + UsageMonitorer.getUnloadedClassCount() +
+                "\n    Total classes: " + SF + UsageMonitorer.getTotalLoadedClassCount() +
+                "\n    Live threads: " + SF + UsageMonitorer.getLiveThreadCount() +
+                "\n    Daemon threads: " + SF + UsageMonitorer.getDaemonThreadCount() +
+                "\n    Total threads: " + SF + UsageMonitorer.getTotalThreadCount() +
+                "\n    Peak livethreadcount: " + SF + UsageMonitorer.getPeakLiveThreadCount();
         output += "\n\nDrives:";
         for (Path root : FileSystems.getDefault().getRootDirectories())
             try {
                 FileStore store = Files.getFileStore(root);
                 output += "\n    " + root +
-                        "\n        Left: " + SF + MoreCommands.formatFileSize(store.getUsableSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(store.getUsableSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(store.getUsableSpace()).split(" ")[1] +
-                        "\n        Used: " + SF + MoreCommands.formatFileSize(store.getTotalSpace() - store.getUsableSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(store.getTotalSpace() - store.getUsableSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(store.getTotalSpace() - store.getUsableSpace()).split(" ")[1] +
-                        "\n        Total: " + SF + MoreCommands.formatFileSize(store.getTotalSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(store.getTotalSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(store.getTotalSpace()).split(" ")[1];
+                        "\n        Left: " + SF + MoreCommands.formatFileSize(store.getUsableSpace()) +
+                        "\n        Used: " + SF + MoreCommands.formatFileSize(store.getTotalSpace() - store.getUsableSpace()) +
+                        "\n        Total: " + SF + MoreCommands.formatFileSize(store.getTotalSpace());
             } catch (IOException ignored) {}
-        output += 	"\n\n    Total left: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getFreeSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getFreeSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getFreeSpace()).split(" ")[1] +
-                "\n    Total used: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getUsedSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getUsedSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getUsedSpace()).split(" ")[1] +
-                "\n    Total: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSpace()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getTotalSpace()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getTotalSpace()).split(" ")[1];
+        output += 	"\n\n    Total left: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getFreeSpace()) +
+                "\n    Total used: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getUsedSpace()) +
+                "\n    Total: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSpace());
         output += "\n\nRAM:" +
-                "\n    Used by process: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamUsage()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamUsage()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamUsage()).split(" ")[1] +
-                "\n    Allocated to process: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamMax()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamMax()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamMax()).split(" ")[1] +
-                "\n    Used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamUsage()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamUsage()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamUsage()).split(" ")[1] +
-                "\n    RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamMax()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamMax()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamMax()).split(" ")[1] +
-                "\n    Swap used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapUsage()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapUsage()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapUsage()).split(" ")[1] +
-                "\n    Swap of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapMax()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapMax()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapMax()).split(" ")[1] +
-                "\n    Total RAM used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()).split(" ")[1] +
-                "\n    Total RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax()).split("\\.")[0] + "." + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax()).split("\\.")[1].substring(0, 3).split(" ")[0] + " " + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax()).split(" ")[1];
+                "\n    Used by process: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamUsage()) +
+                "\n    Allocated to process: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getProcessRamMax()) +
+                "\n    Used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamUsage()) +
+                "\n    RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemRamMax()) +
+                "\n    Swap used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapUsage()) +
+                "\n    Swap of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getSystemSwapMax()) +
+                "\n    Total RAM used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()) +
+                "\n    Total RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax());
         output += "\n\nCPU:" +
                 "\n    Unit: " + SF + new SystemInfo().getHardware().getProcessors()[0] +
                 "\n    Cores: " + SF + UsageMonitorer.getProcessorCount() +

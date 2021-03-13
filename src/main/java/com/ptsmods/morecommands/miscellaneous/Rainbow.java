@@ -1,18 +1,11 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsClient;
-import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 
 import java.awt.Color;
-import java.lang.reflect.Field;
 import java.util.*;
 
 // Also take a look at MixinTextVisitFactory and MixinTextColor
@@ -20,8 +13,8 @@ public class Rainbow {
 
     public static int rainbowIndex = 0;
     public static final List<Color> rainbowColours;
-    public static final Formatting RAINBOW = ReflectionHelper.newEnumInstance(Formatting.class, new Class[] {String.class, char.class, boolean.class}, "RAINBOW", "RAINBOW", 'u', true);;
-    public static final TextColor RAINBOW_TC = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(TextColor.class, int.class, String.class)), 0, "rainbow");
+    public static final Formatting RAINBOW = Formatting.valueOf("RAINBOW"); // Should've been registered in EarlyRiser.
+    public static final TextColor RAINBOW_TC = MixinTextColorAccessor.newInstance(0, "rainbow");
 
     static {
         List<Color> colours = new ArrayList<>();
@@ -34,14 +27,13 @@ public class Rainbow {
         rainbowColours = ImmutableList.copyOf(colours); // Looks better than just going through hue with HSB imo tbh.
         // No so-called 'private' or 'final' field is safe from reflection. >:D
         // Not even if it's 'immutable'. smhh
-        Field f = ReflectionHelper.getYarnField(TextColor.class, "FORMATTING_TO_COLOR", "field_24362");
-        Map<Formatting, TextColor> formattingToColor = new HashMap<>(ReflectionHelper.getFieldValue(f, null));
+        Map<Formatting, TextColor> formattingToColor = new HashMap<>(MixinTextColorAccessor.getFormattingToColor());//new HashMap<>(ReflectionHelper.getFieldValue(f, null));
         formattingToColor.put(RAINBOW, RAINBOW_TC);
-        ReflectionHelper.setFieldValue(f, null, ImmutableMap.copyOf(formattingToColor));
-        f = ReflectionHelper.getYarnField(TextColor.class, "BY_NAME", "field_24363");
-        Map<String, TextColor> byName = new HashMap<>(ReflectionHelper.getFieldValue(f, null));
+        MixinTextColorAccessor.setFormattingToColor(formattingToColor);
+
+        Map<String, TextColor> byName = new HashMap<>(MixinTextColorAccessor.getByName());
         byName.put("rainbow", RAINBOW_TC);
-        ReflectionHelper.setFieldValue(f, null, ImmutableMap.copyOf(byName));
+        MixinTextColorAccessor.setByName(byName);
     }
 
     public static int getRainbowColour(boolean includeIndex) {
@@ -53,4 +45,5 @@ public class Rainbow {
         if (transparency < 1f) c = new Color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, transparency);
         return c.getRGB(); /*Color.HSBtoRGB((System.currentTimeMillis() + 20 * rainbowIndex) % 720 / 720f, 1, 1)*/
     }
+
 }

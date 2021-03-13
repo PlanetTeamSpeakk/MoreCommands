@@ -15,6 +15,9 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(TextVisitFactory.class)
 public class MixinTextVisitFactory {
 
+    /**
+     * @author PlanetTeamSpeak
+     */
     @Overwrite
     public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style resetStyle, CharacterVisitor visitor) {
         int i = text.length();

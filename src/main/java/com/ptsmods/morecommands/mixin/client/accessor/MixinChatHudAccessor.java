@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.client;
+package com.ptsmods.morecommands.mixin.client.accessor;
 
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;

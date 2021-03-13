@@ -12,51 +12,6 @@ public class ReflectionHelper {
 
     private static final Map<Class<?>, Map<String, Field>> cachedFields = new HashMap<>();
     private static final Map<Class<?>, Map<String, Method>> cachedMethods = new HashMap<>();
-    private static final Map<Class<?>, Map<String, Constructor<?>>> cachedConstructors = new HashMap<>();
-
-    public static <T> T newInstance(Class<? extends T> clazz, Object... parameterArguments) {
-        Class<?>[] parameterTypes = new Class[parameterArguments.length];
-        for (int i = 0; i < parameterTypes.length; i++)
-            parameterTypes[i] = parameterArguments[i].getClass();
-        Constructor<? extends T> cons = getConstructor(clazz, parameterTypes);
-        if (cons == null) return null;
-        return newInstance(cons, parameterArguments);
-    }
-
-    public static <T> T newInstance(Constructor<? extends T> cons, Object... parameterArguments) {
-        try {
-            return cons.newInstance(parameterArguments);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            return null;
-        }
-    }
-
-    public static <T> Constructor<? extends T> getConstructor(Class<? extends T> clazz, Class<?>... parameterTypes) {
-        if (cachedConstructors.containsKey(clazz) && cachedConstructors.get(clazz).containsKey(getMethodKey("init", parameterTypes))) return cast(cachedConstructors.get(clazz).get(getMethodKey("init", parameterTypes)));
-        Constructor<? extends T> cons;
-        try {
-            cons = clazz.getConstructor(parameterTypes);
-        } catch (NoSuchMethodException e) {
-            try {
-                cons = clazz.getDeclaredConstructor(parameterTypes);
-            } catch (NoSuchMethodException noSuchMethodException) {
-                return null;
-            }
-        }
-        if (!cons.isAccessible()) cons.setAccessible(true);
-        if (!cachedConstructors.containsKey(clazz)) cachedConstructors.put(clazz, new HashMap<>());
-        cachedConstructors.get(clazz).put(getMethodKey("init", parameterTypes), cons);
-        return cons;
-    }
-
-    public static <T, X> T getYarnFieldValue(Class<? extends X> clazz, String yarnName, String name, X instance) {
-        Field f = getField(clazz, yarnName);
-        return f == null ? getFieldValue(clazz, name, instance) : getFieldValue(clazz, yarnName, instance);
-    }
-
-    public static <T, X> boolean setYarnFieldValue(Class<? extends X> clazz, String yarnName, String name, X instance, T value) {
-        return setFieldValue(clazz, yarnName, instance, value) || setFieldValue(clazz, name, instance, value);
-    }
 
     public static <T, X> T getFieldValue(Class<? extends X> clazz, String name, X instance) {
         return getFieldValue(getField(clazz, name), instance);
@@ -145,10 +100,6 @@ public class ReflectionHelper {
         return s.toString();
     }
 
-    public static <T, X> T invokeYarnMethod(Class<? extends X> clazz, String yarnName, String method, Class<?>[] parameterTypes, X instance, Object... args) {
-        return invokeMethod(clazz, getMethod(clazz, yarnName, parameterTypes) == null ? method : yarnName, parameterTypes, instance, args);
-    }
-
     public static <T, X> T invokeMethod(Class<? extends X> clazz, String method, Class<?>[] parameterTypes, X instance, Object... args) {
         Method m = getMethod(clazz, method, parameterTypes);
         if (m == null) return null;
@@ -158,28 +109,6 @@ public class ReflectionHelper {
             MoreCommands.log.catching(e);
             return null;
         }
-    }
-
-    public static <T extends Enum<T>> T newEnumInstance(Class<? extends T> clazz, Class<?>[] parameterTypes, String name, Object... parameterArguments) {
-        Constructor<? extends T> cons = getConstructor(clazz, ArrayUtils.addAll(new Class[] {String.class, int.class}, parameterTypes));
-        Object ca = getFieldValue(Constructor.class, "constructorAccessor", cons);
-        if (ca == null) ca = invokeMethod(Constructor.class, "acquireConstructorAccessor", null, cons);
-        if (ca == null) {
-            MoreCommands.log.error("Could not acquire ConstructorAccessor for class " + clazz.getName() + ".");
-            return null;
-        }
-        T instance = cast(invokeMethod(ca.getClass(), "newInstance", new Class[] {Object[].class}, ca, new Object[] {ArrayUtils.addAll(new Object[] {name, clazz.getEnumConstants().length}, parameterArguments)}));
-        // Following code gets the values field of the Enum class.
-        // Thanks to Forge for this one https://github.com/ExtrabiomesXL/forge/blob/master/common/net/minecraftforge/common/EnumHelper.java#L205
-        int flags = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL | 0x1000 /*SYNTHETIC*/;
-        String valueType = String.format("[L%s;", clazz.getName().replace('.', '/'));
-        for (Field field : clazz.getDeclaredFields())
-            if ((field.getModifiers() & flags) == flags && field.getType().getName().replace('.', '/').equals(valueType)) { //Apparently some JVMs return .'s and some don't..
-                removeModifier(field, Modifier.FINAL);
-                field.setAccessible(true);
-                setFieldValue(field, null, ArrayUtils.add(ReflectionHelper.<T[], T>getFieldValue(field, null), instance));
-            }
-        return instance;
     }
 
     public static void addModifier(Field f, int modifier) {
