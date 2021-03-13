@@ -6,6 +6,7 @@ import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,13 +19,13 @@ import java.util.List;
 @Mixin(ParticleManager.class)
 public class MixinParticleManager {
 
-    @Shadow @Final private static List<ParticleTextureSheet> PARTICLE_TEXTURE_SHEETS;
+    @Shadow @Final @Mutable private static List<ParticleTextureSheet> PARTICLE_TEXTURE_SHEETS;
 
     @Inject(at = @At("TAIL"), method = "<clinit>()V")
     private static void clinit(CallbackInfo cbi) {
-        List<ParticleTextureSheet> list = new ArrayList<>(ReflectionHelper.getYarnFieldValue(ParticleManager.class, "PARTICLE_TEXTURE_SHEETS", "field_17820", null));
+        List<ParticleTextureSheet> list = new ArrayList<>(PARTICLE_TEXTURE_SHEETS);
         list.add(VexParticle.pts);
-        ReflectionHelper.setYarnFieldValue(ParticleManager.class, "PARTICLE_TEXTURE_SHEETS", "field_17820", null, list);
+        PARTICLE_TEXTURE_SHEETS = list;
     }
 
 }

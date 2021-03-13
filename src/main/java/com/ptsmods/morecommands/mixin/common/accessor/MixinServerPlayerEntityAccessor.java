@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.common.accessor;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

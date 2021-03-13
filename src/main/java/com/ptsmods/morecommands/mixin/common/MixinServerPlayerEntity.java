@@ -3,11 +3,13 @@ package com.ptsmods.morecommands.mixin.common;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,6 +23,10 @@ public class MixinServerPlayerEntity {
 
     private int mc_lastPing = -1;
 
+    /**
+     * @author PlanetTeamSpeak
+     */
+    @Nullable
     @Overwrite
     public Text getPlayerListName() {
         return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
@@ -47,8 +53,8 @@ public class MixinServerPlayerEntity {
         thiz.setWorld(targetWorld);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; setWorld(Lnet/minecraft/world/World;)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
-    private void teleport_setWorld(ServerPlayerEntity thiz, World targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; setWorld(Lnet/minecraft/server/world/ServerWorld;)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
+    private void teleport_setWorld(ServerPlayerEntity thiz, ServerWorld targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
         thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
     }
 

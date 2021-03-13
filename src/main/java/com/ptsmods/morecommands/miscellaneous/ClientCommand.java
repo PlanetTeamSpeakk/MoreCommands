@@ -9,7 +9,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.mixin.client.MixinEntitySelector;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinEntitySelectorAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -25,7 +25,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -59,6 +58,11 @@ public abstract class ClientCommand extends Command {
     @Override
     public final void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
         MoreCommands.throwWithoutDeclaration(new IllegalAccessException("Client commands can only be registered via the cRegister method."));
+    }
+
+    @Override
+    public final boolean forDedicated() {
+        return false;
     }
 
     public abstract void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) throws Exception;
@@ -135,7 +139,7 @@ public abstract class ClientCommand extends Command {
 
     public static List<PlayerListEntry> getPlayers(CommandContext<ClientCommandSource> ctx, String argument) {
         EntitySelector selector = ctx.getArgument(argument, EntitySelector.class);
-        MixinEntitySelector mselector = ReflectionHelper.cast(selector);
+        MixinEntitySelectorAccessor mselector = ReflectionHelper.cast(selector);
         PlayerListEntry player;
         if (mselector.getPlayerName() != null) {
             player = getPlayer(mselector.getPlayerName());
@@ -167,7 +171,7 @@ public abstract class ClientCommand extends Command {
 
     public static Collection<? extends Entity> getEntities(CommandContext<ClientCommandSource> ctx, String name) throws CommandSyntaxException {
         EntitySelector selector = ctx.getArgument(name, EntitySelector.class);
-        MixinEntitySelector mselector = ReflectionHelper.cast(selector);
+        MixinEntitySelectorAccessor mselector = ReflectionHelper.cast(selector);
         if (!mselector.getIncludesNonPlayers()) {
             return getPlayers(ctx, name).stream().collect(Collector.<PlayerListEntry, List<AbstractClientPlayerEntity>>of(ArrayList::new, (list, entry) -> list.add(getPlayerEntity(entry)), (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList())));
         } else if (mselector.getPlayerName() != null) {
@@ -191,21 +195,21 @@ public abstract class ClientCommand extends Command {
         }
     }
 
-    private static Predicate<Entity> getPositionPredicate(MixinEntitySelector mselector, Vec3d vec3d) {
+    private static Predicate<Entity> getPositionPredicate(MixinEntitySelectorAccessor mselector, Vec3d vec3d) {
         Predicate<Entity> predicate = mselector.getBasePredicate();
         if (mselector.getBox() != null) predicate = predicate.and((entity) -> mselector.getBox().offset(vec3d).intersects(entity.getBoundingBox()));
         if (!mselector.getDistance().isDummy()) predicate = predicate.and((entity) -> mselector.getDistance().testSqrt(entity.squaredDistanceTo(vec3d)));
         return predicate;
     }
 
-    private static void appendEntitiesFromWorld(MixinEntitySelector mselector, List<Entity> list, ClientWorld world, Vec3d vec3d, Predicate<Entity> predicate) {
+    private static void appendEntitiesFromWorld(MixinEntitySelectorAccessor mselector, List<Entity> list, ClientWorld world, Vec3d vec3d, Predicate<Entity> predicate) {
         List<Entity> entities = Lists.newArrayList(world.getEntities());
         Box box = mselector.getBox() == null ? new Box(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE) : mselector.getBox().offset(vec3d);
         entities.removeIf(entity -> !box.contains(entity.getPos()) || !predicate.test(entity));
         list.addAll(entities);
     }
 
-    private static <T extends Entity> List<T> getEntities(EntitySelector selector, MixinEntitySelector mselector, Vec3d vec3d, List<T> list) {
+    private static <T extends Entity> List<T> getEntities(EntitySelector selector, MixinEntitySelectorAccessor mselector, Vec3d vec3d, List<T> list) {
         if (list.size() > 1) mselector.getSorter().accept(vec3d, list);
         return list.subList(0, Math.min(selector.getLimit(), list.size()));
     }

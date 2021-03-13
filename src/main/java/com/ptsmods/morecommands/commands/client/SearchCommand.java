@@ -4,19 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ChatHudLineWithContent;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import sun.reflect.ConstructorAccessor;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +23,7 @@ public class SearchCommand extends ClientCommand {
     public static ClickEvent.Action SCROLL_ACTION = null;
 
     public void preinit() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (SCROLL_ACTION == null) SCROLL_ACTION = ReflectionHelper.newEnumInstance(ClickEvent.Action.class, new Class[] {String.class, boolean.class}, "SCROLL", "scroll", false);
+        if (SCROLL_ACTION == null) SCROLL_ACTION = ClickEvent.Action.valueOf("SCROLL"); // Should've been registered in EarlyRiser.
     }
 
     @Override

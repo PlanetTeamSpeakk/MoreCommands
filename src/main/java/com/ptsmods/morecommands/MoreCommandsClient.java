@@ -248,7 +248,11 @@ public class MoreCommandsClient implements ClientModInitializer {
             int x = i; // Has to be effectively final cuz lambda
             ButtonWidget btn = addButton(screen, new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)), yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight, new LiteralText(formattings[x].toString().replace('\u00A7', '&')).setStyle(Style.EMPTY.withFormatting(formattings[x])), btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')), (button, matrices, mouseX, mouseY) -> {
                 if (x == 22) screen.renderTooltip(matrices, new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY); // Rainbow formatting
-            }));
+            }) {
+                public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                    return false;
+                }
+            });
             Objects.requireNonNull(btn).visible = initOpened;
             btns.add(btn);
         }
@@ -257,7 +261,11 @@ public class MoreCommandsClient implements ClientModInitializer {
             if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
             btns.forEach(btn0 -> btn0.visible = b);
             if (stateListener != null) stateListener.accept(b);
-        }))).visible = ClientOptions.Tweaks.textColourPicker;
+        }) {
+            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
+            }
+        })).visible = ClientOptions.Tweaks.textColourPicker;
     }
 
 

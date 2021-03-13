@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -31,7 +32,6 @@ import java.lang.reflect.Method;
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
 
-    private static final Method mc_addButtonMethod = ReflectionHelper.getYarnMethod(Screen.class, "addButton", "method_25411", AbstractButtonWidget.class);
     private boolean mc_translateFormattings = false;
     private ButtonWidget mc_btn = null;
     private static boolean mc_colourPickerOpen = false;
@@ -40,7 +40,7 @@ public class MixinSignEditScreen {
 
     @Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/block/entity/SignBlockEntity;Z)V")
     private void init(SignBlockEntity sbe, boolean b, CallbackInfo cbi) {
-        Text[] text = ReflectionHelper.getYarnFieldValue(SignBlockEntity.class, "text", "field_12050", sbe);
+        Text[] text = ((MixinSignBlockEntityAccessor) sbe).getTexts();
         for (int i = 0; i < text.length; i++)
             this.text[i] = MoreCommands.textToString(text[i], null).replace("\u00A7", "&");
     }

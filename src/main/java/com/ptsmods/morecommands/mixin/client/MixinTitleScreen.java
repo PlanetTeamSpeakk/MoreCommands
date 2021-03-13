@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.mixin.client;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Rainbow;
-import com.ptsmods.morecommands.mixin.common.MixinItemAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinItemAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.util.registry.Registry;

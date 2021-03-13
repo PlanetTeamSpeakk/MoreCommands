@@ -39,12 +39,19 @@
     "MixinEnchantmentScreenHandler",
     "MixinAnvilScreenHandler",
     "MixinEntity",
-    "MixinItemAccessor",
+    "accessor.MixinItemAccessor",
     "MixinItemEntity",
-    "MixinServerPlayerEntityAccessor",
+    "accessor.MixinServerPlayerEntityAccessor",
     "MixinForgingScreenHandler",
     "MixinAbstractFurnaceBlockEntity",
-    "MixinBrewingStandBlockEntity"
+    "MixinBrewingStandBlockEntity",
+    "accessor.MixinTextColorAccessor",
+    "accessor.MixinFormattingAccessor",
+    "accessor.MixinLivingEntityAccessor",
+    "accessor.MixinSignBlockEntityAccessor",
+    "accessor.MixinRegistryAccessor",
+    "accessor.MixinScoreboardCriterionAccessor",
+    "accessor.MixinHopperBlockEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

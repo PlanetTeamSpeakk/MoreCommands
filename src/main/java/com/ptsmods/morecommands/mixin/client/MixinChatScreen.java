@@ -6,6 +6,7 @@ import com.ptsmods.morecommands.commands.client.SearchCommand;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.CopySound;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinChatHudAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
@@ -27,11 +28,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
-
-import static com.ptsmods.morecommands.MoreCommands.log;
 
 @Mixin(ChatScreen.class)
 public class MixinChatScreen {

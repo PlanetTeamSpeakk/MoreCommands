@@ -47,8 +47,9 @@ public class InvseeCommand extends Command {
                     }
 
                     @Override
-                    public ItemStack onSlotClick(int i, int j, SlotActionType actionType, PlayerEntity playerEntity) {
-                        return target instanceof OtherClientPlayerEntity ? ItemStack.EMPTY : super.onSlotClick(i, j, actionType, playerEntity);
+                    public void onSlotClick(int i, int j, SlotActionType actionType, PlayerEntity playerEntity) {
+                        if (!(target instanceof OtherClientPlayerEntity))
+                            super.onSlotClick(i, j, actionType, playerEntity);
                     }
                 };
             }

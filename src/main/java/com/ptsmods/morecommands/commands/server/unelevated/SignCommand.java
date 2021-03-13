@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -18,7 +19,7 @@ public class SignCommand extends Command {
             BlockEntity be = ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
             if (BlockTags.SIGNS.contains(ctx.getSource().getWorld().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
                 SignBlockEntity sbe = (SignBlockEntity) be;
-                ReflectionHelper.setYarnFieldValue(SignBlockEntity.class, "editable", "field_12048", sbe, true);
+                ((MixinSignBlockEntityAccessor) sbe).setEditable(true);
                 sbe.setEditor(ctx.getSource().getPlayer());
                 ctx.getSource().getPlayer().openEditSignScreen(sbe); // Copying content onto edit screen is handled in MixinSignEditScreen.
                 return 1;

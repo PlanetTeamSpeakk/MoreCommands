@@ -14,6 +14,9 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.commands.server.elevated.*;
 import com.ptsmods.morecommands.miscellaneous.*;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinFormattingAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinRegistryAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinScoreboardCriterionAccessor;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -90,6 +93,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -154,17 +158,16 @@ public class MoreCommands implements ModInitializer {
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
+	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
 	public static Unsafe theUnsafe = ReflectionHelper.getFieldValue(Unsafe.class, "theUnsafe", null);
-	private static Environment environment = null;
 
 	static {
-		LATENCY = ReflectionHelper.newInstance(Objects.requireNonNull(ReflectionHelper.getConstructor(ScoreboardCriterion.class, String.class, boolean.class, ScoreboardCriterion.RenderType.class)), "latency", true, ScoreboardCriterion.RenderType.INTEGER);
-		ScoreboardCriterion.CRITERIA.put("latency", LATENCY);
+		ScoreboardCriterion.CRITERIA.put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 	}
 
 	@Override
 	public void onInitialize() {
-		ReflectionHelper.setYarnFieldValue(Formatting.class, "FORMATTING_CODE_PATTERN", "field_1066", null, Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
+		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		File dir = new File("config/MoreCommands");
 		if (!dir.exists()) dir.mkdirs();
 		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
@@ -211,8 +214,9 @@ public class MoreCommands implements ModInitializer {
 					float pitch = MathHelper.wrapDegrees(p.pitch);
 					float yaw = MathHelper.wrapDegrees(p.yaw);
 					double moonWidth = Math.PI / 32 * -pitch;
-					if (!howlingPlayers.contains(p) && p.getServerWorld().getMoonPhase() == 0 && p.getServerWorld().getTimeOfDay() > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
-						double moonPitch = -90 + Math.abs(p.getServerWorld().getTimeOfDay() - 18000) * 0.0175;
+					long dayTime = p.getServerWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
+					if (!howlingPlayers.contains(p) && p.getServerWorld().getMoonPhase() == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+						double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
 						if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
 							p.getServerWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
 							howlingPlayers.add(p);
@@ -605,24 +609,15 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static <T> Registry<T> getRegistry(RegistryKey<T> key) {
-		try {
-			return ReflectionHelper.cast(getRootRegistry().get(ReflectionHelper.<RegistryKey<MutableRegistry<?>>>cast(key)));
-		} catch (IllegalAccessException e) {
-			return null;
-		}
+		return ReflectionHelper.cast(getRootRegistry().get(ReflectionHelper.<RegistryKey<MutableRegistry<?>>>cast(key)));
 	}
 
 	public static <T> RegistryKey<MutableRegistry<?>> getKey(MutableRegistry<T> registry) {
-		try {
-			return getRootRegistry().getKey(registry).orElse(null);
-		} catch (IllegalAccessException e) {
-			log.info(e);
-		}
-		return null;
+		return getRootRegistry().getKey(registry).orElse(null);
 	}
 
-	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() throws IllegalAccessException {
-		return ReflectionHelper.getYarnFieldValue(Registry.class, "ROOT", "field_25101", null);
+	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
+		return MixinRegistryAccessor.getRoot();
 	}
 
 	public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
@@ -650,11 +645,6 @@ public class MoreCommands implements ModInitializer {
 			result.append(line);
 		rd.close();
 		return result.toString();
-	}
-
-	public static Environment getEnvironment() {
-		if (environment == null) environment = ReflectionHelper.invokeMethod(YggdrasilAuthenticationService.class, "determineEnvironment", null, null);
-		return environment;
 	}
 
 	public static void setServerInstance(MinecraftServer server) {
@@ -764,13 +754,25 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String formatFileSize(long bytes) {
-		String output;
-		if (bytes / 1024F / 1024F / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024 / 1024F / 1024F + " terabytes";
-		else if (bytes / 1024F / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024F / 1024F + " gigabytes";
-		else if (bytes / 1024F / 1024F >= 1F) output = bytes / 1024F / 1024F + " megabytes";
-		else if (bytes / 1024F >= 1F) output = bytes / 1024L + " kilobytes";
-		else output = bytes + " bytes";
-		return output;
+		double size = bytes;
+		int count = 0;
+		while (size >= 1024 && count < 4) {
+			size /= 1024F;
+			count += 1;
+		}
+		String s = sizeFormat.format(size);
+		switch (count) {
+			case 0:
+				return s + " bytes";
+			case 1:
+				return s + " kilobytes";
+			case 2:
+				return s + " megabytes";
+			case 3:
+				return s + " gigabytes";
+			default:
+				return s + " terabytes";
+		}
 	}
 
 	// Me

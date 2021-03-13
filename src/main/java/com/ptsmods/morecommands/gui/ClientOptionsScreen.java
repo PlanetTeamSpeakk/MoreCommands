@@ -28,6 +28,7 @@ public class ClientOptionsScreen extends Screen {
 
     @Override
     protected void init() {
+        Objects.requireNonNull(client);
         btnClasses.clear();
         buttons.clear();
         boolean right = false;
@@ -51,6 +52,7 @@ public class ClientOptionsScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        Objects.requireNonNull(client);
         renderBackground(matrices);
         drawCenteredText(matrices, client.textRenderer, getTitle(), width / 2, 10, 0);
         super.render(matrices, mouseX, mouseY, delta);
@@ -74,6 +76,6 @@ public class ClientOptionsScreen extends Screen {
 
     @Override
     public void onClose() {
-        client.openScreen(parent);
+        Objects.requireNonNull(client).openScreen(parent);
     }
 }

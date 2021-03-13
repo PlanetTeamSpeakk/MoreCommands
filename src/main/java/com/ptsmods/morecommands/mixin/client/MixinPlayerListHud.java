@@ -56,6 +56,9 @@ public abstract class MixinPlayerListHud {
         }
     }
 
+    /**
+     * @author
+     */
     @Overwrite
     public void render(MatrixStack matrixStack, int i, Scoreboard scoreboard, ScoreboardObjective scoreboardObjective) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -152,8 +155,7 @@ public abstract class MixinPlayerListHud {
             int ab = t + z * s + z * 5;
             int ac = u + aj * 9;
             fill(matrixStack, ab, ac, ab + s, ac + 8, x);
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.enableAlphaTest();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             if (y < list.size()) {
