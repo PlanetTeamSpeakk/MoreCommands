@@ -27,7 +27,7 @@ public class MixinBiome {
     }
 
     private int getColour(CallbackInfoReturnable<Integer> cbi) {
-        return ClientOptions.EasterEggs.rainbows ? Rainbow.getRainbowColour(false) : cbi.getReturnValueI();
+        return ClientOptions.EasterEggs.rainbows && Rainbow.getInstance() != null ? Rainbow.getInstance().getRainbowColour(false) : cbi.getReturnValueI();
     }
 
 }

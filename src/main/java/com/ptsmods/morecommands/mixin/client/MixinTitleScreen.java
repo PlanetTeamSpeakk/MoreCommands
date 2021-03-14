@@ -37,7 +37,7 @@ public class MixinTitleScreen {
             });
         }
         if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
-        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash ? Rainbow.RAINBOW + splashText : splashText;
+        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
     }
 
 }

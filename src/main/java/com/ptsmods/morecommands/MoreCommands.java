@@ -208,7 +208,7 @@ public class MoreCommands implements ModInitializer {
 					float yaw = MathHelper.wrapDegrees(p.yaw);
 					double moonWidth = Math.PI / 32 * -pitch;
 					long dayTime = p.getServerWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-					if (!howlingPlayers.contains(p) && p.getServerWorld().getMoonPhase() == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+					if (!howlingPlayers.contains(p) && p.getServerWorld().getDimension().getMoonPhase(p.getServerWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
 						double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
 						if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
 							p.getServerWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);

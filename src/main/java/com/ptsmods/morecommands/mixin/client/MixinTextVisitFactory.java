@@ -23,7 +23,7 @@ public class MixinTextVisitFactory {
         int i = text.length();
         Style style = startingStyle;
         for (int j = startIndex; j < i; ++j) {
-            Rainbow.rainbowIndex = j; // Set rainbowIndex
+            if (Rainbow.getInstance() != null) Rainbow.getInstance().rainbowIndex = j; // Set rainbowIndex
             char c = text.charAt(j);
             char e;
             if (c == 167) {
