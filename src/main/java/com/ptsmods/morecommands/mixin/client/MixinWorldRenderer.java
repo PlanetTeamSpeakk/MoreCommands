@@ -18,8 +18,8 @@ public class MixinWorldRenderer {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer; drawShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFF)V"), method = "drawBlockOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/entity/Entity;DDDLnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V")
     private void drawBlockOutline_drawShapeOutline(MatrixStack stack, VertexConsumer vertexConsumer, VoxelShape shape, double x, double y, double z, float r, float g, float b, float a) {
-        if (ClientOptions.EasterEggs.rainbows) {
-            Color c = new Color(Rainbow.getRainbowColour(false));
+        if (ClientOptions.EasterEggs.rainbows && Rainbow.getInstance() != null) {
+            Color c = new Color(Rainbow.getInstance().getRainbowColour(false));
             r = c.getRed() / 255f;
             g = c.getGreen() / 255f;
             b = c.getBlue() / 255f;

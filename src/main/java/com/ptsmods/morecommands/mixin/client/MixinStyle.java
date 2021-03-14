@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinStyle {
     @Inject(at = @At("RETURN"), method = "getColor()Lnet/minecraft/text/TextColor;")
     public TextColor getColor(CallbackInfoReturnable<TextColor> cbi) {
-        return ClientOptions.EasterEggs.rainbows ? Rainbow.RAINBOW_TC : cbi.getReturnValue();
+        return ClientOptions.EasterEggs.rainbows && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW_TC : cbi.getReturnValue();
     }
 }

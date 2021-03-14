@@ -14,7 +14,7 @@ public class MixinTextColor {
 
     @Inject(at = @At("RETURN"), method = "getRgb()I")
     public int getRgb(CallbackInfoReturnable<Integer> cbi) {
-        return ReflectionHelper.<TextColor>cast(this) == Rainbow.RAINBOW_TC ? Rainbow.getRainbowColour(true) : cbi.getReturnValueI();
+        return Rainbow.getInstance() != null && ReflectionHelper.<TextColor>cast(this) == Rainbow.getInstance().RAINBOW_TC ? Rainbow.getInstance().getRainbowColour(true) : cbi.getReturnValueI();
     }
 
 }

@@ -15,12 +15,15 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(TextVisitFactory.class)
 public class MixinTextVisitFactory {
 
+    /**
+     * @author PlanetTeamSpeak
+     */
     @Overwrite
     public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style resetStyle, CharacterVisitor visitor) {
         int i = text.length();
         Style style = startingStyle;
         for (int j = startIndex; j < i; ++j) {
-            Rainbow.rainbowIndex = j; // Set rainbowIndex
+            if (Rainbow.getInstance() != null) Rainbow.getInstance().rainbowIndex = j; // Set rainbowIndex
             char c = text.charAt(j);
             char e;
             if (c == 167) {
