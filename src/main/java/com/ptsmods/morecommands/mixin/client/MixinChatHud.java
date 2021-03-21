@@ -42,7 +42,7 @@ public abstract class MixinChatHud {
 
     @Overwrite
     public void addMessage(Text message) {
-        if (ClientOptions.Chat.ignoreEmptyMsgs && Objects.requireNonNull(Formatting.strip(MoreCommands.textToString(message, null))).trim().isEmpty()) return;
+        if (ClientOptions.Chat.ignoreEmptyMsgs.getValue() && Objects.requireNonNull(Formatting.strip(MoreCommands.textToString(message, null))).trim().isEmpty()) return;
         if (message instanceof LiteralText && "\u00A0".equals(message.asString())) message = new LiteralText("");
         addMessage(message, mc_id++); // Making sure not all ChatHudLines have an id of 0 which breaks the getText method in MixinChatScreen.
     }
@@ -51,7 +51,7 @@ public abstract class MixinChatHud {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud; addMessage(Lnet/minecraft/text/Text;IIZ)V"), method = "addMessage(Lnet/minecraft/text/Text;I)V")
     public void addMessage_addMessage(ChatHud thiz, Text text, int messageId, int timestamp, boolean bl) {
-        if (ClientOptions.Chat.showMsgTime && text != null) text = new LiteralText("[" + (ClientOptions.Chat.use12HourClock ? ClientOptions.Chat.showSeconds ? twelveSec : twelve : ClientOptions.Chat.showSeconds ? twentyfourSec : twentyfour).format(LocalDateTime.now()) +"] ").setStyle(MoreCommands.SS).append(text.shallowCopy().setStyle(text.getStyle().getColor() == null ? text.getStyle().withFormatting(Formatting.WHITE) : text.getStyle()));
+        if (ClientOptions.Chat.showMsgTime.getValue() && text != null) text = new LiteralText("[" + (ClientOptions.Chat.use12HourClock.getValue() ? ClientOptions.Chat.showSeconds.getValue() ? twelveSec : twelve : ClientOptions.Chat.showSeconds.getValue() ? twentyfourSec : twentyfour).format(LocalDateTime.now()) +"] ").setStyle(MoreCommands.SS).append(text.shallowCopy().setStyle(text.getStyle().getColor() == null ? text.getStyle().withFormatting(Formatting.WHITE) : text.getStyle()));
         addMessage(text, messageId, timestamp, bl);
     }
 
@@ -65,12 +65,12 @@ public abstract class MixinChatHud {
     // Without this redirect the while loop would have no end.
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; size()I"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")
     public int messagesSize(List<?> messages) {
-        return ClientOptions.Chat.infiniteChat ? Math.min(messages.size(), 100) : messages.size();
+        return ClientOptions.Chat.infiniteChat.getValue() ? Math.min(messages.size(), 100) : messages.size();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List; remove(I)Ljava/lang/Object;"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")
     public Object messagesRemove(List<?> messages, int index) {
-        return ClientOptions.Chat.infiniteChat ? messages.get(messages.size() - 1) : messages.remove(index);
+        return ClientOptions.Chat.infiniteChat.getValue() ? messages.get(messages.size() - 1) : messages.remove(index);
     }
 
 }

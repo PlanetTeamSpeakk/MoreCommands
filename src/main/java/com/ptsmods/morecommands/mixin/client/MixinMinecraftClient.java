@@ -4,6 +4,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.RenderTickCallback;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
+import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ServerInfo;
@@ -23,6 +24,8 @@ public class MixinMinecraftClient {
         MoreCommands.setFormattings(Formatting.GOLD, Formatting.YELLOW);
         SearchCommand.lines.clear();
         MoreCommandsClient.updatePresence();
+        ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
+        MoreCommandsClient.clearDisabledCommands();
     }
 
     @Inject(at = @At("HEAD"), method = "render(Z)V")

@@ -70,7 +70,7 @@ public class ClientOptionsScreen extends Screen {
     }
 
     private boolean isHidden(Class<?> c) {
-        return c.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOption(c.getAnnotation(ClientOptions.IsHidden.class).value()));
+        return c.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOptionString(c.getAnnotation(ClientOptions.IsHidden.class).value()));
     }
 
     @Override

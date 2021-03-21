@@ -34,7 +34,7 @@ public class MixinEntityRenderer<T extends Entity> {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity; isSneaky()Z"), method = "renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
     public boolean renderLabelIfPresent_isSneaky(Entity entity) {
-        return !ClientOptions.Rendering.seeTagSneaking && entity.isSneaky();
+        return !ClientOptions.Rendering.seeTagSneaking.getValue() && entity.isSneaky();
     }
 
     @Shadow private void renderLabelIfPresent(T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {}

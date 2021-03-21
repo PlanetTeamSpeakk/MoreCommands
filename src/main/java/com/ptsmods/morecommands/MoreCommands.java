@@ -888,4 +888,19 @@ public class MoreCommands implements ModInitializer {
 		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
 	}
 
+	public static String formatSeconds(long seconds, Formatting mainColour, Formatting commaColour) {
+		long days = seconds / 86400;
+		long hours = seconds / 3600 - days * 24;
+		long minutes = seconds / 60 - hours * 60 - days * 1440;
+		seconds = seconds % 60;
+		StringBuilder sb = new StringBuilder(mainColour.toString());
+		if (days > 0) sb.append(days).append(" day").append(days == 1 ? "" : "s");
+		if (hours > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(hours).append(" hour").append(hours == 1 ? "" : "s");
+		if (minutes > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(minutes).append(" minute").append(minutes == 1 ? "" : "s");
+		if (seconds > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(seconds).append(" seconds").append(seconds == 1 ? "" : "s");
+		String s = sb.toString();
+		if (s.contains(",")) s = s.substring(0, s.lastIndexOf(',')) + " and" + s.substring(s.lastIndexOf(',') + 1);
+		return s;
+	}
+
 }

@@ -44,7 +44,7 @@ public abstract class MixinPlayerListHud {
 
     @Inject(at = @At("HEAD"), method = "renderLatencyIcon(Lnet/minecraft/client/util/math/MatrixStack;IIILnet/minecraft/client/network/PlayerListEntry;)V", cancellable = true)
     protected void renderLatencyIcon(MatrixStack matrixStack, int i, int j, int k, PlayerListEntry playerListEntry, CallbackInfo cbi) {
-        if (ClientOptions.Rendering.showExactLatency) {
+        if (ClientOptions.Rendering.showExactLatency.getValue()) {
             cbi.cancel();
             PlayerListHud thiz = ReflectionHelper.cast(this);
             thiz.setZOffset(thiz.getZOffset() + 100);
@@ -94,7 +94,7 @@ public abstract class MixinPlayerListHud {
             r = 0;
         }
 
-        int s = Math.min(o * ((bl ? 9 : 0) + j + r + 13), i - 50) / o + (ClientOptions.Rendering.showExactLatency ? 15 : 0);
+        int s = Math.min(o * ((bl ? 9 : 0) + j + r + 13), i - 50) / o + (ClientOptions.Rendering.showExactLatency.getValue() ? 15 : 0);
         int t = i / 2 - (s * o + (o - 1) * 5) / 2;
         int u = 10;
         int v = s * o + (o - 1) * 5;
@@ -142,7 +142,7 @@ public abstract class MixinPlayerListHud {
             ++u;
         }
 
-        fill(matrixStack, i / 2 - v / 2 - 1, u - 1, i / 2 + v / 2 + (ClientOptions.Rendering.showExactLatency ? 2 : 1), u + n * 9, -2147483648);
+        fill(matrixStack, i / 2 - v / 2 - 1, u - 1, i / 2 + v / 2 + (ClientOptions.Rendering.showExactLatency.getValue() ? 2 : 1), u + n * 9, -2147483648);
         int x = client.options.getTextBackgroundColor(553648127);
 
         int aj;
@@ -183,7 +183,7 @@ public abstract class MixinPlayerListHud {
                     }
                 }
 
-                renderLatencyIcon(matrixStack, s - (ClientOptions.Rendering.showExactLatency ? 13 : 0), ab - (bl ? 9 : 0), ac, playerListEntry2);
+                renderLatencyIcon(matrixStack, s - (ClientOptions.Rendering.showExactLatency.getValue() ? 13 : 0), ab - (bl ? 9 : 0), ac, playerListEntry2);
             }
         }
 

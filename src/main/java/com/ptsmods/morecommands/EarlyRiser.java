@@ -12,6 +12,6 @@ public class EarlyRiser implements Runnable {
         MappingResolver remapper = FabricLoader.getInstance().getMappingResolver();
         ClassTinkerers.enumBuilder(remapper.mapClassName("intermediary", "net.minecraft.class_124"), String.class, char.class, boolean.class).addEnum("RAINBOW", "RAINBOW", 'u', true).build();
         ClassTinkerers.enumBuilder(remapper.mapClassName("intermediary", "net.minecraft.class_2558$class_2559"), String.class, boolean.class).addEnum("SCROLL", "scroll", false).build();
-        LogManager.getLogger("MoreCommands-EarlyRiser").info("[MoreCommands] Registered RAINBOW formatting and SCROLL ClickEvent$Action.");
+        LogManager.getLogger("MoreCommands-EarlyRiser").info("[MoreCommands] Registered RAINBOW Formatting and SCROLL ClickEvent$Action.");
     }
 }

@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -118,13 +119,17 @@ public abstract class Command {
         return formatFromBool(b) + (b ? yes : no);
     }
 
-    public static String formatFromValue(float v, float max, float yellow, float green) {
+    public static String formatFromFloat(float v, float max, float yellow, float green) {
         float percent = v/max;
         return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) + DF + "/" + Formatting.GREEN + max;
     }
 
     public static boolean isOp(CommandContext<ServerCommandSource> ctx) {
         return IS_OP.test(ctx.getSource());
+    }
+
+    public static boolean isOp(ServerPlayerEntity player) {
+        return player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel());
     }
 
     public void setActiveInstance() {

@@ -32,17 +32,13 @@ import net.minecraft.client.options.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -51,7 +47,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
@@ -68,6 +63,7 @@ public class MoreCommandsClient implements ClientModInitializer {
     private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
     private static DiscordUser discordUser = null;
     private static final Method addButtonMethod = ReflectionHelper.getYarnMethod(Screen.class, "addButton", "method_25411", AbstractButtonWidget.class);
+    private static final List<String> disabledCommands = new ArrayList<>();
 
     static {
         for (Field f : GLFW.class.getFields())
@@ -105,11 +101,11 @@ public class MoreCommandsClient implements ClientModInitializer {
         Language.setInstance(Language.getInstance()); // Wrap the current instance so it can translate all enchant levels and spawner names. :3 (Look at MixinLanguage)
         KeyBindingHelper.registerKeyBinding(toggleInfoHudBinding);
         HudRenderCallback.EVENT.register((stack, tickDelta) -> {
-            if (ClientOptions.Tweaks.enableInfoHud) InfoHud.instance.render(stack, tickDelta);
+            if (ClientOptions.Tweaks.enableInfoHud.getValue()) InfoHud.instance.render(stack, tickDelta);
         });
         ClientTickEvents.START_WORLD_TICK.register(world -> {
             if (toggleInfoHudBinding.wasPressed()) {
-                ClientOptions.Tweaks.enableInfoHud = !ClientOptions.Tweaks.enableInfoHud;
+                ClientOptions.Tweaks.enableInfoHud.setValue(!ClientOptions.Tweaks.enableInfoHud.getValue());
                 ClientOptions.write();
             }
             ClientPlayerEntity p = MinecraftClient.getInstance().player;
@@ -154,6 +150,18 @@ public class MoreCommandsClient implements ClientModInitializer {
                     break;
             }
         });
+        ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_options"), (client, handler, buf, responseSender) -> {
+            ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
+            int length = buf.readVarInt();
+            for (int i = 0; i < length; i++)
+                Optional.ofNullable(ClientOptions.getOption(buf.readString())).ifPresent(option -> option.setDisabled(true));
+        });
+        ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_commands"), (client, handler, buf, responseSender) -> {
+            disabledCommands.clear();
+            int length = buf.readVarInt();
+            for (int i = 0; i < length; i++)
+                disabledCommands.add(buf.readString());
+        });
         ChatMessageSendCallback.EVENT.register(message -> {
             if (message.startsWith("/easteregg")) {
                 if (easterEggSound == null) MinecraftClient.getInstance().getSoundManager().play(easterEggSound = new EasterEggSound());
@@ -166,7 +174,7 @@ public class MoreCommandsClient implements ClientModInitializer {
             return message;
         });
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && ClientPlayNetworking.canSend(new Identifier("morecommands:sit_on_stairs"))) {
+            if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && ClientPlayNetworking.canSend(new Identifier("morecommands:sit_on_stairs"))) {
                 ClientPlayNetworking.send(new Identifier("morecommands:sit_on_stairs"), new PacketByteBuf(Unpooled.buffer()).writeBlockPos(hitResult.getBlockPos()));
                 return ActionResult.CONSUME;
             }
@@ -179,23 +187,23 @@ public class MoreCommandsClient implements ClientModInitializer {
     }
 
     public static void updatePresence() {
-        if (ClientOptions.RichPresence.enableRPC && !MinecraftClient.IS_SYSTEM_MAC) {
+        if (ClientOptions.RichPresence.enableRPC.getValue() && !MinecraftClient.IS_SYSTEM_MAC) {
             MinecraftClient client = MinecraftClient.getInstance();
             DiscordRichPresence.Builder builder;
             if (client.world == null) builder = new DiscordRichPresence.Builder("On the main menu").setBigImage("minecraft_logo", null);
             else {
                 builder = new DiscordRichPresence.Builder(client.getCurrentServerEntry() == null ? "Singleplayer" : "Multiplayer").setBigImage("in_game", null);
-                if (ClientOptions.RichPresence.showDetails) builder.setDetails(getWorldName());
+                if (ClientOptions.RichPresence.showDetails.getValue()) builder.setDetails(getWorldName());
             }
-            if (ClientOptions.RichPresence.advertiseMC) builder.setSmallImage("morecommands_logo", "Download at https://bit.ly/MoreCommands");
+            if (ClientOptions.RichPresence.advertiseMC.getValue()) builder.setSmallImage("morecommands_logo", "Download at https://bit.ly/MoreCommands");
             DiscordRPC.discordUpdatePresence(builder.setStartTimestamps(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis() / 1000L).build());
         } else DiscordRPC.discordClearPresence();
     }
 
     public static void updateTag() {
-        if (ClientPlayNetworking.canSend(new Identifier("morecommands:discord_data")) && ClientOptions.RichPresence.shareTag && discordUser != null) {
+        if (ClientPlayNetworking.canSend(new Identifier("morecommands:discord_data")) && ClientOptions.RichPresence.shareTag.getValue() && discordUser != null) {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-            buf.writeBoolean(ClientOptions.RichPresence.askPermission);
+            buf.writeBoolean(ClientOptions.RichPresence.askPermission.getValue());
             buf.writeString(discordUser.userId);
             buf.writeString(discordUser.username);
             buf.writeString(discordUser.discriminator);
@@ -236,7 +244,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 
     // Frodo on da beat
     public static void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener) {
-        initOpened |= ClientOptions.Tweaks.colourPickerOpen;
+        initOpened |= ClientOptions.Tweaks.colourPickerOpen.getValue();
         final int buttonWidth = 24;
         final int wideButtonWidth = (int) (buttonWidth / 0.75f);
         final int buttonHeight = 20;
@@ -248,7 +256,7 @@ public class MoreCommandsClient implements ClientModInitializer {
                 if (x == 22) screen.renderTooltip(matrices, new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY); // Rainbow formatting
             }) {
                 public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                    return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
+                    return false;
                 }
             });
             Objects.requireNonNull(btn).visible = initOpened;
@@ -261,9 +269,17 @@ public class MoreCommandsClient implements ClientModInitializer {
             if (stateListener != null) stateListener.accept(b);
         }) {
             public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
+                return false;
             }
-        })).visible = ClientOptions.Tweaks.textColourPicker;
+        })).visible = ClientOptions.Tweaks.textColourPicker.getValue();
     }
 
+    public static void clearDisabledCommands() {
+        disabledCommands.clear();
+    }
+
+    public static boolean isCommandDisabled(String input) {
+        if (input.startsWith("/")) input = input.substring(1);
+        return disabledCommands.contains(input.split(" ")[0]);
+    }
 }

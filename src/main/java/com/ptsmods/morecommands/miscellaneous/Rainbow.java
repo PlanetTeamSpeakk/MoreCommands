@@ -15,7 +15,7 @@ public class Rainbow {
     private static Rainbow instance = null;
 
     public static Rainbow getInstance() {
-        if (checked) return null;
+        if (checked) return instance;
         checked = true;
         try {
             Formatting.valueOf("RAINBOW");

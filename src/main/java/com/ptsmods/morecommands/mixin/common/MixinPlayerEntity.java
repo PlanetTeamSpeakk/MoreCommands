@@ -83,7 +83,7 @@ public abstract class MixinPlayerEntity {
 
     @Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)
     public boolean checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {
-        if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra) cbi.setReturnValue(false);
+        if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra.getValue()) cbi.setReturnValue(false);
         return cbi.getReturnValue() != null && cbi.getReturnValue();
     }
 

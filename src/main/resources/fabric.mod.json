@@ -27,7 +27,8 @@
   },
   "mixins": [
     "morecommands.client_mixins.json",
-    "morecommands.common_mixins.json"
+    "morecommands.common_mixins.json",
+    "morecommands.reach_mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.7.4",

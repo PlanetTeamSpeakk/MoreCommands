@@ -28,7 +28,7 @@ public class MixinCactusBlock {
     @Inject(at = @At("RETURN"), method = "getCollisionShape(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;")
     public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cbi) {
         // When String representation of the world is 'INSTANCE', the game is still initialising, so we pass the original shape.
-        return ClientOptions.Cheats.avoidCactusDmg && MoreCommands.isSingleplayer() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ? MC_OUTLINE_SHAPE : cbi.getReturnValue();
+        return ClientOptions.Cheats.avoidCactusDmg.getValue() && MoreCommands.isSingleplayer() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ? MC_OUTLINE_SHAPE : cbi.getReturnValue();
     }
 
 }

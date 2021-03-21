@@ -17,7 +17,7 @@ public class MixinFluidBlock {
 
     @Overwrite
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return ClientOptions.Tweaks.targetFluids ? MoreCommands.getFluidShape(state) : VoxelShapes.empty();
+        return ClientOptions.Tweaks.targetFluids.getValue() ? MoreCommands.getFluidShape(state) : VoxelShapes.empty();
     }
 
 }

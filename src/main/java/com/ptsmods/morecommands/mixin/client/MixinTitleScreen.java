@@ -24,7 +24,7 @@ public class MixinTitleScreen {
 
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Random; nextFloat()F", remap = false), method = "<init>(Z)V")
     private float init_nextFloat(Random random) {
-        return ClientOptions.Tweaks.alwaysMinceraft ? 0f : random.nextFloat();
+        return ClientOptions.Tweaks.alwaysMinceraft.getValue() ? 0f : random.nextFloat();
     }
 
     @Inject(at = @At("HEAD"), method = "init()V")
@@ -37,7 +37,7 @@ public class MixinTitleScreen {
             });
         }
         if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
-        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
+        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
     }
 
 }

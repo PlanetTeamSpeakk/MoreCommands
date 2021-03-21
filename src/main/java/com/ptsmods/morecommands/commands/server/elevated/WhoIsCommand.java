@@ -17,8 +17,8 @@ public class WhoIsCommand extends Command {
             sendMsg(ctx, "World: " + SF + player.getServerWorld().getRegistryKey().getValue().toString());
             sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
             sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(player.pitch) + DF + ", " + SF + MathHelper.wrapDegrees(player.yaw));
-            sendMsg(ctx, "Health: " + formatFromValue(player.getHealth(), player.getMaxHealth(), .5f, .8f));
-            sendMsg(ctx, "Food: " + formatFromValue(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f));
+            sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f));
+            sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f));
             sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());
             sendMsg(ctx, "IP: " + SF + player.getIp());
             return 1;

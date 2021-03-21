@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.client",
   "compatibilityLevel": "JAVA_8",
+  "plugin": "com.ptsmods.morecommands.MixinPlugin",
   "client": [
     "MixinClientPlayNetworkHandler",
     "MixinClientPlayerEntity",
@@ -40,7 +41,8 @@
     "MixinAnvilScreen",
     "MixinBookEditScreen",
     "accessor.MixinChatHudAccessor",
-    "accessor.MixinStyleAccessor"
+    "accessor.MixinStyleAccessor",
+    "MixinClientPlayerEntityTweakerooCompat"
   ],
   "injectors": {
     "defaultRequire": 1

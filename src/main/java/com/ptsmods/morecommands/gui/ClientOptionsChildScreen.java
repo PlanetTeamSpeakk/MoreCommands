@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.gui;
 
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.ClientOption;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
@@ -20,10 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.ptsmods.morecommands.MoreCommands.log;
 
@@ -50,7 +48,7 @@ public class ClientOptionsChildScreen extends Screen {
         int row = 0;
         List<Pair<AbstractButtonWidget, Field>> page = new ArrayList<>();
         for (Field f : c.getFields()) {
-            if (Modifier.isFinal(f.getModifiers()) || isHidden(f)) continue;
+            if (getType(f) == null) continue; // Most likely the ordinal field
             if (page.size() == 10) {
                 pages.add(page);
                 page = new ArrayList<>();
@@ -60,7 +58,7 @@ public class ClientOptionsChildScreen extends Screen {
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24*(row+1) - 6;
             AbstractButtonWidget btn = null;
-            if (f.getType() == boolean.class)
+            if (getType(f) == Boolean.class)
                 btn = addButton(new ButtonWidget(x, y, 150, 20, getBoolText(f), button -> {
                     boolean oldValue = getBoolValue(f);
                     setValue(f, !getBoolValue(f));
@@ -69,7 +67,7 @@ public class ClientOptionsChildScreen extends Screen {
                     parent.init();
                     init();
                 }));
-            else if (f.getType() == int.class)
+            else if (getType(f) == Integer.class)
                 btn = addButton(new SliderWidget(x, y, 150, 20, new LiteralText(getCleanName(f) + " : " + getIntValue(f)), getSliderValue(f)) {
                     @Override
                     protected void updateMessage() {
@@ -122,13 +120,13 @@ public class ClientOptionsChildScreen extends Screen {
             ClientOptions.reset();
             init();
         }));
-        addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> client.openScreen(this.parent)));
+        addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> Objects.requireNonNull(client).openScreen(this.parent)));
     }
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
-        drawCenteredText(matrices, client.textRenderer, getTitle(), width / 2, 10, 0);
+        drawCenteredText(matrices, Objects.requireNonNull(client).textRenderer, getTitle(), width / 2, 10, 0);
         super.render(matrices, mouseX, mouseY, delta);
         btnFields.forEach((btn, field) -> {
             String[] comment;
@@ -143,7 +141,7 @@ public class ClientOptionsChildScreen extends Screen {
 
     @Override
     public void onClose() {
-        client.openScreen(parent);
+        Objects.requireNonNull(client).openScreen(parent);
     }
 
     private void updatePage() {
@@ -181,7 +179,7 @@ public class ClientOptionsChildScreen extends Screen {
 
     private void setValue(Field f, Object value) {
         try {
-            f.set(null, value);
+            ((ClientOption<Object>) f.get(null)).setValue(value);
             ClientOptions.write();
         } catch (IllegalAccessException e) {
             log.catching(e);
@@ -199,30 +197,28 @@ public class ClientOptionsChildScreen extends Screen {
     }
 
     private int getIntValue(Field f) {
-        if (f.getType() == int.class) {
+        if (getType(f) == Integer.class)
             try {
-                return f.getInt(null);
+                return ((ClientOption<Integer>) f.get(null)).getValueRaw();
             } catch (IllegalAccessException e) {
                 log.catching(e);
             }
-        }
         return -1;
     }
 
     private boolean getBoolValue(Field f) {
-        if (f.getType() == boolean.class) {
+        if (getType(f) == Boolean.class)
             try {
-                return f.getBoolean(null);
+                return ((ClientOption<Boolean>) f.get(null)).getValueRaw();
             } catch (IllegalAccessException e) {
                 log.catching(e);
             }
-        }
         return false;
     }
 
     private int[] getCramp(Field f) {
         int[] cramp = new int[2];
-        if (f.getType() == int.class && f.isAnnotationPresent(ClientOptions.Cramp.class)) {
+        if (getType(f) == Integer.class && f.isAnnotationPresent(ClientOptions.Cramp.class)) {
             ClientOptions.Cramp cramp0 = f.getAnnotation(ClientOptions.Cramp.class);
             cramp[0] = cramp0.min();
             cramp[1] = cramp0.max();
@@ -235,20 +231,29 @@ public class ClientOptionsChildScreen extends Screen {
     }
 
     private boolean isHidden(Field f) {
-        return f.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOption(f.getAnnotation(ClientOptions.IsHidden.class).value()));
+        return f.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOptionString(f.getAnnotation(ClientOptions.IsHidden.class).value()));
     }
 
     private void checkChangeCallback(Field f, Object oldValue) {
         if (f.isAnnotationPresent(ClientOptions.ChangeCallback.class)) {
-            Method method = MoreObjects.firstNonNull(ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value(), f.getType(), f.getType()), ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value()));
+            Method method = MoreObjects.firstNonNull(ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value(), getType(f), getType(f)), ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value()));
             if (method != null && Modifier.isStatic(method.getModifiers()))
                 try {
                     method.setAccessible(true);
-                    if (method.getParameterCount() == 2) method.invoke(null, oldValue, f.get(null));
+                    if (method.getParameterCount() == 2) method.invoke(null, oldValue, ((ClientOption<?>) f.get(null)).getValueRaw());
                     else method.invoke(null);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     log.catching(e);
                 }
+        }
+    }
+    
+    private Class<?> getType(Field f) {
+        try {
+            return f.getType() == ClientOption.class ? ((ClientOption<?>) f.get(null)).getType() : null;
+        } catch (IllegalAccessException e) {
+            log.error("An unknown error occurred while getting type of field " + f + ".", e);
+            return null;
         }
     }
 }

@@ -51,7 +51,7 @@ public class MixinChatScreen {
             ChatHud chatHud = MinecraftClient.getInstance().inGameHud.getChatHud();
             ChatHudLine<Text> line = mc_getLine(chatHud, mouseX, mouseY);
             if (line != null)
-                if (button == 0 && ClientOptions.Chat.chatMsgCopy) {
+                if (button == 0 && ClientOptions.Chat.chatMsgCopy.getValue()) {
                     // Copies a message's content when you click on it in the chat.
                     Text t = line.getText();
                     if (t != null) {
@@ -59,7 +59,7 @@ public class MixinChatScreen {
                         clipboard.setClipboard(MinecraftClient.getInstance().getWindow().getHandle(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : Objects.requireNonNull(Formatting.strip(s)));
                         MinecraftClient.getInstance().getSoundManager().play(new CopySound());
                     }
-                } else if (button == 1 && ClientOptions.Chat.chatMsgRemove) {
+                } else if (button == 1 && ClientOptions.Chat.chatMsgRemove.getValue()) {
                     SearchCommand.lines.remove(line.getId());
                     ((MixinChatHudAccessor) chatHud).callRemoveMessage(line.getId());
                 }

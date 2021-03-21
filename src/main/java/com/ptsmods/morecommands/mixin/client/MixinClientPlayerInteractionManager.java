@@ -52,7 +52,7 @@ public class MixinClientPlayerInteractionManager {
 
     @Inject(at = @At("RETURN"), method = "interactBlock(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;")
     public ActionResult interactBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cbi) {
-        if (ClientOptions.Tweaks.openDoubleDoors && gameMode != GameMode.SPECTATOR && cbi.getReturnValue().isAccepted() && BlockTags.WOODEN_DOORS.contains(world.getBlockState(hitResult.getBlockPos()).getBlock())) {
+        if (ClientOptions.Tweaks.openDoubleDoors.getValue() && gameMode != GameMode.SPECTATOR && cbi.getReturnValue().isAccepted() && BlockTags.WOODEN_DOORS.contains(world.getBlockState(hitResult.getBlockPos()).getBlock())) {
             if (mc_ignore) {
                 mc_ignore = false;
                 return cbi.getReturnValue();
@@ -123,7 +123,7 @@ public class MixinClientPlayerInteractionManager {
 
     @Inject(at = @At("RETURN"), method = "isFlyingLocked()Z")
     public boolean isFlyingLocked(CallbackInfoReturnable<Boolean> cbi) {
-        return cbi.getReturnValueZ() || ClientOptions.Tweaks.lockFlying;
+        return cbi.getReturnValueZ() || ClientOptions.Tweaks.lockFlying.getValue();
     }
 
 }

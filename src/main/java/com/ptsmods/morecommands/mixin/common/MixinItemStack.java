@@ -60,7 +60,7 @@ public abstract class MixinItemStack {
 
     @Inject(at = @At("RETURN"), method = "hasGlint()Z")
     public boolean hasGlint(CallbackInfoReturnable<Boolean> cbi) {
-        return ClientOptions.Rendering.powertoolsGlint && PowerToolCommand.isPowerTool(ReflectionHelper.cast(this)) || cbi.getReturnValue();
+        return ClientOptions.Rendering.powertoolsGlint.getValue() && PowerToolCommand.isPowerTool(ReflectionHelper.cast(this)) || cbi.getReturnValue();
     }
 
 }

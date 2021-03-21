@@ -65,16 +65,6 @@ public class MixinServerPlayNetworkHandler {
         }
     }
 
-    @ModifyConstant(method = "onPlayerInteractBlock(Lnet/minecraft/network/packet/c2s/play/PlayerInteractBlockC2SPacket;)V", constant = @Constant(doubleValue = 64.0D))
-    public double onPlayerInteractBlock_maxReach(double d) {
-        return ReachCommand.getReach(player, true);
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; squaredDistanceTo(Lnet/minecraft/entity/Entity;)D", ordinal = 0), method = "onPlayerInteractEntity(Lnet/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket;)V")
-    public double onPlayerInteractEntity_squaredDistanceTo(ServerPlayerEntity player, Entity entity) {
-        return player.squaredDistanceTo(entity) < ReachCommand.getReach(player, true) ? 0 : 36;
-    }
-
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
     public void onDisconnected_broadcastChatMessage(PlayerManager playerManager, Text msg, MessageType type, UUID id) {
         if (Objects.requireNonNull(playerManager.getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) playerManager.broadcastChatMessage(msg, type, id);

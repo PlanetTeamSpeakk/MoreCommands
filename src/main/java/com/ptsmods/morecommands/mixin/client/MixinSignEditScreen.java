@@ -1,9 +1,11 @@
 package com.ptsmods.morecommands.mixin.client;
 
+import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.miscellaneous.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -11,6 +13,7 @@ import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.SelectionManager;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,13 +40,14 @@ public class MixinSignEditScreen {
 
     @Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/block/entity/SignBlockEntity;)V")
     private void init(SignBlockEntity sbe, CallbackInfo cbi) {
+        Text[] text = ((MixinSignBlockEntityAccessor) sbe).getText();
         for (int i = 0; i < text.length; i++)
-            this.text[i] = text[i].replace("\u00A7", "&");
+            this.text[i] = MoreCommands.textToString(text[i], null).replace("\u00A7", "&");
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer; getWidth(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
     private int init_getWidth(TextRenderer textRenderer, String s) {
-        return ClientOptions.Tweaks.noSignLimit ? s.length() <= 384 ? 90 : 91 : textRenderer.getWidth(s); // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
+        return ClientOptions.Tweaks.noSignLimit.getValue() ? s.length() <= 384 ? 90 : 91 : textRenderer.getWidth(s); // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
     }
 
     @Inject(at = @At("RETURN"), method = "init()V")

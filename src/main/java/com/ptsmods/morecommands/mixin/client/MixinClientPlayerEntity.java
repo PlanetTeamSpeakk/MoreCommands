@@ -40,14 +40,16 @@ public class MixinClientPlayerEntity {
             reader.skip();
             if (MoreCommandsClient.clientCommandDispatcher.getRoot().getChild(message.substring(1).split(" ")[0]) != null) {
                 cbi.cancel();
-                try {
-                    MoreCommandsClient.clientCommandDispatcher.execute(reader, ReflectionHelper.<ClientPlayerEntity>cast(this).networkHandler.getCommandSource());
-                } catch (CommandSyntaxException e) {
-                    ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
-                } catch (Exception e) {
-                    ClientCommand.sendMsg(new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
-                    MoreCommands.log.catching(e);
-                }
+                if (MoreCommandsClient.isCommandDisabled(message)) ClientCommand.sendMsg(Formatting.RED + "That client command is disabled on this server.");
+                else
+                    try {
+                        MoreCommandsClient.clientCommandDispatcher.execute(reader, ReflectionHelper.<ClientPlayerEntity>cast(this).networkHandler.getCommandSource());
+                    } catch (CommandSyntaxException e) {
+                        ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
+                    } catch (Exception e) {
+                        ClientCommand.sendMsg(new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
+                        MoreCommands.log.catching(e);
+                    }
                 return;
             }
         }
@@ -59,24 +61,19 @@ public class MixinClientPlayerEntity {
 
     @Inject(at = @At("HEAD"), method = "pushOutOfBlocks(DD)V", cancellable = true)
     protected void pushOutOfBlocks(double x, double z, CallbackInfo cbi) {
-        if (!ClientOptions.Tweaks.doBlockPush) cbi.cancel();
+        if (!ClientOptions.Tweaks.doBlockPush.getValue()) cbi.cancel();
     }
 
     @Inject(at = @At("HEAD"), method = "tickMovement()V")
     private void tickMovement(CallbackInfo cbi) {
         ClientPlayerEntity thiz = ReflectionHelper.cast(this);
         if (!thiz.input.sneaking && !thiz.input.jumping) {
-            if (!mc_moveStopped && ClientOptions.Tweaks.immediateMoveStop) {
+            if (!mc_moveStopped && ClientOptions.Tweaks.immediateMoveStop.getValue()) {
                 thiz.setVelocity(thiz.getVelocity().getX(), Math.min(0d, thiz.getVelocity().getY()), thiz.getVelocity().getZ());
                 mc_moveStopped = true; // Without this variable, you would be able to bhop by combining sprintAutoJump and immediateMoveStop and immediateMoveStop would also act as anti-kb.
             }
         } else mc_moveStopped = false;
-        if (ClientOptions.Cheats.sprintAutoJump && MoreCommands.isSingleplayer() && thiz.isSprinting() && (thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking()) thiz.jump();
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen; isPauseScreen()Z"), method = "updateNausea()V")
-    private boolean updateNausea_isPauseScreen(Screen s) {
-        return ClientOptions.Tweaks.screensInPortal || s.isPauseScreen();
+        if (ClientOptions.Cheats.sprintAutoJump.getValue() && MoreCommands.isSingleplayer() && thiz.isSprinting() && (thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking()) thiz.jump();
     }
 
 }

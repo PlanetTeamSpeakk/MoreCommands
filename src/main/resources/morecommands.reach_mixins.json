@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.reach",
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "com.ptsmods.morecommands.mixin.reach.ConfigPlugin",
+  "client": [
+    "client.MixinGameRenderer",
+    "client.MixinClientPlayerInteractionManager"
+  ],
+  "mixins": [
+    "common.MixinAbstractFurnaceBlockEntity",
+    "common.MixinBrewingStandBlockEntity",
+    "common.MixinForgingScreenHandler",
+    "common.MixinItem",
+    "common.MixinLootableContainerBlockEntity",
+    "common.MixinServerPlayerInteractionManager",
+    "common.MixinServerPlayNetworkHandler",
+    "common.MixinScreenHandler",
+    "common.MixinReachEntityAttributes"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
