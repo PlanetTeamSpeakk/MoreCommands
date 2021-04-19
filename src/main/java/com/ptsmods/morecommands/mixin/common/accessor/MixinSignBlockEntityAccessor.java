@@ -7,9 +7,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(SignBlockEntity.class)
 public interface MixinSignBlockEntityAccessor {
-    @Accessor
-    Text[] getText();
+	@Accessor
+	Text[] getText();
 
-    @Accessor
-    void setEditable(boolean editable);
+	@Accessor
+	void setEditable(boolean editable);
 }

@@ -7,11 +7,11 @@ import net.fabricmc.fabric.api.event.EventFactory;
 
 @Environment(EnvType.CLIENT)
 public interface ChatMessageSendCallback {
-    Event<ChatMessageSendCallback> EVENT = EventFactory.createArrayBacked(ChatMessageSendCallback.class, callbacks -> message -> {
-        for (ChatMessageSendCallback callback : callbacks) message = callback.onMessageSend(message);
-        return message;
-    });
+	Event<ChatMessageSendCallback> EVENT = EventFactory.createArrayBacked(ChatMessageSendCallback.class, callbacks -> message -> {
+		for (ChatMessageSendCallback callback : callbacks) message = callback.onMessageSend(message);
+		return message;
+	});
 
-    String onMessageSend(String message);
+	String onMessageSend(String message);
 
 }

@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ToggleOptionCommand extends ClientCommand {
-    @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        List<String> options = ClientOptions.getFieldNames().stream().filter(option -> ClientOptions.getType(option) == Boolean.class).collect(Collectors.toList());
-        dispatcher.register(cLiteral("toggleoption").then(cArgument("option", LimitedStringArgumentType.word(options)).executes(ctx -> {
-            String option = ctx.getArgument("option", String.class);
-            boolean b = !Boolean.parseBoolean(ClientOptions.getOptionString(option));
-            ClientOptions.setOption(option, b);
-            sendMsg("The option " + SF + option + DF + " has been set to " + formatFromBool(b, "TRUE", "FALSE") + DF + ".");
-            return 1;
-        })));
-    }
+	@Override
+	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+		List<String> options = ClientOptions.getFieldNames().stream().filter(option -> ClientOptions.getType(option) == Boolean.class).collect(Collectors.toList());
+		dispatcher.register(cLiteral("toggleoption").then(cArgument("option", LimitedStringArgumentType.word(options)).executes(ctx -> {
+			String option = ctx.getArgument("option", String.class);
+			boolean b = !Boolean.parseBoolean(ClientOptions.getOptionString(option));
+			ClientOptions.setOption(option, b);
+			sendMsg("The option " + SF + option + DF + " has been set to " + formatFromBool(b, "TRUE", "FALSE") + DF + ".");
+			return 1;
+		})));
+	}
 }

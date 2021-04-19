@@ -1,14 +1,14 @@
 {
   "copy": {
-    "sounds": [
-      "morecommands:copy1",
-      "morecommands:copy2",
-      "morecommands:copy3"
-    ]
+	"sounds": [
+	  "morecommands:copy1",
+	  "morecommands:copy2",
+	  "morecommands:copy3"
+	]
   },
   "easteregg": {
-    "sounds": [
-      "morecommands:easteregg"
-    ]
+	"sounds": [
+	  "morecommands:easteregg"
+	]
   }
 }

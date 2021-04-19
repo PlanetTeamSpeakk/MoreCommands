@@ -19,16 +19,16 @@ import java.util.UUID;
 @Mixin(PlayerManager.class)
 public class MixinPlayerManager {
 
-    @Inject(at = @At("TAIL"), method = "onPlayerConnect(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;)V")
-    public void onPlayerConnect(ClientConnection connection, ServerPlayerEntity player, CallbackInfo cbi) {
-        MoreCommands.updateFormatting(player.getServer(), 0, null); // Updating from gamerules
-        MoreCommands.updateFormatting(player.getServer(), 1, null);
-        if (player.getDataTracker().get(MoreCommands.VANISH)) VanishCommand.vanish(player, false);
-    }
+	@Inject(at = @At("TAIL"), method = "onPlayerConnect(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;)V")
+	public void onPlayerConnect(ClientConnection connection, ServerPlayerEntity player, CallbackInfo cbi) {
+		MoreCommands.updateFormatting(player.getServer(), 0, null); // Updating from gamerules
+		MoreCommands.updateFormatting(player.getServer(), 1, null);
+		if (player.getDataTracker().get(MoreCommands.VANISH)) VanishCommand.vanish(player, false);
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onPlayerConnect(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;)V")
-    public void onPlayerConnect_broadcastChatMessage(PlayerManager thiz, Text msg, MessageType type, UUID id, ClientConnection connection, ServerPlayerEntity player) {
-        if (thiz.getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) thiz.broadcastChatMessage(msg, type, id);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager; broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onPlayerConnect(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;)V")
+	public void onPlayerConnect_broadcastChatMessage(PlayerManager thiz, Text msg, MessageType type, UUID id, ClientConnection connection, ServerPlayerEntity player) {
+		if (thiz.getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.doJoinMessageRule) && !player.getDataTracker().get(MoreCommands.VANISH)) thiz.broadcastChatMessage(msg, type, id);
+	}
 
 }

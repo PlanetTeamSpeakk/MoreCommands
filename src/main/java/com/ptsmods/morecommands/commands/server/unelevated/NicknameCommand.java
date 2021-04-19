@@ -16,23 +16,23 @@ import net.minecraft.util.Formatting;
 import java.util.Optional;
 
 public class NicknameCommand extends Command {
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literal("nick")
-                .then(argument("nickname", IgnorantStringArgumentType.word()).executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), EntityArgumentType.getPlayer(ctx, "player")))))
-                .then(literal("off").executes(ctx -> execute(ctx, null, null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.register(literal("nick")
+				.then(argument("nickname", IgnorantStringArgumentType.word()).executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), EntityArgumentType.getPlayer(ctx, "player")))))
+				.then(literal("off").executes(ctx -> execute(ctx, null, null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP))));
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {
-        boolean self = player == null;
-        if (self) player = ctx.getSource().getPlayer();
-        if (nickname != null && Formatting.strip(nickname).length() > ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) && !isOp(ctx)) sendMsg(ctx, Formatting.RED + "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) + " characters which is exceeded by the length of the given nickname (" + Formatting.strip(nickname).length() + ").");
-        else {
-            player.getDataTracker().set(MoreCommands.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
-            ctx.getSource().getMinecraftServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player));
-            sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
-            return 1;
-        }
-        return 0;
-    }
+	private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {
+		boolean self = player == null;
+		if (self) player = ctx.getSource().getPlayer();
+		if (nickname != null && Formatting.strip(nickname).length() > ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) && !isOp(ctx)) sendMsg(ctx, Formatting.RED + "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) + " characters which is exceeded by the length of the given nickname (" + Formatting.strip(nickname).length() + ").");
+		else {
+			player.getDataTracker().set(MoreCommands.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
+			ctx.getSource().getMinecraftServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player));
+			sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
+			return 1;
+		}
+		return 0;
+	}
 }

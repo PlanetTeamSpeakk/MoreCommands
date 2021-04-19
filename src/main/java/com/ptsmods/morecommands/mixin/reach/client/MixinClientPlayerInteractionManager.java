@@ -14,10 +14,10 @@ import java.util.Objects;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class MixinClientPlayerInteractionManager {
-    @Shadow @Final private MinecraftClient client;
+	@Shadow @Final private MinecraftClient client;
 
-    @Inject(at = @At("RETURN"), method = "getReachDistance()F", cancellable = true)
-    public void getReachDistance(CallbackInfoReturnable<Float> cbi) {
-        cbi.setReturnValue((float) ReachCommand.getReach(Objects.requireNonNull(client.player), false));
-    }
+	@Inject(at = @At("RETURN"), method = "getReachDistance()F", cancellable = true)
+	public void getReachDistance(CallbackInfoReturnable<Float> cbi) {
+		cbi.setReturnValue((float) ReachCommand.getReach(Objects.requireNonNull(client.player), false));
+	}
 }

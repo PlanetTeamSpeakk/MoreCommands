@@ -11,30 +11,33 @@ import java.util.Map;
 
 @Mixin(TextColor.class)
 public interface MixinTextColorAccessor {
-    @Invoker("<init>")
-    static TextColor newInstance(int rgb, String name) {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Invoker("<init>")
+	static TextColor newInstance(int rgb, String name) {
+		throw new AssertionError("This shouldn't happen.");
+	}
 
-    @Accessor("FORMATTING_TO_COLOR")
-    static Map<Formatting, TextColor> getFormattingToColor() {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Accessor("FORMATTING_TO_COLOR")
+	static Map<Formatting, TextColor> getFormattingToColor() {
+		throw new AssertionError("This shouldn't happen.");
+	}
 
-    @Accessor("FORMATTING_TO_COLOR")
-    @Mutable
-    static void setFormattingToColor(Map<Formatting, TextColor> formattingToColor) {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Accessor("FORMATTING_TO_COLOR")
+	@Mutable
+	static void setFormattingToColor(Map<Formatting, TextColor> formattingToColor) {
+		throw new AssertionError("This shouldn't happen.");
+	}
 
-    @Accessor("BY_NAME")
-    static Map<String, TextColor> getByName() {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Accessor("BY_NAME")
+	static Map<String, TextColor> getByName() {
+		throw new AssertionError("This shouldn't happen.");
+	}
 
-    @Accessor("BY_NAME")
-    @Mutable
-    static void setByName(Map<String, TextColor> byName) {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Accessor("BY_NAME")
+	@Mutable
+	static void setByName(Map<String, TextColor> byName) {
+		throw new AssertionError("This shouldn't happen.");
+	}
+
+	@Accessor("rgb")
+	int getRgb_();
 }

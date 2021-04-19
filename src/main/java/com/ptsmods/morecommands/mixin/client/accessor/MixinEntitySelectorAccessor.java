@@ -19,16 +19,16 @@ import java.util.function.Predicate;
 @Mixin(EntitySelector.class)
 public interface MixinEntitySelectorAccessor {
 
-    @Accessor String getPlayerName();
-    @Accessor UUID getUuid();
-    @Accessor Function<Vec3d, Vec3d> getPositionOffset();
-    @Accessor boolean getSenderOnly();
-    @Accessor BiConsumer<Vec3d, List<? extends Entity>> getSorter();
-    @Accessor boolean getIncludesNonPlayers();
-    @Accessor Predicate<Entity> getBasePredicate();
-    @Accessor Box getBox();
-    @Accessor NumberRange.FloatRange getDistance();
-    @Accessor EntityType<?> getType();
-    @Invoker Predicate<Entity> callGetPositionPredicate(Vec3d vec);
+	@Accessor String getPlayerName();
+	@Accessor UUID getUuid();
+	@Accessor Function<Vec3d, Vec3d> getPositionOffset();
+	@Accessor boolean getSenderOnly();
+	@Accessor BiConsumer<Vec3d, List<? extends Entity>> getSorter();
+	@Accessor boolean getIncludesNonPlayers();
+	@Accessor Predicate<Entity> getBasePredicate();
+	@Accessor Box getBox();
+	@Accessor NumberRange.FloatRange getDistance();
+	@Accessor EntityType<?> getType();
+	@Invoker Predicate<Entity> callGetPositionPredicate(Vec3d vec);
 
 }

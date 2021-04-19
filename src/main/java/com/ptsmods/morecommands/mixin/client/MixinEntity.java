@@ -11,11 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public class MixinEntity {
 
-    @Inject(at = @At("RETURN"), method = "getHeight()F")
-    public final float getHeight(CallbackInfoReturnable<Float> cbi) {
-        float height = cbi.getReturnValue();
-        if (MoreCommands.isCool(ReflectionHelper.cast(this))) height *= 1.5;
-        return height;
-    }
+	@Inject(at = @At("RETURN"), method = "getHeight()F")
+	public final float getHeight(CallbackInfoReturnable<Float> cbi) {
+		float height = cbi.getReturnValue();
+		if (MoreCommands.isCool(ReflectionHelper.cast(this))) height *= 1.5;
+		return height;
+	}
 
 }

@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Pseudo
 @Mixin(targets = "com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes", remap = false, priority = 2000)
 public class MixinReachEntityAttributes {
-    @Inject(method = {"getReachDistance", "getAttackRange"}, at = @At(value = "RETURN"), cancellable = true, remap = false)
-    private static void getDistance(LivingEntity entity, double value, CallbackInfoReturnable<Double> cbi) {
-        if (entity instanceof PlayerEntity) cbi.setReturnValue(ReachCommand.getReach((PlayerEntity) entity, false));
-    }
+	@Inject(method = {"getReachDistance", "getAttackRange"}, at = @At(value = "RETURN"), cancellable = true, remap = false)
+	private static void getDistance(LivingEntity entity, double value, CallbackInfoReturnable<Double> cbi) {
+		if (entity instanceof PlayerEntity) cbi.setReturnValue(ReachCommand.getReach((PlayerEntity) entity, false));
+	}
 
-    @Inject(method = {"getSquaredReachDistance", "getSquaredAttackRange"}, at = @At(value = "RETURN"), cancellable = true, remap = false)
-    private static void getSquaredDistance(LivingEntity entity, double value, CallbackInfoReturnable<Double> cbi) {
-        if (entity instanceof PlayerEntity) cbi.setReturnValue(ReachCommand.getReach((PlayerEntity) entity, true));
-    }
+	@Inject(method = {"getSquaredReachDistance", "getSquaredAttackRange"}, at = @At(value = "RETURN"), cancellable = true, remap = false)
+	private static void getSquaredDistance(LivingEntity entity, double value, CallbackInfoReturnable<Double> cbi) {
+		if (entity instanceof PlayerEntity) cbi.setReturnValue(ReachCommand.getReach((PlayerEntity) entity, true));
+	}
 }

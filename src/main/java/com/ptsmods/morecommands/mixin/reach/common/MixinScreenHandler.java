@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-    @ModifyConstant(method = "method_17696(Lnet/minecraft/block/Block;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/lang/Boolean;", constant = @Constant(doubleValue = 64.0D))
-    private static double method_17696_maxReach(double reach, Block block, PlayerEntity player, World world, BlockPos pos) {
-        return ReachCommand.getReach(player, true);
-    }
+	@ModifyConstant(method = "method_17696(Lnet/minecraft/block/Block;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/lang/Boolean;", constant = @Constant(doubleValue = 64.0D))
+	private static double method_17696_maxReach(double reach, Block block, PlayerEntity player, World world, BlockPos pos) {
+		return ReachCommand.getReach(player, true);
+	}
 }

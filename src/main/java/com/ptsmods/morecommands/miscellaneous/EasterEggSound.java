@@ -11,29 +11,29 @@ import java.util.Objects;
 
 public class EasterEggSound extends MovingSoundInstance {
 
-    public EasterEggSound() {
-        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:easteregg"))), SoundCategory.MASTER);
-        pitch = 0f;
-        repeat = true;
-        tick();
-    }
+	public EasterEggSound() {
+		super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:easteregg"))), SoundCategory.MASTER);
+		pitch = 0f;
+		repeat = true;
+		tick();
+	}
 
-    @Override
-    public boolean shouldAlwaysPlay() {
-        return true;
-    }
+	@Override
+	public boolean shouldAlwaysPlay() {
+		return true;
+	}
 
-    @Override
-    public boolean canPlay() {
-        return true;
-    }
+	@Override
+	public boolean canPlay() {
+		return true;
+	}
 
-    @Override
-    public void tick() {
-        Vec3d pos = MinecraftClient.getInstance().player.getPos();
-        x = pos.x;
-        y = pos.y;
-        z = pos.z;
-    }
+	@Override
+	public void tick() {
+		Vec3d pos = MinecraftClient.getInstance().player.getPos();
+		x = pos.x;
+		y = pos.y;
+		z = pos.z;
+	}
 
 }

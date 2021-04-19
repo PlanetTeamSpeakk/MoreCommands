@@ -18,28 +18,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(OptionsScreen.class)
 public class MixinOptionsScreen extends Screen {
 
-    protected MixinOptionsScreen(Text title) {
-        super(title);
-    }
+	protected MixinOptionsScreen(Text title) {
+		super(title);
+	}
 
-    @Inject(at = @At("TAIL"), method = "init()V")
-    public void init(CallbackInfo cbi) {
-        OptionsScreen thiz = ReflectionHelper.cast(this);
-        int x, y;
-        //  under accessibility settings                                                  under resourcepacks
-        if (getButtonAt(x = this.width / 2 + 5, y = this.height / 6 + 144 - 6) != null && getButtonAt(x = this.width / 2 - 155, y) != null) {
-            x = this.width / 2 + 5; // above sounds
-            y = this.height / 6 + 24 - 6;
-        }
-        addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> {
-            MinecraftClient.getInstance().openScreen(new ClientOptionsScreen(this));
-        }));
-    }
+	@Inject(at = @At("TAIL"), method = "init()V")
+	public void init(CallbackInfo cbi) {
+		OptionsScreen thiz = ReflectionHelper.cast(this);
+		int x, y;
+		//  under accessibility settings												  under resourcepacks
+		if (getButtonAt(x = this.width / 2 + 5, y = this.height / 6 + 144 - 6) != null && getButtonAt(x = this.width / 2 - 155, y) != null) {
+			x = this.width / 2 + 5; // above sounds
+			y = this.height / 6 + 24 - 6;
+		}
+		addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> {
+			MinecraftClient.getInstance().openScreen(new ClientOptionsScreen(this));
+		}));
+	}
 
-    private AbstractButtonWidget getButtonAt(int x, int y) {
-        for (AbstractButtonWidget b : buttons)
-            if (b.x == x && b.y == y) return b;
-        return null;
-    }
+	private AbstractButtonWidget getButtonAt(int x, int y) {
+		for (AbstractButtonWidget b : buttons)
+			if (b.x == x && b.y == y) return b;
+		return null;
+	}
 
 }

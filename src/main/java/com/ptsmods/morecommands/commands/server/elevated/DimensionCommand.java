@@ -12,20 +12,20 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 
 public class DimensionCommand extends Command {
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literal("dimension").requires(IS_OP)
-                .then(argument("dimension", DimensionArgumentType.dimension()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), ctx.getSource().getEntityOrThrow()))
-                        .then(argument("player", EntityArgumentType.player()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), EntityArgumentType.getPlayer(ctx, "player"))))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.register(literal("dimension").requires(IS_OP)
+				.then(argument("dimension", DimensionArgumentType.dimension()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), ctx.getSource().getEntityOrThrow()))
+						.then(argument("player", EntityArgumentType.player()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), EntityArgumentType.getPlayer(ctx, "player"))))));
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, ServerWorld world, Entity entity) {
-        if (entity.getEntityWorld() != world) {
-            MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
-            return 1;
-        }
-        sendMsg(ctx, Formatting.RED + "The targeted entity is already in that world.");
-        return 0;
-    }
+	private int execute(CommandContext<ServerCommandSource> ctx, ServerWorld world, Entity entity) {
+		if (entity.getEntityWorld() != world) {
+			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
+			return 1;
+		}
+		sendMsg(ctx, Formatting.RED + "The targeted entity is already in that world.");
+		return 0;
+	}
 
 }

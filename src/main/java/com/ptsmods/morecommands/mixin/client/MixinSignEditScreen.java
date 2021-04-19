@@ -32,54 +32,54 @@ import java.util.function.Consumer;
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
 
-    private boolean mc_translateFormattings = false;
-    private ButtonWidget mc_btn = null;
-    private static boolean mc_colourPickerOpen = false;
-    @Shadow @Final private String[] text;
-    @Shadow private SelectionManager selectionManager;
+	private boolean mc_translateFormattings = false;
+	private ButtonWidget mc_btn = null;
+	private static boolean mc_colourPickerOpen = false;
+	@Shadow @Final private String[] text;
+	@Shadow private SelectionManager selectionManager;
 
-    @Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/block/entity/SignBlockEntity;)V")
-    private void init(SignBlockEntity sbe, CallbackInfo cbi) {
-        Text[] text = ((MixinSignBlockEntityAccessor) sbe).getText();
-        for (int i = 0; i < text.length; i++)
-            this.text[i] = MoreCommands.textToString(text[i], null).replace("\u00A7", "&");
-    }
+	@Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/block/entity/SignBlockEntity;)V")
+	private void init(SignBlockEntity sbe, CallbackInfo cbi) {
+		Text[] text = ((MixinSignBlockEntityAccessor) sbe).getText();
+		for (int i = 0; i < text.length; i++)
+			this.text[i] = MoreCommands.textToString(text[i], null).replace("\u00A7", "&");
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer; getWidth(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
-    private int init_getWidth(TextRenderer textRenderer, String s) {
-        return ClientOptions.Tweaks.noSignLimit.getValue() ? s.length() <= 384 ? 90 : 91 : textRenderer.getWidth(s); // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer; getWidth(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
+	private int init_getWidth(TextRenderer textRenderer, String s) {
+		return ClientOptions.Tweaks.noSignLimit.getValue() ? s.length() <= 384 ? 90 : 91 : textRenderer.getWidth(s); // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
+	}
 
-    @Inject(at = @At("RETURN"), method = "init()V")
-    private void init(CallbackInfo cbi) {
-        SignEditScreen thiz = ReflectionHelper.cast(this);
-        MoreCommandsClient.addButton(thiz, mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, new LiteralText("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
-            mc_translateFormattings = !mc_translateFormattings;
-            mc_updateBtn();
-        }) {
-            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
-            }
-        });
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, mc_colourPickerOpen, selectionManager::insert, b -> mc_colourPickerOpen = b);
-    }
+	@Inject(at = @At("RETURN"), method = "init()V")
+	private void init(CallbackInfo cbi) {
+		SignEditScreen thiz = ReflectionHelper.cast(this);
+		MoreCommandsClient.addButton(thiz, mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, new LiteralText("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
+			mc_translateFormattings = !mc_translateFormattings;
+			mc_updateBtn();
+		}) {
+			public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+				return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
+			}
+		});
+		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, mc_colourPickerOpen, selectionManager::insert, b -> mc_colourPickerOpen = b);
+	}
 
-    private void mc_updateBtn() {
-        mc_btn.setMessage(new LiteralText("Translate formattings: " + Command.formatFromBool(mc_translateFormattings, Formatting.GREEN + "ON", Formatting.RED + "OFF")));
-    }
+	private void mc_updateBtn() {
+		mc_btn.setMessage(new LiteralText("Translate formattings: " + Command.formatFromBool(mc_translateFormattings, Formatting.GREEN + "ON", Formatting.RED + "OFF")));
+	}
 
-    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V")
-    private String render_string2(String string2) {
-        return mc_translateFormattings ? Command.translateFormats(string2) : string2;
-    }
+	@ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V")
+	private String render_string2(String string2) {
+		return mc_translateFormattings ? Command.translateFormats(string2) : string2;
+	}
 
-    @Inject(at = @At("HEAD"), method = "charTyped(CI)Z")
-    public boolean charTyped(char chr, int keyCode, CallbackInfoReturnable<Boolean> cbi) {
-        if (mc_translateFormattings) {
-            mc_translateFormattings = false;
-            mc_updateBtn();
-        }
-        return false;
-    }
+	@Inject(at = @At("HEAD"), method = "charTyped(CI)Z")
+	public boolean charTyped(char chr, int keyCode, CallbackInfoReturnable<Boolean> cbi) {
+		if (mc_translateFormattings) {
+			mc_translateFormattings = false;
+			mc_updateBtn();
+		}
+		return false;
+	}
 
 }

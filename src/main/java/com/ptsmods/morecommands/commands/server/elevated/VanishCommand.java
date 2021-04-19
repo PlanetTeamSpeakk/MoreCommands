@@ -24,53 +24,53 @@ import java.util.Map;
 
 public class VanishCommand extends Command {
 
-    public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
+	public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
 
-    public void preinit() {
-        // Gotta tick them manually since they don't get ticked when they're not tracked which breaks stuff like altering attributes (and thus altering reach).
-        registerCallback(ServerTickEvents.START_SERVER_TICK, server -> trackers.values().forEach(EntityTrackerEntry::tick));
-    }
+	public void preinit() {
+		// Gotta tick them manually since they don't get ticked when they're not tracked which breaks stuff like altering attributes (and thus altering reach).
+		registerCallback(ServerTickEvents.START_SERVER_TICK, server -> trackers.values().forEach(EntityTrackerEntry::tick));
+	}
 
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literal("vanish").requires(IS_OP).executes(ctx -> execute(ctx, null)).then(argument("players", EntityArgumentType.players()).executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literal("vanish").requires(IS_OP).executes(ctx -> execute(ctx, null)).then(argument("players", EntityArgumentType.players()).executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
+	}
 
-    @Override
-    public boolean forDedicated() {
-        return true;
-    }
+	@Override
+	public boolean forDedicated() {
+		return true;
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
-        if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
-        else if (!isOp(ctx)) {
-            sendMsg(ctx, Formatting.RED + "You must be op to toggle vanish for others.");
-            return 0;
-        }
-        for (ServerPlayerEntity player : p) {
-            boolean b = !player.getDataTracker().get(MoreCommands.VANISH);
-            if (b) vanish(player, true);
-            else unvanish(player);
-            sendMsg(player, "You are " + formatFromBool(b, "now", "no longer") + DF + " vanished.");
-        }
-        return p.size();
-    }
+	private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
+		if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
+		else if (!isOp(ctx)) {
+			sendMsg(ctx, Formatting.RED + "You must be op to toggle vanish for others.");
+			return 0;
+		}
+		for (ServerPlayerEntity player : p) {
+			boolean b = !player.getDataTracker().get(MoreCommands.VANISH);
+			if (b) vanish(player, true);
+			else unvanish(player);
+			sendMsg(player, "You are " + formatFromBool(b, "now", "no longer") + DF + " vanished.");
+		}
+		return p.size();
+	}
 
-    public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
-        player.getDataTracker().set(MoreCommands.VANISH, true);
-        player.getDataTracker().set(MoreCommands.VANISH_TOGGLED, true);
-        player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.REMOVE_PLAYER, player));
-        player.getServerWorld().getChunkManager().unloadEntity(player);
-        if (sendmsg && player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.left", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
-    }
+	public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
+		player.getDataTracker().set(MoreCommands.VANISH, true);
+		player.getDataTracker().set(MoreCommands.VANISH_TOGGLED, true);
+		player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.REMOVE_PLAYER, player));
+		player.getServerWorld().getChunkManager().unloadEntity(player);
+		if (sendmsg && player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.left", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
+	}
 
-    public static void unvanish(ServerPlayerEntity player) {
-        if (player.getDataTracker().get(MoreCommands.VANISH)) {
-            player.getDataTracker().set(MoreCommands.VANISH, false);
-            player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
-            trackers.remove(player);
-            player.getServerWorld().getChunkManager().loadEntity(player);
-            if (player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.joined", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
-        }
-    }
+	public static void unvanish(ServerPlayerEntity player) {
+		if (player.getDataTracker().get(MoreCommands.VANISH)) {
+			player.getDataTracker().set(MoreCommands.VANISH, false);
+			player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.ADD_PLAYER, player));
+			trackers.remove(player);
+			player.getServerWorld().getChunkManager().loadEntity(player);
+			if (player.getServerWorld().getGameRules().getBoolean(MoreCommands.doJoinMessageRule)) player.getServer().getPlayerManager().broadcastChatMessage(new TranslatableText("multiplayer.player.joined", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
+		}
+	}
 }

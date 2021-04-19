@@ -11,10 +11,12 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinFormattingAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinRegistryAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinScoreboardCriterionAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -78,6 +80,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sun.misc.Unsafe;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.URISyntaxException;
@@ -127,10 +130,10 @@ public class MoreCommands implements ModInitializer {
 	public static GameRules.Key<GameRules.BooleanRule> doSignColoursRule = GameRuleRegistry.register("doSignColours", grc, GameRuleFactory.createBooleanRule(true));
 	public static GameRules.Key<GameRules.BooleanRule> doBookColoursRule = GameRuleRegistry.register("doBookColours", grc, GameRuleFactory.createBooleanRule(true));
 	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule = GameRuleRegistry.register("doChatColours", grc, GameRuleFactory.createBooleanRule(true));
-    public static GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
 	public static GameRules.Key<GameRules.BooleanRule> doEnchantLevelLimitRule = GameRuleRegistry.register("doEnchantLevelLimit", grc, GameRuleFactory.createBooleanRule(true));
 	public static GameRules.Key<GameRules.BooleanRule> doPriorWorkPenaltyRule = GameRuleRegistry.register("doPriorWorkPenalty", grc, GameRuleFactory.createBooleanRule(true));
-    public static GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
+	public static GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
 	public static final Block lockedChest = new Block(FabricBlockSettings.of(Material.WOOD));
@@ -146,6 +149,7 @@ public class MoreCommands implements ModInitializer {
 	public static final TrackedData<Optional<BlockPos>> CHAIR = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
 	public static final TrackedData<CompoundTag> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
 	public static final TrackedData<Optional<Text>> NICKNAME = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT);
+	public static final TrackedData<Optional<UUID>> SPEED_MODIFIER = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final ScoreboardCriterion LATENCY;
 	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
@@ -169,7 +173,7 @@ public class MoreCommands implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
 		Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
-		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedType.swimSpeedAttribute);
+		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			for (Class<? extends Command> cmd : getCommandClasses("server", Command.class))
 				try {
@@ -238,14 +242,14 @@ public class MoreCommands implements ModInitializer {
 			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
 			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + "com" + File.separator + "ptsmods" + File.separator + "morecommands" + File.separator + "commands" + File.separator + type + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
 			else {
-                ZipFile zip = new ZipFile(jar);
-                Enumeration<? extends ZipEntry> entries = zip.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
-                        classNames.add(Paths.get(entry.getName()));
-                }
-            }
+				ZipFile zip = new ZipFile(jar);
+				Enumeration<? extends ZipEntry> entries = zip.entries();
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
+						classNames.add(Paths.get(entry.getName()));
+				}
+			}
 			classNames.forEach(path -> {
 				String name = "com.ptsmods.morecommands.commands." + type + ("server".equals(type) ? "." + path.toFile().getParentFile().getName() : "") + "." + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.'));
 				try {
@@ -350,13 +354,18 @@ public class MoreCommands implements ModInitializer {
 		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
 		TextColor c = style.getColor();
 		if (c != null) {
+			int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
 			Formatting f = null;
 			for (Formatting form : Formatting.values())
-				if (form.getColorValue() != null && form.getColorValue().equals(c.getRgb())) {
+				if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
 					f = form;
 					break;
 				}
-			if (f != null) s.append(f.toString());
+			if (f != null) s.append(f);
+			else {
+				Color colour = new Color(rgb);
+				s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
+			}
 		}
 		if (style.isBold()) s.append(Formatting.BOLD);
 		if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
@@ -608,7 +617,7 @@ public class MoreCommands implements ModInitializer {
 		return getRootRegistry().getKey(registry).orElse(null);
 	}
 
-	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
+	public static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
 		return MixinRegistryAccessor.getRoot();
 	}
 

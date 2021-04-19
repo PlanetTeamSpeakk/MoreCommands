@@ -6,5 +6,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ServerPlayerEntity.class)
 public interface MixinServerPlayerEntityAccessor {
-    @Accessor void setSyncedExperience(int i);
+	@Accessor void setSyncedExperience(int i);
 }

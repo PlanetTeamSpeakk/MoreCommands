@@ -9,9 +9,9 @@ import java.util.regex.Pattern;
 
 @Mixin(Formatting.class)
 public interface MixinFormattingAccessor {
-    @Accessor("FORMATTING_CODE_PATTERN")
-    @Mutable
-    static void setFormattingCodePattern(Pattern pattern) {
-        throw new AssertionError("This shouldn't happen.");
-    }
+	@Accessor("FORMATTING_CODE_PATTERN")
+	@Mutable
+	static void setFormattingCodePattern(Pattern pattern) {
+		throw new AssertionError("This shouldn't happen.");
+	}
 }

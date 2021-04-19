@@ -22,44 +22,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DisableClientOptionCommand extends Command {
-    private final List<String> disabled = new ArrayList<>();
+	private final List<String> disabled = new ArrayList<>();
 
-    @Override
-    public void init(MinecraftServer server) throws Exception {
-        disabled.addAll(MoreObjects.firstNonNull(MoreCommands.readJson(new File(MoreCommands.getRelativePath(server) + "disabledClientOptions.json")), new ArrayList<>()));
-        registerCallback(PlayerConnectionCallback.JOIN, player -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
-            disabled.forEach(buf::writeString);
-            ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf);
-        });
-    }
+	@Override
+	public void init(MinecraftServer server) throws Exception {
+		disabled.addAll(MoreObjects.firstNonNull(MoreCommands.readJson(new File(MoreCommands.getRelativePath(server) + "disabledClientOptions.json")), new ArrayList<>()));
+		registerCallback(PlayerConnectionCallback.JOIN, player -> {
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
+			disabled.forEach(buf::writeString);
+			ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf);
+		});
+	}
 
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literal("disableclientoption").requires(IS_OP).then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getFieldNames()))).executes(ctx -> {
-            String option = ctx.getArgument("option", String.class);
-            if (disabled.contains(option)) disabled.remove(option);
-            else disabled.add(option);
-            try {
-                MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "disabledClientOptions.json"), disabled);
-            } catch (IOException e) {
-                sendMsg(ctx, Formatting.RED + "The data file could not be saved.");
-                log.error("Could not save the disabled client options data file.", e);
-                return 0;
-            }
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
-            disabled.forEach(buf::writeString);
-            ctx.getSource().getMinecraftServer().getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
-            sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + formatFromBool(disabled.contains(option), Formatting.RED + "disabled", Formatting.GREEN + "enabled") + DF + " for all regular players.");
-            return disabled.contains(option) ? 2 : 1;
-        })).then(literal("list").executes(ctx -> {
-            sendMsg(ctx, "Currently disabled client options are: " + joinNicely(disabled) + DF + ".");
-            return disabled.size();
-        })));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+		dispatcher.register(literal("disableclientoption").requires(IS_OP).then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getFieldNames()))).executes(ctx -> {
+			String option = ctx.getArgument("option", String.class);
+			if (disabled.contains(option)) disabled.remove(option);
+			else disabled.add(option);
+			try {
+				MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "disabledClientOptions.json"), disabled);
+			} catch (IOException e) {
+				sendMsg(ctx, Formatting.RED + "The data file could not be saved.");
+				log.error("Could not save the disabled client options data file.", e);
+				return 0;
+			}
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
+			disabled.forEach(buf::writeString);
+			ctx.getSource().getMinecraftServer().getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
+			sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + formatFromBool(disabled.contains(option), Formatting.RED + "disabled", Formatting.GREEN + "enabled") + DF + " for all regular players.");
+			return disabled.contains(option) ? 2 : 1;
+		})).then(literal("list").executes(ctx -> {
+			sendMsg(ctx, "Currently disabled client options are: " + joinNicely(disabled) + DF + ".");
+			return disabled.size();
+		})));
+	}
 
-    @Override
-    public boolean forDedicated() {
-        return true;
-    }
+	@Override
+	public boolean forDedicated() {
+		return true;
+	}
 }

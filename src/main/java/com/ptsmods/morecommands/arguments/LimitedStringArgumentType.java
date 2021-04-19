@@ -21,78 +21,78 @@ import java.util.concurrent.CompletableFuture;
 
 public class LimitedStringArgumentType implements ArgumentType<String> {
 
-    private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
-    private final StringArgumentType parent;
-    private final Collection<String> possibilities;
+	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
+	private final StringArgumentType parent;
+	private final Collection<String> possibilities;
 
-    protected LimitedStringArgumentType(StringArgumentType.StringType type, Collection<String> possibilities) {
-        parent = type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() :
-                type == StringArgumentType.StringType.QUOTABLE_PHRASE ? StringArgumentType.string() :
-                        StringArgumentType.greedyString();
-        this.possibilities = possibilities;
-        while (possibilities.contains(null))
-            possibilities.remove(null);
-    }
+	protected LimitedStringArgumentType(StringArgumentType.StringType type, Collection<String> possibilities) {
+		parent = type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() :
+				type == StringArgumentType.StringType.QUOTABLE_PHRASE ? StringArgumentType.string() :
+						StringArgumentType.greedyString();
+		this.possibilities = possibilities;
+		while (possibilities.contains(null))
+			possibilities.remove(null);
+	}
 
-    public static LimitedStringArgumentType word(Collection<String> possibilities) {
-        return new LimitedStringArgumentType(StringArgumentType.StringType.SINGLE_WORD, possibilities);
-    }
+	public static LimitedStringArgumentType word(Collection<String> possibilities) {
+		return new LimitedStringArgumentType(StringArgumentType.StringType.SINGLE_WORD, possibilities);
+	}
 
-    public static LimitedStringArgumentType string(Collection<String> possibilities) {
-        return new LimitedStringArgumentType(StringArgumentType.StringType.QUOTABLE_PHRASE, possibilities);
-    }
+	public static LimitedStringArgumentType string(Collection<String> possibilities) {
+		return new LimitedStringArgumentType(StringArgumentType.StringType.QUOTABLE_PHRASE, possibilities);
+	}
 
-    public static LimitedStringArgumentType greedyString(Collection<String> possibilities) {
-        return new LimitedStringArgumentType(StringArgumentType.StringType.GREEDY_PHRASE, possibilities);
-    }
+	public static LimitedStringArgumentType greedyString(Collection<String> possibilities) {
+		return new LimitedStringArgumentType(StringArgumentType.StringType.GREEDY_PHRASE, possibilities);
+	}
 
-    @Override
-    public String parse(StringReader reader) throws CommandSyntaxException {
-        String s = parent.parse(reader);
-        for (String s0 : possibilities)
-            if (s.equalsIgnoreCase(s0)) return s0;
-        throw exc.createWithContext(reader);
-    }
+	@Override
+	public String parse(StringReader reader) throws CommandSyntaxException {
+		String s = parent.parse(reader);
+		for (String s0 : possibilities)
+			if (s.equalsIgnoreCase(s0)) return s0;
+		throw exc.createWithContext(reader);
+	}
 
-    @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        String s = builder.getRemaining().toLowerCase();
-        for (String entry : possibilities)
-            if (entry.toLowerCase().startsWith(s)) builder.suggest(entry);
-        return builder.buildFuture();
-    }
+	@Override
+	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+		String s = builder.getRemaining().toLowerCase();
+		for (String entry : possibilities)
+			if (entry.toLowerCase().startsWith(s)) builder.suggest(entry);
+		return builder.buildFuture();
+	}
 
-    @Override
-    public Collection<String> getExamples() {
-        return ImmutableList.copyOf(possibilities);
-    }
+	@Override
+	public Collection<String> getExamples() {
+		return ImmutableList.copyOf(possibilities);
+	}
 
-    public static class Serialiser implements ArgumentSerializer<LimitedStringArgumentType> {
+	public static class Serialiser implements ArgumentSerializer<LimitedStringArgumentType> {
 
-        @Override
-        public void toPacket(LimitedStringArgumentType arg, PacketByteBuf buf) {
-            buf.writeByte(arg.parent.getType().ordinal());
-            buf.writeVarInt(arg.possibilities.size());
-            arg.possibilities.forEach(buf::writeString);
-        }
+		@Override
+		public void toPacket(LimitedStringArgumentType arg, PacketByteBuf buf) {
+			buf.writeByte(arg.parent.getType().ordinal());
+			buf.writeVarInt(arg.possibilities.size());
+			arg.possibilities.forEach(buf::writeString);
+		}
 
-        @Override
-        public LimitedStringArgumentType fromPacket(PacketByteBuf buf) {
-            StringArgumentType.StringType type = StringArgumentType.StringType.values()[buf.readByte()];
-            List<String> possibilities = new ArrayList<>();
-            int x = buf.readVarInt();
-            for (int i = 0; i < x; i++)
-                possibilities.add(buf.readString());
-            return new LimitedStringArgumentType(type, possibilities);
-        }
+		@Override
+		public LimitedStringArgumentType fromPacket(PacketByteBuf buf) {
+			StringArgumentType.StringType type = StringArgumentType.StringType.values()[buf.readByte()];
+			List<String> possibilities = new ArrayList<>();
+			int x = buf.readVarInt();
+			for (int i = 0; i < x; i++)
+				possibilities.add(buf.readString());
+			return new LimitedStringArgumentType(type, possibilities);
+		}
 
-        @Override
-        public void toJson(LimitedStringArgumentType arg, JsonObject json) {
-            json.addProperty("type", arg.parent.getType().name());
-            JsonArray a = new JsonArray();
-            arg.possibilities.forEach(a::add);
-            json.add("possibilities", a);
-        }
-    }
+		@Override
+		public void toJson(LimitedStringArgumentType arg, JsonObject json) {
+			json.addProperty("type", arg.parent.getType().name());
+			JsonArray a = new JsonArray();
+			arg.possibilities.forEach(a::add);
+			json.add("possibilities", a);
+		}
+	}
 
 }

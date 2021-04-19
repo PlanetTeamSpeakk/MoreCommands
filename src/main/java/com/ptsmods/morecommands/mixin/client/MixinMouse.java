@@ -10,9 +10,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Mouse.class)
 public class MixinMouse {
 
-    @Inject(at = @At("HEAD"), method = "onMouseButton(JIII)V", cancellable = true)
-    private void onMouseButton(long window, int button, int action, int mods, CallbackInfo cbi) {
-        if (MouseCallback.EVENT.invoker().onMouse(button, action, mods)) cbi.cancel();
-    }
+	@Inject(at = @At("HEAD"), method = "onMouseButton(JIII)V", cancellable = true)
+	private void onMouseButton(long window, int button, int action, int mods, CallbackInfo cbi) {
+		if (MouseCallback.EVENT.invoker().onMouse(button, action, mods)) cbi.cancel();
+	}
 
 }

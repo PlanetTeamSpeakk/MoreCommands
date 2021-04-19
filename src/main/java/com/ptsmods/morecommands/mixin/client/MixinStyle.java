@@ -26,8 +26,8 @@ import java.util.Objects;
 
 @Mixin(Style.class)
 public class MixinStyle {
-    @Inject(at = @At("RETURN"), method = "getColor()Lnet/minecraft/text/TextColor;")
-    public TextColor getColor(CallbackInfoReturnable<TextColor> cbi) {
-        return ClientOptions.EasterEggs.rainbows.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW_TC : cbi.getReturnValue();
-    }
+	@Inject(at = @At("RETURN"), method = "getColor()Lnet/minecraft/text/TextColor;")
+	public TextColor getColor(CallbackInfoReturnable<TextColor> cbi) {
+		return ClientOptions.EasterEggs.rainbows.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW_TC : cbi.getReturnValue();
+	}
 }

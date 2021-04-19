@@ -16,83 +16,83 @@ import java.util.Collection;
 // Doesn't care what characters you put in an unquoted string.
 public class IgnorantStringArgumentType implements ArgumentType<String> {
 
-    private final StringArgumentType.StringType type;
+	private final StringArgumentType.StringType type;
 
-    private IgnorantStringArgumentType(StringArgumentType.StringType type) {
-        this.type = type;
-    }
+	private IgnorantStringArgumentType(StringArgumentType.StringType type) {
+		this.type = type;
+	}
 
-    public static IgnorantStringArgumentType word() {
-        return new IgnorantStringArgumentType(StringArgumentType.StringType.SINGLE_WORD);
-    }
+	public static IgnorantStringArgumentType word() {
+		return new IgnorantStringArgumentType(StringArgumentType.StringType.SINGLE_WORD);
+	}
 
-    public static IgnorantStringArgumentType string() {
-        return new IgnorantStringArgumentType(StringArgumentType.StringType.QUOTABLE_PHRASE);
-    }
+	public static IgnorantStringArgumentType string() {
+		return new IgnorantStringArgumentType(StringArgumentType.StringType.QUOTABLE_PHRASE);
+	}
 
-    public static IgnorantStringArgumentType greedyString() {
-        return new IgnorantStringArgumentType(StringArgumentType.StringType.GREEDY_PHRASE);
-    }
+	public static IgnorantStringArgumentType greedyString() {
+		return new IgnorantStringArgumentType(StringArgumentType.StringType.GREEDY_PHRASE);
+	}
 
-    public static String getString(CommandContext<?> context, String name) {
-        return context.getArgument(name, String.class);
-    }
+	public static String getString(CommandContext<?> context, String name) {
+		return context.getArgument(name, String.class);
+	}
 
-    public StringArgumentType.StringType getType() {
-        return this.type;
-    }
+	public StringArgumentType.StringType getType() {
+		return this.type;
+	}
 
-    @Override
-    public String parse(StringReader reader) throws CommandSyntaxException {
-        if (this.type == StringArgumentType.StringType.GREEDY_PHRASE) {
-            String text = reader.getRemaining();
-            reader.setCursor(reader.getTotalLength());
-            return text;
-        } else {
-            return this.type == StringArgumentType.StringType.SINGLE_WORD ? MoreCommands.readTillSpaceOrEnd(reader) : reader.readString();
-        }
-    }
+	@Override
+	public String parse(StringReader reader) throws CommandSyntaxException {
+		if (this.type == StringArgumentType.StringType.GREEDY_PHRASE) {
+			String text = reader.getRemaining();
+			reader.setCursor(reader.getTotalLength());
+			return text;
+		} else {
+			return this.type == StringArgumentType.StringType.SINGLE_WORD ? MoreCommands.readTillSpaceOrEnd(reader) : reader.readString();
+		}
+	}
 
-    @Override
-    public Collection<String> getExamples() {
-        return ImmutableList.of("Yeet", "&1");
-    }
+	@Override
+	public Collection<String> getExamples() {
+		return ImmutableList.of("Yeet", "&1");
+	}
 
-    public static class Serialiser implements ArgumentSerializer<IgnorantStringArgumentType> {
-        public Serialiser() {
-        }
+	public static class Serialiser implements ArgumentSerializer<IgnorantStringArgumentType> {
+		public Serialiser() {
+		}
 
-        public void toPacket(IgnorantStringArgumentType stringArgumentType, PacketByteBuf packetByteBuf) {
-            packetByteBuf.writeEnumConstant(stringArgumentType.getType());
-        }
+		public void toPacket(IgnorantStringArgumentType stringArgumentType, PacketByteBuf packetByteBuf) {
+			packetByteBuf.writeEnumConstant(stringArgumentType.getType());
+		}
 
-        public IgnorantStringArgumentType fromPacket(PacketByteBuf packetByteBuf) {
-            StringArgumentType.StringType stringType = packetByteBuf.readEnumConstant(StringArgumentType.StringType.class);
-            switch(stringType) {
-                case SINGLE_WORD:
-                    return IgnorantStringArgumentType.word();
-                case QUOTABLE_PHRASE:
-                    return IgnorantStringArgumentType.string();
-                case GREEDY_PHRASE:
-                default:
-                    return IgnorantStringArgumentType.greedyString();
-            }
-        }
+		public IgnorantStringArgumentType fromPacket(PacketByteBuf packetByteBuf) {
+			StringArgumentType.StringType stringType = packetByteBuf.readEnumConstant(StringArgumentType.StringType.class);
+			switch(stringType) {
+				case SINGLE_WORD:
+					return IgnorantStringArgumentType.word();
+				case QUOTABLE_PHRASE:
+					return IgnorantStringArgumentType.string();
+				case GREEDY_PHRASE:
+				default:
+					return IgnorantStringArgumentType.greedyString();
+			}
+		}
 
-        public void toJson(IgnorantStringArgumentType stringArgumentType, JsonObject jsonObject) {
-            switch(stringArgumentType.getType()) {
-                case SINGLE_WORD:
-                    jsonObject.addProperty("type", "word");
-                    break;
-                case QUOTABLE_PHRASE:
-                    jsonObject.addProperty("type", "phrase");
-                    break;
-                case GREEDY_PHRASE:
-                default:
-                    jsonObject.addProperty("type", "greedy");
-            }
+		public void toJson(IgnorantStringArgumentType stringArgumentType, JsonObject jsonObject) {
+			switch(stringArgumentType.getType()) {
+				case SINGLE_WORD:
+					jsonObject.addProperty("type", "word");
+					break;
+				case QUOTABLE_PHRASE:
+					jsonObject.addProperty("type", "phrase");
+					break;
+				case GREEDY_PHRASE:
+				default:
+					jsonObject.addProperty("type", "greedy");
+			}
 
-        }
-    }
+		}
+	}
 
 }

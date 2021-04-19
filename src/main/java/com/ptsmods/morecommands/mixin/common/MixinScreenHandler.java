@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
 
-    @Overwrite // Super method, but uses the reach attribute.
-    public static boolean canUse(ScreenHandlerContext context, PlayerEntity player, Block block) {
-        return context.run((world, blockPos) -> world.getBlockState(blockPos).isOf(block) && player.squaredDistanceTo((double) blockPos.getX() + 0.5D, (double) blockPos.getY() + 0.5D, (double) blockPos.getZ() + 0.5D) <= ReachCommand.getReach(player, true), true);
-    }
+	@Overwrite // Super method, but uses the reach attribute.
+	public static boolean canUse(ScreenHandlerContext context, PlayerEntity player, Block block) {
+		return context.run((world, blockPos) -> world.getBlockState(blockPos).isOf(block) && player.squaredDistanceTo((double) blockPos.getX() + 0.5D, (double) blockPos.getY() + 0.5D, (double) blockPos.getZ() + 0.5D) <= ReachCommand.getReach(player, true), true);
+	}
 
 }
