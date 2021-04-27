@@ -15,9 +15,9 @@ import java.util.Random;
 @Mixin(SnowBlock.class)
 public class MixinSnowBlock {
 
-    @Inject(at = @At("HEAD"), method = "randomTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
-    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo cbi) {
-        if (!world.getGameRules().getBoolean(MoreCommands.doMeltRule)) cbi.cancel();
-    }
+	@Inject(at = @At("HEAD"), method = "randomTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
+	public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo cbi) {
+		if (!world.getGameRules().getBoolean(MoreCommands.doMeltRule)) cbi.cancel();
+	}
 
 }

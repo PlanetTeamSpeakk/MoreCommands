@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Keyboard.class)
 public class MixinKeyboard {
 
-    @Inject(at = @At("HEAD"), method = "onKey(JIIII)V", cancellable = true)
-    public void onKey(long window, int key, int scancode, int i, int j, CallbackInfo cbi) {
-        if (window == MinecraftClient.getInstance().getWindow().getHandle() && KeyCallback.EVENT.invoker().onKey(key, scancode, i, j)) cbi.cancel();
-    }
+	@Inject(at = @At("HEAD"), method = "onKey(JIIII)V", cancellable = true)
+	public void onKey(long window, int key, int scancode, int i, int j, CallbackInfo cbi) {
+		if (window == MinecraftClient.getInstance().getWindow().getHandle() && KeyCallback.EVENT.invoker().onKey(key, scancode, i, j)) cbi.cancel();
+	}
 
 }

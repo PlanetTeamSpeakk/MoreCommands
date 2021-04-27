@@ -19,13 +19,13 @@ import java.util.List;
 @Mixin(ParticleManager.class)
 public class MixinParticleManager {
 
-    @Shadow @Final @Mutable private static List<ParticleTextureSheet> PARTICLE_TEXTURE_SHEETS;
+	@Shadow @Final @Mutable private static List<ParticleTextureSheet> PARTICLE_TEXTURE_SHEETS;
 
-    @Inject(at = @At("TAIL"), method = "<clinit>()V")
-    private static void clinit(CallbackInfo cbi) {
-        List<ParticleTextureSheet> list = new ArrayList<>(PARTICLE_TEXTURE_SHEETS);
-        list.add(VexParticle.pts);
-        PARTICLE_TEXTURE_SHEETS = list;
-    }
+	@Inject(at = @At("RETURN"), method = "<clinit>()V")
+	private static void clinit(CallbackInfo cbi) {
+		List<ParticleTextureSheet> list = new ArrayList<>(PARTICLE_TEXTURE_SHEETS);
+		list.add(VexParticle.pts);
+		PARTICLE_TEXTURE_SHEETS = list;
+	}
 
 }

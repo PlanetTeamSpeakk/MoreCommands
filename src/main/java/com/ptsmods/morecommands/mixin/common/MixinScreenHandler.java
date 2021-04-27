@@ -5,15 +5,17 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-
-    @Overwrite // Super method, but uses the reach attribute.
-    public static boolean canUse(ScreenHandlerContext context, PlayerEntity player, Block block) {
-        return context.run((world, blockPos) -> world.getBlockState(blockPos).isOf(block) && player.squaredDistanceTo((double) blockPos.getX() + 0.5D, (double) blockPos.getY() + 0.5D, (double) blockPos.getZ() + 0.5D) <= ReachCommand.getReach(player, true), true);
-    }
-
+	@ModifyConstant(method = "method_17696(Lnet/minecraft/block/Block;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/lang/Boolean", constant = @Constant(doubleValue = 64.0D), remap = false)
+	private static double method_17696_maxReach(double maxReach, Block block, PlayerEntity player, World world, BlockPos pos) {
+		return ReachCommand.getReach(player, true);
+	}
 }

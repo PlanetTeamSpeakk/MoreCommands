@@ -6,9 +6,9 @@ import net.minecraft.server.command.ServerCommandSource;
 
 // Smallest command class in the whole mod? :O
 public class TimeLiteralCommand extends Command {
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().addChild(dispatcher.getRoot().getChild("time").getChild("set").getChild("day"));
-        dispatcher.getRoot().addChild(dispatcher.getRoot().getChild("time").getChild("set").getChild("night"));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.getRoot().addChild(dispatcher.getRoot().getChild("time").getChild("set").getChild("day"));
+		dispatcher.getRoot().addChild(dispatcher.getRoot().getChild("time").getChild("set").getChild("night"));
+	}
 }

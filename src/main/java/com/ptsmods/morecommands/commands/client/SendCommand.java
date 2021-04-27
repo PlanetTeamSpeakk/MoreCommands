@@ -8,11 +8,11 @@ import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 
 public class SendCommand extends ClientCommand {
-    @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        dispatcher.register(cLiteral("send").then(cArgument("msg", StringArgumentType.greedyString()).executes(ctx -> {
-            MinecraftClient.getInstance().player.networkHandler.sendPacket(new ChatMessageC2SPacket(ctx.getArgument("msg", String.class)));
-            return 1;
-        })));
-    }
+	@Override
+	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+		dispatcher.register(cLiteral("send").then(cArgument("msg", StringArgumentType.greedyString()).executes(ctx -> {
+			MinecraftClient.getInstance().player.networkHandler.sendPacket(new ChatMessageC2SPacket(ctx.getArgument("msg", String.class)));
+			return 1;
+		})));
+	}
 }

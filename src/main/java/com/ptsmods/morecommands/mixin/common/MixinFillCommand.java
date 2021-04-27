@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(FillCommand.class)
 public class MixinFillCommand {
 
-    @Overwrite
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        // Have a look at my own version of the fill command in com.ptsmods.morecommands.commands.server.elevated.FillCommand
-    }
+	@Overwrite
+	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		// Have a look at my own version of the fill command in com.ptsmods.morecommands.commands.server.elevated.FillCommand
+	}
 
 }

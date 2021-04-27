@@ -23,32 +23,32 @@ import java.util.List;
 @Mixin(ServerNetworkIo.class)
 public class MixinServerNetworkIo {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private List<ClientConnection> connections;
+	@Shadow @Final private static Logger LOGGER;
+	@Shadow @Final private List<ClientConnection> connections;
 
-    @Overwrite
-    public void tick() {
-        synchronized (connections) {
-            List<ClientConnection> connections = new ArrayList<>(this.connections);
-            if (ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.randomOrderPlayerTickRule)) Collections.shuffle(connections);
-            for (ClientConnection clientConnection : connections) {
-                if (clientConnection.hasChannel()) continue;
-                if (clientConnection.isOpen()) {
-                    try {
-                        clientConnection.tick();
-                    } catch (Exception e) {
-                        if (clientConnection.isLocal()) throw new CrashException(CrashReport.create(e, "Ticking memory connection"));
-                        LOGGER.warn("Failed to handle packet for {}", clientConnection.getAddress(), e);
-                        Text text = new LiteralText("Internal server error");
-                        clientConnection.send(new DisconnectS2CPacket(text), (future) -> clientConnection.disconnect(text));
-                        clientConnection.disableAutoRead();
-                    }
-                } else {
-                    this.connections.remove(clientConnection);
-                    clientConnection.handleDisconnection();
-                }
-            }
-        }
-    }
+	@Overwrite
+	public void tick() {
+		synchronized (connections) {
+			List<ClientConnection> connections = new ArrayList<>(this.connections);
+			if (ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD).getGameRules().getBoolean(MoreCommands.randomOrderPlayerTickRule)) Collections.shuffle(connections);
+			for (ClientConnection clientConnection : connections) {
+				if (clientConnection.hasChannel()) continue;
+				if (clientConnection.isOpen()) {
+					try {
+						clientConnection.tick();
+					} catch (Exception e) {
+						if (clientConnection.isLocal()) throw new CrashException(CrashReport.create(e, "Ticking memory connection"));
+						LOGGER.warn("Failed to handle packet for {}", clientConnection.getAddress(), e);
+						Text text = new LiteralText("Internal server error");
+						clientConnection.send(new DisconnectS2CPacket(text), (future) -> clientConnection.disconnect(text));
+						clientConnection.disableAutoRead();
+					}
+				} else {
+					this.connections.remove(clientConnection);
+					clientConnection.handleDisconnection();
+				}
+			}
+		}
+	}
 
 }

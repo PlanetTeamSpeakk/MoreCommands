@@ -19,29 +19,29 @@ import java.util.concurrent.CompletableFuture;
 @Environment(EnvType.CLIENT)
 public class KeyArgumentType implements ArgumentType<Integer> {
 
-    private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
-    private final StringArgumentType parent = StringArgumentType.word();
-    private final Collection<String> possibilities = MoreCommandsClient.getKeys();
+	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
+	private final StringArgumentType parent = StringArgumentType.word();
+	private final Collection<String> possibilities = MoreCommandsClient.getKeys();
 
-    @Override
-    public Integer parse(StringReader reader) throws CommandSyntaxException {
-        String s = parent.parse(reader);
-        for (String s0 : possibilities)
-            if (s.equalsIgnoreCase(s0)) return MoreCommandsClient.getKeyCodeForKey(s0);
-        throw exc.createWithContext(reader);
-    }
+	@Override
+	public Integer parse(StringReader reader) throws CommandSyntaxException {
+		String s = parent.parse(reader);
+		for (String s0 : possibilities)
+			if (s.equalsIgnoreCase(s0)) return MoreCommandsClient.getKeyCodeForKey(s0);
+		throw exc.createWithContext(reader);
+	}
 
-    @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        String s = builder.getRemaining().toLowerCase();
-        for (String entry : possibilities)
-            if (entry.toLowerCase().startsWith(s)) builder.suggest(entry);
-        return builder.buildFuture();
-    }
+	@Override
+	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+		String s = builder.getRemaining().toLowerCase();
+		for (String entry : possibilities)
+			if (entry.toLowerCase().startsWith(s)) builder.suggest(entry);
+		return builder.buildFuture();
+	}
 
-    @Override
-    public Collection<String> getExamples() {
-        return ImmutableList.copyOf(possibilities);
-    }
+	@Override
+	public Collection<String> getExamples() {
+		return ImmutableList.copyOf(possibilities);
+	}
 
 }

@@ -4,19 +4,20 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.mojang.authlib.Environment;
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
-import com.ptsmods.morecommands.commands.server.elevated.*;
+import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinFormattingAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinRegistryAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinScoreboardCriterionAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -28,16 +29,12 @@ import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.command.argument.ArgumentTypes;
@@ -52,9 +49,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.Packet;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
@@ -85,6 +81,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sun.misc.Unsafe;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.URISyntaxException;
@@ -151,8 +148,9 @@ public class MoreCommands implements ModInitializer {
 	public static final TrackedData<Boolean> VANISH = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	public static final TrackedData<Boolean> VANISH_TOGGLED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	public static final TrackedData<Optional<BlockPos>> CHAIR = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
-	public static final TrackedData<CompoundTag> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
+	public static final TrackedData<NbtCompound> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
 	public static final TrackedData<Optional<Text>> NICKNAME = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT);
+	public static final TrackedData<Optional<UUID>> SPEED_MODIFIER = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final ScoreboardCriterion LATENCY;
 	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
@@ -176,7 +174,7 @@ public class MoreCommands implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
 		Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
-		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedType.swimSpeedAttribute);
+		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			for (Class<? extends Command> cmd : getCommandClasses("server", Command.class))
 				try {
@@ -245,14 +243,14 @@ public class MoreCommands implements ModInitializer {
 			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
 			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + "com" + File.separator + "ptsmods" + File.separator + "morecommands" + File.separator + "commands" + File.separator + type + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
 			else {
-                ZipFile zip = new ZipFile(jar);
-                Enumeration<? extends ZipEntry> entries = zip.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
-                        classNames.add(Paths.get(entry.getName()));
-                }
-            }
+				ZipFile zip = new ZipFile(jar);
+				Enumeration<? extends ZipEntry> entries = zip.entries();
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+					if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
+						classNames.add(Paths.get(entry.getName()));
+				}
+			}
 			classNames.forEach(path -> {
 				String name = "com.ptsmods.morecommands.commands." + type + ("server".equals(type) ? "." + path.toFile().getParentFile().getName() : "") + "." + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.'));
 				try {
@@ -357,13 +355,18 @@ public class MoreCommands implements ModInitializer {
 		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
 		TextColor c = style.getColor();
 		if (c != null) {
+			int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
 			Formatting f = null;
 			for (Formatting form : Formatting.values())
-				if (form.getColorValue() != null && form.getColorValue().equals(c.getRgb())) {
+				if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
 					f = form;
 					break;
 				}
-			if (f != null) s.append(f.toString());
+			if (f != null) s.append(f);
+			else {
+				Color colour = new Color(rgb);
+				s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
+			}
 		}
 		if (style.isBold()) s.append(Formatting.BOLD);
 		if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
@@ -546,8 +549,8 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static Entity cloneEntity(Entity entity, boolean summon) {
-		CompoundTag nbt = new CompoundTag();
-		entity.saveSelfToTag(nbt);
+		NbtCompound nbt = new NbtCompound();
+		entity.saveSelfNbt(nbt);
 		Entity e = EntityType.loadEntityWithPassengers(nbt, entity.getEntityWorld(), e0 -> {
 			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
 			return e0;
@@ -597,8 +600,7 @@ public class MoreCommands implements ModInitializer {
 				target.refreshPositionAndAngles(x, y, z, f, g);
 				target.setHeadYaw(f);
 				world.onDimensionChanged(target);
-				entity.kill();
-				entity.remove(Entity.RemovalReason.KILLED);
+				Compat.getCompat().setRemoved(entity, 4); // CHANGED_DIMENSION
 			}
 		}
 		if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
@@ -616,7 +618,7 @@ public class MoreCommands implements ModInitializer {
 		return getRootRegistry().getKey(registry).orElse(null);
 	}
 
-	private static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
+	public static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
 		return MixinRegistryAccessor.getRoot();
 	}
 
@@ -785,13 +787,13 @@ public class MoreCommands implements ModInitializer {
 		return entity instanceof PlayerEntity && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getUuidAsString());
 	}
 
-	public static CompoundTag getDefaultTag(EntityType<?> type) {
-		CompoundTag tag = new CompoundTag();
+	public static NbtCompound getDefaultTag(EntityType<?> type) {
+		NbtCompound tag = new NbtCompound();
 		tag.putString("id", Registry.ENTITY_TYPE.getId(type).toString());
 		return tag;
 	}
 
-	public static Entity summon(CompoundTag tag, ServerWorld world, Vec3d pos) {
+	public static Entity summon(NbtCompound tag, ServerWorld world, Vec3d pos) {
 		return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
 			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, entityx.yaw, entityx.pitch);
 			return !world.tryLoadEntity(entityx) ? null : entityx;
@@ -850,8 +852,8 @@ public class MoreCommands implements ModInitializer {
 		return blockView.getHeight();
 	}
 
-	public static CompoundTag wrapTag(String key, Tag tag) {
-		CompoundTag compound = new CompoundTag();
+	public static NbtCompound wrapTag(String key, NbtElement tag) {
+		NbtCompound compound = new NbtCompound();
 		compound.put(key, tag);
 		return compound;
 	}
@@ -894,6 +896,21 @@ public class MoreCommands implements ModInitializer {
 
 	public static boolean isSingleplayer() {
 		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
+	}
+
+	public static String formatSeconds(long seconds, Formatting mainColour, Formatting commaColour) {
+		long days = seconds / 86400;
+		long hours = seconds / 3600 - days * 24;
+		long minutes = seconds / 60 - hours * 60 - days * 1440;
+		seconds = seconds % 60;
+		StringBuilder sb = new StringBuilder(mainColour.toString());
+		if (days > 0) sb.append(days).append(" day").append(days == 1 ? "" : "s");
+		if (hours > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(hours).append(" hour").append(hours == 1 ? "" : "s");
+		if (minutes > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(minutes).append(" minute").append(minutes == 1 ? "" : "s");
+		if (seconds > 0) sb.append(sb.length() == 2 ? "" : commaColour + ", " + mainColour).append(seconds).append(" seconds").append(seconds == 1 ? "" : "s");
+		String s = sb.toString();
+		if (s.contains(",")) s = s.substring(0, s.lastIndexOf(',')) + " and" + s.substring(s.lastIndexOf(',') + 1);
+		return s;
 	}
 
 }

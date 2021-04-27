@@ -23,26 +23,26 @@ import java.util.Iterator;
 @Mixin(EnchantCommand.class)
 public class MixinEnchantCommand {
 
-    @Shadow @Final private static DynamicCommandExceptionType FAILED_ENTITY_EXCEPTION;
-    @Shadow @Final private static DynamicCommandExceptionType FAILED_ITEMLESS_EXCEPTION;
-    @Shadow @Final private static SimpleCommandExceptionType FAILED_EXCEPTION;
+	@Shadow @Final private static DynamicCommandExceptionType FAILED_ENTITY_EXCEPTION;
+	@Shadow @Final private static DynamicCommandExceptionType FAILED_ITEMLESS_EXCEPTION;
+	@Shadow @Final private static SimpleCommandExceptionType FAILED_EXCEPTION;
 
-    @Overwrite
-    private static int execute(ServerCommandSource source, Collection<? extends Entity> targets, Enchantment enchantment, int level) throws CommandSyntaxException {
-        int i = 0;
-        for (Entity entity : targets)
-            if (entity instanceof LivingEntity) {
-                LivingEntity livingEntity = (LivingEntity) entity;
-                ItemStack itemStack = livingEntity.getMainHandStack();
-                if (!itemStack.isEmpty()) {
-                    itemStack.addEnchantment(enchantment, level);
-                    ++i;
-                } else if (targets.size() == 1) throw FAILED_ITEMLESS_EXCEPTION.create(livingEntity.getName().getString());
-            } else if (targets.size() == 1) throw FAILED_ENTITY_EXCEPTION.create(entity.getName().getString());
-        if (i == 0) throw FAILED_EXCEPTION.create();
-        if (targets.size() == 1) source.sendFeedback(new TranslatableText("commands.enchant.success.single", enchantment.getName(level), targets.iterator().next().getDisplayName()), true);
-        else source.sendFeedback(new TranslatableText("commands.enchant.success.multiple", enchantment.getName(level), targets.size()), true);
-        return i;
-    }
+	@Overwrite
+	private static int execute(ServerCommandSource source, Collection<? extends Entity> targets, Enchantment enchantment, int level) throws CommandSyntaxException {
+		int i = 0;
+		for (Entity entity : targets)
+			if (entity instanceof LivingEntity) {
+				LivingEntity livingEntity = (LivingEntity) entity;
+				ItemStack itemStack = livingEntity.getMainHandStack();
+				if (!itemStack.isEmpty()) {
+					itemStack.addEnchantment(enchantment, level);
+					++i;
+				} else if (targets.size() == 1) throw FAILED_ITEMLESS_EXCEPTION.create(livingEntity.getName().getString());
+			} else if (targets.size() == 1) throw FAILED_ENTITY_EXCEPTION.create(entity.getName().getString());
+		if (i == 0) throw FAILED_EXCEPTION.create();
+		if (targets.size() == 1) source.sendFeedback(new TranslatableText("commands.enchant.success.single", enchantment.getName(level), targets.iterator().next().getDisplayName()), true);
+		else source.sendFeedback(new TranslatableText("commands.enchant.success.multiple", enchantment.getName(level), targets.size()), true);
+		return i;
+	}
 
 }

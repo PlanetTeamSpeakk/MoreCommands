@@ -17,25 +17,25 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
 public class CyclePaintingCommand extends Command {
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literal("cyclepainting").executes(ctx -> execute(ctx, null)).then(argument("motive", new RegistryArgumentType<>(Registry.PAINTING_MOTIVE)).executes(ctx -> execute(ctx, ctx.getArgument("motive", PaintingMotive.class)))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.register(literal("cyclepainting").executes(ctx -> execute(ctx, null)).then(argument("motive", new RegistryArgumentType<>(Registry.PAINTING_MOTIVE)).executes(ctx -> execute(ctx, ctx.getArgument("motive", PaintingMotive.class)))));
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {
-        HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160F, false, true);
-        if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
-            PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
-            PaintingMotive oldArt = painting.motive;
-            painting.motive = motive == null ? Registry.PAINTING_MOTIVE.get((Registry.PAINTING_MOTIVE.getRawId(oldArt)+1) % 26) : motive;
-            BlockPos pos = painting.getBlockPos();
-            Entity painting0 = MoreCommands.cloneEntity(painting, false);
-            painting.kill();
-            painting0.setPos(pos.getX(), pos.getY(), pos.getZ());
-            ctx.getSource().getWorld().spawnEntity(painting0);
-            return 1;
-        } else sendMsg(ctx, Formatting.RED + "It appears as if you're not looking at a painting.");
-        return 0;
-    }
+	private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {
+		HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160F, false, true);
+		if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
+			PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
+			PaintingMotive oldArt = painting.motive;
+			painting.motive = motive == null ? Registry.PAINTING_MOTIVE.get((Registry.PAINTING_MOTIVE.getRawId(oldArt)+1) % 26) : motive;
+			BlockPos pos = painting.getBlockPos();
+			Entity painting0 = MoreCommands.cloneEntity(painting, false);
+			painting.kill();
+			painting0.setPos(pos.getX(), pos.getY(), pos.getZ());
+			ctx.getSource().getWorld().spawnEntity(painting0);
+			return 1;
+		} else sendMsg(ctx, Formatting.RED + "It appears as if you're not looking at a painting.");
+		return 0;
+	}
 
 }

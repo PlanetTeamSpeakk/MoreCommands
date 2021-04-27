@@ -12,10 +12,10 @@ import java.util.function.Function;
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
 
-    @Inject(at = @At("RETURN"), method = "startServer(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;")
-    private static <S extends MinecraftServer> S startServer(Function<Thread, S> serverFactory, CallbackInfoReturnable<S> cbi) {
-        MoreCommands.setServerInstance(cbi.getReturnValue());
-        return cbi.getReturnValue();
-    }
+	@Inject(at = @At("RETURN"), method = "startServer(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;")
+	private static <S extends MinecraftServer> S startServer(Function<Thread, S> serverFactory, CallbackInfoReturnable<S> cbi) {
+		MoreCommands.setServerInstance(cbi.getReturnValue());
+		return cbi.getReturnValue();
+	}
 
 }

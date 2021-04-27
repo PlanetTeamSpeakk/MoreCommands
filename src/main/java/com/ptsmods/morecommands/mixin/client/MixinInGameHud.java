@@ -13,9 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class MixinInGameHud {
-    @Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;F)V")
-    private void render(MatrixStack stack, float tickDelta, CallbackInfo cbi) {
-        if (ClientOptions.EasterEggs.rainbows && Rainbow.getInstance() != null) DrawableHelper.fill(stack, 0, 0, MinecraftClient.getInstance().getWindow().getWidth(), MinecraftClient.getInstance().getWindow().getHeight(), Rainbow.getInstance().getRainbowColour(false, 0.1f));
-    }
-}
 
+	@Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;F)V")
+	private void render(MatrixStack stack, float tickDelta, CallbackInfo cbi) {
+		if (ClientOptions.EasterEggs.rainbows.getValue() && Rainbow.getInstance() != null) DrawableHelper.fill(stack, 0, 0, MinecraftClient.getInstance().getWindow().getWidth(), MinecraftClient.getInstance().getWindow().getHeight(), Rainbow.getInstance().getRainbowColour(false, 0.1f));
+	}
+
+}

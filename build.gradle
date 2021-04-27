@@ -18,7 +18,7 @@ version = project.mod_version
 group = project.maven_group
 
 task fatJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version}.${archiveExtension.get()}"
+	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version_most}.${archiveExtension.get()}"
 	from remapJar
 	configurations = [project.configurations.compile]
 	exclude("/mappings/") // Included within project.configurations.compile for some reason.
@@ -32,6 +32,7 @@ tasks.build.dependsOn fatJar
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
@@ -42,6 +43,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	compile "com.github.Vatuu:discord-rpc:1.6.2"
 	compile "com.github.Chocohead:Fabric-ASM:v2.2"
+	compile 'com.esotericsoftware:reflectasm:1.11.9'
 }
 
 processResources {

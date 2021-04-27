@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemEntity.class)
 public class MixinItemEntity {
 
-    @Inject(at = @At("RETURN"), method = "isFireImmune()Z")
-    public boolean isFireImmune(CallbackInfoReturnable<Boolean> cbi) {
-        return !ReflectionHelper.<ItemEntity>cast(this).getEntityWorld().getGameRules().getBoolean(MoreCommands.doItemsFireDamageRule) || cbi.getReturnValueZ();
-    }
+	@Inject(at = @At("RETURN"), method = "isFireImmune()Z")
+	public boolean isFireImmune(CallbackInfoReturnable<Boolean> cbi) {
+		return !ReflectionHelper.<ItemEntity>cast(this).getEntityWorld().getGameRules().getBoolean(MoreCommands.doItemsFireDamageRule) || cbi.getReturnValueZ();
+	}
 
 }

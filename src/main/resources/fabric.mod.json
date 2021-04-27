@@ -5,33 +5,35 @@
   "name": "MoreCommands",
   "description": "Adds loads of commands, gamerules and other neat features.",
   "authors": [
-    "PlanetTeamSpeak"
+	"PlanetTeamSpeak"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/morecommands",
-    "sources": "https://github.com/PlanetTeamSpeakk/MoreCommands"
+	"homepage": "https://www.curseforge.com/minecraft/mc-mods/morecommands",
+	"sources": "https://github.com/PlanetTeamSpeakk/MoreCommands"
   },
   "license": "CC0-1.0",
   "icon": "assets/morecommands/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.ptsmods.morecommands.MoreCommands"
-    ],
-    "client": [
-      "com.ptsmods.morecommands.MoreCommandsClient"
-    ],
-    "mm:early_risers": [
-      "com.ptsmods.morecommands.EarlyRiser"
-    ]
+	"main": [
+	  "com.ptsmods.morecommands.MoreCommands"
+	],
+	"client": [
+	  "com.ptsmods.morecommands.MoreCommandsClient"
+	],
+	"mm:early_risers": [
+	  "com.ptsmods.morecommands.EarlyRiser"
+	]
   },
   "mixins": [
-    "morecommands.client_mixins.json",
-    "morecommands.common_mixins.json"
+	"morecommands.client_mixins.json",
+	"morecommands.common_mixins.json",
+	"morecommands.reach_mixins.json",
+    "morecommands.compat_mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.7.4",
-    "fabric": "*",
-    "minecraft": "1.17.x"
+	"fabricloader": ">=0.7.4",
+	"fabric": "*",
+	"minecraft": ">=1.16"
   }
 }

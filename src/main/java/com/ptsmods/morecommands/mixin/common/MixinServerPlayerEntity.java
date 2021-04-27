@@ -1,15 +1,12 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,48 +18,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayerEntity.class)
 public class MixinServerPlayerEntity {
 
-    private int mc_lastPing = -1;
+	private int mc_lastPing = -1;
 
-    /**
-     * @author PlanetTeamSpeak
-     */
-    @Nullable
-    @Overwrite
-    public Text getPlayerListName() {
-        return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
-    }
+	/**
+	 * @author PlanetTeamSpeak
+	 */
+	@Overwrite
+	public Text getPlayerListName() {
+		return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
+	}
 
-    @Inject(at = @At("HEAD"), method = "playerTick()V")
-    public void playerTick(CallbackInfo cbi) {
-        ServerPlayerEntity thiz = ReflectionHelper.cast(this);
-        if (thiz.pingMilliseconds != mc_lastPing) {
-            mc_lastPing = thiz.pingMilliseconds;
-            updateScores(MoreCommands.LATENCY, mc_lastPing);
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "playerTick()V")
+	public void playerTick(CallbackInfo cbi) {
+		ServerPlayerEntity thiz = ReflectionHelper.cast(this);
+		if (thiz.pingMilliseconds != mc_lastPing) {
+			mc_lastPing = thiz.pingMilliseconds;
+			updateScores(MoreCommands.LATENCY, mc_lastPing);
+		}
+	}
 
-    @Shadow
-    private void updateScores(ScoreboardCriterion criterion, int score) {
-        throw new AssertionError("This should not happen.");
-    }
+	@Shadow private void updateScores(ScoreboardCriterion criterion, int score) {
+		throw new AssertionError("This should not happen.");
+	}
 
-    // First changing world, then teleporting to different position seeing as that's how it's done naturally when going through a portal.
-    // Normal behaviour breaks the back command when using it twice in a row after going through a portal.
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; refreshPositionAndAngles(DDDFF)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
-    private void teleport_refreshPositionAndAngles(ServerPlayerEntity thiz, double x, double y, double z, float yaw, float pitch, ServerWorld targetWorld, double x0, double y0, double z0, float yaw0, float pitch0) {
-        thiz.setWorld(targetWorld);
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; setWorld(Lnet/minecraft/server/world/ServerWorld;)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
-    private void teleport_setWorld(ServerPlayerEntity thiz, ServerWorld targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
-        thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
-    }
-
-    @Inject(at = @At("HEAD"), method = "setWorld(Lnet/minecraft/server/world/ServerWorld;)V", cancellable = true)
-    public void setWorld(ServerWorld world, CallbackInfo cbi) {
-        ServerPlayerEntity thiz = ReflectionHelper.cast(this);
-        if (EntityTeleportCallback.EVENT.invoker().onTeleport(thiz, thiz.getEntityWorld(), world, thiz.getPos(), thiz.getPos())) cbi.cancel();
-        ((MixinServerPlayerEntityAccessor) thiz).setSyncedExperience(-1); // Fix for the glitch that seemingly removes all your xp when you change worlds.
-    }
-
+	// First changing world, then teleporting to different position seeing as that's how it's done naturally when going through a portal.
+	// Normal behaviour breaks the back command when using it twice in a row after going through a portal.
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; refreshPositionAndAngles(DDDFF)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
+	private void teleport_refreshPositionAndAngles(ServerPlayerEntity thiz, double x, double y, double z, float yaw, float pitch, ServerWorld targetWorld, double x0, double y0, double z0, float yaw0, float pitch0) {
+		thiz.setWorld(targetWorld);
+	}
 }

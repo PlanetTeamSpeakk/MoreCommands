@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.compat.Compat;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
@@ -25,126 +26,29 @@ import java.util.Objects;
 @Mixin(ServerPlayerInteractionManager.class)
 public class MixinServerPlayerInteractionManager {
 
-    @Shadow private static Logger LOGGER;
-    @Shadow public ServerWorld world;
-    @Shadow public ServerPlayerEntity player;
-    @Shadow private GameMode gameMode;
-    @Shadow private boolean mining;
-    @Shadow private BlockPos miningPos;
-    @Shadow private int startMiningTime;
-    @Shadow private int tickCounter;
-    @Shadow private boolean failedToMine;
-    @Shadow private BlockPos failedMiningPos;
-    @Shadow private int failedStartMiningTime;
-    @Shadow private int blockBreakingProgress;
-    private boolean mc_isFlying = false;
+	@Shadow public ServerWorld world;
+	@Shadow public ServerPlayerEntity player;
+	private boolean mc_isFlying = false;
 
-    @Overwrite
-    public void processBlockBreakingAction(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight) {
-        double d = player.getX() - ((double)pos.getX() + 0.5D);
-        double e = player.getY() - ((double)pos.getY() + 0.5D) + 1.5D;
-        double f = player.getZ() - ((double)pos.getZ() + 0.5D);
-        double g = d * d + e * e + f * f;
-        if (g > ReachCommand.getReach(player, true)) { // The only line I changed. lulw
-            player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, false, "too far"));
-        } else if (pos.getY() >= worldHeight) {
-            player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, false, "too high"));
-        } else {
-            BlockState blockState;
-            if (action == net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
-                if (!world.canPlayerModifyAt(player, pos)) {
-                    player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, false, "may not interact"));
-                    return;
-                }
+	// Preventing packet from being sent
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; sendAbilitiesUpdate()V"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
+	public void sendAbilitiesUpdate(ServerPlayerEntity player) {}
 
-                if (player.interactionManager.isCreative()) {
-                    player.interactionManager.finishMining(pos, action, "creative destroy");
-                    return;
-                }
+	@Inject(at = @At("HEAD"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
+	public void setGameModePre(GameMode gameMode, GameMode gameMode2, CallbackInfo cbi) {
+		mc_isFlying = Compat.getCompat().getAbilities(player).flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
+	}
 
-                if (player.isBlockBreakingRestricted(world, pos, gameMode)) {
-                    player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, false, "block action restricted"));
-                    return;
-                }
-
-                startMiningTime = tickCounter;
-                float h = 1.0F;
-                blockState = world.getBlockState(pos);
-                if (!blockState.isAir()) {
-                    blockState.onBlockBreakStart(world, pos, player);
-                    h = blockState.calcBlockBreakingDelta(player, player.world, pos);
-                }
-
-                if (!blockState.isAir() && h >= 1.0F) {
-                    player.interactionManager.finishMining(pos, action, "insta mine");
-                } else {
-                    if (mining) {
-                        player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(miningPos, world.getBlockState(miningPos), PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, false, "abort destroying since another started (client insta mine, server disagreed)"));
-                    }
-
-                    mining = true;
-                    miningPos = pos.toImmutable();
-                    int i = (int)(h * 10.0F);
-                    world.setBlockBreakingInfo(player.getId(), pos, i);
-                    player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, true, "actual start of destroying"));
-                    blockBreakingProgress = i;
-                }
-            } else if (action == PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK) {
-                if (pos.equals(miningPos)) {
-                    int j = tickCounter - startMiningTime;
-                    blockState = world.getBlockState(pos);
-                    if (!blockState.isAir()) {
-                        float k = blockState.calcBlockBreakingDelta(player, player.world, pos) * (float)(j + 1);
-                        if (k >= 0.7F) {
-                            mining = false;
-                            world.setBlockBreakingInfo(player.getId(), pos, -1);
-                            player.interactionManager.finishMining(pos, action, "destroyed");
-                            return;
-                        }
-
-                        if (!failedToMine) {
-                            mining = false;
-                            failedToMine = true;
-                            failedMiningPos = pos;
-                            failedStartMiningTime = startMiningTime;
-                        }
-                    }
-                }
-
-                player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, true, "stopped destroying"));
-            } else if (action == net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
-                mining = false;
-                if (!Objects.equals(miningPos, pos)) {
-                    LOGGER.warn("Mismatch in destroy block pos: " + miningPos + " " + pos);
-                    world.setBlockBreakingInfo(player.getId(), miningPos, -1);
-                    player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(miningPos, world.getBlockState(miningPos), action, true, "aborted mismatched destroying"));
-                }
-                world.setBlockBreakingInfo(player.getId(), pos, -1);
-                player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, world.getBlockState(pos), action, true, "aborted destroying"));
-            }
-
-        }
-    }
-
-    // Preventing packet from being sent
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; sendAbilitiesUpdate()V"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
-    public void sendAbilitiesUpdate(ServerPlayerEntity player) {}
-
-    @Inject(at = @At("HEAD"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
-    public void setGameModePre(GameMode gameMode, GameMode gameMode2, CallbackInfo cbi) {
-        mc_isFlying = player.getAbilities().flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
-    }
-
-    @Inject(at = @At("TAIL"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
-    public void setGameModePost(GameMode gameMode, GameMode gameMode2, CallbackInfo cbi) {
-        // If MAY_FLY is false, let the gamemode decide whether the player may fly or not.
-        // If we just straight up set it to the value of MAY_FLY, the player would never be able to fly, not even in creative, when flight is disabled with the /fly command even when you switch gamemode.
-        // Spectators can always fly, they'll fall through the map otherwise.
-        if (player.getDataTracker().get(MoreCommands.MAY_FLY) || gameMode == GameMode.SPECTATOR) player.getAbilities().allowFlying = true;
-        if (player.getAbilities().allowFlying) player.getAbilities().flying = mc_isFlying;
-        else player.getAbilities().flying = false;
-        if (player.getDataTracker().get(MoreCommands.INVULNERABLE)) player.getAbilities().invulnerable = true;
-        player.sendAbilitiesUpdate();
-    }
+	@Inject(at = @At("TAIL"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
+	public void setGameModePost(GameMode gameMode, GameMode gameMode2, CallbackInfo cbi) {
+		// If MAY_FLY is false, let the gamemode decide whether the player may fly or not.
+		// If we just straight up set it to the value of MAY_FLY, the player would never be able to fly, not even in creative, when flight is disabled with the /fly command even when you switch gamemode.
+		// Spectators can always fly, they'll fall through the map otherwise.
+		if (player.getDataTracker().get(MoreCommands.MAY_FLY) || gameMode == GameMode.SPECTATOR) Compat.getCompat().getAbilities(player).allowFlying = true;
+		if (Compat.getCompat().getAbilities(player).allowFlying) Compat.getCompat().getAbilities(player).flying = mc_isFlying;
+		else Compat.getCompat().getAbilities(player).flying = false;
+		if (player.getDataTracker().get(MoreCommands.INVULNERABLE)) Compat.getCompat().getAbilities(player).invulnerable = true;
+		player.sendAbilitiesUpdate();
+	}
 
 }

@@ -11,29 +11,29 @@ import java.util.Objects;
 
 public class CopySound extends MovingSoundInstance {
 
-    public CopySound() {
-        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:copy"))), SoundCategory.MASTER);
-        volume = .25f;
-        repeat = false;
-        tick();
-    }
+	public CopySound() {
+		super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:copy"))), SoundCategory.MASTER);
+		volume = .25f;
+		repeat = false;
+		tick();
+	}
 
-    @Override
-    public boolean shouldAlwaysPlay() {
-        return true;
-    }
+	@Override
+	public boolean shouldAlwaysPlay() {
+		return true;
+	}
 
-    @Override
-    public boolean canPlay() {
-        return true;
-    }
+	@Override
+	public boolean canPlay() {
+		return true;
+	}
 
-    @Override
-    public void tick() {
-        Vec3d pos = MinecraftClient.getInstance().player.getPos();
-        x = pos.x;
-        y = pos.y;
-        z = pos.z;
-    }
+	@Override
+	public void tick() {
+		Vec3d pos = MinecraftClient.getInstance().player.getPos();
+		x = pos.x;
+		y = pos.y;
+		z = pos.z;
+	}
 
 }

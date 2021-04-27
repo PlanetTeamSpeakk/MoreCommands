@@ -19,25 +19,25 @@ import java.util.Random;
 @Mixin(TitleScreen.class)
 public class MixinTitleScreen {
 
-    @Shadow private String splashText;
-    private static boolean mc_isInitialised = false;
+	@Shadow private String splashText;
+	private static boolean mc_isInitialised = false;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Random; nextFloat()F", remap = false), method = "<init>(Z)V")
-    private float init_nextFloat(Random random) {
-        return ClientOptions.Tweaks.alwaysMinceraft ? 0f : random.nextFloat();
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Random; nextFloat()F", remap = false), method = "<init>(Z)V")
+	private float init_nextFloat(Random random) {
+		return ClientOptions.Tweaks.alwaysMinceraft.getValue() ? 0f : random.nextFloat();
+	}
 
-    @Inject(at = @At("HEAD"), method = "init()V")
-    private void init(CallbackInfo cbi) { // Couldn't get it to work with ModifyVariable for whatever reason.
-        if (!mc_isInitialised) {
-            mc_isInitialised = true;
-            // Doing this after all initialisation is completed to make sure all other mods have registered their blocks and items and stuff.
-            Registry.ITEM.forEach(item -> {
-                if (item.getGroup() == null) ((MixinItemAccessor) item).setGroup(MoreCommands.unobtainableItems);
-            });
-        }
-        if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
-        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
-    }
+	@Inject(at = @At("HEAD"), method = "init()V")
+	private void init(CallbackInfo cbi) { // Couldn't get it to work with ModifyVariable for whatever reason.
+		if (!mc_isInitialised) {
+			mc_isInitialised = true;
+			// Doing this after all initialisation is completed to make sure all other mods have registered their blocks and items and stuff.
+			Registry.ITEM.forEach(item -> {
+				if (item.getGroup() == null) ((MixinItemAccessor) item).setGroup(MoreCommands.unobtainableItems);
+			});
+		}
+		if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
+		if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
+	}
 
 }

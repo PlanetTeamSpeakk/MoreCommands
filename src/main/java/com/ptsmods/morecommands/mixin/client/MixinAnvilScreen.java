@@ -15,18 +15,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilScreen.class)
 public class MixinAnvilScreen {
-    private static boolean mc_colourPickerOpen = false;
-    @Shadow private TextFieldWidget nameField;
+	private static boolean mc_colourPickerOpen = false;
+	@Shadow private TextFieldWidget nameField;
 
-    @Inject(at = @At("TAIL"), method = "setup()V")
-    protected void setup(CallbackInfo cbi) {
-        Screen thiz = ReflectionHelper.cast(this);
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, mc_colourPickerOpen, nameField::write, b -> mc_colourPickerOpen = b);
-    }
+	@Inject(at = @At("TAIL"), method = "setup()V")
+	protected void setup(CallbackInfo cbi) {
+		Screen thiz = ReflectionHelper.cast(this);
+		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, mc_colourPickerOpen, nameField::write, b -> mc_colourPickerOpen = b);
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/text/Text; getString()Ljava/lang/String;"), method = "onSlotUpdate(Lnet/minecraft/screen/ScreenHandler;ILnet/minecraft/item/ItemStack;)V")
-    public String onSlotUpdate_getString(Text t) {
-        return t.getString().replace('\u00A7', '&');
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/text/Text; getString()Ljava/lang/String;"), method = "onSlotUpdate(Lnet/minecraft/screen/ScreenHandler;ILnet/minecraft/item/ItemStack;)V")
+	public String onSlotUpdate_getString(Text t) {
+		return t.getString().replace('\u00A7', '&');
+	}
 
 }

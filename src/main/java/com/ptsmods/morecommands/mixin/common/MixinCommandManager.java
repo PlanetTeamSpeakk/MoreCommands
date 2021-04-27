@@ -10,10 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CommandManager.class)
 public class MixinCommandManager {
-
-    @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/command/CommandManager$RegistrationEnvironment;)V")
-    private void init(CommandManager.RegistrationEnvironment environment, CallbackInfo cbi) {
-        CommandsRegisteredCallback.EVENT.invoker().onRegistered(ReflectionHelper.<CommandManager>cast(this).getDispatcher());
-    }
-
+	@Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/command/CommandManager$RegistrationEnvironment;)V")
+	private void init(CommandManager.RegistrationEnvironment environment, CallbackInfo cbi) {
+		CommandsRegisteredCallback.EVENT.invoker().onRegistered(ReflectionHelper.<CommandManager>cast(this).getDispatcher());
+	}
 }

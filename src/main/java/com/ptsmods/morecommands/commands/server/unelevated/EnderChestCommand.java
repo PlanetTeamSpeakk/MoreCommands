@@ -17,28 +17,28 @@ import net.minecraft.text.Text;
 
 public class EnderChestCommand extends Command {
 
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("ec", dispatcher.register(literal("enderchest").executes(ctx -> execute(ctx, null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+		dispatcher.getRoot().addChild(MoreCommands.createAlias("ec", dispatcher.register(literal("enderchest").executes(ctx -> execute(ctx, null)).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
-        PlayerEntity player = p == null ? ctx.getSource().getPlayer() : p;
-        ctx.getSource().getPlayer().openHandledScreen(new NamedScreenHandlerFactory() {
-            @Override
-            public Text getDisplayName() {
-                LiteralText text = new LiteralText("");
-                text.getSiblings().add(player.getDisplayName());
-                text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(player.getDisplayName(), null).endsWith("s") ? "" : "s") + " enderchest"));
-                return text;
-            }
+	private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
+		PlayerEntity player = p == null ? ctx.getSource().getPlayer() : p;
+		ctx.getSource().getPlayer().openHandledScreen(new NamedScreenHandlerFactory() {
+			@Override
+			public Text getDisplayName() {
+				LiteralText text = new LiteralText("");
+				text.getSiblings().add(player.getDisplayName());
+				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(player.getDisplayName(), null).endsWith("s") ? "" : "s") + " enderchest"));
+				return text;
+			}
 
-            @Override
-            public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                return GenericContainerScreenHandler.createGeneric9x3(syncId, inv, player.getEnderChestInventory());
-            }
-        });
-        return 1;
-    }
+			@Override
+			public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+				return GenericContainerScreenHandler.createGeneric9x3(syncId, inv, player.getEnderChestInventory());
+			}
+		});
+		return 1;
+	}
 
 }
