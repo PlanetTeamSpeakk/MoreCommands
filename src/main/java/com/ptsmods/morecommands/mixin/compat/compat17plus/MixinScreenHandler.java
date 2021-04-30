@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(targets = "net.minecraft.screen.ScreenHandler")
+@Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-    @Inject(at = @At("HEAD"), method = "onSlotClick", cancellable = true, remap = false)
+    @Inject(at = @At("HEAD"), method = "onSlotClick", cancellable = true)
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo cbi) {
         if (ReflectionHelper.<ScreenHandler>cast(this) instanceof InvseeCommand.InvSeeScreenHandler && ReflectionHelper.<InvseeCommand.InvSeeScreenHandler>cast(this).target instanceof OtherClientPlayerEntity) cbi.cancel();
     }

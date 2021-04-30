@@ -25,7 +25,6 @@ import java.util.Objects;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public class MixinServerPlayerInteractionManager {
-
 	@Shadow public ServerWorld world;
 	@Shadow public ServerPlayerEntity player;
 	private boolean mc_isFlying = false;
@@ -50,5 +49,4 @@ public class MixinServerPlayerInteractionManager {
 		if (player.getDataTracker().get(MoreCommands.INVULNERABLE)) Compat.getCompat().getAbilities(player).invulnerable = true;
 		player.sendAbilitiesUpdate();
 	}
-
 }

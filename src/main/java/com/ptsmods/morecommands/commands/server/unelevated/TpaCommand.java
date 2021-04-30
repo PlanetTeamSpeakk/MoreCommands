@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -79,7 +80,7 @@ public class TpaCommand extends Command {
 		private void accept() {
 			ServerPlayerEntity from = here ? this.to : this.from;
 			ServerPlayerEntity to = here ? this.from : this.to;
-			MoreCommands.teleport(from, to.getServerWorld(), to.getPos(), to.yaw, to.pitch);
+			MoreCommands.teleport(from, to.getServerWorld(), to.getPos(), Compat.getCompat().getEntityYaw(to), Compat.getCompat().getEntityPitch(to));
 		}
 
 		private void deny() {

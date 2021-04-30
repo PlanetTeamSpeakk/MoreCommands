@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

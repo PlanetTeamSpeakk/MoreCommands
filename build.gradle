@@ -5,7 +5,8 @@ buildscript {
 }
 
 plugins {
-	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'fabric-loom' version '0.6-SNAPSHOT'
+	id 'maven-publish'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -22,8 +23,9 @@ task fatJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
 	from remapJar
 	configurations = [project.configurations.compile]
 	exclude("/mappings/") // Included within project.configurations.compile for some reason.
-	exclude("/com/sun/") // This dependency is shadowed within the DRPC library, but it already exists on Minecraft's classpath by default, so to save space, it is removed.
+	exclude("/com/sun/") // This dependency is shadowed within the DRPC library, but it already exists on Minecraft's classpath by default, so to save space, it is excluded.
 	exclude("/META-INF/maven/") // Unnecessary
+	exclude("/LICENSE")
 }
 
 shadowJar.dependsOn remapJar
@@ -32,41 +34,34 @@ tasks.build.dependsOn fatJar
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
-	implementation 'org.jetbrains:annotations:20.1.0'
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	compile "com.github.Vatuu:discord-rpc:1.6.2"
 	compile "com.github.Chocohead:Fabric-ASM:v2.2"
+	compile "com.github.Vatuu:discord-rpc:1.6.2"
 	compile 'com.esotericsoftware:reflectasm:1.11.9'
 }
 
 processResources {
 	inputs.property "version", project.version
 
-	from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
+	filesMatching("fabric.mod.json") {
 		expand "version": project.version
 	}
+}
 
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	def targetVersion = 8
+	if (JavaVersion.current().isJava9Compatible()) {
+		 it.options.release = targetVersion
 	}
 }
 
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
-}
-
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	archiveClassifier.set("sources")
-	from sourceSets.main.allSource
+java {
+	withSourcesJar()
 }

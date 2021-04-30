@@ -36,11 +36,6 @@ public class VanishCommand extends Command {
 		dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literal("vanish").requires(IS_OP).executes(ctx -> execute(ctx, null)).then(argument("players", EntityArgumentType.players()).executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
 	}
 
-	@Override
-	public boolean forDedicated() {
-		return true;
-	}
-
 	private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
 		if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
 		else if (!isOp(ctx)) {

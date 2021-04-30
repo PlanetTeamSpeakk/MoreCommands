@@ -10,5 +10,4 @@ public interface MouseCallback {
 	});
 
 	boolean onMouse(int button, int action, int mods);
-
 }

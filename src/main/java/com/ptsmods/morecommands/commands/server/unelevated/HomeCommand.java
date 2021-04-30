@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -74,7 +75,7 @@ public class HomeCommand extends Command {
 		else if (getHomes(p).size() >= max && !bypass) sendMsg(ctx, Formatting.RED + "You cannot set more than " + max + " homes.");
 		else {
 			if (!homes.containsKey(p.getUuid())) homes.put(p.getUuid(), new ArrayList<>());
-			getHomes(p).add(new Home(name, p.getPos().x, p.getPos().y, p.getPos().z, p.pitch, p.yaw, p.getEntityWorld().getRegistryKey().getValue()));
+			getHomes(p).add(new Home(name, p.getPos().x, p.getPos().y, p.getPos().z, Compat.getCompat().getEntityPitch(p), Compat.getCompat().getEntityYaw(p), p.getEntityWorld().getRegistryKey().getValue()));
 			saveData();
 			sendMsg(ctx, "A home by the name of " + SF + name + DF + " has been set.");
 		}

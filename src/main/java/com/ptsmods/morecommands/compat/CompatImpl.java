@@ -22,10 +22,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 
-class CompatImpl implements Compat {
+class CompatImpl extends AbstractCompat {
     static final CompatImpl instance = new CompatImpl();
 
     @Override
@@ -41,14 +42,6 @@ class CompatImpl implements Compat {
     @Override
     public PlayerInventory getInventory(PlayerEntity player) {
         return ((MixinPlayerEntityAccessor) player).getInventory_();
-    }
-
-    @Override
-    public char gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
-        char ch = string.charAt(index);
-        if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel())))
-            ch = '&';
-        return ch;
     }
 
     @Override
@@ -92,12 +85,12 @@ class CompatImpl implements Compat {
     }
 
     @Override
-    public int getEntityId(Entity entity) {
-        return ((MixinEntityAccessor) entity).getEntityId_();
+    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
+        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getRegistry(manager, key);
     }
 
     @Override
-    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getRegistry(manager, key);
+    public int getWorldHeight(BlockView world) {
+        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getWorldHeight(world);
     }
 }

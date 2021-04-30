@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;

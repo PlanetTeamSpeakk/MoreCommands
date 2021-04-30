@@ -6,20 +6,16 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)

@@ -28,7 +28,7 @@ public class LockLookComand extends ClientCommand {
 					Vec3d pos = target.getPos();
 					double dx = pos.getX() - ctr.getX();
 					double dz = pos.getZ() - ctr.getZ();
-					getPlayer().changeLookDirection((clampAngle(getPlayer().yaw, (float) Math.toDegrees(-Math.atan2(pos.getX() - ctr.getX(), pos.getZ() - ctr.getZ())), false) - getPlayer().yaw) / 0.15, (clampAngle(getPlayer().pitch, (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - getPlayer().pitch) / 0.15);
+					getPlayer().changeLookDirection((clampAngle(Compat.getCompat().getEntityYaw(getPlayer()), (float) Math.toDegrees(-Math.atan2(pos.getX() - ctr.getX(), pos.getZ() - ctr.getZ())), false) - Compat.getCompat().getEntityYaw(getPlayer())) / 0.15, (clampAngle(Compat.getCompat().getEntityPitch(getPlayer()), (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - Compat.getCompat().getEntityPitch(getPlayer())) / 0.15);
 				}
 			}
 		});

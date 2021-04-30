@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 
@@ -33,7 +34,7 @@ public interface Compat {
     }
 
     static int getIVer() {
-        return Integer.parseInt(getMinecraftVersion().split("\\.")[1]);
+        return EarlyRiser.version.getIVer();
     }
 
     static boolean is16() {
@@ -71,4 +72,14 @@ public interface Compat {
     int getEntityId(Entity entity);
 
     <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key);
+
+    int getWorldHeight(BlockView world);
+
+    float getEntityYaw(Entity entity);
+
+    float getEntityPitch(Entity entity);
+
+    void setEntityYaw(Entity entity, float yaw);
+
+    void setEntityPitch(Entity entity, float pitch);
 }

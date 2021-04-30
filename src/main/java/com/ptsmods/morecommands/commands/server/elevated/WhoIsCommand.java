@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -16,7 +17,7 @@ public class WhoIsCommand extends Command {
 			sendMsg(ctx, "Info for player " + SF + MoreCommands.textToString(player.getDisplayName(), null));
 			sendMsg(ctx, "World: " + SF + player.getServerWorld().getRegistryKey().getValue().toString());
 			sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
-			sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(player.pitch) + DF + ", " + SF + MathHelper.wrapDegrees(player.yaw));
+			sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(player)) + DF + ", " + SF + MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(player)));
 			sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f));
 			sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f));
 			sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());

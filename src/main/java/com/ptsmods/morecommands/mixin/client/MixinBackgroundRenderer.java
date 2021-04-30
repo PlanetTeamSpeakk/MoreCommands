@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
 import org.spongepowered.asm.mixin.Mixin;

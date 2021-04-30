@@ -15,6 +15,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class PowerToolCommand extends Command {
@@ -38,7 +39,7 @@ public class PowerToolCommand extends Command {
 	private boolean checkPowerTool(PlayerEntity player, World world, Hand hand) {
 		String cmd = getPowerTool(player, player.getStackInHand(hand));
 		if (cmd != null) {
-			if (!world.isClient) player.getServer().getCommandManager().execute(player.getCommandSource(), "/" + cmd);
+			if (!world.isClient) Objects.requireNonNull(player.getServer()).getCommandManager().execute(player.getCommandSource(), "/" + cmd);
 			return true;
 		}
 		return false;
@@ -71,13 +72,13 @@ public class PowerToolCommand extends Command {
 	}
 
 	public static String getPowerTool(PlayerEntity player, ItemStack stack) {
-		return isPowerTool(stack) && getPowerToolOwner(stack).equals(player.getUuid()) ? stack.getTag().getCompound("PowerTool").getString("Command") : null;
+		return isPowerTool(stack) && getPowerToolOwner(stack).equals(player.getUuid()) ? Objects.requireNonNull(stack.getTag()).getCompound("PowerTool").getString("Command") : null;
 	}
 
 	public static void setPowerTool(PlayerEntity owner, ItemStack stack, String command) {
 		NbtCompound tag = stack.getOrCreateTag();
 		if (command == null && tag.contains("PowerTool", 10)) tag.remove("PowerTool");
-		else {
+		else if (command != null) {
 			if (command.startsWith("/")) command = command.substring(1);
 			if (!tag.contains("PowerTool", 10)) tag.put("PowerTool", new NbtCompound());
 			tag.getCompound("PowerTool").putUuid("Owner", owner.getUuid());
@@ -86,7 +87,7 @@ public class PowerToolCommand extends Command {
 	}
 
 	public static UUID getPowerToolOwner(ItemStack stack) {
-		return stack.getTag().getCompound("PowerTool").getUuid("Owner");
+		return stack.getOrCreateTag().getCompound("PowerTool").getUuid("Owner");
 	}
 
 	public static ItemStack getPowerToolStack(PlayerEntity player) {
@@ -96,6 +97,6 @@ public class PowerToolCommand extends Command {
 	}
 
 	public static boolean isPowerTool(ItemStack stack) {
-		return stack.hasTag() && stack.getTag().contains("PowerTool", 10);
+		return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("PowerTool", 10);
 	}
 }

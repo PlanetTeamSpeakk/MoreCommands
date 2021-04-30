@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.arguments.LimitedStringArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.minecraft.client.network.ClientCommandSource;
 
 import java.util.List;

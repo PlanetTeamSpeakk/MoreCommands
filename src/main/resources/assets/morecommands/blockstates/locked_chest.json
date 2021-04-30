@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "morecommands:block/locked_chest"
+    }
+  }
+}

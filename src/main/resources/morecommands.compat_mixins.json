@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "plugin": "com.ptsmods.morecommands.mixin.compat.MixinPlugin",
   "client": [
-    "compat16.MixinScreenHandler"
+    "compat16.MixinScreenHandler",
+    "compat16.MixinSignEditScreen",
+    "compat17plus.MixinSignEditScreen"
   ],
   "mixins": [
     "MixinPlayerEntityAccessor",
@@ -14,13 +16,13 @@
     "compat16.MixinServerPlayNetworkHandler",
     "compat16.MixinHopperBlockEntity",
     "compat16.MixinServerPlayerEntity",
-    "compat16.MixinSignEditScreen",
+    "compat16.MixinFarmlandBlock",
     "compat17plus.MixinServerPlayerEntity",
     "compat17plus.MixinServerPlayNetworkHandler",
     "compat17plus.MixinScreenHandler",
     "compat17plus.MixinHopperBlockEntity",
     "compat17plus.MixinHopperBlockEntityAccessor",
-    "compat17plus.MixinSignEditScreen"
+    "compat17plus.MixinFarmlandBlock"
   ],
   "injectors": {
 	"defaultRequire": 0

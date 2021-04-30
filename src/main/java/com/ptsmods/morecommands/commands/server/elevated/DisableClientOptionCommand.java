@@ -6,7 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.arguments.LimitedStringArgumentType;
 import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

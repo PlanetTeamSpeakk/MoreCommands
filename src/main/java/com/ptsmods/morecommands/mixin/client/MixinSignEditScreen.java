@@ -1,20 +1,15 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
-import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.SelectionManager;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

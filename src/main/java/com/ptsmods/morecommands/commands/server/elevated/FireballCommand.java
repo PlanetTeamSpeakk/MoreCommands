@@ -70,8 +70,8 @@ public class FireballCommand extends Command {
 			}
 		};
 		fireball.setVelocity(velocity0);
-		fireball.pitch = ctx.getSource().getRotation().x;
-		fireball.yaw = ctx.getSource().getRotation().y;
+		Compat.getCompat().setEntityPitch(fireball, ctx.getSource().getRotation().x);
+		Compat.getCompat().setEntityYaw(fireball, ctx.getSource().getRotation().y);
 		fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeY()), ctx.getSource().getPosition().z);
 		fireball.tick();
 		ctx.getSource().getWorld().spawnEntity(fireball);

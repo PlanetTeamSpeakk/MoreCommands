@@ -114,8 +114,8 @@ public class FakePlayerCommand extends Command {
 				f.set(ccon, new AbstractChannel(null) {@Override public ChannelConfig config() {return new DefaultChannelConfig(this);} @Override public boolean isOpen() {return false;} @Override public boolean isActive() {return false;} @Override public ChannelMetadata metadata() {return new ChannelMetadata(true);} @Override protected AbstractUnsafe newUnsafe() {return null;} @Override protected boolean isCompatible(EventLoop loop) {return false;} @Override protected SocketAddress localAddress0() {return null;} @Override protected SocketAddress remoteAddress0() {return null;} @Override protected void doBind(SocketAddress localAddress) throws Exception {} @Override protected void doDisconnect() throws Exception {} @Override protected void doClose() throws Exception {} @Override protected void doBeginRead() throws Exception {} @Override protected void doWrite(ChannelOutboundBuffer in) throws Exception {}});
 				// Yuck
 				if (ctx.getSource().getEntity() != null) {
-					player.yaw = ctx.getSource().getEntity().yaw;
-					player.pitch = ctx.getSource().getEntity().pitch;
+					Compat.getCompat().setEntityYaw(player, Compat.getCompat().getEntityYaw(ctx.getSource().getEntity()));
+					Compat.getCompat().setEntityPitch(player, Compat.getCompat().getEntityPitch(ctx.getSource().getEntity()));
 				}
 				player.networkHandler = new ServerPlayNetworkHandler(ctx.getSource().getMinecraftServer(), ccon, player);
 				ctx.getSource().getMinecraftServer().getPlayerManager().onPlayerConnect(ccon, player);
@@ -124,7 +124,7 @@ public class FakePlayerCommand extends Command {
 				Compat.getCompat().getAbilities(player).invulnerable = true;
 				player.setInvulnerable(true);
 				player.sendAbilitiesUpdate();
-				MoreCommands.teleport(player, ctx.getSource().getWorld(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, player.yaw, player.pitch);
+				MoreCommands.teleport(player, ctx.getSource().getWorld(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, Compat.getCompat().getEntityYaw(player), Compat.getCompat().getEntityPitch(player));
 				fake.add(player.getUuid());
 				sendMsg(ctx, "A fake player by the name of " + MoreCommands.textToString(player.getName(), null) + " has been spawned.");
 				return 1;

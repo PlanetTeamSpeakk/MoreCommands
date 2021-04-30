@@ -22,10 +22,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 
-class Compat17Plus implements Compat {
+class Compat17Plus extends AbstractCompat {
     static final Compat17Plus instance;
 
     static {
@@ -47,11 +48,6 @@ class Compat17Plus implements Compat {
     @Override
     public PlayerInventory getInventory(PlayerEntity player) {
         return player.getInventory();
-    }
-
-    @Override
-    public char gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
-        return Compat.getCompat().gameMsgCharAt(thiz, string, index, player, server);
     }
 
     @Override
@@ -95,12 +91,12 @@ class Compat17Plus implements Compat {
     }
 
     @Override
-    public int getEntityId(Entity entity) {
-        return Compat.getCompat().getEntityId(entity);
+    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
+        return manager.get(key);
     }
 
     @Override
-    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-        return manager.get(key);
+    public int getWorldHeight(BlockView world) {
+        return world.getHeight();
     }
 }

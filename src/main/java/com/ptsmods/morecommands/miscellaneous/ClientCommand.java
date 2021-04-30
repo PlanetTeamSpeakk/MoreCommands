@@ -58,7 +58,7 @@ public abstract class ClientCommand extends Command {
 
 	@Override
 	public final void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		MoreCommands.throwWithoutDeclaration(new IllegalAccessException("Client commands can only be registered via the cRegister method."));
+		throw new IllegalAccessException("Client commands can only be registered via the cRegister method.");
 	}
 
 	@Override

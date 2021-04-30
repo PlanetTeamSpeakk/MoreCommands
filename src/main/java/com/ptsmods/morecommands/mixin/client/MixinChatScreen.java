@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.mixin.client;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.CopySound;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinChatHudAccessor;

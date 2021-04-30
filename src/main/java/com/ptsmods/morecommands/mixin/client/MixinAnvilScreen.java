@@ -23,10 +23,4 @@ public class MixinAnvilScreen {
 		Screen thiz = ReflectionHelper.cast(this);
 		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, mc_colourPickerOpen, nameField::write, b -> mc_colourPickerOpen = b);
 	}
-
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/text/Text; getString()Ljava/lang/String;"), method = "onSlotUpdate(Lnet/minecraft/screen/ScreenHandler;ILnet/minecraft/item/ItemStack;)V")
-	public String onSlotUpdate_getString(Text t) {
-		return t.getString().replace('\u00A7', '&');
-	}
-
 }

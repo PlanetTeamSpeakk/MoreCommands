@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.server",
+  "compatibilityLevel": "JAVA_8",
+  "server": [
+    "MixinMain"
+  ],
+  "injectors": {
+	"defaultRequire": 1
+  }
+}

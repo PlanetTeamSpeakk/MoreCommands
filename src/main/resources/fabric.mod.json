@@ -28,6 +28,7 @@
   "mixins": [
 	"morecommands.client_mixins.json",
 	"morecommands.common_mixins.json",
+    "morecommands.server_mixins.json",
 	"morecommands.reach_mixins.json",
     "morecommands.compat_mixins.json"
   ],

@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.compat.compat17plus;
 
 import com.ptsmods.morecommands.MoreCommands;
 import net.minecraft.block.BlockState;
@@ -12,10 +12,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FarmlandBlock.class)
 public class MixinFarmlandBlock {
-
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FarmlandBlock; setToDirt(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"), method = "onLandedUpon(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;F)V")
-	private void onLandedUpon_setToDirt(BlockState state, World world, BlockPos pos, World world0, BlockPos pos0, Entity entity, float distance) {
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FarmlandBlock;onLandedUpon(Lnet/minecraft/world/World;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;F)V"), method = "onLandedUpon")
+	private void onLandedUpon_setToDirt(FarmlandBlock farmlandBlock, World world, BlockState state, BlockPos pos, Entity entity, float f) {
 		if (world.getGameRules().getBoolean(MoreCommands.doFarmlandTrampleRule)) FarmlandBlock.setToDirt(state, world, pos);
 	}
-
 }

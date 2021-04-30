@@ -2,8 +2,8 @@ package com.ptsmods.morecommands.gui;
 
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.ClientOption;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOption;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.gui.screen.Screen;
@@ -43,6 +43,7 @@ public class ClientOptionsChildScreen extends Screen {
 	protected void init() {
 		btnFields.clear();
 		buttons.clear();
+		children.clear();
 		pages.clear();
 		boolean right = false;
 		int row = 0;
@@ -250,7 +251,7 @@ public class ClientOptionsChildScreen extends Screen {
 
 	private Class<?> getType(Field f) {
 		try {
-			return f.getType() == ClientOption.class ? ((ClientOption<?>) f.get(null)).getType() : null;
+			return ClientOption.class.isAssignableFrom(f.getType()) ? ((ClientOption<?>) f.get(null)).getType() : null;
 		} catch (IllegalAccessException e) {
 			log.error("An unknown error occurred while getting type of field " + f + ".", e);
 			return null;

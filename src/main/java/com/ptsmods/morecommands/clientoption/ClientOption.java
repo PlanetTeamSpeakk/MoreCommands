@@ -1,18 +1,16 @@
-package com.ptsmods.morecommands.miscellaneous;
+package com.ptsmods.morecommands.clientoption;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientOption<T> {
+public abstract class ClientOption<T> {
 	private static final List<ClientOption<?>> instances = new ArrayList<>();
 	private T value;
 	private final T defaultValue;
 	private boolean disabled = false;
-	private final Class<T> type;
 
 	ClientOption(T defaultValue) {
 		this.value = this.defaultValue = defaultValue;
-		type = ReflectionHelper.cast(value instanceof Boolean ? Boolean.class : value instanceof Integer ? Integer.class : null);
 		instances.add(this);
 	}
 
@@ -40,9 +38,7 @@ public class ClientOption<T> {
 		this.value = value;
 	}
 
-	public Class<T> getType() {
-		return type;
-	}
+	public abstract Class<T> getType();
 
 	public void reset() {
 		setValue(getDefaultValue());

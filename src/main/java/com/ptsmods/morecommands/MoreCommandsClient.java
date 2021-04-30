@@ -1,11 +1,14 @@
 package com.ptsmods.morecommands;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinScreenAccessor;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -20,10 +23,15 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.world.CreateWorldScreen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientCommandSource;
@@ -31,6 +39,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
@@ -39,21 +48,23 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient implements ClientModInitializer {
-
 	public static final Logger log = LogManager.getLogger();
 	public static final KeyBinding toggleInfoHudBinding = new KeyBinding("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
+	public static boolean scheduleWorldInitCommands = false;
 	private static double speed = 0d;
 	private static double avgSpeed = 0d;
 	private static final DoubleList lastSpeeds = new DoubleArrayList();
@@ -62,8 +73,9 @@ public class MoreCommandsClient implements ClientModInitializer {
 	private static final Map<String, Integer> keys = new LinkedHashMap<>();
 	private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
 	private static DiscordUser discordUser = null;
-	private static final Method addButtonMethod = ReflectionHelper.getYarnMethod(Screen.class, "addButton", "method_25411", AbstractButtonWidget.class);
 	private static final List<String> disabledCommands = new ArrayList<>();
+	private static final List<String> worldInitCommands = new ArrayList<>();
+	private static final File wicFile = new File("config/MoreCommands/worldInitCommands.json");
 
 	static {
 		for (Field f : GLFW.class.getFields())
@@ -87,6 +99,9 @@ public class MoreCommandsClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ClientOptions.read();
+		List<ItemConvertible> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
+		if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));
+		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemConvertible[0]));
 		if (!MinecraftClient.IS_SYSTEM_MAC)
 			DiscordRPC.discordInitialize("754048885755871272", new DiscordEventHandlers.Builder()
 					.setReadyEventHandler(user -> {
@@ -97,9 +112,24 @@ public class MoreCommandsClient implements ClientModInitializer {
 					.setErroredEventHandler((errorCode, message) -> log.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
 		updatePresence();
 		C2SPlayChannelEvents.REGISTER.register(((handler, sender, client, channels) -> updateTag()));
+		AtomicInteger wicWarmup = new AtomicInteger();
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			if (scheduleWorldInitCommands) wicWarmup.set(10);
+			scheduleWorldInitCommands = false;
+		});
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommandManager().execute(server.getCommandSource(), cmd));
+		});
 		Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
 		Language.setInstance(Language.getInstance()); // Wrap the current instance so it can translate all enchant levels and spawner names. :3 (Look at MixinLanguage)
 		KeyBindingHelper.registerKeyBinding(toggleInfoHudBinding);
+		if (!wicFile.exists()) saveWorldInitCommands();
+		try {
+			List<String> wic = MoreCommands.readJson(wicFile);
+			if (wic != null) worldInitCommands.addAll(wic);
+		} catch (IOException e) {
+			log.error("Could not read World Init Commands.", e);
+		}
 		HudRenderCallback.EVENT.register((stack, tickDelta) -> {
 			if (ClientOptions.Tweaks.enableInfoHud.getValue()) InfoHud.instance.render(stack, tickDelta);
 		});
@@ -121,6 +151,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 					speedSum += speed;
 				avgSpeed = speedSum / lastSpeeds.size();
 			}
+
 			for (Entity entity : world.getEntities())
 				if (entity instanceof PlayerEntity && MoreCommands.isCool(entity))
 					for (int i = 0; i < 2; i++)
@@ -151,15 +182,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_options"), (client, handler, buf, responseSender) -> {
-			log.info("Received disable client options packet from server, length: " + buf.readableBytes());
 			ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
 			int length = buf.readVarInt();
-			log.info("Packet contains " + length + " elements.");
-			for (int i = 0; i < length; i++) {
-				String s = buf.readString();
-				log.info("Disabling client option " + s);
-				Optional.ofNullable(ClientOptions.getOption(s)).ifPresent(option -> option.setDisabled(true));
-			}
+			for (int i = 0; i < length; i++)
+				Optional.ofNullable(ClientOptions.getOption(buf.readString())).ifPresent(option -> option.setDisabled(true));
 		});
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_commands"), (client, handler, buf, responseSender) -> {
 			disabledCommands.clear();
@@ -238,13 +264,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 	}
 
 	public static <T extends AbstractButtonWidget> T addButton(Screen screen, T button) {
-		try {
-			addButtonMethod.invoke(screen, button);
-			return button;
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			log.error("Error occurred while adding button to screen.", e);
-		}
-		return null;
+		return ((MixinScreenAccessor) screen).callAddButton(button);
 	}
 
 	// Frodo on da beat
@@ -286,5 +306,28 @@ public class MoreCommandsClient implements ClientModInitializer {
 	public static boolean isCommandDisabled(String input) {
 		if (input.startsWith("/")) input = input.substring(1);
 		return disabledCommands.contains(input.split(" ")[0]);
+	}
+
+	public static List<String> getWorldInitCommands() {
+		return ImmutableList.copyOf(worldInitCommands);
+	}
+
+	public static void clearWorldInitCommands() {
+		worldInitCommands.clear();
+		saveWorldInitCommands();
+	}
+
+	public static void setWorldInitCommands(List<String> commands) {
+		worldInitCommands.clear();
+		worldInitCommands.addAll(commands);
+		saveWorldInitCommands();
+	}
+
+	public static void saveWorldInitCommands() {
+		try {
+			MoreCommands.saveJson(wicFile, worldInitCommands);
+		} catch (IOException e) {
+			log.error("Could not save World Init Commands.", e);
+		}
 	}
 }

@@ -28,6 +28,9 @@ public class MixinLanguage {
 		romanNumerals.put(1, "I");
 	}
 
+	/**
+	 * @author PlanetTeamSpeak
+	 */
 	@Overwrite
 	public static void setInstance(Language language) {
 		instance = new Language() {

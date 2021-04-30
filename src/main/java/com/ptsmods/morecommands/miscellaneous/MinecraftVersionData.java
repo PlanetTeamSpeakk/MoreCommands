@@ -8,4 +8,9 @@ public class MinecraftVersionData {
     public int protocol_version;
     public String build_time;
     public boolean stable;
+    private Integer ver;
+
+    public int getIVer() {
+        return ver == null ? ver = Integer.parseInt(release_target.split("\\.")[1]) : ver;
+    }
 }

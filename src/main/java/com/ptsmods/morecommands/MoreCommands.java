@@ -10,14 +10,12 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
+import com.ptsmods.morecommands.callbacks.PostInitCallback;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.*;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinFormattingAccessor;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinRegistryAccessor;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinScoreboardCriterionAccessor;
-import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.*;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -54,6 +52,8 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandOutput;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.command.TestCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
@@ -79,7 +79,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sun.misc.Unsafe;
 
 import java.awt.*;
 import java.io.*;
@@ -103,7 +102,6 @@ import java.util.zip.ZipFile;
 import static net.minecraft.block.Blocks.*;
 
 public class MoreCommands implements ModInitializer {
-
 	public static final Logger log = LogManager.getLogger();
 	public static Formatting DF = Formatting.GOLD;
 	public static Formatting SF = Formatting.YELLOW;
@@ -157,7 +155,6 @@ public class MoreCommands implements ModInitializer {
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
-	public static Unsafe theUnsafe = ReflectionHelper.getFieldValue(Unsafe.class, "theUnsafe", null);
 
 	static {
 		ScoreboardCriterion.CRITERIA.put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
@@ -204,13 +201,23 @@ public class MoreCommands implements ModInitializer {
 			user.avatar = buf.readString();
 			discordTags.put(player, user);
 		});
+		PostInitCallback.EVENT.register(() -> {
+			Identifier redstoneWire = new Identifier("redstone_wire"); // Completely breaks redstone dust in the creative inventory.
+			Registry.BLOCK.forEach(block -> {
+				Identifier id = Registry.BLOCK.getId(block);
+				if (!Registry.ITEM.containsId(id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
+			});
+			Registry.ITEM.forEach(item -> {
+				if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
+			});
+		});
 		Set<ServerPlayerEntity> howlingPlayers = new HashSet<>();
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			// This does absolutely nothing whatsoever, just pass along. :)
 			for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
 				if (p.isSneaking()) {
-					float pitch = MathHelper.wrapDegrees(p.pitch);
-					float yaw = MathHelper.wrapDegrees(p.yaw);
+					float pitch = MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(p));
+					float yaw = MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(p));
 					double moonWidth = Math.PI / 32 * -pitch;
 					long dayTime = p.getServerWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
 					if (!howlingPlayers.contains(p) && p.getServerWorld().getDimension().getMoonPhase(p.getServerWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
@@ -241,7 +248,7 @@ public class MoreCommands implements ModInitializer {
 		try {
 			List<Path> classNames = new ArrayList<>();
 			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
-			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + "com" + File.separator + "ptsmods" + File.separator + "morecommands" + File.separator + "commands" + File.separator + type + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
+			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + String.join(File.separator, "com", "ptsmods", "morecommands", "commands", type) + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
 			else {
 				ZipFile zip = new ZipFile(jar);
 				Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -429,7 +436,7 @@ public class MoreCommands implements ModInitializer {
 	 * grouping using (...), and it gets the operator precedence and associativity
 	 * rules correct.
 	 *
-	 * @param str
+	 * @param str The equation to solve.
 	 * @return The answer to the equation.
 	 * @author Boann (https://stackoverflow.com/a/26227947)
 	 */
@@ -552,7 +559,7 @@ public class MoreCommands implements ModInitializer {
 		NbtCompound nbt = new NbtCompound();
 		entity.saveSelfNbt(nbt);
 		Entity e = EntityType.loadEntityWithPassengers(nbt, entity.getEntityWorld(), e0 -> {
-			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
+			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), Compat.getCompat().getEntityYaw(entity), Compat.getCompat().getEntityPitch(entity));
 			return e0;
 		});
 		if (e != null) {
@@ -637,16 +644,12 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String getHTML(String url) throws IOException {
-		StringBuilder result = new StringBuilder();
 		URL URL = new URL(url);
 		URLConnection connection = URL.openConnection();
 		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
-		BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		String line;
-		while ((line = rd.readLine()) != null)
-			result.append(line);
-		rd.close();
-		return result.toString();
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+			return rd.lines().collect(Collectors.joining("\n"));
+		}
 	}
 
 	public static void setServerInstance(MinecraftServer server) {
@@ -677,10 +680,6 @@ public class MoreCommands implements ModInitializer {
 		}
 	}
 
-	public static boolean isBoolean(String s) {
-		return "true".equalsIgnoreCase(s) || "false".equalsIgnoreCase(s);
-	}
-
 	public static String translateFormattings(String s) {
 		for (Formatting f : Formatting.values())
 			s = s.replaceAll("&" + f.toString().charAt(1), f.toString());
@@ -691,7 +690,7 @@ public class MoreCommands implements ModInitializer {
 		return d >= min && d <= max;
 	}
 
-	public static String getLookDirection(float pitch, float yaw) {
+	public static String getLookDirection(float yaw, float pitch) {
 		String direction = "unknown";
 		if (pitch <= -30) direction = "up";
 		else if (pitch >= 30) direction = "down";
@@ -743,14 +742,6 @@ public class MoreCommands implements ModInitializer {
 		return node0;
 	}
 
-	public static <T> T allocateInstance(Class<T> clazz) throws InstantiationException {
-		return ReflectionHelper.cast(theUnsafe.allocateInstance(clazz));
-	}
-
-	public static void throwWithoutDeclaration(Throwable t) {
-		theUnsafe.throwException(t);
-	}
-
 	public static void execute(Runnable runnable) {
 		executor.execute(runnable);
 	}
@@ -795,7 +786,7 @@ public class MoreCommands implements ModInitializer {
 
 	public static Entity summon(NbtCompound tag, ServerWorld world, Vec3d pos) {
 		return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
-			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, entityx.yaw, entityx.pitch);
+			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, Compat.getCompat().getEntityYaw(entityx), Compat.getCompat().getEntityPitch(entityx));
 			return !world.tryLoadEntity(entityx) ? null : entityx;
 		});
 	}
@@ -912,5 +903,4 @@ public class MoreCommands implements ModInitializer {
 		if (s.contains(",")) s = s.substring(0, s.lastIndexOf(',')) + " and" + s.substring(s.lastIndexOf(',') + 1);
 		return s;
 	}
-
 }

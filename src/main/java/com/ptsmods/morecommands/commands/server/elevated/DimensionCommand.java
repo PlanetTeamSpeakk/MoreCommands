@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -21,7 +22,7 @@ public class DimensionCommand extends Command {
 
 	private int execute(CommandContext<ServerCommandSource> ctx, ServerWorld world, Entity entity) {
 		if (entity.getEntityWorld() != world) {
-			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), entity.yaw, entity.pitch);
+			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), Compat.getCompat().getEntityYaw(entity), Compat.getCompat().getEntityPitch(entity));
 			return 1;
 		}
 		sendMsg(ctx, Formatting.RED + "The targeted entity is already in that world.");

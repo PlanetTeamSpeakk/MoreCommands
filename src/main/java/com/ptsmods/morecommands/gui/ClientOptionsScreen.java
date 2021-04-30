@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.gui;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
@@ -16,7 +16,6 @@ import net.minecraft.text.Text;
 import java.util.*;
 
 public class ClientOptionsScreen extends Screen {
-
 	private final Screen parent;
 	private final Map<AbstractButtonWidget, Class<?>> btnClasses = new HashMap<>();
 
@@ -30,6 +29,7 @@ public class ClientOptionsScreen extends Screen {
 		Objects.requireNonNull(client);
 		btnClasses.clear();
 		buttons.clear();
+		children.clear();
 		boolean right = false;
 		int row = 0;
 		List<Class<?>> classes = Lists.newArrayList(ClientOptions.class.getClasses());
@@ -42,23 +42,23 @@ public class ClientOptionsScreen extends Screen {
 				if (right) row++;
 				right = !right;
 			}
+		btnClasses.put(addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"), button -> client.openScreen(new WorldInitCommandsScreen(this)))), WorldInitCommandsScreen.class);
 		addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), (buttonWidget) -> {
 			ClientOptions.reset();
 			init();
 		}));
-		addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, (buttonWidget) -> client.openScreen(this.parent)));
+		addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, (buttonWidget) -> client.openScreen(parent)));
 	}
 
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		Objects.requireNonNull(client);
 		renderBackground(matrices);
-		drawCenteredText(matrices, client.textRenderer, getTitle(), width / 2, 10, 0);
+		drawCenteredText(matrices, textRenderer, getTitle(), width / 2, 10, 0);
 		super.render(matrices, mouseX, mouseY, delta);
 		btnClasses.forEach((btn, clazz) -> {
 			if (btn.isMouseOver(mouseX, mouseY) && getComment(clazz) != null) {
 				List<Text> texts = new ArrayList<>();
-				for (String s : getComment(clazz))
+				for (String s : Objects.requireNonNull(getComment(clazz)))
 					texts.add(new LiteralText(s));
 				renderTooltip(matrices, texts, mouseX, mouseY);
 			}

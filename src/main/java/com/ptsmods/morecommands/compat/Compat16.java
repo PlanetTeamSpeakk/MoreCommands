@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 // Supposedly ReflectASM is much faster than Java reflection: https://github.com/EsotericSoftware/reflectasm#performance
 // Can't use invoker and accessor mixins for methods or fields that don't exist in 1.17, it seems.
-class Compat16 implements Compat {
+class Compat16 extends AbstractCompat {
     static final Compat16 instance;
     private static final Map<Class<?>, Constructor<?>> constructorMap = new Object2ObjectOpenHashMap<>();
     private static final Map<Class<?>, MethodAccess> methodAccessMap = new Object2ObjectOpenHashMap<>();
@@ -103,11 +104,6 @@ class Compat16 implements Compat {
     }
 
     @Override
-    public char gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
-        return Compat.getCompat().gameMsgCharAt(thiz, string, index, player, server);
-    }
-
-    @Override
     public boolean isInBuildLimit(World world, BlockPos pos) {
         return (boolean) getMA(World.class).invoke(world, getMI(World.class, "method_24794", BlockPos.class), pos);
     }
@@ -150,14 +146,14 @@ class Compat16 implements Compat {
         getMA(SignBlockEntity.class).invoke(sbe, getMI(SignBlockEntity.class, "method_11306", PlayerEntity.class), player);
     }
 
-    @Override
-    public int getEntityId(Entity entity) {
-        return Compat.getCompat().getEntityId(entity);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
         return (Registry<E>) getMA(DynamicRegistryManager.class).invoke(manager, getMI(DynamicRegistryManager.class, "method_30530", RegistryKey.class), key);
+    }
+
+    @Override
+    public int getWorldHeight(BlockView world) {
+        return (int) getMA(world.getClass()).invoke(world, getMI(world.getClass(), "method_8322"));
     }
 }
