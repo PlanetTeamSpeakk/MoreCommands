@@ -18,16 +18,11 @@ public class WhoIsCommand extends Command {
 			sendMsg(ctx, "World: " + SF + player.getServerWorld().getRegistryKey().getValue().toString());
 			sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
 			sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(player)) + DF + ", " + SF + MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(player)));
-			sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f));
-			sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f));
+			sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f, true));
+			sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f, true));
 			sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());
 			sendMsg(ctx, "IP: " + SF + player.getIp());
 			return 1;
 		})));
-	}
-
-	@Override
-	public boolean forDedicated() {
-		return true;
 	}
 }

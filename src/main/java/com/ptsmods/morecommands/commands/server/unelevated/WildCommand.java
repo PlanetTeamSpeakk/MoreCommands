@@ -20,7 +20,7 @@ public class WildCommand extends Command {
 				double x = Math.random()*limit + border.getCenterX();
 				double z = Math.random()*limit + border.getCenterZ();
 				ctx.getSource().getEntityOrThrow().teleport(x, MoreCommands.getY(ctx.getSource().getWorld(), x, z), z);
-				sendMsg(ctx, "You have been teleported! Your new coords are " + SF + x + DF + ", " + SF + entity.getBlockPos().getY() + DF + ", " + SF + z + DF + ".");
+				sendMsg(ctx, "You have been teleported! Your new coords are " + SF + (int) x + DF + ", " + SF + entity.getBlockPos().getY() + DF + ", " + SF + (int) z + DF + ".");
 				return 1;
 			}
 			return 0;

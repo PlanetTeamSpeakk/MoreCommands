@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.UsageMonitorer;
@@ -63,7 +64,7 @@ public class SysInfoCommand extends Command {
 				"\n	Total RAM used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()) +
 				"\n	Total RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax());
 		output += "\n\nCPU:" +
-				"\n	Unit: " + SF + new SystemInfo().getHardware().getProcessors()[0] +
+				"\n	Unit: " + SF + Compat.getCompat().getProcessorString() +
 				"\n	Cores: " + SF + UsageMonitorer.getProcessorCount() +
 				"\n	Used by process: " + SF + UsageMonitorer.getProcessCpuLoad()*100 +
 				"\n	Used by system: " + SF + UsageMonitorer.getSystemCpuLoad()*100;

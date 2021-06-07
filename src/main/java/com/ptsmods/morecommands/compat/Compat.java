@@ -3,14 +3,15 @@ package com.ptsmods.morecommands.compat;
 import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.EarlyRiser;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -57,8 +58,6 @@ public interface Compat {
 
     Text toText(NbtElement tag);
 
-    void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format);
-
     PlayerAbilities getAbilities(PlayerEntity player);
 
     ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile);
@@ -82,4 +81,10 @@ public interface Compat {
     void setEntityYaw(Entity entity, float yaw);
 
     void setEntityPitch(Entity entity, float pitch);
+
+    void putCriterion(String name, ScoreboardCriterion criterion);
+
+    FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
+
+    String getProcessorString();
 }

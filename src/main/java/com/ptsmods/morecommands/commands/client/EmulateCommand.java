@@ -11,6 +11,7 @@ import com.ptsmods.morecommands.callbacks.KeyCallback;
 import com.ptsmods.morecommands.callbacks.MouseCallback;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinMouseAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
@@ -30,18 +31,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class EmulateCommand extends ClientCommand {
-
-	private static final Method onMouseButton;
-	private static final Field mouseX, mouseY;
-
-	static {
-		onMouseButton = ReflectionHelper.getYarnMethod(Mouse.class, "onMouseButton", "method_1601", long.class, int.class, int.class, int.class);
-		mouseX = ReflectionHelper.getYarnField(Mouse.class, "x", "field_1794");
-		mouseY = ReflectionHelper.getYarnField(Mouse.class, "y", "field_1795");
-	}
-
 	private enum Type {
-		MOUSE("button", () -> IntegerArgumentType.integer(0, GLFW.GLFW_MOUSE_BUTTON_LAST)), KEYBOARD("key", KeyArgumentType::new);
+		MOUSE("button", () -> IntegerArgumentType.integer(0, GLFW.GLFW_MOUSE_BUTTON_LAST)),
+		KEYBOARD("key", KeyArgumentType::new);
 
 		public final String argName;
 		public final Supplier<ArgumentType<Integer>> argSupplier;
@@ -206,20 +198,12 @@ public class EmulateCommand extends ClientCommand {
 					case MOUSE:
 						Mouse mouse = MinecraftClient.getInstance().mouse;
 						MinecraftClient.getInstance().execute(() -> {
-							try {
-								ignoreMouse = true;
-								onMouseButton.invoke(mouse, MinecraftClient.getInstance().getWindow().getHandle(), key, action, 0);
-							} catch (IllegalAccessException | InvocationTargetException e) {
-								log.catching(e);
-							}
+							ignoreMouse = true;
+							((MixinMouseAccessor) mouse).callOnMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key, action, 0);
 						});
 						if (!hold) MinecraftClient.getInstance().execute(() -> {
-							try {
-								ignoreMouse = true;
-								onMouseButton.invoke(mouse, MinecraftClient.getInstance().getWindow().getHandle(), key, 0, 0);
-							} catch (IllegalAccessException | InvocationTargetException e) {
-								log.catching(e);
-							}
+							ignoreMouse = true;
+							((MixinMouseAccessor) mouse).callOnMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key, 0, 0);
 						});
 						break;
 					case KEYBOARD:
@@ -246,12 +230,5 @@ public class EmulateCommand extends ClientCommand {
 		public String toString() {
 			return "button = " + key + (hold ? ", time = " + time + " ms" : ", interval = " + interval + " ms, count = " + count);
 		}
-	}
-
-	private static double[] getCenter() {
-		Window window = MinecraftClient.getInstance().getWindow();
-		double d = window.getWidth()/2d * (double) window.getScaledWidth() / (double) window.getWidth();
-		double e = window.getHeight()/2d * (double) window.getScaledHeight() / (double) window.getHeight();
-		return new double[] {d, e};
 	}
 }

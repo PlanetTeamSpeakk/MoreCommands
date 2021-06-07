@@ -38,8 +38,19 @@ public abstract class Command {
 	private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
 	private static final Map<Class<?>, Map<Event<?>, Object>> registeredCallbacks = new HashMap<>();
 
+	/**
+	 * Gets called once when the command is initialised.
+	 * Mostly useless now as the no-arg constructor achieves the same thing.
+	 * @throws Exception Can be anything
+	 */
 	public void preinit() throws Exception {}
 
+	/**
+	 * Gets called every time a new server is created.
+	 * So also whenever the player joins a singleplayer world.
+	 * @param server The server that was created
+	 * @throws Exception Can be anything
+	 */
 	public void init(MinecraftServer server) throws Exception {}
 
 	public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
@@ -119,9 +130,9 @@ public abstract class Command {
 		return formatFromBool(b) + (b ? yes : no);
 	}
 
-	public static String formatFromFloat(float v, float max, float yellow, float green) {
+	public static String formatFromFloat(float v, float max, float yellow, float green, boolean includeMax) {
 		float percent = v/max;
-		return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) + DF + "/" + Formatting.GREEN + max;
+		return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) + (includeMax ? DF + "/" + Formatting.GREEN + max : "");
 	}
 
 	public static boolean isOp(CommandContext<ServerCommandSource> ctx) {
@@ -134,10 +145,6 @@ public abstract class Command {
 
 	public void setActiveInstance() {
 		activeInstances.put(getClass(), this);
-	}
-
-	protected boolean isActiveInstance() {
-		return activeInstances.get(getClass()) == this;
 	}
 
 	public static UUID getServerUuid(MinecraftServer server) {

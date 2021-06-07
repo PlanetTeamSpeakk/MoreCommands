@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.gui;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinCommandSuggestorAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinSuggestionWindowAccessor;
 import net.minecraft.client.MinecraftClient;
@@ -12,7 +13,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.Rect2i;
+import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
@@ -40,15 +41,14 @@ public class WorldInitCommandsScreen extends Screen {
     protected void init() {
         fields.stream().filter(pair -> pair.getRight() != null).forEach(pair -> Optional.ofNullable(((MixinCommandSuggestorAccessor) pair.getRight()).getWindow()).ifPresent(CommandSuggestor.SuggestionWindow::discard));
         fields.clear();
-        children.clear();
-        buttons.clear();
+        ClientCompat.getCompat().clearScreen(this);
         MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
         addField("");
-        addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), (buttonWidget) -> {
+        ClientCompat.getCompat().addButton(this, new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), (buttonWidget) -> {
             MoreCommandsClient.clearWorldInitCommands();
             init();
         }));
-        addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, (buttonWidget) -> onClose()));
+        ClientCompat.getCompat().addButton(this, new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, (buttonWidget) -> onClose()));
         setInitialFocus(fields.get(0).getLeft());
     }
 
@@ -126,7 +126,7 @@ public class WorldInitCommandsScreen extends Screen {
         });
         Pair<TextFieldWidget, CommandSuggestor> pair = Pair.of(field, suggestor);
         atomicPair.set(pair);
-        addButton(field);
+        ClientCompat.getCompat().addButton(this, field);
         fields.add(pair);
     }
 

@@ -1,15 +1,8 @@
-buildscript {
-	dependencies {
-		classpath 'com.github.jengelman.gradle.plugins:shadow:6.0.0'
-	}
-}
-
 plugins {
-	id 'fabric-loom' version '0.6-SNAPSHOT'
-	id 'maven-publish'
+	id "fabric-loom" version "0.8-SNAPSHOT"
+	id "com.github.johnrengelman.shadow" version "7.0.0"
+	id "maven-publish"
 }
-
-apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -18,22 +11,22 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-task fatJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+shadowJar {
 	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version_most}.${archiveExtension.get()}"
 	from remapJar
-	configurations = [project.configurations.compile]
-	exclude("/mappings/") // Included within project.configurations.compile for some reason.
+	configurations = [project.configurations.shadow] // Only take dependencies that are included with 'shadow' in the dependencies section.
+	exclude("/mappings/") // Included within project.configurations.implementation for some reason.
 	exclude("/com/sun/") // This dependency is shadowed within the DRPC library, but it already exists on Minecraft's classpath by default, so to save space, it is excluded.
 	exclude("/META-INF/maven/") // Unnecessary
 	exclude("/LICENSE")
 }
 
 shadowJar.dependsOn remapJar
-tasks.build.dependsOn fatJar
+tasks.build.dependsOn shadowJar
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
+	maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -41,9 +34,11 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	compile "com.github.Chocohead:Fabric-ASM:v2.2"
-	compile "com.github.Vatuu:discord-rpc:1.6.2"
-	compile 'com.esotericsoftware:reflectasm:1.11.9'
+	modImplementation "io.github.prospector:modmenu:v2.0.0-beta.4"
+	modImplementation "com.ptsmods:devlogin:1.1"
+	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.2")
+	shadow implementation("com.github.Vatuu:discord-rpc:1.6.2")
+	shadow implementation("com.esotericsoftware:reflectasm:1.11.9")
 }
 
 processResources {
@@ -56,10 +51,8 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	def targetVersion = 8
-	if (JavaVersion.current().isJava9Compatible()) {
-		 it.options.release = targetVersion
-	}
+	if (JavaVersion.current().isJava9Compatible())
+		 it.options.release = 8
 }
 
 java {

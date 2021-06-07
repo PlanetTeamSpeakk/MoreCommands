@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class BindCommand extends ClientCommand {
-
 	private static final File bindingsFile = new File("config/MoreCommands/bindings.json");
 
 	private static final Map<String, String> bindings = new HashMap<>();

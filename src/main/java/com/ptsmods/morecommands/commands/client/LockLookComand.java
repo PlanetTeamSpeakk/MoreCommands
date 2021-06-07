@@ -2,9 +2,9 @@ package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.callbacks.RenderTickCallback;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Formatting;
@@ -14,13 +14,12 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class LockLookComand extends ClientCommand {
-
 	private Entity target = null;
 	private boolean smooth = false;
 
 	@Override
 	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-		ClientTickEvents.END_WORLD_TICK.register(world -> {
+		RenderTickCallback.PRE.register(tick -> {
 			if (target != null) {
 				if (Compat.getCompat().isRemoved(target)) target = null;
 				else {
@@ -28,7 +27,9 @@ public class LockLookComand extends ClientCommand {
 					Vec3d pos = target.getPos();
 					double dx = pos.getX() - ctr.getX();
 					double dz = pos.getZ() - ctr.getZ();
-					getPlayer().changeLookDirection((clampAngle(Compat.getCompat().getEntityYaw(getPlayer()), (float) Math.toDegrees(-Math.atan2(pos.getX() - ctr.getX(), pos.getZ() - ctr.getZ())), false) - Compat.getCompat().getEntityYaw(getPlayer())) / 0.15, (clampAngle(Compat.getCompat().getEntityPitch(getPlayer()), (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - Compat.getCompat().getEntityPitch(getPlayer())) / 0.15);
+					getPlayer().changeLookDirection(
+							(clampAngle(Compat.getCompat().getEntityYaw(getPlayer()), (float) Math.toDegrees(-Math.atan2(pos.getX() - ctr.getX(), pos.getZ() - ctr.getZ())), false) - Compat.getCompat().getEntityYaw(getPlayer())) / 0.15,
+							(clampAngle(Compat.getCompat().getEntityPitch(getPlayer()), (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - Compat.getCompat().getEntityPitch(getPlayer())) / 0.15);
 				}
 			}
 		});
@@ -54,5 +55,4 @@ public class LockLookComand extends ClientCommand {
 	private float clampAngle(float from, float to, boolean isPitch) {
 		return smooth ? from + MathHelper.clamp(MathHelper.subtractAngles(from, to), isPitch ? -40 : -10, isPitch ? 40 : 10) : to;
 	}
-
 }

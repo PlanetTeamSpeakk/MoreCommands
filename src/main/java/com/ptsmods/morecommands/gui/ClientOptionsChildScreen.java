@@ -1,36 +1,29 @@
 package com.ptsmods.morecommands.gui;
 
-import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.compat.client.ClientCompat;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.util.math.MathHelper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static com.ptsmods.morecommands.MoreCommands.log;
 
 public class ClientOptionsChildScreen extends Screen {
-
 	private final Class<?> c;
-	private final Map<AbstractButtonWidget, Field> btnFields = new HashMap<>();
+	private final Map<ClickableWidget, Field> btnFields = new HashMap<>();
 	private final ClientOptionsScreen parent;
-	private final List<List<Pair<AbstractButtonWidget, Field>>> pages = new ArrayList<>();
+	private final List<List<Pair<ClickableWidget, Field>>> pages = new ArrayList<>();
 	private ButtonWidget seekLeft = null, seekRight = null;
 	private int page = 0;
 
@@ -42,14 +35,15 @@ public class ClientOptionsChildScreen extends Screen {
 
 	protected void init() {
 		btnFields.clear();
-		buttons.clear();
-		children.clear();
+		ClientCompat.getCompat().clearScreen(this);
 		pages.clear();
 		boolean right = false;
 		int row = 0;
-		List<Pair<AbstractButtonWidget, Field>> page = new ArrayList<>();
+		ClientCompat compat = ClientCompat.getCompat();
+		List<Pair<ClickableWidget, Field>> page = new ArrayList<>();
 		for (Field f : c.getFields()) {
-			if (getType(f) == null) continue; // Most likely the ordinal field
+			ClientOption<?> option = getOption(f);
+			if (option == null) continue; // Most likely the ordinal field
 			if (page.size() == 10) {
 				pages.add(page);
 				page = new ArrayList<>();
@@ -58,36 +52,10 @@ public class ClientOptionsChildScreen extends Screen {
 			}
 			int x = width / 2 + (right ? 5 : -155);
 			int y = height / 6 + 24*(row+1) - 6;
-			AbstractButtonWidget btn = null;
-			if (getType(f) == Boolean.class)
-				btn = addButton(new ButtonWidget(x, y, 150, 20, getBoolText(f), button -> {
-					boolean oldValue = getBoolValue(f);
-					setValue(f, !getBoolValue(f));
-					checkChangeCallback(f, oldValue);
-					button.setMessage(getBoolText(f));
-					parent.init();
-					init();
-				}));
-			else if (getType(f) == Integer.class)
-				btn = addButton(new SliderWidget(x, y, 150, 20, new LiteralText(getCleanName(f) + " : " + getIntValue(f)), getSliderValue(f)) {
-					@Override
-					protected void updateMessage() {
-						setMessage(new LiteralText(getCleanName(f) + " : " + getIntValue(f)));
-					}
-
-					@Override
-					protected void applyValue() {
-						int[] cramp = getCramp(f);
-						int oldValue = -1;
-						try {
-							oldValue = f.getInt(null);
-						} catch (IllegalAccessException e) {
-							log.catching(e);
-						}
-						setValue(f, (int) MathHelper.lerp(value, cramp[0], cramp[1]));
-						checkChangeCallback(f, oldValue);
-					}
-				});
+			ClickableWidget btn = compat.addButton(this, (ClickableWidget) option.createButton(x, y, getCleanName(f), () -> {
+				parent.init();
+				init();
+			}));
 			if (btn != null) {
 				page.add(new Pair<>(btn, f));
 				btnFields.put(btn, f);
@@ -97,7 +65,7 @@ public class ClientOptionsChildScreen extends Screen {
 		}
 		if (!page.isEmpty()) pages.add(page);
 		if (pages.size() > 1) {
-			seekLeft = addButton(new ButtonWidget(width / 4 - 30, height / 6 + 145, 120, 20, new LiteralText("<---"), button -> {
+			seekLeft = compat.addButton(this, new ButtonWidget(width / 2 - 150, height / 6 + 145, 120, 20, new LiteralText("<---"), button -> {
 				this.page -= 1;
 				updatePage();
 			}) {
@@ -106,7 +74,7 @@ public class ClientOptionsChildScreen extends Screen {
 					return new TranslatableText("gui.narrate.button", new LiteralText("previous page"));
 				}
 			});
-			seekRight = addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 145, 120, 20, new LiteralText("--->"), button -> {
+			seekRight = compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 145, 120, 20, new LiteralText("--->"), button -> {
 				this.page += 1;
 				updatePage();
 			}) {
@@ -117,11 +85,11 @@ public class ClientOptionsChildScreen extends Screen {
 			});
 		}
 		updatePage();
-		addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), button -> {
+		compat.addButton(this, new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, new LiteralText("Reset"), button -> {
 			ClientOptions.reset();
 			init();
 		}));
-		addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> Objects.requireNonNull(client).openScreen(this.parent)));
+		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> Objects.requireNonNull(client).openScreen(this.parent)));
 	}
 
 	@Override
@@ -130,10 +98,10 @@ public class ClientOptionsChildScreen extends Screen {
 		drawCenteredText(matrices, Objects.requireNonNull(client).textRenderer, getTitle(), width / 2, 10, 0);
 		super.render(matrices, mouseX, mouseY, delta);
 		btnFields.forEach((btn, field) -> {
-			String[] comment;
-			if (btn.isMouseOver(mouseX, mouseY) && (comment = getComment(field)) != null) {
+			List<String> comments;
+			if (btn.isMouseOver(mouseX, mouseY) && (comments = getComments(field)) != null) {
 				List<Text> texts = new ArrayList<>();
-				for (String s : comment)
+				for (String s : comments)
 					texts.add(new LiteralText(s));
 				renderTooltip(matrices, texts, mouseX, mouseY);
 			}
@@ -149,9 +117,9 @@ public class ClientOptionsChildScreen extends Screen {
 		if (pages.size() > 1) {
 			seekLeft.active = page > 0;
 			seekRight.active = page < pages.size() - 1;
-			for (AbstractButtonWidget btn : btnFields.keySet())
+			for (ClickableWidget btn : btnFields.keySet())
 				btn.visible = false;
-			for (Pair<AbstractButtonWidget, Field> pair : pages.get(page))
+			for (Pair<ClickableWidget, Field> pair : pages.get(page))
 				pair.getLeft().visible = true;
 		}
 	}
@@ -178,80 +146,13 @@ public class ClientOptionsChildScreen extends Screen {
 		return s.toString();
 	}
 
-	private void setValue(Field f, Object value) {
+	private List<String> getComments(Field f) {
+		return Optional.ofNullable(getOption(f)).map(ClientOption::getComments).orElse(null);
+	}
+
+	private ClientOption<?> getOption(Field f) {
 		try {
-			((ClientOption<Object>) f.get(null)).setValue(value);
-			ClientOptions.write();
-		} catch (IllegalAccessException e) {
-			log.catching(e);
-		}
-	}
-
-	private Text getBoolText(Field f) {
-		return new LiteralText(getCleanName(f) + " : " + Command.formatFromBool(getBoolValue(f)) + String.valueOf(getBoolValue(f)).toUpperCase());
-	}
-
-	private double getSliderValue(Field f) {
-		int[] cramp = getCramp(f);
-		int value = getIntValue(f);
-		return MathHelper.clamp((double) (value - cramp[0]) / (double) (cramp[1] - cramp[0]), 0.0D, 1.0D);
-	}
-
-	private int getIntValue(Field f) {
-		if (getType(f) == Integer.class)
-			try {
-				return ((ClientOption<Integer>) f.get(null)).getValueRaw();
-			} catch (IllegalAccessException e) {
-				log.catching(e);
-			}
-		return -1;
-	}
-
-	private boolean getBoolValue(Field f) {
-		if (getType(f) == Boolean.class)
-			try {
-				return ((ClientOption<Boolean>) f.get(null)).getValueRaw();
-			} catch (IllegalAccessException e) {
-				log.catching(e);
-			}
-		return false;
-	}
-
-	private int[] getCramp(Field f) {
-		int[] cramp = new int[2];
-		if (getType(f) == Integer.class && f.isAnnotationPresent(ClientOptions.Cramp.class)) {
-			ClientOptions.Cramp cramp0 = f.getAnnotation(ClientOptions.Cramp.class);
-			cramp[0] = cramp0.min();
-			cramp[1] = cramp0.max();
-		}
-		return cramp;
-	}
-
-	private String[] getComment(Field f) {
-		return f.isAnnotationPresent(ClientOptions.Comment.class) ? f.getAnnotation(ClientOptions.Comment.class).value() : null;
-	}
-
-	private boolean isHidden(Field f) {
-		return f.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOptionString(f.getAnnotation(ClientOptions.IsHidden.class).value()));
-	}
-
-	private void checkChangeCallback(Field f, Object oldValue) {
-		if (f.isAnnotationPresent(ClientOptions.ChangeCallback.class)) {
-			Method method = MoreObjects.firstNonNull(ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value(), getType(f), getType(f)), ReflectionHelper.getMethod(f.getDeclaringClass(), f.getAnnotation(ClientOptions.ChangeCallback.class).value()));
-			if (method != null && Modifier.isStatic(method.getModifiers()))
-				try {
-					method.setAccessible(true);
-					if (method.getParameterCount() == 2) method.invoke(null, oldValue, ((ClientOption<?>) f.get(null)).getValueRaw());
-					else method.invoke(null);
-				} catch (IllegalAccessException | InvocationTargetException e) {
-					log.catching(e);
-				}
-		}
-	}
-
-	private Class<?> getType(Field f) {
-		try {
-			return ClientOption.class.isAssignableFrom(f.getType()) ? ((ClientOption<?>) f.get(null)).getType() : null;
+			return ClientOption.class.isAssignableFrom(f.getType()) ? (ClientOption<?>) f.get(null) : null;
 		} catch (IllegalAccessException e) {
 			log.error("An unknown error occurred while getting type of field " + f + ".", e);
 			return null;

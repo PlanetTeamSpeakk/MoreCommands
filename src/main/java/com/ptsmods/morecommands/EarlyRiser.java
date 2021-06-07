@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.miscellaneous.MinecraftVersionDataLegacy;
 import com.ptsmods.morecommands.miscellaneous.MinecraftVersionDataNew;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
+import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.BufferedReader;

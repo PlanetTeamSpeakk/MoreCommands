@@ -3,44 +3,36 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.callbacks.MouseCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.fabricmc.fabric.api.event.player.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PowerToolCommand extends Command {
-
 	public void preinit() {
-		registerCallback(AttackEntityCallback.EVENT, (player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-		registerCallback(AttackBlockCallback.EVENT, (player, world, hand, pos, direction) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-		registerCallback(UseBlockCallback.EVENT, (player, world, hand, hitResult) -> toResult(checkPowerTool(player, world, hand), false));
-		registerCallback(UseEntityCallback.EVENT, (player, world, hand, entity, hitResult) -> toResult(checkPowerTool(player, world, hand), world.isClient));
-		registerCallback(UseItemCallback.EVENT, (player, world, hand) -> toTypedResult(checkPowerTool(player, world, hand), world.isClient, player, hand));
+		registerCallback(MouseCallback.EVENT, (button, action, mods) -> checkPowerTool(action));
 	}
 
-	private ActionResult toResult(boolean b, boolean isClient) {
-		return b ? isClient ? ActionResult.SUCCESS : ActionResult.CONSUME : ActionResult.PASS;
-	}
-
-	private TypedActionResult<ItemStack> toTypedResult(boolean b, boolean isClient, PlayerEntity player, Hand hand) {
-		return b && !isClient ? TypedActionResult.success(player.getStackInHand(hand)) : TypedActionResult.pass(player.getStackInHand(hand));
-	}
-
-	private boolean checkPowerTool(PlayerEntity player, World world, Hand hand) {
-		String cmd = getPowerTool(player, player.getStackInHand(hand));
-		if (cmd != null) {
-			if (!world.isClient) Objects.requireNonNull(player.getServer()).getCommandManager().execute(player.getCommandSource(), "/" + cmd);
-			return true;
+	@Environment(EnvType.CLIENT)
+	private boolean checkPowerTool(int action) {
+		PlayerEntity player = MinecraftClient.getInstance().player;
+		if (player != null && action == 1 && MinecraftClient.getInstance().currentScreen == null) {
+			String cmd = Optional.ofNullable(getPowerTool(player, player.getStackInHand(Hand.MAIN_HAND))).orElse(getPowerTool(player, player.getStackInHand(Hand.OFF_HAND)));
+			if (cmd != null) {
+				MinecraftClient.getInstance().player.sendChatMessage("/" + cmd);
+				return true;
+			}
 		}
 		return false;
 	}

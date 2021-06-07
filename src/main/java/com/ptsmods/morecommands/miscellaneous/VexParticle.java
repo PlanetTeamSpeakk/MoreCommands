@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.compat.client.ClientCompat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.Perspective;
@@ -34,7 +35,7 @@ public class VexParticle extends Particle {
 			RenderSystem.blendFuncSeparate(770, 771, 1, 0);
 			RenderSystem.lineWidth(2.0F);
 			RenderSystem.disableTexture();
-			Compat.getCompat().bufferBuilderBegin(builder, 3, VertexFormats.POSITION_COLOR_LIGHT);
+			ClientCompat.getCompat().bufferBuilderBegin(builder, 3, VertexFormats.POSITION_COLOR_LIGHT);
 		}
 
 		@Override

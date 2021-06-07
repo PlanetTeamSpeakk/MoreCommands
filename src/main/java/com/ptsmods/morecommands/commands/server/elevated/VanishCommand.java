@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VanishCommand extends Command {
-
 	public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
 
 	public void preinit() {

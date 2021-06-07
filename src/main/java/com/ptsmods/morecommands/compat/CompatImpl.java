@@ -1,20 +1,17 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
-import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import com.ptsmods.morecommands.mixin.compat.MixinPlayerEntityAccessor;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -55,11 +52,6 @@ class CompatImpl extends AbstractCompat {
     }
 
     @Override
-    public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
-        (Compat.is16() ? Compat16.instance : Compat17Plus.instance).bufferBuilderBegin(builder, drawMode, format);
-    }
-
-    @Override
     public PlayerAbilities getAbilities(PlayerEntity player) {
         return ((MixinPlayerEntityAccessor) player).getAbilities_();
     }
@@ -92,5 +84,15 @@ class CompatImpl extends AbstractCompat {
     @Override
     public int getWorldHeight(BlockView world) {
         return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getWorldHeight(world);
+    }
+
+    @Override
+    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).newFireballEntity(world, owner, velocityX, velocityY, velocityZ, explosionPower);
+    }
+
+    @Override
+    public String getProcessorString() {
+        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getProcessorString();
     }
 }

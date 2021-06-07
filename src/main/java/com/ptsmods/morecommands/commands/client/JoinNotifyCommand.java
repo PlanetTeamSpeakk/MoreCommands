@@ -1,9 +1,15 @@
 package com.ptsmods.morecommands.commands.client;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.PlayerListCallback;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -12,10 +18,11 @@ import net.minecraft.util.Formatting;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JoinNotifyCommand extends ClientCommand {
-
 	private static final Map<String, String> players = new HashMap<>();
 	private static final File f = new File("config/MoreCommands/joinNotifyPlayers.json");
 
@@ -25,20 +32,8 @@ public class JoinNotifyCommand extends ClientCommand {
 		} catch (IOException e) {
 			log.catching(e);
 		} catch (NullPointerException ignored) {}
-		registerCallback(PlayerListCallback.REMOVE, entry -> {
-			if (entry != null && entry.getProfile() != null && players.containsKey(entry.getProfile().getId().toString())) {
-				String s = SF + entry.getProfile().getName() + DF + " has " + Formatting.RED + "left " + DF + "the game.";
-				sendMsg(s);
-				sendAbMsg(s);
-			}
-		});
-		registerCallback(PlayerListCallback.ADD, entry -> {
-			if (entry != null && entry.getProfile() != null && players.containsKey(entry.getProfile().getId().toString())) {
-				String s = SF + entry.getProfile().getName() + DF + " has " + Formatting.GREEN + "joined " + DF + "the game.";
-				sendMsg(s);
-				sendAbMsg(s);
-			}
-		});
+		registerCallback(PlayerListCallback.REMOVE, entry -> onCall(entry, false));
+		registerCallback(PlayerListCallback.ADD, entry -> onCall(entry, true));
 	}
 
 	@Override
@@ -52,11 +47,33 @@ public class JoinNotifyCommand extends ClientCommand {
 				MoreCommands.saveJson(f, players);
 			} catch (IOException e) {
 				log.catching(e);
-				sendMsg(Formatting.RED + "Could not save the data file.");
+				sendMsg(Formatting.RED + "Could not save the joinnotify data file.");
 				return 0;
 			}
 			sendMsg("You will " + formatFromBool(players.containsKey(id), Formatting.GREEN + "now ", Formatting.RED + "no longer ") + DF + "receive a notification when " + SF + player.getProfile().getName() + DF + " joins.");
 			return 1;
 		})));
+	}
+
+	private void onCall(PlayerListEntry entry, boolean joined) {
+		String id = entry == null || entry.getProfile() == null ? null : entry.getProfile().getId().toString();
+		Map<String, String> nameMCFriends = MoreCommandsClient.getNameMCFriends();
+		if (id != null && (players.containsKey(id) || ClientOptions.Tweaks.joinNotifyNameMC.getValue() && MoreCommandsClient.getNameMCFriends().containsKey(id))) {
+			String cachedName = MoreObjects.firstNonNull(players.get(id), nameMCFriends.get(id));
+			String s = SF + entry.getProfile().getName() + (entry.getProfile().getName().equals(cachedName) ? "" : DF + " (previously known as " + SF + cachedName + DF + ")") + DF + " has " + formatFromBool(joined, "joined", "left") + DF + "the game.";
+			if (!entry.getProfile().getName().equals(cachedName)) {
+				if (players.containsKey(id)) {
+					players.put(id, entry.getProfile().getName());
+					try {
+						MoreCommands.saveJson(f, players);
+					} catch (IOException e) {
+						log.error("Could not save the joinnotify data file.", e);
+					}
+				}
+				if (nameMCFriends.containsKey(id)) MoreCommandsClient.updateNameMCFriend(id, entry.getProfile().getName());
+			}
+			sendMsg(s);
+			sendAbMsg(s);
+		}
 	}
 }

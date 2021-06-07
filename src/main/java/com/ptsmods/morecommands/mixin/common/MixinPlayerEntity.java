@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;

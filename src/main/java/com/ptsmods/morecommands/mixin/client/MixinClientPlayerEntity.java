@@ -14,14 +14,14 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)
 public class MixinClientPlayerEntity {
-
-	private boolean mc_moveStopped = false;
+	@Unique private boolean moveStopped = false;
 
 	@Inject(at = @At("HEAD"), method = "sendChatMessage(Ljava/lang/String;)V", cancellable = true)
 	public void sendChatMessage(String message, CallbackInfo cbi) {
@@ -64,12 +64,11 @@ public class MixinClientPlayerEntity {
 	private void tickMovement(CallbackInfo cbi) {
 		ClientPlayerEntity thiz = ReflectionHelper.cast(this);
 		if (!thiz.input.sneaking && !thiz.input.jumping) {
-			if (!mc_moveStopped && ClientOptions.Tweaks.immediateMoveStop.getValue()) {
+			if (!moveStopped && ClientOptions.Tweaks.immediateMoveStop.getValue()) {
 				thiz.setVelocity(thiz.getVelocity().getX(), Math.min(0d, thiz.getVelocity().getY()), thiz.getVelocity().getZ());
-				mc_moveStopped = true; // Without this variable, you would be able to bhop by combining sprintAutoJump and immediateMoveStop and immediateMoveStop would also act as anti-kb.
+				moveStopped = true; // Without this variable, you would be able to bhop by combining sprintAutoJump and immediateMoveStop and immediateMoveStop would also act as anti-kb.
 			}
-		} else mc_moveStopped = false;
+		} else moveStopped = false;
 		if (ClientOptions.Cheats.sprintAutoJump.getValue() && MoreCommands.isSingleplayer() && thiz.isSprinting() && (thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking()) thiz.jump();
 	}
-
 }

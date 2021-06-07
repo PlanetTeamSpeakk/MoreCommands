@@ -22,6 +22,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -35,13 +36,13 @@ import java.util.Objects;
 public class MixinChatScreen {
 
 	private static final Clipboard clipboard = new Clipboard();
-	private static boolean mc_colourPickerOpen = false;
+	@Unique private static boolean colourPickerOpen = false;
 	@Shadow protected TextFieldWidget chatField;
 
 	@Inject(at = @At("TAIL"), method = "init()V")
 	private void init(CallbackInfo cbi) {
 		Screen thiz = ReflectionHelper.cast(this);
-		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, mc_colourPickerOpen, chatField::write, b -> mc_colourPickerOpen = b);
+		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, colourPickerOpen, chatField::write, b -> colourPickerOpen = b);
 	}
 
 	@Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z")

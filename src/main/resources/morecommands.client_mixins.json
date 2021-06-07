@@ -47,13 +47,14 @@
 	"MixinModelLoader",
 	"accessor.MixinJsonUnbakedModelAccessor",
 	"MixinScreen",
-	"accessor.MixinScreenAccessor",
-	"accessor.MixinAbstractButtonWidgetAccessor",
+	"accessor.MixinClickableWidgetAccessor",
 	"MixinItemGroupButtonWidget",
 	"accessor.MixinItemGroupButtonWidgetAccessor",
 	"accessor.MixinCommandSuggestorAccessor",
 	"accessor.MixinSuggestionWindowAccessor",
-	"MixinMoreOptionsDialog"
+	"MixinMoreOptionsDialog",
+	"MixinItemModelGenerator",
+	"accessor.MixinMouseAccessor"
   ],
   "injectors": {
 	"defaultRequire": 1

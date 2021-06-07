@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ScreenshotCommand extends ClientCommand {
-
 	private Map<String, Object> queue = null;
 	private Map<String, Object> task = null;
 
@@ -66,13 +65,14 @@ public class ScreenshotCommand extends ClientCommand {
 						for (int x = 0; x < width; x++)
 							for (int y = height - 1; y >= 0; y--) { // Image is flipped because this game starts drawing at the bottom left instead of the top left for some reason.
 								int i = (x + width * y) * 3;
-								img.setRGB(x, height - y - 1, shiftRGB(buf.get(i) & 0xFF, buf.get(i + 1) & 0xFF, buf.get(i + 2) & 0xFF, 0xFF));
+								img.setRGB(x, height - y - 1, shiftRGB(buf.get(i) & 0xFF, buf.get(i + 1) & 0xFF, buf.get(i + 2) & 0xFF));
 							}
 						String fileName = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss_" + task.get("width") + "'x'" + task.get("height") + ".'png'").format(new Date());
 						File out = Paths.get(MinecraftClient.getInstance().runDirectory.getAbsolutePath(), "screenshots", fileName).toFile();
+						if (!out.getParentFile().exists()) out.getParentFile().mkdirs();
 						ImageIO.write(img, "png", out);
 						long saveTime = System.currentTimeMillis() - start;
-						sendMsg(new LiteralText("Saved screenshot as ").setStyle(DS).append(new LiteralText(fileName).setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath())))).append(new LiteralText(", took " + (saveTime / 1000 + takeTime / 1000) + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).").setStyle(DS)));
+						sendMsg(new LiteralText("Saved screenshot as ").setStyle(DS).append(new LiteralText(fileName).setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath())))).append(new LiteralText(", took " + (saveTime + takeTime) / 1000 + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).").setStyle(DS)));
 					} catch (IOException e) {
 						log.catching(e);
 						sendMsg(Formatting.RED + "An unknown error occurred while saving the image: " + SF + e.getMessage() + DF + ".");
@@ -86,7 +86,15 @@ public class ScreenshotCommand extends ClientCommand {
 
 	@Override
 	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-		dispatcher.register(cLiteral("screenshot").executes(ctx -> execute(ctx, -1, -1)).then(cArgument("width", IntegerArgumentType.integer(1, 122880)).then(cArgument("height", IntegerArgumentType.integer(1, 69120)).executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
+		// Calculation of max values was done as follows:
+		// x * y = 2,147,483,647 / 3 = 715,827,882 (max value of array)
+		// x / y = 16 / 9 (aspect ratio)
+		// x = 16 / 9 * y
+		// 16 / 9 * y * y = 715,827,882
+		// y = sqrt(715,827,882 / 16 / 9) = 20066.22
+		// x = 715,827,882 / y = 35673.28
+		// Went with these values, however, as OpenGL does not support dimensions larger than 32768 as of right now.
+		dispatcher.register(cLiteral("screenshot").executes(ctx -> execute(ctx, -1, -1)).then(cArgument("width", IntegerArgumentType.integer(1, 32768)).then(cArgument("height", IntegerArgumentType.integer(1, 18432)).executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
 	}
 
 	private int execute(CommandContext<ClientCommandSource> ctx, int width, int height) {
@@ -109,9 +117,8 @@ public class ScreenshotCommand extends ClientCommand {
 		return 1;
 	}
 
-	private int shiftRGB(int r, int g, int b, int a) {
-		return (a & 0xFF) << 24 | // Alpha
-				(r & 0xFF) << 16 | // Red
+	private int shiftRGB(int r, int g, int b) {
+		return (r & 0xFF) << 16 | // Red
 				(g & 0xFF) << 8 | // Green
 				(b & 0xFF); // Blue
 	}

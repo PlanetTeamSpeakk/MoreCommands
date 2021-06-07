@@ -21,10 +21,14 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.explosion.Explosion;
+import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FireballCommand extends Command {
+	public static final Map<FireballEntity, Triple<Vec3d, AtomicInteger, Integer>> fireballs = new HashMap<>();
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -54,21 +58,7 @@ public class FireballCommand extends Command {
 				}
 
 			}
-		} : new FireballEntity(ctx.getSource().getWorld(), entity, 0.1, 0.1, 0.1) {
-			public void setVelocity(Vec3d velocity) {
-				super.setVelocity(velocity0);
-			}
-
-			protected void onCollision(HitResult result) {
-				HitResult.Type type = result.getType();
-				if (type == HitResult.Type.ENTITY) this.onEntityHit((EntityHitResult) result);
-				else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
-				if (!this.world.isClient) {
-					this.world.createExplosion(null, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY );
-					if (impactsDone.addAndGet(1) >= impacts) Compat.getCompat().setRemoved(this, 1);
-				}
-			}
-		};
+		} : Compat.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, 0.1, 0.1, 0.1, (int) power);
 		fireball.setVelocity(velocity0);
 		Compat.getCompat().setEntityPitch(fireball, ctx.getSource().getRotation().x);
 		Compat.getCompat().setEntityYaw(fireball, ctx.getSource().getRotation().y);

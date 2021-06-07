@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ClientPlayerEntity.class)
 public class MixinClientPlayerEntityTweakerooCompat {
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen; isPauseScreen()Z"), method = "updateNausea()V")
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;isPauseScreen()Z"), method = "updateNausea()V")
 	private boolean updateNausea_isPauseScreen(Screen s) {
 		return ClientOptions.Tweaks.screensInPortal.getValue() || s.isPauseScreen();
 	}

@@ -7,22 +7,23 @@
   "client": [
     "compat16.MixinScreenHandler",
     "compat16.MixinSignEditScreen",
-    "compat17plus.MixinSignEditScreen"
+    "compat17plus.MixinSignEditScreen",
+    "compat17plus.MixinScreenAccessor"
   ],
   "mixins": [
     "MixinPlayerEntityAccessor",
     "MixinEntityAccessor",
+    "MixinScoreboardCriterionAccessor",
+    "MixinFireballEntity",
     "compat16.MixinEntity",
     "compat16.MixinServerPlayNetworkHandler",
     "compat16.MixinHopperBlockEntity",
     "compat16.MixinServerPlayerEntity",
-    "compat16.MixinFarmlandBlock",
     "compat17plus.MixinServerPlayerEntity",
     "compat17plus.MixinServerPlayNetworkHandler",
     "compat17plus.MixinScreenHandler",
     "compat17plus.MixinHopperBlockEntity",
     "compat17plus.MixinHopperBlockEntityAccessor",
-    "compat17plus.MixinFarmlandBlock"
   ],
   "injectors": {
 	"defaultRequire": 0

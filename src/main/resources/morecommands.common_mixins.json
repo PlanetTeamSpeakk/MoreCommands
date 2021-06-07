@@ -52,7 +52,11 @@
 	"MixinWallSignBlock",
 	"MixinWallBannerBlock",
 	"MixinWallSkullBlock",
-	"MixinTargetPredicate"
+	"MixinTargetPredicate",
+	"MixinFuzzyPositions",
+	"MixinGoalSelector",
+	"accessor.MixinEntityTrackerAccessor",
+	"MixinFarmlandBlock"
   ],
   "injectors": {
 	"defaultRequire": 1

@@ -3,11 +3,14 @@ package com.ptsmods.morecommands.gui;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.clientoption.BooleanClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -17,7 +20,7 @@ import java.util.*;
 
 public class ClientOptionsScreen extends Screen {
 	private final Screen parent;
-	private final Map<AbstractButtonWidget, Class<?>> btnClasses = new HashMap<>();
+	private final Map<ClickableWidget, Class<?>> btnClasses = new HashMap<>();
 
 	public ClientOptionsScreen(Screen parent) {
 		super(new LiteralText("MoreCommands").setStyle(MoreCommands.DS).append(new LiteralText(" client options").setStyle(MoreCommands.SS)));
@@ -28,26 +31,26 @@ public class ClientOptionsScreen extends Screen {
 	protected void init() {
 		Objects.requireNonNull(client);
 		btnClasses.clear();
-		buttons.clear();
-		children.clear();
+		ClientCompat.getCompat().clearScreen(this);
 		boolean right = false;
 		int row = 0;
+		ClientCompat compat = ClientCompat.getCompat();
 		List<Class<?>> classes = Lists.newArrayList(ClientOptions.class.getClasses());
 		classes.sort(Comparator.comparingInt(clazz -> MoreObjects.firstNonNull(ReflectionHelper.getFieldValue(clazz, "ordinal", null), -1)));
 		for (Class<?> c : classes)
 			if (!c.isInterface() && !isHidden(c)) {
 				int x = width / 2 + (right ? 5 : -155);
 				int y = height / 6 + 24 * (row + 1) - 6;
-				btnClasses.put(addButton(new ButtonWidget(x, y, 150, 20, new LiteralText(ClientOptionsChildScreen.getCleanName(c.getSimpleName()).trim()), button -> client.openScreen(new ClientOptionsChildScreen(this, c)))), c);
+				btnClasses.put(compat.addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText(ClientOptionsChildScreen.getCleanName(c.getSimpleName()).trim()), button -> client.openScreen(new ClientOptionsChildScreen(this, c)))), c);
 				if (right) row++;
 				right = !right;
 			}
-		btnClasses.put(addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"), button -> client.openScreen(new WorldInitCommandsScreen(this)))), WorldInitCommandsScreen.class);
-		addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), (buttonWidget) -> {
+		btnClasses.put(compat.addButton(this, new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"), button -> client.openScreen(new WorldInitCommandsScreen(this)))), WorldInitCommandsScreen.class);
+		compat.addButton(this, new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, new LiteralText("Reset"), btn -> {
 			ClientOptions.reset();
 			init();
 		}));
-		addButton(new ButtonWidget(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, ScreenTexts.DONE, (buttonWidget) -> client.openScreen(parent)));
+		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, buttonWidget -> client.openScreen(parent)));
 	}
 
 	@Override
@@ -70,7 +73,7 @@ public class ClientOptionsScreen extends Screen {
 	}
 
 	private boolean isHidden(Class<?> c) {
-		return c.isAnnotationPresent(ClientOptions.IsHidden.class) && !Boolean.parseBoolean(ClientOptions.getOptionString(c.getAnnotation(ClientOptions.IsHidden.class).value()));
+		return c.isAnnotationPresent(ClientOptions.IsHidden.class) && !((BooleanClientOption) ClientOptions.getOption(c.getAnnotation(ClientOptions.IsHidden.class).value())).getValue();
 	}
 
 	@Override

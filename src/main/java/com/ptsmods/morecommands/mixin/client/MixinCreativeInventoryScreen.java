@@ -1,15 +1,16 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import com.ptsmods.morecommands.mixin.client.accessor.MixinAbstractButtonWidgetAccessor;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinClickableWidgetAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinItemGroupButtonWidgetAccessor;
 import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.LivingEntity;
@@ -47,16 +48,16 @@ public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScre
 	@Inject(at = @At("RETURN"), method = "init")
 	private void init(CallbackInfo cbi) {
 		CreativeInventoryScreen thiz = ReflectionHelper.cast(this);
-		for (AbstractButtonWidget button : buttons) {
+		for (ClickableWidget button : ClientCompat.getCompat().getButtons(this)) {
 			if (button instanceof FabricCreativeGuiComponents.ItemGroupButtonWidget) {
 				FabricCreativeGuiComponents.Type type = ((MixinItemGroupButtonWidgetAccessor) button).getType();
 				if (type == FabricCreativeGuiComponents.Type.PREVIOUS) pagerPrev = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
 				else pagerNext = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
 				if (ClientOptions.Rendering.bigTabPager.getValue()) {
-					((MixinAbstractButtonWidgetAccessor) button).setHeight(22);
+					((MixinClickableWidgetAccessor) button).setHeight(22);
 					button.setWidth(22);
 					button.x = thiz.width / 2 - (type == FabricCreativeGuiComponents.Type.PREVIOUS ? button.getWidth() : 0);
-					button.y = field_2800 - 50;
+					button.y = y - 50;
 				}
 			}
 		}

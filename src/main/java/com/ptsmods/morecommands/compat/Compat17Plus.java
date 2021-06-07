@@ -1,21 +1,18 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -25,6 +22,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
+import oshi.SystemInfo;
 
 class Compat17Plus extends AbstractCompat {
     static final Compat17Plus instance;
@@ -61,11 +59,6 @@ class Compat17Plus extends AbstractCompat {
     }
 
     @Override
-    public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
-        builder.begin(VertexFormat.DrawMode.values()[drawMode], format);
-    }
-
-    @Override
     public PlayerAbilities getAbilities(PlayerEntity player) {
         return player.getAbilities();
     }
@@ -98,5 +91,15 @@ class Compat17Plus extends AbstractCompat {
     @Override
     public int getWorldHeight(BlockView world) {
         return world.getHeight();
+    }
+
+    @Override
+    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+        return new FireballEntity(world, owner, velocityX, velocityY, velocityZ, explosionPower);
+    }
+
+    @Override
+    public String getProcessorString() {
+        return String.valueOf(new SystemInfo().getHardware().getProcessor()); // They BROKE it >:(
     }
 }

@@ -14,10 +14,11 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(FluidBlock.class)
 public class MixinFluidBlock {
-
-	@Overwrite
-	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		return ClientOptions.Tweaks.targetFluids.getValue() ? MoreCommands.getFluidShape(state) : VoxelShapes.empty();
-	}
-
+    /**
+     * @author PlanetTeamSpeak
+     */
+    @Overwrite
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return ClientOptions.Tweaks.targetFluids.getValue() ? MoreCommands.getFluidShape(state) : VoxelShapes.empty();
+    }
 }

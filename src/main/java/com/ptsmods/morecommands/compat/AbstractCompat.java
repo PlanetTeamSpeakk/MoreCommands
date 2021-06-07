@@ -2,12 +2,14 @@ package com.ptsmods.morecommands.compat;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
+import com.ptsmods.morecommands.mixin.compat.MixinScoreboardCriterionAccessor;
 import net.minecraft.entity.Entity;
+import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public abstract class AbstractCompat implements Compat {
+public abstract class AbstractCompat extends CompatASMReflection implements Compat {
     @Override
     public char gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
         char ch = string.charAt(index);
@@ -39,5 +41,10 @@ public abstract class AbstractCompat implements Compat {
     @Override
     public void setEntityPitch(Entity entity, float pitch) {
         ((MixinEntityAccessor) entity).setPitch_(pitch);
+    }
+
+    @Override
+    public void putCriterion(String name, ScoreboardCriterion criterion) {
+        MixinScoreboardCriterionAccessor.getCriteria().put(name, criterion);
     }
 }

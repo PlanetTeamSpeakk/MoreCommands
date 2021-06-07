@@ -12,24 +12,23 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.world.level.LevelInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = MinecraftClient.class, priority = 1100)
 public class MixinMinecraftClient {
-	@Shadow private IntegratedServer server;
+	@Unique
+	private boolean createdWorld = false;
 
 	@Inject(at = @At("TAIL"), method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;)V")
 	public void disconnect(Screen screen, CallbackInfo cbi) {
 		// Reset to defaults when leaving the world.
-		MoreCommands.setFormattings(Formatting.GOLD, Formatting.YELLOW);
+		MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 		SearchCommand.lines.clear();
 		MoreCommandsClient.updatePresence();
 		ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
@@ -61,10 +60,19 @@ public class MixinMinecraftClient {
 		PostInitCallback.EVENT.invoker().postInit();
 	}
 
-//	@Inject(at = @At("STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;send(Lnet/minecraft/network/Packet;)V")), method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V")
+	@Inject(at = @At("HEAD"), method = "createWorld")
+	private void createWorldPre(String worldName, LevelInfo levelInfo, DynamicRegistryManager.Impl registryTracker, GeneratorOptions generatorOptions, CallbackInfo ci) {
+		createdWorld = true;
+	}
+
+	@Inject(at = @At("TAIL"), method = "createWorld")
+	private void createWorldPost(String worldName, LevelInfo levelInfo, DynamicRegistryManager.Impl registryTracker, GeneratorOptions generatorOptions, CallbackInfo ci) {
+		createdWorld = false;
+	}
+
 	@ModifyVariable(at = @At("STORE"), method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V")
 	private ClientConnection startIntegratedServer_integratedServerConnection(ClientConnection connection) {
-		MoreCommandsClient.scheduleWorldInitCommands = true;
+		if (createdWorld) MoreCommandsClient.scheduleWorldInitCommands = true;
 		return connection;
 	}
 }

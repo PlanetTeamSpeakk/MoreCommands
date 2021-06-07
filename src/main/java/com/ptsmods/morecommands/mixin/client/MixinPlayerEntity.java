@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public class MixinPlayerEntity {
-	@Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F")
-	protected float getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
-		PlayerEntity thiz = ReflectionHelper.cast(this);
-		return thiz instanceof ClientPlayerEntity && ((ClientPlayerEntity) thiz).input.movementForward == 0 && ((ClientPlayerEntity) thiz).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop.getValue() ? 0f : cbi.getReturnValueF();
-	}
+    @Inject(at = @At("RETURN"), method = "getVelocityMultiplier()F", cancellable = true)
+    protected void getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
+        PlayerEntity thiz = ReflectionHelper.cast(this);
+        cbi.setReturnValue(thiz instanceof ClientPlayerEntity && ((ClientPlayerEntity) thiz).input.movementForward == 0 && ((ClientPlayerEntity) thiz).input.movementSideways == 0 && ClientOptions.Tweaks.immediateMoveStop.getValue() ? 0f : cbi.getReturnValueF());
+    }
 }

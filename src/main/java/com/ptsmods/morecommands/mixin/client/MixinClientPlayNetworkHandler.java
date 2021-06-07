@@ -24,7 +24,6 @@ import java.util.Map;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class MixinClientPlayNetworkHandler {
-
 	@Shadow private CommandDispatcher<CommandSource> commandDispatcher;
 	private static boolean mc_isInitialised = false;
 
@@ -69,18 +68,17 @@ public class MixinClientPlayNetworkHandler {
 		}
 	}
 
-	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map; remove(Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
 	public Object onPlayerList_remove(Map<?, ?> map, Object key) {
 		Object entry = map.remove(key);
 		PlayerListCallback.REMOVE.invoker().call((PlayerListEntry) entry);
 		return entry;
 	}
 
-	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map; put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "onPlayerList(Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;)V")
 	public Object onPlayerList_put(Map<Object, Object> map, Object key, Object value) {
 		map.put(key, value);
 		PlayerListCallback.ADD.invoker().call((PlayerListEntry) value);
 		return value;
 	}
-
 }

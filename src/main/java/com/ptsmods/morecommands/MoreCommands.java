@@ -11,6 +11,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.callbacks.PostInitCallback;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.Compat;
@@ -29,7 +30,6 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.loader.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
@@ -52,8 +52,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.command.TestCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
@@ -77,9 +75,20 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.SSLContext;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
@@ -89,6 +98,11 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -103,39 +117,41 @@ import static net.minecraft.block.Blocks.*;
 
 public class MoreCommands implements ModInitializer {
 	public static final Logger log = LogManager.getLogger();
-	public static Formatting DF = Formatting.GOLD;
-	public static Formatting SF = Formatting.YELLOW;
+	public static Formatting DF = ClientOptions.Tweaks.defColour.getValue().asFormatting();
+	public static Formatting SF = ClientOptions.Tweaks.secColour.getValue().asFormatting();
 	public static Style DS = Style.EMPTY.withColor(DF);
 	public static Style SS = Style.EMPTY.withColor(SF);
-	public static CustomGameRuleCategory grc = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(Formatting.GOLD).withBold(true)));
-	public static GameRules.Key<EnumRule<FormattingColour>> DFrule = GameRuleRegistry.register("defaultFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));;
-	public static GameRules.Key<EnumRule<FormattingColour>> SFrule = GameRuleRegistry.register("secondaryFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
-	public static GameRules.Key<GameRules.BooleanRule> doMeltRule = GameRuleRegistry.register("doMelt", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.IntRule> maxHomesRule = GameRuleRegistry.register("maxHomes", grc, GameRuleFactory.createIntRule(3, -1));
-	public static GameRules.Key<GameRules.BooleanRule> doSilkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", grc, GameRuleFactory.createBooleanRule(false));
-	public static GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", grc, GameRuleFactory.createIntRule(8, 0));
-	public static GameRules.Key<GameRules.IntRule> hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", grc, GameRuleFactory.createIntRule(1, 1, 64));
-	public static GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doExplosionsRule = GameRuleRegistry.register("doExplosions", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.IntRule> wildLimitRule = GameRuleRegistry.register("wildLimit", grc, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
-	public static GameRules.Key<GameRules.IntRule> tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", grc, GameRuleFactory.createIntRule(2400, 600));
-	public static GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", grc, GameRuleFactory.createBooleanRule(false));
-	public static GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.IntRule> vaultRowsRule = GameRuleRegistry.register("vaultRows", grc, GameRuleFactory.createIntRule(6, 1, 6));
-	public static GameRules.Key<GameRules.IntRule> vaultsRule = GameRuleRegistry.register("vaults", grc, GameRuleFactory.createIntRule(3, 0));
-	public static GameRules.Key<GameRules.IntRule> nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", grc, GameRuleFactory.createIntRule(16, 0));
-	public static GameRules.Key<GameRules.BooleanRule> doSignColoursRule = GameRuleRegistry.register("doSignColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doBookColoursRule = GameRuleRegistry.register("doBookColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doChatColoursRule = GameRuleRegistry.register("doChatColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doEnchantLevelLimitRule = GameRuleRegistry.register("doEnchantLevelLimit", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doPriorWorkPenaltyRule = GameRuleRegistry.register("doPriorWorkPenalty", grc, GameRuleFactory.createBooleanRule(true));
-	public static GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
+	public static final CustomGameRuleCategory grc = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(ClientOptions.Tweaks.defColour.getValue().asFormatting()).withBold(true)));
+	public static final GameRules.Key<EnumRule<FormattingColour>> DFrule = GameRuleRegistry.register("defaultFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));;
+	public static final GameRules.Key<EnumRule<FormattingColour>> SFrule = GameRuleRegistry.register("secondaryFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
+	public static final GameRules.Key<GameRules.BooleanRule> doMeltRule = GameRuleRegistry.register("doMelt", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.IntRule> maxHomesRule = GameRuleRegistry.register("maxHomes", grc, GameRuleFactory.createIntRule(3, -1));
+	public static final GameRules.Key<GameRules.BooleanRule> doSilkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", grc, GameRuleFactory.createBooleanRule(false));
+	public static final GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", grc, GameRuleFactory.createIntRule(8, 0));
+	public static final GameRules.Key<GameRules.IntRule> hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", grc, GameRuleFactory.createIntRule(1, 1, 64));
+	public static final GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doExplosionsRule = GameRuleRegistry.register("doExplosions", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.IntRule> wildLimitRule = GameRuleRegistry.register("wildLimit", grc, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
+	public static final GameRules.Key<GameRules.IntRule> tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", grc, GameRuleFactory.createIntRule(2400, 600));
+	public static final GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", grc, GameRuleFactory.createBooleanRule(false));
+	public static final GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.IntRule> vaultRowsRule = GameRuleRegistry.register("vaultRows", grc, GameRuleFactory.createIntRule(6, 1, 6));
+	public static final GameRules.Key<GameRules.IntRule> vaultsRule = GameRuleRegistry.register("vaults", grc, GameRuleFactory.createIntRule(3, 0));
+	public static final GameRules.Key<GameRules.IntRule> nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", grc, GameRuleFactory.createIntRule(16, 0));
+	public static final GameRules.Key<GameRules.BooleanRule> doSignColoursRule = GameRuleRegistry.register("doSignColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doBookColoursRule = GameRuleRegistry.register("doBookColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doChatColoursRule = GameRuleRegistry.register("doChatColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doEnchantLevelLimitRule = GameRuleRegistry.register("doEnchantLevelLimit", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doPriorWorkPenaltyRule = GameRuleRegistry.register("doPriorWorkPenalty", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doPathFindingRule = GameRuleRegistry.register("doPathFinding", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doGoalsRule = GameRuleRegistry.register("doGoals", grc, GameRuleFactory.createBooleanRule(true));
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
-	public static final Block lockedChest = new Block(FabricBlockSettings.of(Material.WOOD));
+	public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
 	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
 	public static final Item netherPortalItem = new BlockItem(NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
 	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).build();
@@ -155,9 +171,25 @@ public class MoreCommands implements ModInitializer {
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
+	private static final HttpClient sslLenientHttpClient;
 
 	static {
-		ScoreboardCriterion.CRITERIA.put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+		Compat.getCompat().putCriterion("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+		SSLContext sslContext = null;
+		try {
+			sslContext = SSLContexts.custom()
+					.useTLS().loadTrustMaterial(null, (chain, authType) -> true)
+					.build();
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+			e.printStackTrace();
+		}
+		sslLenientHttpClient = sslContext == null ? null : HttpClientBuilder.create()
+				.setSslcontext(sslContext)
+				.setConnectionManager(new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+						.register("http", PlainConnectionSocketFactory.INSTANCE)
+						.register("https", new SSLConnectionSocketFactory(sslContext))
+						.build()))
+				.build();
 	}
 
 	@Override
@@ -172,14 +204,15 @@ public class MoreCommands implements ModInitializer {
 		Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
 		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
+		List<Command> serverCommands = getCommandClasses("server", Command.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-			for (Class<? extends Command> cmd : getCommandClasses("server", Command.class))
+			serverCommands.stream().filter(cmd -> !cmd.forDedicated() || dedicated).forEach(cmd -> {
 				try {
-					Command instance = getInstance(cmd);
-					if (!instance.forDedicated() || dedicated) instance.register(dispatcher);
+					cmd.register(dispatcher);
 				} catch (Exception e) {
-					log.catching(e);
+					log.error("Could not register command " + cmd.getClass().getName() + ".", e);
 				}
+			});
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
 		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
@@ -263,8 +296,8 @@ public class MoreCommands implements ModInitializer {
 				try {
 					Class<?> clazz0 = Class.forName(name);
 					if (clazz.isAssignableFrom(clazz0)) classes.add(ReflectionHelper.cast(clazz0));
-				} catch (ClassNotFoundException e) {
-					log.error("Could not find class " + name, e);
+				} catch (Exception e) {
+					log.error("Error loading class " + name, e);
 				}
 			});
 			log.info("Found " + classes.size() + " commands to load for type " + type + ".");
@@ -297,26 +330,23 @@ public class MoreCommands implements ModInitializer {
 		}
 	}
 
-	public static boolean updateFormatting(MinecraftServer server, int id, FormattingColour value) {
+	public static void updateFormatting(MinecraftServer server, int id, FormattingColour value) {
 		switch (id) {
 			case 0:
 				value = value == null ? server.getGameRules().get(DFrule).get() : value;
-				if (value.toFormatting() != DF) {
-					setFormattings(value.toFormatting(), null);
+				if (value.asFormatting() != DF) {
+					setFormattings(value.asFormatting(), null);
 					sendFormattingUpdate(server, 0, DF);
-					return true;
 				}
 				break;
 			case 1:
 				value = value == null ? server.getGameRules().get(SFrule).get() : value;
-				if (value.toFormatting() != SF) {
-					setFormattings(null, value.toFormatting());
+				if (value.asFormatting() != SF) {
+					setFormattings(null, value.asFormatting());
 					sendFormattingUpdate(server, 1, SF);
-					return true;
 				}
 				break;
 		}
-		return false;
 	}
 
 	public static void sendFormattingUpdates(ServerPlayerEntity p) {
@@ -338,10 +368,16 @@ public class MoreCommands implements ModInitializer {
 		/*if (ServerPlayNetworking.canSend(p, new Identifier("morecommands:formatting_update")))*/ ServerPlayNetworking.send(p, new Identifier("morecommands:formatting_update"), buf); // Bug still does not seem to be fixed.
 	}
 
-	static <T extends Command> T getInstance(Class<T> cmd) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-		Constructor<T> con = cmd.getDeclaredConstructor();
-		con.setAccessible(true);
-		Command instance = con.newInstance();
+	static <T extends Command> T getInstance(Class<T> cmd) {
+		Command instance;
+		try {
+			Constructor<T> con = cmd.getDeclaredConstructor();
+			con.setAccessible(true);
+			instance = con.newInstance();
+		} catch (Exception e) {
+			log.error("Could not instantiate command class " + cmd.getName() + ".", e);
+			return null;
+		}
 		instance.setActiveInstance();
 		try {
 			instance.preinit();
@@ -644,10 +680,18 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String getHTML(String url) throws IOException {
-		URL URL = new URL(url);
-		URLConnection connection = URL.openConnection();
+		URL url0 = new URL(url);
+		URLConnection connection = url0.openConnection();
 		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
-		try (BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+		return readInputStream(connection.getInputStream());
+	}
+
+	public static String getSSLLenientHTML(String url) throws IOException {
+		return readInputStream(sslLenientHttpClient.execute(new HttpGet(url)).getEntity().getContent());
+	}
+
+	public static String readInputStream(InputStream stream) throws IOException {
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(stream))) {
 			return rd.lines().collect(Collectors.joining("\n"));
 		}
 	}
@@ -849,11 +893,6 @@ public class MoreCommands implements ModInitializer {
 		return compound;
 	}
 
-	public static String camelCase(String s, boolean retainSpaces) {
-		s = pascalCase(s, retainSpaces);
-		return s.isEmpty() ? s : s.length() == 1 ? s.toLowerCase() : s.substring(0, 1).toLowerCase() + s.substring(1);
-	}
-
 	public static String pascalCase(String s, boolean retainSpaces) {
 		String[] parts = s.split(" ");
 		StringBuilder sb = new StringBuilder();
@@ -874,7 +913,7 @@ public class MoreCommands implements ModInitializer {
 	}
 	
 	public static String getRelativePath(MinecraftServer server) {
-		return server.getSavePath(WorldSavePath.ROOT).toAbsolutePath().toString() + File.separator + "MoreCommands" + File.separator;
+		return server.getSavePath(WorldSavePath.ROOT).toAbsolutePath() + File.separator + "MoreCommands" + File.separator;
 	}
 
 	public static void tryMove(String from, String to) {

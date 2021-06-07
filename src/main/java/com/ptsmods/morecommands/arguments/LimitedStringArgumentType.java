@@ -17,7 +17,9 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class LimitedStringArgumentType implements ArgumentType<String> {
 
@@ -29,9 +31,7 @@ public class LimitedStringArgumentType implements ArgumentType<String> {
 		parent = type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() :
 				type == StringArgumentType.StringType.QUOTABLE_PHRASE ? StringArgumentType.string() :
 						StringArgumentType.greedyString();
-		this.possibilities = possibilities;
-		while (possibilities.contains(null))
-			possibilities.remove(null);
+		this.possibilities = possibilities.stream().filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	public static LimitedStringArgumentType word(Collection<String> possibilities) {

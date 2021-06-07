@@ -36,7 +36,7 @@ public class DisableClientOptionCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literal("disableclientoption").requires(IS_OP).then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getFieldNames()))).executes(ctx -> {
+		dispatcher.register(literal("disableclientoption").requires(IS_OP).then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getMappedOptions().keySet()))).executes(ctx -> {
 			String option = ctx.getArgument("option", String.class);
 			if (disabled.contains(option)) disabled.remove(option);
 			else disabled.add(option);
