@@ -9,16 +9,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerAbilitiesAccessor;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.attribute.*;
-import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,7 +58,7 @@ public class SpeedCommand extends Command {
 		boolean notYou = player != null;
 		if (!notYou) player = ctx.getSource().getPlayer();
 		double speed = type.getSpeed(player);
-		String s = MoreCommands.textToString(player.getDisplayName(), SS);
+		String s = MoreCommands.textToString(player.getDisplayName(), SS, true);
 		sendMsg(ctx, (notYou ? s + SF + "'" + (Objects.requireNonNull(Formatting.strip(s)).endsWith("s") ? "" : "s") : "Your") + " " + SF + type.name().toLowerCase() + " speed " + DF + "is currently " + SF + speed + DF + ".");
 		return (int) speed;
 	}

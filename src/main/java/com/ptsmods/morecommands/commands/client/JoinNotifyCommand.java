@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.commands.client;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.BiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
@@ -60,7 +61,7 @@ public class JoinNotifyCommand extends ClientCommand {
 		Map<String, String> nameMCFriends = MoreCommandsClient.getNameMCFriends();
 		if (id != null && (players.containsKey(id) || ClientOptions.Tweaks.joinNotifyNameMC.getValue() && MoreCommandsClient.getNameMCFriends().containsKey(id))) {
 			String cachedName = MoreObjects.firstNonNull(players.get(id), nameMCFriends.get(id));
-			String s = SF + entry.getProfile().getName() + (entry.getProfile().getName().equals(cachedName) ? "" : DF + " (previously known as " + SF + cachedName + DF + ")") + DF + " has " + formatFromBool(joined, "joined", "left") + DF + "the game.";
+			String s = SF + entry.getProfile().getName() + (entry.getProfile().getName().equals(cachedName) ? "" : DF + " (previously known as " + SF + cachedName + DF + ")") + DF + " has " + formatFromBool(joined, "joined", "left") + DF + " the game.";
 			if (!entry.getProfile().getName().equals(cachedName)) {
 				if (players.containsKey(id)) {
 					players.put(id, entry.getProfile().getName());

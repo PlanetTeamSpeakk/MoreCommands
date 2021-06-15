@@ -39,7 +39,7 @@ public class VaultCommand extends Command {
 		int vault = ctx.getArgument("vault", Integer.class);
 		int maxVaults = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule);
 		if (maxVaults == 0) sendMsg(ctx, Formatting.RED + "Vaults are disabled on this server.");
-		else if (vault > maxVaults) sendMsg(ctx, Formatting.RED + (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED))) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule) + Formatting.RED + " vaults.");
+		else if (vault > maxVaults) sendMsg(ctx, Formatting.RED + (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule) + Formatting.RED + " vaults.");
 		else {
 			int rows = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultRowsRule);
 			ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, player) -> new GenericContainerScreenHandler(types.get(rows - 1), syncId, inv, Objects.requireNonNull(getVault(vault, owner)), rows), new LiteralText("" + DF + Formatting.BOLD + "Vault " + SF + Formatting.BOLD + vault)));

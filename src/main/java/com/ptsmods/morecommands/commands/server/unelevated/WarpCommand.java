@@ -208,7 +208,7 @@ public class WarpCommand extends Command {
 						header.append(DF).append("WARPINFO FOR ").append(SF).append(warp.getName());
 					else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
 				sendMsg(ctx, header.toString());
-				sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()) == null ? warp.getOwner() : MoreCommands.textToString(ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null)));
+				sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()) == null ? warp.getOwner() : MoreCommands.textToString(ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
 				sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
 				sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
 				sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());

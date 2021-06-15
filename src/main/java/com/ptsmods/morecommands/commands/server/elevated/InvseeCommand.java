@@ -4,17 +4,14 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -36,7 +33,7 @@ public class InvseeCommand extends Command {
 			public Text getDisplayName() {
 				LiteralText text = new LiteralText("");
 				text.getSiblings().add(target.getDisplayName());
-				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(target.getDisplayName(), null).endsWith("s") ? "" : "s") + " inventory"));
+				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(target.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " inventory"));
 				return text;
 			}
 

@@ -38,9 +38,9 @@ public class CscoreCommand extends ClientCommand {
 		if (team == null) sendMsg(Formatting.RED + "A team by that name could not be found.");
 		else sendMsg("The settings of the given team are as follows:" +
 				"\n  Name: " + SF + team.getName() +
-				"\n  Displayname: " + Formatting.WHITE + MoreCommands.textToString(team.getDisplayName(), SS) +
-				"\n  Prefix: " + MoreCommands.textToString(team.getPrefix(), SS) +
-				"\n  Suffix: " + MoreCommands.textToString(team.getSuffix(), SS) +
+				"\n  Displayname: " + Formatting.WHITE + MoreCommands.textToString(team.getDisplayName(), SS, true) +
+				"\n  Prefix: " + MoreCommands.textToString(team.getPrefix(), SS, true) +
+				"\n  Suffix: " + MoreCommands.textToString(team.getSuffix(), SS, true) +
 				"\n  Friendly fire: " + (team.isFriendlyFireAllowed() ? Formatting.GREEN : Formatting.RED) + team.isFriendlyFireAllowed() +
 				"\n  Collision: " + SF + team.getCollisionRule().name +
 				"\n  Colour: " + team.getColor() + team.getColor().name() +

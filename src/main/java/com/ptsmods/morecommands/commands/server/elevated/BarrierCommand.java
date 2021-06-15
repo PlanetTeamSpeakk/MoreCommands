@@ -25,7 +25,7 @@ public class BarrierCommand extends Command {
 	private int giveBarrier(CommandContext<ServerCommandSource> ctx, PlayerEntity player, int amount) {
 		if (player.giveItemStack(new ItemStack(Items.BARRIER, amount)))
 			player.world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-		sendMsg(ctx, (player == ctx.getSource().getEntity() ? "You have" : SF + MoreCommands.textToString(player.getDisplayName(), SS) + Formatting.RESET + " has") + " been given " + SF + amount + " barrier" + (amount == 1 ? "" : "s") + Formatting.RESET + ".");
+		sendMsg(ctx, (player == ctx.getSource().getEntity() ? "You have" : SF + MoreCommands.textToString(player.getDisplayName(), SS, true) + Formatting.RESET + " has") + " been given " + SF + amount + " barrier" + (amount == 1 ? "" : "s") + Formatting.RESET + ".");
 		return amount;
 	}
 

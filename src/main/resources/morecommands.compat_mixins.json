@@ -15,6 +15,7 @@
     "MixinEntityAccessor",
     "MixinScoreboardCriterionAccessor",
     "MixinFireballEntity",
+    "MixinSimpleRegistryAccessor",
     "compat16.MixinEntity",
     "compat16.MixinServerPlayNetworkHandler",
     "compat16.MixinHopperBlockEntity",
@@ -24,6 +25,7 @@
     "compat17plus.MixinScreenHandler",
     "compat17plus.MixinHopperBlockEntity",
     "compat17plus.MixinHopperBlockEntityAccessor",
+    "compat17plus.MixinFuzzyPositions"
   ],
   "injectors": {
 	"defaultRequire": 0

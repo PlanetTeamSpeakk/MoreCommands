@@ -79,7 +79,7 @@ public class DiscordCommand extends Command {
 		})).then(literal("send").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 			sendDiscordTag(ctx, player);
-			sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS) + DF + " has been sent your Discord tag.");
+			sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS, true) + DF + " has been sent your Discord tag.");
 			return 1;
 		}))));
 	}

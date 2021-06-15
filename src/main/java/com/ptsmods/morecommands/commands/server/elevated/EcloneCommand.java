@@ -23,7 +23,7 @@ public class EcloneCommand extends Command {
 				if (!(hit instanceof PlayerEntity)) {
 					Entity e = MoreCommands.cloneEntity(hit, true);
 					if (e != null) {
-						sendMsg(ctx, "Successfully cloned entity of type " + MoreCommands.textToString(e.getType().getName(), SS) + DF + ".");
+						sendMsg(ctx, "Successfully cloned entity of type " + MoreCommands.textToString(e.getType().getName(), SS, true) + DF + ".");
 						return 1;
 					} else sendMsg(ctx, Formatting.DARK_RED + "The entity could not be cloned, huh.");
 				} else sendMsg(ctx, Formatting.RED + "Players cannot be cloned.");

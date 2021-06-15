@@ -140,7 +140,7 @@ public class InfoHud extends DrawableHelper {
 				switch (key) {
 					case "DF": {output = MoreCommands.DF.toString(); break;}
 					case "SF": {output = MoreCommands.SF.toString(); break;}
-					case "playerName": {output = MoreCommands.textToString(mc.player.getName(), null); break;}
+					case "playerName": {output = MoreCommands.textToString(mc.player.getName(), null, true); break;}
 					case "x": {output = MoreCommands.formatDouble(mc.player.getPos().x); break;}
 					case "y": {output = MoreCommands.formatDouble(mc.player.getPos().y); break;}
 					case "z": {output = MoreCommands.formatDouble(mc.player.getPos().z); break;}
@@ -153,7 +153,7 @@ public class InfoHud extends DrawableHelper {
 					case "difficulty": {output = mc.world.getLevelProperties().getDifficulty().name(); break;}
 					case "blocksPerSec": {output = MoreCommands.formatDouble(MoreCommandsClient.getSpeed()) + " blocks/sec"; break;}
 					case "avgSpeed": {output = MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed()) + " blocks/sec"; break;}
-					case "toggleKey": {output = MoreCommands.textToString(MoreCommandsClient.toggleInfoHudBinding.getBoundKeyLocalizedText(), null); break;}
+					case "toggleKey": {output = MoreCommands.textToString(MoreCommandsClient.toggleInfoHudBinding.getBoundKeyLocalizedText(), null, true); break;}
 					case "configFile": {output = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"); break;}
 					case "facing": {output = MoreCommands.getLookDirection(MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(mc.player)), Compat.getCompat().getEntityPitch(mc.player)); break;}
 					case "time": {output = MoreCommands.parseTime(mc.world.getTime() % 24000L, false); break;}
@@ -169,7 +169,7 @@ public class InfoHud extends DrawableHelper {
 					case "lookingAtX": {output = "" + (bResult != null ? bResult.getBlockPos().getX() : Objects.requireNonNull(eResult).getPos().x); break;}
 					case "lookingAtY": {output = "" + (bResult != null ? bResult.getBlockPos().getY() : Objects.requireNonNull(eResult).getPos().y); break;}
 					case "lookingAtZ": {output = "" + (bResult != null ? bResult.getBlockPos().getZ() : Objects.requireNonNull(eResult).getPos().z); break;}
-					case "lookingAt": {output = MoreCommands.textToString(bResult != null ? MoreObjects.firstNonNull(mc.world.getBlockState(bResult.getBlockPos()).getBlock().getPickStack(mc.world, bResult.getBlockPos(), mc.world.getBlockState(bResult.getBlockPos())), ItemStack.EMPTY).getName() : Objects.requireNonNull(eResult).getEntity().getName(), null); break;}
+					case "lookingAt": {output = MoreCommands.textToString(bResult != null ? MoreObjects.firstNonNull(mc.world.getBlockState(bResult.getBlockPos()).getBlock().getPickStack(mc.world, bResult.getBlockPos(), mc.world.getBlockState(bResult.getBlockPos())), ItemStack.EMPTY).getName() : Objects.requireNonNull(eResult).getEntity().getName(), null, true); break;}
 					case "language": {output = mc.options.language; break;}
 					case "lookingVecX": {output = "" + result.getPos().x; break;}
 					case "lookingVecY": {output = "" + result.getPos().y; break;}

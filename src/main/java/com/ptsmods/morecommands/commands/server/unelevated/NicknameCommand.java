@@ -30,7 +30,7 @@ public class NicknameCommand extends Command {
 		else {
 			player.getDataTracker().set(MoreCommands.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
 			ctx.getSource().getMinecraftServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player));
-			sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
+			sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS, true) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
 			return 1;
 		}
 		return 0;

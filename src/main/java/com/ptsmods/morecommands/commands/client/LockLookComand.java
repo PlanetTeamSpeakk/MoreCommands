@@ -37,7 +37,7 @@ public class LockLookComand extends ClientCommand {
 			HitResult hit = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160, false, true);
 			if (hit instanceof EntityHitResult && target != ((EntityHitResult) hit).getEntity()) {
 				target = ((EntityHitResult) hit).getEntity();
-				sendMsg("Your eyes have now been locked onto " + MoreCommands.textToString(target.getDisplayName(), SS) + DF + ".");
+				sendMsg("Your eyes have now been locked onto " + MoreCommands.textToString(target.getDisplayName(), SS, true) + DF + ".");
 				return 1;
 			} else if (target == null) sendMsg(Formatting.RED + "You're not looking at an entity.");
 			else {

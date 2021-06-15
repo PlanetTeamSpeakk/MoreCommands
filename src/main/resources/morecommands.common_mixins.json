@@ -53,7 +53,6 @@
 	"MixinWallBannerBlock",
 	"MixinWallSkullBlock",
 	"MixinTargetPredicate",
-	"MixinFuzzyPositions",
 	"MixinGoalSelector",
 	"accessor.MixinEntityTrackerAccessor",
 	"MixinFarmlandBlock"

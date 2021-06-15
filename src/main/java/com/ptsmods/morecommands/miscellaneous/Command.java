@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 import static com.ptsmods.morecommands.MoreCommands.*;
 
 public abstract class Command {
-
 	public static Formatting DF = MoreCommands.DF;
 	public static Formatting SF = MoreCommands.SF;
 	public static Style DS = MoreCommands.DS;
@@ -186,5 +185,4 @@ public abstract class Command {
 		if (!registeredCallbacks.containsKey(getClass())) registeredCallbacks.put(getClass(), new HashMap<>());
 		registeredCallbacks.get(getClass()).put(event, callback);
 	}
-
 }

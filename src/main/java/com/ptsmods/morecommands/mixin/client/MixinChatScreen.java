@@ -18,7 +18,6 @@ import net.minecraft.client.util.Clipboard;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,11 +29,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Objects;
 
 @Mixin(ChatScreen.class)
 public class MixinChatScreen {
-
 	private static final Clipboard clipboard = new Clipboard();
 	@Unique private static boolean colourPickerOpen = false;
 	@Shadow protected TextFieldWidget chatField;
@@ -45,31 +42,34 @@ public class MixinChatScreen {
 		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, colourPickerOpen, chatField::write, b -> colourPickerOpen = b);
 	}
 
-	@Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z")
-	public boolean mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cbi) {
-		boolean b = cbi.getReturnValue();
+	@Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z", cancellable = true)
+	public void mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cbi) {
+		boolean b = cbi.getReturnValueZ();
 		if (!b) {
 			ChatHud chatHud = MinecraftClient.getInstance().inGameHud.getChatHud();
-			ChatHudLine<Text> line = mc_getLine(chatHud, mouseX, mouseY);
+			ChatHudLine<Text> line = getLine(chatHud, mouseX, mouseY);
 			if (line != null)
 				if (button == 0 && ClientOptions.Chat.chatMsgCopy.getValue()) {
 					// Copies a message's content when you click on it in the chat.
 					Text t = line.getText();
 					if (t != null) {
-						String s = MoreCommands.textToString(t, null, true);
-						clipboard.setClipboard(MinecraftClient.getInstance().getWindow().getHandle(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : Objects.requireNonNull(Formatting.strip(s)));
+						String s = MoreCommands.textToString(t, null, true, Screen.hasControlDown());
+						clipboard.setClipboard(MinecraftClient.getInstance().getWindow().getHandle(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : MoreCommands.stripFormattings(s));
 						MinecraftClient.getInstance().getSoundManager().play(new CopySound());
+						b = true;
 					}
 				} else if (button == 1 && ClientOptions.Chat.chatMsgRemove.getValue()) {
 					SearchCommand.lines.remove(line.getId());
 					((MixinChatHudAccessor) chatHud).callRemoveMessage(line.getId());
+					b = true;
 				}
 		}
-		return b;
+		cbi.setReturnValue(b);
 	}
 
 	// Just the same as ChatHud#getText, but actually returns a ChatHudLine object rather than a Style object.
-	public ChatHudLine<Text> mc_getLine(ChatHud hud, double x, double y) {
+	@Unique
+	public ChatHudLine<Text> getLine(ChatHud hud, double x, double y) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		List<ChatHudLine<OrderedText>> visibleMessages = ((MixinChatHudAccessor) hud).getVisibleMessages();
 		List<ChatHudLine<Text>> messages = ((MixinChatHudAccessor) hud).getMessages();
@@ -114,5 +114,4 @@ public class MixinChatScreen {
 		}
 		return thiz.handleTextClick(style);
 	}
-
 }

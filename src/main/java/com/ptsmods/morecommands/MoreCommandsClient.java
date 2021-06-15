@@ -9,7 +9,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
@@ -46,15 +45,27 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.*;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -77,6 +88,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 	private static final List<String> worldInitCommands = new ArrayList<>();
 	private static final File wicFile = new File("config/MoreCommands/worldInitCommands.json");
 	private static final Map<String, String> nameMCFriends = new HashMap<>();
+	private static final HttpClient sslLenientHttpClient;
 
 	static {
 		for (Field f : GLFW.class.getFields())
@@ -95,6 +107,25 @@ public class MoreCommandsClient implements ClientModInitializer {
 					keys.put(keysReverse.get(keyCode), keyCode);
 				}
 			}
+		SSLContext sslContext = null;
+		try {
+			sslContext = SSLContexts.custom()
+					.useTLS().loadTrustMaterial(null, (chain, authType) -> true)
+					.build();
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+			e.printStackTrace();
+		}
+		sslLenientHttpClient = sslContext == null ? null : HttpClientBuilder.create()
+				.setSslcontext(sslContext)
+				.setConnectionManager(new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+						.register("http", PlainConnectionSocketFactory.INSTANCE)
+						.register("https", new SSLConnectionSocketFactory(sslContext))
+						.build()))
+				.build();
+	}
+
+	public static String getSSLLenientHTML(String url) throws IOException {
+		return MoreCommands.readInputStream(sslLenientHttpClient.execute(new HttpGet(url)).getEntity().getContent());
 	}
 
 	@Override
@@ -216,7 +247,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 		MoreCommands.execute(() -> {
 			try {
 				@SuppressWarnings("UnstableApiUsage")
-				List<Map<String, String>> friends = new Gson().fromJson(MoreCommands.getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"), new TypeToken<List<Map<String, String>>>() {}.getType());
+				List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"), new TypeToken<List<Map<String, String>>>() {}.getType());
 				// SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
 				nameMCFriends.putAll(friends.stream().collect(Collectors.toMap(friend -> friend.get("uuid"), friend -> friend.get("name"))));
 			} catch (IOException e) {

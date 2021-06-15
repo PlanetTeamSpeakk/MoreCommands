@@ -26,7 +26,7 @@ public class BookCommand extends Command {
 					NbtList pages = tag.getList("pages", 8);
 					NbtList pages0 = new NbtList();
 					for (NbtElement page : pages)
-						pages0.add(NbtString.of(MoreCommands.textToString(Text.Serializer.fromJson(((NbtString) page).asString()), null).replaceAll("\u00A7", "&")));
+						pages0.add(NbtString.of(MoreCommands.textToString(Text.Serializer.fromJson(((NbtString) page).asString()), null, true).replaceAll("\u00A7", "&")));
 					tag.put("pages", pages0);
 				}
 				stack.setTag(tag);

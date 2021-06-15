@@ -20,6 +20,6 @@ public class MixinSignEditScreen {
     private void init(SignBlockEntity sbe, boolean filtered, CallbackInfo cbi) {
         Text[] text = ((MixinSignBlockEntityAccessor) sbe).getTexts();
         for (int i = 0; i < text.length; i++)
-            this.text[i] = MoreCommands.textToString(text[i], null).replace("\u00A7", "&");
+            this.text[i] = MoreCommands.textToString(text[i], null, true).replace("\u00A7", "&");
     }
 }

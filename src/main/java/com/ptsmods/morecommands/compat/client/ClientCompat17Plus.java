@@ -34,7 +34,7 @@ class ClientCompat17Plus extends AbstractClientCompat implements ClientCompat {
 
     @Override
     public <T extends ClickableWidget> T addButton(Screen screen, T button) {
-        return ((MixinScreenAccessor) screen).callAddButton(button);
+        return (T) ((MixinScreenAccessor) screen).callAddDrawableChild(button);
     }
 
     @Override

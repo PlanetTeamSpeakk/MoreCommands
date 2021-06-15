@@ -74,7 +74,7 @@ public class TpaCommand extends Command {
 		}
 
 		private void informOther() {
-			sendMsg(to, MoreCommands.textToString(from.getDisplayName(), SS) + DF + " has requested " + (here ? "you to teleport to them" : "teleport to you") + ".");
+			sendMsg(to, MoreCommands.textToString(from.getDisplayName(), SS, true) + DF + " has requested " + (here ? "you to teleport to them" : "teleport to you") + ".");
 		}
 
 		private void accept() {
@@ -84,12 +84,12 @@ public class TpaCommand extends Command {
 		}
 
 		private void deny() {
-			sendMsg(from, MoreCommands.textToString(to.getDisplayName(), SS) + DF + " has declined your teleportation request.");
+			sendMsg(from, MoreCommands.textToString(to.getDisplayName(), SS, true) + DF + " has declined your teleportation request.");
 		}
 
 		private void timeout() {
-			sendMsg(to, "The teleportation request from " + MoreCommands.textToString(from.getDisplayName(), SS) + DF + " has timed out.");
-			sendMsg(from, "The teleportation request to " + MoreCommands.textToString(to.getDisplayName(), SS) + DF + " has timed out.");
+			sendMsg(to, "The teleportation request from " + MoreCommands.textToString(from.getDisplayName(), SS, true) + DF + " has timed out.");
+			sendMsg(from, "The teleportation request to " + MoreCommands.textToString(to.getDisplayName(), SS, true) + DF + " has timed out.");
 		}
 
 	}

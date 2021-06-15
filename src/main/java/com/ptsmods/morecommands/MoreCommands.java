@@ -75,16 +75,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -101,8 +91,6 @@ import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -149,6 +137,7 @@ public class MoreCommands implements ModInitializer {
 	public static final GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
 	public static final GameRules.Key<GameRules.BooleanRule> doPathFindingRule = GameRuleRegistry.register("doPathFinding", grc, GameRuleFactory.createBooleanRule(true));
 	public static final GameRules.Key<GameRules.BooleanRule> doGoalsRule = GameRuleRegistry.register("doGoals", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> doStacktraceRule = GameRuleRegistry.register("doStacktrace", grc, GameRuleFactory.createBooleanRule(true));
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
 	public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
@@ -171,25 +160,9 @@ public class MoreCommands implements ModInitializer {
 	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
-	private static final HttpClient sslLenientHttpClient;
 
 	static {
 		Compat.getCompat().putCriterion("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
-		SSLContext sslContext = null;
-		try {
-			sslContext = SSLContexts.custom()
-					.useTLS().loadTrustMaterial(null, (chain, authType) -> true)
-					.build();
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-			e.printStackTrace();
-		}
-		sslLenientHttpClient = sslContext == null ? null : HttpClientBuilder.create()
-				.setSslcontext(sslContext)
-				.setConnectionManager(new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
-						.register("http", PlainConnectionSocketFactory.INSTANCE)
-						.register("https", new SSLConnectionSocketFactory(sslContext))
-						.build()))
-				.build();
 	}
 
 	@Override
@@ -208,7 +181,7 @@ public class MoreCommands implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			serverCommands.stream().filter(cmd -> !cmd.forDedicated() || dedicated).forEach(cmd -> {
 				try {
-					cmd.register(dispatcher);
+					cmd.register(dispatcher, dedicated);
 				} catch (Exception e) {
 					log.error("Could not register command " + cmd.getClass().getName() + ".", e);
 				}
@@ -238,7 +211,7 @@ public class MoreCommands implements ModInitializer {
 			Identifier redstoneWire = new Identifier("redstone_wire"); // Completely breaks redstone dust in the creative inventory.
 			Registry.BLOCK.forEach(block -> {
 				Identifier id = Registry.BLOCK.getId(block);
-				if (!Registry.ITEM.containsId(id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
+				if (!Compat.getCompat().registryContainsId(Registry.ITEM, id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
 			});
 			Registry.ITEM.forEach(item -> {
 				if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
@@ -387,48 +360,54 @@ public class MoreCommands implements ModInitializer {
 		return ReflectionHelper.cast(instance);
 	}
 
-	public static String textToString(Text text, Style parentStyle) {
-		return textToString(text, parentStyle, FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+	public static String textToString(Text text, Style parentStyle, boolean includeFormattings) {
+		return textToString(text, parentStyle, FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT, includeFormattings);
 	}
 
-	public static String textToString(Text text, Style parentStyle, boolean translate) {
+	public static String textToString(Text text, Style parentStyle, boolean translate, boolean includeFormattings) {
 		if (parentStyle == null) parentStyle = Style.EMPTY;
 		StringBuilder s = new StringBuilder();
 		Style style = text.getStyle();
 		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
-		TextColor c = style.getColor();
-		if (c != null) {
-			int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
-			Formatting f = null;
-			for (Formatting form : Formatting.values())
-				if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
-					f = form;
-					break;
+		if (includeFormattings) {
+			TextColor c = style.getColor();
+			if (c != null) {
+				int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
+				Formatting f = null;
+				for (Formatting form : Formatting.values())
+					if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
+						f = form;
+						break;
+					}
+				if (f != null) s.append(f);
+				else {
+					Color colour = new Color(rgb);
+					s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
 				}
-			if (f != null) s.append(f);
-			else {
-				Color colour = new Color(rgb);
-				s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
 			}
+			if (style.isBold()) s.append(Formatting.BOLD);
+			if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
+			if (style.isUnderlined()) s.append(Formatting.UNDERLINE);
+			if (style.isItalic()) s.append(Formatting.ITALIC);
+			if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
 		}
-		if (style.isBold()) s.append(Formatting.BOLD);
-		if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
-		if (style.isUnderlined()) s.append(Formatting.UNDERLINE);
-		if (style.isItalic()) s.append(Formatting.ITALIC);
-		if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
 		if (text instanceof TranslatableText && translate) {
 			TranslatableText tt = (TranslatableText) text;
 			Object[] args = new Object[tt.getArgs().length];
 			for (int i = 0; i < args.length; i++)
 				if (tt.getArgs()[i] instanceof Text)
-					args[i] = textToString((Text) tt.getArgs()[i], style, true);
+					args[i] = textToString((Text) tt.getArgs()[i], style, true, includeFormattings);
 				else args[i] = tt.getArgs()[i];
 			s.append(I18n.translate(tt.getKey(), args));
 		} else s.append(text.asString());
 		if (!text.getSiblings().isEmpty())
 			for (Text t : text.getSiblings())
-				s.append(textToString(t, style, translate));
+				s.append(textToString(t, style, translate, includeFormattings));
 		return s.toString();
+	}
+
+	public static String stripFormattings(String s) {
+		return Objects.requireNonNull(Formatting.strip(s)).replaceAll("\u00A7#[0-9A-Fa-f]{6}", "");
 	}
 
 	public static void saveJson(File f, Object data) throws IOException {
@@ -440,8 +419,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void saveString(File f, String s) throws IOException {
-		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
-		if (!f.exists()) f.createNewFile();
+		createFileAndDirectories(f);
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
 			writer.print(s);
 			writer.flush();
@@ -449,9 +427,13 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static String readString(File f) throws IOException {
-		if (!f.getAbsoluteFile().getParentFile().exists()) f.getAbsoluteFile().getParentFile().mkdirs();
-		if (!f.exists()) f.createNewFile();
+		createFileAndDirectories(f);
 		return String.join("\n", Files.readAllLines(f.toPath()));
+	}
+
+	private static void createFileAndDirectories(File f) throws IOException {
+		if (!f.getAbsoluteFile().getParentFile().exists() && !f.getAbsoluteFile().getParentFile().mkdirs()) throw new IOException("Could not create directories");
+		if (!f.exists() && !f.createNewFile()) throw new IOException("Could not create file.");
 	}
 
 	public static char getChar(Formatting f) {
@@ -686,10 +668,6 @@ public class MoreCommands implements ModInitializer {
 		return readInputStream(connection.getInputStream());
 	}
 
-	public static String getSSLLenientHTML(String url) throws IOException {
-		return readInputStream(sslLenientHttpClient.execute(new HttpGet(url)).getEntity().getContent());
-	}
-
 	public static String readInputStream(InputStream stream) throws IOException {
 		try (BufferedReader rd = new BufferedReader(new InputStreamReader(stream))) {
 			return rd.lines().collect(Collectors.joining("\n"));
@@ -874,7 +852,7 @@ public class MoreCommands implements ModInitializer {
 
 	// Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
 	public static int getY(BlockView blockView, double x, double z) {
-		BlockPos.Mutable mutable = new BlockPos.Mutable(x, blockView.getHeight(), z);
+		BlockPos.Mutable mutable = new BlockPos.Mutable(x, Compat.getCompat().getWorldHeight(blockView), z);
 		boolean bl = blockView.getBlockState(mutable).isAir();
 		mutable.move(Direction.DOWN);
 		boolean bl3;

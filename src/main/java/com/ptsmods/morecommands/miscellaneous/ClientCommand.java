@@ -41,7 +41,6 @@ import java.util.stream.Stream;
 
 @Environment(EnvType.CLIENT)
 public abstract class ClientCommand extends Command {
-
 	private static Screen scheduledScreen = null;
 	public static final Logger log = MoreCommandsClient.log;
 
@@ -59,6 +58,11 @@ public abstract class ClientCommand extends Command {
 	@Override
 	public final void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
 		throw new IllegalAccessException("Client commands can only be registered via the cRegister method.");
+	}
+
+	@Override
+	public final void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) throws Exception {
+		register(dispatcher);
 	}
 
 	@Override
@@ -231,5 +235,4 @@ public abstract class ClientCommand extends Command {
 			}
 		}
 	}
-
 }

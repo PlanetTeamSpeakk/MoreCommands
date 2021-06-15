@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
+import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -24,6 +25,9 @@ import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 // Supposedly ReflectASM is much faster than Java reflection: https://github.com/EsotericSoftware/reflectasm#performance
 // Can't use invoker and accessor mixins for methods or fields that don't exist in 1.17, it seems.
@@ -97,7 +101,12 @@ class Compat16 extends AbstractCompat {
 
     @Override
     public int getWorldHeight(BlockView world) {
-        return (int) getMA(world.getClass()).invoke(world, getMI(world.getClass(), "method_8322"));
+        try {
+            // Cannot be dome with ReflectASM as this method is in an interface and is default.
+            return (int) Objects.requireNonNull(ReflectionHelper.getMethod(BlockView.class, "method_8322")).invoke(world);//(int) getMA(world.getClass()).invoke(world, getMI(world.getClass(), "method_8322"));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

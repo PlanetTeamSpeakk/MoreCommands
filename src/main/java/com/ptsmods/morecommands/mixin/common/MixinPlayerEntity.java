@@ -33,7 +33,6 @@ import java.util.UUID;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity {
-
 	@Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;")
 	private static DefaultAttributeContainer.Builder createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
 		return cbi.getReturnValue().add(ReachCommand.reachAttribute).add(SpeedCommand.SpeedType.swimSpeedAttribute);
@@ -101,5 +100,4 @@ public abstract class MixinPlayerEntity {
 	public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
 		return Team.decorateName(team, ReflectionHelper.<PlayerEntity>cast(this).getDataTracker().get(MoreCommands.NICKNAME).orElse(name));
 	}
-
 }

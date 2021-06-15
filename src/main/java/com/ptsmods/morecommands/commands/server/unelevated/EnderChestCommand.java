@@ -29,7 +29,7 @@ public class EnderChestCommand extends Command {
 			public Text getDisplayName() {
 				LiteralText text = new LiteralText("");
 				text.getSiblings().add(player.getDisplayName());
-				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(player.getDisplayName(), null).endsWith("s") ? "" : "s") + " enderchest"));
+				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(player.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " enderchest"));
 				return text;
 			}
 

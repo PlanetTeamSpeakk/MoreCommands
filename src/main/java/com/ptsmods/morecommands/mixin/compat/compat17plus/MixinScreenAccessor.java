@@ -16,7 +16,7 @@ public interface MixinScreenAccessor {
     void callClear();
 
     @Invoker("addDrawableChild")
-    <T extends Element & Drawable & Selectable> T callAddButton(T button);
+    <T extends Element & Drawable & Selectable> T callAddDrawableChild(T drawableElement);
 
     @Accessor("drawables")
     List<Drawable> getDrawables();

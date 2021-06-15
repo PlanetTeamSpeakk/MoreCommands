@@ -19,12 +19,12 @@ public class RealnameCommand extends Command {
 			String query = ctx.getArgument("query", String.class).toLowerCase();
 			List<ServerPlayerEntity> players = new ArrayList<>();
 			for (ServerPlayerEntity player : ctx.getSource().getMinecraftServer().getPlayerManager().getPlayerList())
-				if (Formatting.strip(MoreCommands.textToString(player.getDataTracker().get(MoreCommands.NICKNAME).orElse(new LiteralText("")), null)).toLowerCase().contains(query) || MoreCommands.textToString(player.getName(), null).toLowerCase().contains(query))
+				if (Formatting.strip(MoreCommands.textToString(player.getDataTracker().get(MoreCommands.NICKNAME).orElse(new LiteralText("")), null, true)).toLowerCase().contains(query) || MoreCommands.textToString(player.getName(), null, true).toLowerCase().contains(query))
 					players.add(player);
 
 			if (players.size() == 0) sendMsg(ctx, Formatting.RED + "No players whose name matches the given query were found.");
 			else for (ServerPlayerEntity player : players)
-				sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS) + DF + " is " + MoreCommands.textToString(player.getName(), SS));
+				sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS, true) + DF + " is " + MoreCommands.textToString(player.getName(), SS, true));
 			return players.size();
 		})));
 	}

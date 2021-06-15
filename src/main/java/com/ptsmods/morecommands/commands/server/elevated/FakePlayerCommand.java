@@ -21,7 +21,6 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.GameMode;
@@ -126,7 +125,7 @@ public class FakePlayerCommand extends Command {
 				player.sendAbilitiesUpdate();
 				MoreCommands.teleport(player, ctx.getSource().getWorld(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, Compat.getCompat().getEntityYaw(player), Compat.getCompat().getEntityPitch(player));
 				fake.add(player.getUuid());
-				sendMsg(ctx, "A fake player by the name of " + MoreCommands.textToString(player.getName(), null) + " has been spawned.");
+				sendMsg(ctx, "A fake player by the name of " + MoreCommands.textToString(player.getName(), null, true) + " has been spawned.");
 				return 1;
 			}
 		} catch (Exception e) {

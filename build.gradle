@@ -35,7 +35,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "io.github.prospector:modmenu:v2.0.0-beta.4"
-	modImplementation "com.ptsmods:devlogin:1.1"
+	modImplementation "com.ptsmods:devlogin:1.2"
 	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.2")
 	shadow implementation("com.github.Vatuu:discord-rpc:1.6.2")
 	shadow implementation("com.esotericsoftware:reflectasm:1.11.9")

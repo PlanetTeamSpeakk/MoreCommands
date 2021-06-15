@@ -12,10 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerWorld.class)
 public class MixinServerWorld {
-
 	@Inject(at = @At("HEAD"), method = "tickFluid(Lnet/minecraft/world/ScheduledTick;)V", cancellable = true)
 	private void tickFluid(ScheduledTick<Fluid> tick, CallbackInfo cbi) {
 		if (!ReflectionHelper.<ServerWorld>cast(this).getGameRules().getBoolean(MoreCommands.doLiquidFlowRule)) cbi.cancel();
 	}
-
 }

@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.compat.compat17plus;
 
 import com.ptsmods.morecommands.MoreCommands;
 import net.minecraft.entity.ai.FuzzyPositions;
