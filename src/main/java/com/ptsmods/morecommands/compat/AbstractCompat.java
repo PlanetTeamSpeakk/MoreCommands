@@ -5,12 +5,15 @@ import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import com.ptsmods.morecommands.mixin.compat.MixinScoreboardCriterionAccessor;
 import com.ptsmods.morecommands.mixin.compat.MixinSimpleRegistryAccessor;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.SimpleRegistry;
+
+import java.util.Arrays;
 
 public abstract class AbstractCompat extends CompatASMReflection implements Compat {
     @Override
@@ -55,5 +58,11 @@ public abstract class AbstractCompat extends CompatASMReflection implements Comp
     @Override
     public <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id) {
         return ((MixinSimpleRegistryAccessor<T>) registry).getIdToEntry().containsKey(id);
+    }
+
+    @Override
+    public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
+        Class<?> actionClass = Arrays.stream(PlayerListS2CPacket.class.getClasses()).filter(c -> c.getEnumConstants() != null).findFirst().orElseThrow(() -> new IllegalStateException("Could not find Action inner class of PlayerListS2CPacket class."));
+        return invokeCtor(getCtor(PlayerListS2CPacket.class, actionClass, ServerPlayerEntity[].class), actionClass.getEnumConstants()[action], players);
     }
 }

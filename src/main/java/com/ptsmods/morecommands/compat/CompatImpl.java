@@ -95,4 +95,9 @@ class CompatImpl extends AbstractCompat {
     public String getProcessorString() {
         return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).getProcessorString();
     }
+
+    @Override
+    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
+        (Compat.is16() ? Compat16.instance : Compat17Plus.instance).playerSetWorld(player, world);
+    }
 }

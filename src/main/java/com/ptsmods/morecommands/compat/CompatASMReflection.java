@@ -18,7 +18,7 @@ public class CompatASMReflection {
     private static final Map<Class<?>, Map<String, Integer>> fieldIndices = new Object2ObjectOpenHashMap<>();
 
     @SuppressWarnings("unchecked")
-    protected <T> Constructor<T> getCon(Class<T> clazz, Class<?>... classes) {
+    protected <T> Constructor<T> getCtor(Class<T> clazz, Class<?>... classes) {
         // ConstructorAccess from ReflectASM only supports no-arg constructors.
         return (Constructor<T>) constructorMap.computeIfAbsent(clazz, clazz0 -> {
             try {
@@ -29,11 +29,11 @@ public class CompatASMReflection {
         });
     }
 
-    protected <T> T invokeCon(Constructor<T> con, Object... params) {
+    protected <T> T invokeCtor(Constructor<T> ctor, Object... params) {
         try {
-            return con.newInstance(params);
+            return ctor.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            MoreCommands.log.error("Couldn't invoke constructor for " + con.getDeclaringClass().getName() + " class.", e);
+            MoreCommands.log.error("Couldn't invoke constructor for " + ctor.getDeclaringClass().getName() + " class.", e);
             return null;
         }
     }

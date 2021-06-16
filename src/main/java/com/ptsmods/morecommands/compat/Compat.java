@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -91,4 +92,8 @@ public interface Compat {
     String getProcessorString();
 
     <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id);
+
+    void playerSetWorld(ServerPlayerEntity player, ServerWorld world);
+
+    PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players);
 }

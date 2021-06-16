@@ -72,8 +72,8 @@ class Compat16 extends AbstractCompat {
 
     @Override
     public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
-        ServerPlayerInteractionManager interactionManager = invokeCon(getCon(ServerPlayerInteractionManager.class, ServerWorld.class), world);
-        ServerPlayerEntity player = invokeCon(getCon(ServerPlayerEntity.class, MinecraftServer.class, ServerWorld.class, GameProfile.class, ServerPlayerInteractionManager.class), server, world, profile, interactionManager);
+        ServerPlayerInteractionManager interactionManager = invokeCtor(getCtor(ServerPlayerInteractionManager.class, ServerWorld.class), world);
+        ServerPlayerEntity player = invokeCtor(getCtor(ServerPlayerEntity.class, MinecraftServer.class, ServerWorld.class, GameProfile.class, ServerPlayerInteractionManager.class), server, world, profile, interactionManager);
         getFA(ServerPlayerInteractionManager.class).set(interactionManager, getFI(ServerPlayerInteractionManager.class, "field_14008"), player);
         return player;
     }
@@ -111,7 +111,7 @@ class Compat16 extends AbstractCompat {
 
     @Override
     public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
-        FireballEntity fireball = invokeCon(getCon(FireballEntity.class, World.class, LivingEntity.class, double.class, double.class, double.class), world, owner, velocityX, velocityY, velocityZ);
+        FireballEntity fireball = invokeCtor(getCtor(FireballEntity.class, World.class, LivingEntity.class, double.class, double.class, double.class), world, owner, velocityX, velocityY, velocityZ);
         getFA(FireballEntity.class).set(fireball, getFI(FireballEntity.class, "field_7624"), explosionPower);
         return fireball;
     }
@@ -120,5 +120,10 @@ class Compat16 extends AbstractCompat {
     public String getProcessorString() {
         HardwareAbstractionLayer hardware = new SystemInfo().getHardware();
         return String.valueOf(((Object[]) getMA(hardware.getClass()).invoke(hardware, getMI(hardware.getClass(), "getProcessors")))[0]);
+    }
+
+    @Override
+    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
+        getMA(Entity.class).invoke(player, getMI(Entity.class, "method_5866", World.class), world);
     }
 }

@@ -12,7 +12,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class GmCommand extends Command {
-
 	private final Field literalField = ReflectionHelper.getField(LiteralArgumentBuilder.class, "literal");
 
 	@Override
@@ -25,8 +24,6 @@ public class GmCommand extends Command {
 	}
 
 	private LiteralArgumentBuilder<ServerCommandSource> setLiteral(LiteralArgumentBuilder<ServerCommandSource> builder, String literal) {
-		ReflectionHelper.setFieldValue(literalField, builder, literal);
-		return builder;
+		return literal(literal).requires(builder.getRequirement()).forward(builder.getRedirect(), builder.getRedirectModifier(), builder.isFork()).executes(builder.getCommand());
 	}
-
 }

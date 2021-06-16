@@ -43,7 +43,7 @@ public class FireballCommand extends Command {
 		LivingEntity entity = ctx.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) ctx.getSource().getEntity() : null;
 		if (entity == null) throw new SimpleCommandExceptionType(new LiteralText("Only living entities may run this command.")).create();
 		AtomicInteger impactsDone = new AtomicInteger();
-		ExplosiveProjectileEntity fireball = MoreCommands.isAprilFirst() ? new WitherSkullEntity(ctx.getSource().getWorld(), entity, 0.1, 0.1, 0.1) {
+		ExplosiveProjectileEntity fireball = MoreCommands.isAprilFirst() ? new WitherSkullEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z) {
 			public void setVelocity(Vec3d velocity) {
 				super.setVelocity(velocity0);
 			}
@@ -56,13 +56,12 @@ public class FireballCommand extends Command {
 					this.world.createExplosion(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY);
 					if (impactsDone.addAndGet(1) >= impacts) Compat.getCompat().setRemoved(this, 1);
 				}
-
 			}
-		} : Compat.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, 0.1, 0.1, 0.1, (int) power);
+		} : Compat.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
 		fireball.setVelocity(velocity0);
 		Compat.getCompat().setEntityPitch(fireball, ctx.getSource().getRotation().x);
 		Compat.getCompat().setEntityYaw(fireball, ctx.getSource().getRotation().y);
-		fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeY()), ctx.getSource().getPosition().z);
+		fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeHeight(ctx.getSource().getEntity().getPose())), ctx.getSource().getPosition().z);
 		fireball.tick();
 		ctx.getSource().getWorld().spawnEntity(fireball);
 		return 1;

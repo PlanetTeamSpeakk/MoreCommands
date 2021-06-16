@@ -102,4 +102,9 @@ class Compat17Plus extends AbstractCompat {
     public String getProcessorString() {
         return String.valueOf(new SystemInfo().getHardware().getProcessor()); // They BROKE it >:(
     }
+
+    @Override
+    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
+        player.setWorld(world);
+    }
 }
