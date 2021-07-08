@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 public class AscendCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("ascend").executes(ctx -> {
+		dispatcher.register(literalReq("ascend").executes(ctx -> {
 			Entity entity = ctx.getSource().getEntityOrThrow();
 			World world = entity.getEntityWorld();
 			Vec3d pos = entity.getPos();

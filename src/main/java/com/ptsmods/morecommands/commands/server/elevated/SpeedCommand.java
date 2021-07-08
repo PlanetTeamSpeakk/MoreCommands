@@ -26,7 +26,7 @@ import java.util.function.Function;
 public class SpeedCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		LiteralArgumentBuilder<ServerCommandSource> builder = literal("speed").requires(IS_OP);
+		LiteralArgumentBuilder<ServerCommandSource> builder = literalReqOp("speed");
 		for (SpeedType type : SpeedType.values())
 			builder.then(literal(type.name().toLowerCase()).executes(ctx -> getSpeed(ctx, type, null)).then(argument("target", EntityArgumentType.player()).executes(ctx -> getSpeed(ctx, type, EntityArgumentType.getPlayer(ctx, "target")))).then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null)).then(argument("targets", EntityArgumentType.players()).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
 		dispatcher.register(builder.then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayer()), ctx.getArgument("speed", Float.class), null))));
@@ -39,7 +39,7 @@ public class SpeedCommand extends Command {
 	private int setSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, float speed, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
 		if (players == null) players = Lists.newArrayList(ctx.getSource().getPlayer());
 		else if (!isOp(ctx)) {
-			sendMsg(ctx, Formatting.RED + "You must be op to set other's speed.");
+			sendError(ctx, "You must be op to set other's speed.");
 			return 0;
 		}
 		for (ServerPlayerEntity p : players) {

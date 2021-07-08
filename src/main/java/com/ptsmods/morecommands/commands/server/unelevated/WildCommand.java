@@ -11,10 +11,10 @@ import net.minecraft.world.border.WorldBorder;
 public class WildCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("wild").executes(ctx -> {
+		dispatcher.register(literalReq("wild").executes(ctx -> {
 			WorldBorder border = ctx.getSource().getWorld().getWorldBorder();
 			double limit = Math.min(ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.wildLimitRule), border.getSize()/2);
-			if (limit <= 0) sendMsg(ctx, Formatting.RED + "The wild is unreachable!");
+			if (limit <= 0) sendError(ctx, "The wild is unreachable!");
 			else {
 				Entity entity = ctx.getSource().getEntityOrThrow();
 				double x = Math.random()*limit + border.getCenterX();

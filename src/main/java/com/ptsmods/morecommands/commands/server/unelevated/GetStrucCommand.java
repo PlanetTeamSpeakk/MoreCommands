@@ -14,8 +14,8 @@ import java.util.Map;
 public class GetStrucCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literal("getstruc").executes(ctx -> {
-            if (!ctx.getSource().getMinecraftServer().getSaveProperties().getGeneratorOptions().shouldGenerateStructures()) sendMsg(ctx, Formatting.RED + "Structures are disabled in this world.");
+        dispatcher.register(literalReq("getstruc").executes(ctx -> {
+            if (!ctx.getSource().getServer().getSaveProperties().getGeneratorOptions().shouldGenerateStructures()) sendError(ctx, "Structures are disabled in this world.");
             else {
                 for (Map.Entry<String, StructureFeature<?>> entry : StructureFeature.STRUCTURES.entrySet()) {
                     BlockPos pos = entry.getValue().locateStructure(ctx.getSource().getWorld(), ctx.getSource().getWorld().getStructureAccessor(), new BlockPos(ctx.getSource().getPosition()), 0, false, ctx.getSource().getWorld().getSeed(), ctx.getSource().getWorld().getChunkManager().getChunkGenerator().getStructuresConfig().getForType(entry.getValue()));
@@ -25,7 +25,7 @@ public class GetStrucCommand extends Command {
                         return Registry.STRUCTURE_FEATURE.getRawId(entry.getValue()) + 1;
                     }
                 }
-                sendMsg(ctx, Formatting.RED + "No known structure could be found at your position.");
+                sendError(ctx, "No known structure could be found at your position.");
             }
             return 0;
         }));

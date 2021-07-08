@@ -16,7 +16,7 @@ import net.minecraft.world.World;
 public class ThroughCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("through").executes(ctx -> {
+		dispatcher.register(literalReq("through").executes(ctx -> {
 			Entity entity = ctx.getSource().getEntityOrThrow();
 			BlockPos pos = entity.getBlockPos();
 			World world = ctx.getSource().getWorld();
@@ -41,9 +41,9 @@ public class ThroughCommand extends Command {
 							x++;
 							break;
 						case DOWN:
-							return ctx.getSource().getMinecraftServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getMinecraftServer().getOpPermissionLevel()), "descend");
+							return ctx.getSource().getServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getServer().getOpPermissionLevel()), "descend");
 						case UP:
-							return ctx.getSource().getMinecraftServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getMinecraftServer().getOpPermissionLevel()), "ascend");
+							return ctx.getSource().getServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getServer().getOpPermissionLevel()), "ascend");
 					}
 					Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock(); // Block under your feet.
 					Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock(); // Block at your feet.

@@ -13,7 +13,7 @@ import net.minecraft.text.TranslatableText;
 public class CraftCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("craft").executes(ctx -> {
+		dispatcher.register(literalReq("craft").executes(ctx -> {
 			ServerPlayerEntity player = ctx.getSource().getPlayer();
 			ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new CraftingScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getServerWorld(), player.getBlockPos())) {
 				public boolean canUse(PlayerEntity player) {

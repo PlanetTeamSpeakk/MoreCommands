@@ -16,7 +16,7 @@ import java.util.Collection;
 public class EcloneCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("eclone").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("eclone").executes(ctx -> {
 			HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160D, false, true);
 			if (result.getType() == HitResult.Type.ENTITY) {
 				Entity hit = ((EntityHitResult) result).getEntity();
@@ -26,8 +26,8 @@ public class EcloneCommand extends Command {
 						sendMsg(ctx, "Successfully cloned entity of type " + MoreCommands.textToString(e.getType().getName(), SS, true) + DF + ".");
 						return 1;
 					} else sendMsg(ctx, Formatting.DARK_RED + "The entity could not be cloned, huh.");
-				} else sendMsg(ctx, Formatting.RED + "Players cannot be cloned.");
-			} else sendMsg(ctx, Formatting.RED + "It appears you're not looking at an entity.");
+				} else sendError(ctx, "Players cannot be cloned.");
+			} else sendError(ctx, "It appears you're not looking at an entity.");
 			return 0;
 		}).then(argument("entities", EntityArgumentType.entities()).executes(ctx -> {
 			Collection<? extends Entity> entities = EntityArgumentType.getEntities(ctx, "entities");

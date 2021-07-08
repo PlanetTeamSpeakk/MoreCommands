@@ -12,7 +12,7 @@ import net.minecraft.util.math.MathHelper;
 public class WhoIsCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("whois").requires(IS_OP).then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		dispatcher.register(literalReqOp("whois").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 			sendMsg(ctx, "Info for player " + SF + MoreCommands.textToString(player.getDisplayName(), null, true));
 			sendMsg(ctx, "World: " + SF + player.getServerWorld().getRegistryKey().getValue().toString());

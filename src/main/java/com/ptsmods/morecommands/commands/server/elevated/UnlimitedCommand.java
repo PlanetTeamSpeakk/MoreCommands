@@ -7,10 +7,12 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 
+import java.util.Objects;
+
 public class UnlimitedCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("unlimited").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("unlimited").executes(ctx -> {
 			ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
 			if (stack != null && stack.getItem() != Items.AIR) {
 				NbtCompound tag = stack.getOrCreateTag();
@@ -26,6 +28,6 @@ public class UnlimitedCommand extends Command {
 	}
 
 	public static boolean isUnlimited(ItemStack stack) {
-		return stack.hasTag() && stack.getTag().contains("Unlimited");
+		return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("Unlimited");
 	}
 }

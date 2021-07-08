@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 public class DescendCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("descend").executes(ctx -> {
+		dispatcher.register(literalReq("descend").executes(ctx -> {
 			Entity entity = ctx.getSource().getEntityOrThrow();
 			BlockPos pos = entity.getBlockPos();
 			World world = entity.getEntityWorld();

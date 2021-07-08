@@ -31,12 +31,12 @@ public class PotionCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		 dispatcher.register(literal("potion").requires(IS_OP).then(literal("add").then(argument("effect", new RegistryArgumentType<>(Registry.STATUS_EFFECT)).executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true)).then(argument("duration", IntegerArgumentType.integer(1)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true)).then(argument("amplifier", IntegerArgumentType.integer(0, 255)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true)).then(argument("ambient", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), true)).then(argument("showParticles", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
-		.then(literal("remove").then(argument("index", IntegerArgumentType.integer(1)).executes(ctx -> {
+		 dispatcher.register(literalReqOp("potion").then(literalReqOp("add").then(argument("effect", new RegistryArgumentType<>(Registry.STATUS_EFFECT)).executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true)).then(argument("duration", IntegerArgumentType.integer(1)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true)).then(argument("amplifier", IntegerArgumentType.integer(0, 255)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true)).then(argument("ambient", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), true)).then(argument("showParticles", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
+		.then(literalReqOp("remove").then(argument("index", IntegerArgumentType.integer(1)).executes(ctx -> {
 			ItemStack stack = checkHeldItem(ctx);
 			List<StatusEffectInstance> effects = PotionUtil.getCustomPotionEffects(stack);
 			int index = ctx.getArgument("index", Integer.class)-1;
-			if (index >= effects.size()) sendMsg(ctx, Formatting.RED + "The given index was greater than the amount of custom potion effects this potion has (" + SF + effects.size() + DF + ").");
+			if (index >= effects.size()) sendError(ctx, "The given index was greater than the amount of custom potion effects this potion has (" + SF + effects.size() + DF + ").");
 			else {
 				effects.remove(index);
 				PotionUtil.setCustomPotionEffects(stack, effects);
@@ -44,14 +44,14 @@ public class PotionCommand extends Command {
 				return effects.size()+1;
 			}
 			return 0;
-		}))).then(literal("settype").then(argument("type", new RegistryArgumentType<>(Registry.POTION)).executes(ctx -> {
+		}))).then(literalReqOp("settype").then(argument("type", new RegistryArgumentType<>(Registry.POTION)).executes(ctx -> {
 			ItemStack stack = checkHeldItem(ctx);
 			Potion old = PotionUtil.getPotion(stack);
 			PotionUtil.setPotion(stack, ctx.getArgument("type", Potion.class));
 			sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtil.getPotion(stack)) + DF + ".");
 			return 0;
-		}))).then(literal("setcolour").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour)))
-		.then(literal("setcolor").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour))));
+		}))).then(literalReqOp("setcolour").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour)))
+		.then(literalReqOp("setcolor").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour))));
 	}
 
 	private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {

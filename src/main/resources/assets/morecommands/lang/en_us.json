@@ -62,6 +62,8 @@
   "gamerule.doGoals.description": "Whether mobs should have goals. (Aka AI)",
   "gamerule.doStacktrace": "Do Stacktrace",
   "gamerule.doStacktrace.description": "Whether errors should be printed to the console when one gets thrown while running a command.",
+  "gamerule.sendCommandFeedbackToOps": "Send Command Feedback To Ops",
+  "gamerule.sendCommandFeedbackToOps.description": "Whether feedback from commands should be sent to other operators.",
   "commands.data.item.query": "%s has the following item data: %s",
   "commands.data.item.get": "%s on item stack %s after scale factor of %s is %s"
 }

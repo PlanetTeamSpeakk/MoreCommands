@@ -27,19 +27,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class VaultCommand extends Command {
-
 	public static final List<ScreenHandlerType<GenericContainerScreenHandler>> types = ImmutableList.of(ScreenHandlerType.GENERIC_9X1, ScreenHandlerType.GENERIC_9X2, ScreenHandlerType.GENERIC_9X3, ScreenHandlerType.GENERIC_9X4, ScreenHandlerType.GENERIC_9X5, ScreenHandlerType.GENERIC_9X6);
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("vault").then(argument("vault", IntegerArgumentType.integer(1)).executes(ctx -> execute(ctx, ctx.getSource().getPlayer())).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"))))));
+		dispatcher.register(literalReq("vault").then(argument("vault", IntegerArgumentType.integer(1)).executes(ctx -> execute(ctx, ctx.getSource().getPlayer())).then(argument("player", EntityArgumentType.player()).requires(IS_OP).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"))))));
 	}
 
 	public int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity owner) throws CommandSyntaxException {
 		int vault = ctx.getArgument("vault", Integer.class);
 		int maxVaults = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule);
-		if (maxVaults == 0) sendMsg(ctx, Formatting.RED + "Vaults are disabled on this server.");
-		else if (vault > maxVaults) sendMsg(ctx, Formatting.RED + (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule) + Formatting.RED + " vaults.");
+		if (maxVaults == 0) sendError(ctx, "Vaults are disabled on this server.");
+		else if (vault > maxVaults) sendError(ctx, (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule) + Formatting.RED + " vaults.");
 		else {
 			int rows = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultRowsRule);
 			ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, player) -> new GenericContainerScreenHandler(types.get(rows - 1), syncId, inv, Objects.requireNonNull(getVault(vault, owner)), rows), new LiteralText("" + DF + Formatting.BOLD + "Vault " + SF + Formatting.BOLD + vault)));

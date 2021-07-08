@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.miscellaneous.Rainbow;
+import com.ptsmods.morecommands.util.Rainbow;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;

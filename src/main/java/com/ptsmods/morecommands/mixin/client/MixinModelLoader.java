@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinJsonUnbakedModelAccessor;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;

@@ -14,7 +14,7 @@ import net.minecraft.util.hit.BlockHitResult;
 public class SignCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("sign").executes(ctx -> {
+		dispatcher.register(literalReq("sign").executes(ctx -> {
 			BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true);
 			BlockEntity be = ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
 			if (BlockTags.SIGNS.contains(ctx.getSource().getWorld().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {

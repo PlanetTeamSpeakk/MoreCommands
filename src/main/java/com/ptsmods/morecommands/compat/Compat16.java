@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;

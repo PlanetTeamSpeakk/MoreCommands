@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat.compat17plus;
 
 import com.ptsmods.morecommands.compat.Compat;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;

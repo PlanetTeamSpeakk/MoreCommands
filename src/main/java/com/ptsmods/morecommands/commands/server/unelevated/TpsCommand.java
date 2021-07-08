@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.RollingAverage;
-import com.ptsmods.morecommands.miscellaneous.TickStatistics;
+import com.ptsmods.morecommands.util.TickStatistics;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
@@ -15,7 +15,7 @@ public class TpsCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
         if (!FabricLoader.getInstance().isModLoaded("spark")) { // Spark Profiler is a great mod and we will not be overriding their command.
             TickStatistics tickStatistics = new TickStatistics();
-            dispatcher.register(literal("tps").executes(ctx -> {
+            dispatcher.register(literalReq("tps").executes(ctx -> {
                 sendMsg(ctx, "TPS from last 5s, 10s, 1m, 5m, 15m:");
                 sendMsg(ctx, String.join(DF + ", ", formatTps(tickStatistics.tps5Sec()), formatTps(tickStatistics.tps10Sec()), formatTps(tickStatistics.tps1Min()), formatTps(tickStatistics.tps5Min()), formatTps(tickStatistics.tps15Min())));
                 sendMsg(ctx, "Tick durations (min/med/95%ile/max ms) from last 10s, 1m:");

@@ -11,7 +11,7 @@ import net.minecraft.server.command.ServerCommandSource;
 public class GodCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("god").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("god").executes(ctx -> {
 			PlayerEntity player = ctx.getSource().getPlayer();
 			PlayerAbilities abilities = Compat.getCompat().getAbilities(player);
 			abilities.invulnerable = !abilities.invulnerable;

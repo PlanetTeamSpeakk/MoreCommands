@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.miscellaneous;
+package com.ptsmods.morecommands.util;
 
 import com.sun.management.OperatingSystemMXBean;
 

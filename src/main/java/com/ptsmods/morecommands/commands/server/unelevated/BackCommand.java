@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class BackCommand extends Command {
-
 	private final Map<UUID, Pair<Location<ServerWorld>, Boolean>> lastLocations = new HashMap<>();
 
 	@Override
@@ -40,8 +39,8 @@ public class BackCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literal("back").executes(ctx -> {
-			if (!lastLocations.containsKey(ctx.getSource().getPlayer().getUuid())) sendMsg(ctx, Formatting.RED + "No last location has been saved for you.");
+		dispatcher.register(literalReq("back").executes(ctx -> {
+			if (!lastLocations.containsKey(ctx.getSource().getPlayer().getUuid())) sendError(ctx, "No last location has been saved for you.");
 			else {
 				Location<ServerWorld> loc = lastLocations.get(ctx.getSource().getPlayer().getUuid()).getLeft();
 				ctx.getSource().getPlayer().teleport(loc.getWorld(), loc.getPos().getX(), loc.getPos().getY(), loc.getPos().getZ(), loc.getRot().y, loc.getRot().x);

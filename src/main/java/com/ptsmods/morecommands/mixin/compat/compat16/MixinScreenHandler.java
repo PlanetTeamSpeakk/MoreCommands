@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
 import com.ptsmods.morecommands.commands.server.elevated.InvseeCommand;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;

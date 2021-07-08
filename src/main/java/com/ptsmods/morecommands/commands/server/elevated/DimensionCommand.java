@@ -15,7 +15,7 @@ import net.minecraft.util.Formatting;
 public class DimensionCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("dimension").requires(IS_OP)
+		dispatcher.register(literalReqOp("dimension")
 				.then(argument("dimension", DimensionArgumentType.dimension()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), ctx.getSource().getEntityOrThrow()))
 						.then(argument("player", EntityArgumentType.player()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), EntityArgumentType.getPlayer(ctx, "player"))))));
 	}
@@ -25,8 +25,7 @@ public class DimensionCommand extends Command {
 			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), Compat.getCompat().getEntityYaw(entity), Compat.getCompat().getEntityPitch(entity));
 			return 1;
 		}
-		sendMsg(ctx, Formatting.RED + "The targeted entity is already in that world.");
+		sendError(ctx, "The targeted entity is already in that world.");
 		return 0;
 	}
-
 }

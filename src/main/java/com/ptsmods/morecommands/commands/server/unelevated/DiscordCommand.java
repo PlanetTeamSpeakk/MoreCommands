@@ -22,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class DiscordCommand extends Command {
-
 	private static File dataFile = null;
 	private static String discordUrl = null;
 
@@ -48,10 +47,10 @@ public class DiscordCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("discord").executes(ctx -> {
+		dispatcher.register(literalReq("discord").executes(ctx -> {
 			sendMsg(ctx, discordUrl == null ? Formatting.RED + "This server does not have a Discord url set." : "Join our Discord server at " + Formatting.BLUE + Formatting.UNDERLINE + discordUrl + DF + ".");
 			return 1;
-		}).then(literal("set").requires(IS_OP).then(argument("url", StringArgumentType.greedyString()).executes(ctx -> {
+		}).then(literalReq("set").requires(IS_OP).then(argument("url", StringArgumentType.greedyString()).executes(ctx -> {
 			try {
 				URL url = new URL(ctx.getArgument("url", String.class));
 				discordUrl = url.toString();
@@ -59,10 +58,10 @@ public class DiscordCommand extends Command {
 				sendMsg(ctx, "The url has been set.");
 				return 1;
 			} catch (MalformedURLException e) {
-				sendMsg(ctx, Formatting.RED + "That is not a valid URL.");
+				sendError(ctx, "That is not a valid URL.");
 			} catch (IOException e) {
 				log.catching(e);
-				sendMsg(ctx, Formatting.RED + "An error occurred while saving the file.");
+				sendError(ctx, "An error occurred while saving the file.");
 			}
 			return 0;
 		}))).then(argument("player", EntityArgumentType.player()).executes(ctx -> {
@@ -76,7 +75,7 @@ public class DiscordCommand extends Command {
 				sendMsg(ctx, "A request has been sent to the player.");
 			}
 			return 1;
-		})).then(literal("send").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		})).then(literalReq("send").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 			sendDiscordTag(ctx, player);
 			sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS, true) + DF + " has been sent your Discord tag.");

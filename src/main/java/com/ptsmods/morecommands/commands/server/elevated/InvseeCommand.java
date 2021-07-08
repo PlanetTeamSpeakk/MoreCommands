@@ -19,7 +19,7 @@ import net.minecraft.text.Text;
 public class InvseeCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("invsee").requires(IS_OP).then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		dispatcher.register(literalReqOp("invsee").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			PlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
 			if (p == ctx.getSource().getPlayer()) sendMsg(ctx, "You can just press E, you know?");
 			else openInventory(ctx.getSource().getPlayer(), p);
@@ -31,10 +31,9 @@ public class InvseeCommand extends Command {
 		player.openHandledScreen(new NamedScreenHandlerFactory() {
 			@Override
 			public Text getDisplayName() {
-				LiteralText text = new LiteralText("");
-				text.getSiblings().add(target.getDisplayName());
-				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(target.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " inventory"));
-				return text;
+				return new LiteralText("")
+						.append(target.getDisplayName())
+						.append(new LiteralText("'" + (MoreCommands.textToString(target.getDisplayName(), null, false).endsWith("s") ? "" : "s") + " inventory"));
 			}
 
 			@Override
@@ -44,7 +43,7 @@ public class InvseeCommand extends Command {
 		});
 	}
 
-	// Cancelling slot clicks in handled in MixinScreenHandler in the compat package.
+	// Cancelling slot clicks is handled in MixinScreenHandler in the compat package.
 	public static class InvSeeScreenHandler extends GenericContainerScreenHandler {
 		public final PlayerEntity target;
 

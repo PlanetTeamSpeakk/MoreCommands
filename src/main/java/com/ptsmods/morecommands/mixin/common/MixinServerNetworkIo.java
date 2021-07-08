@@ -1,23 +1,13 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerNetworkIo;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 

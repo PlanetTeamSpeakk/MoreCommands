@@ -12,7 +12,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.arguments.CrampedStringArgumentType;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import io.netty.channel.*;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
@@ -39,12 +39,12 @@ public class FakePlayerCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("fakeplayer").requires(IS_OP).then(literal("create").then(argument("name", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, null, null))
+		dispatcher.register(literalReqOp("fakeplayer").then(literalReqOp("create").then(argument("name", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, null, null))
 		.then(argument("skinname", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), null))
 		.then(argument("userid", new UuidArgumentType()).executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), ctx.getArgument("userid", UUID.class)))))))
-		.then(literal("kick").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		.then(literalReqOp("kick").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			ServerPlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
-			if (!fake.contains(p.getUuid())) sendMsg(ctx, Formatting.RED + "To kick normal players, please use the /kick command instead.");
+			if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
 			else {
 				try {
 					p.networkHandler.disconnect(new LiteralText("YeET"));
@@ -62,7 +62,7 @@ public class FakePlayerCommand extends Command {
 		String username = ctx.getArgument("name", String.class);
 		if (skinname == null) skinname = username;
 		try {
-			if (ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(username) != null || userId != null && ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(userId) != null) sendMsg(ctx, Formatting.RED + "A player with that name is already logged in.");
+			if (ctx.getSource().getServer().getPlayerManager().getPlayer(username) != null || userId != null && ctx.getSource().getServer().getPlayerManager().getPlayer(userId) != null) sendError(ctx, "A player with that name is already logged in.");
 			else {
 				boolean random = false;
 				int i = 0;
@@ -79,7 +79,7 @@ public class FakePlayerCommand extends Command {
 						if (skinId == null) skinId = userId;
 					} else userId = userId == null ? skinId : userId;
 				} catch (JsonSyntaxException | IOException e1) {
-					sendMsg(ctx, Formatting.RED + "The UUID of the player with the given username '" + (username.equals(skinname) || i == 1 ? username : skinname) + "' could not be gotten, is the playername valid? Defaulting to random UUID.");
+					sendError(ctx, "The UUID of the player with the given username '" + (username.equals(skinname) || i == 1 ? username : skinname) + "' could not be gotten, is the playername valid? Defaulting to random UUID.");
 					userId = UUID.randomUUID();
 					if (skinId == null) skinId = userId;
 					random = skinId == userId;
@@ -88,7 +88,7 @@ public class FakePlayerCommand extends Command {
 				if (!random) {
 					Map<?, ?> data0 = new Gson().fromJson(MoreCommands.getHTML("https://sessionserver.mojang.com/session/minecraft/profile/" + skinId + "?unsigned=false"), Map.class);
 					List<Map<?, ?>> properties = (List<Map<?, ?>>) data0.get("properties");
-					if (properties.isEmpty()) sendMsg(ctx, Formatting.RED + "The gameprofile of the given player has no properties, this is not a good sign.");
+					if (properties.isEmpty()) sendError(ctx, "The gameprofile of the given player has no properties, this is not a good sign.");
 					else {
 						String data = null;
 						String signature = null;
@@ -106,7 +106,7 @@ public class FakePlayerCommand extends Command {
 						else profile.getProperties().put("textures", new Property("textures", data, signature));
 					}
 				}
-				ServerPlayerEntity player = Compat.getCompat().newServerPlayerEntity(ctx.getSource().getMinecraftServer(), ctx.getSource().getWorld(), profile);
+				ServerPlayerEntity player = Compat.getCompat().newServerPlayerEntity(ctx.getSource().getServer(), ctx.getSource().getWorld(), profile);
 				ClientConnection ccon = new ClientConnection(NetworkSide.SERVERBOUND);
 				Field f = ReflectionHelper.getYarnField(ClientConnection.class, "channel", "field_11651");
 				// I beg you, do not look at the following line. Please!
@@ -116,8 +116,8 @@ public class FakePlayerCommand extends Command {
 					Compat.getCompat().setEntityYaw(player, Compat.getCompat().getEntityYaw(ctx.getSource().getEntity()));
 					Compat.getCompat().setEntityPitch(player, Compat.getCompat().getEntityPitch(ctx.getSource().getEntity()));
 				}
-				player.networkHandler = new ServerPlayNetworkHandler(ctx.getSource().getMinecraftServer(), ccon, player);
-				ctx.getSource().getMinecraftServer().getPlayerManager().onPlayerConnect(ccon, player);
+				player.networkHandler = new ServerPlayNetworkHandler(ctx.getSource().getServer(), ccon, player);
+				ctx.getSource().getServer().getPlayerManager().onPlayerConnect(ccon, player);
 				player.updatePosition(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z);
 				player.changeGameMode(GameMode.CREATIVE);
 				Compat.getCompat().getAbilities(player).invulnerable = true;
@@ -130,7 +130,7 @@ public class FakePlayerCommand extends Command {
 			}
 		} catch (Exception e) {
 			log.catching(e);
-			sendMsg(ctx, Formatting.RED + "Something went wrong while creating the player. Message: " + e.getMessage());
+			sendError(ctx, "Something went wrong while creating the player. Message: " + e.getMessage());
 		}
 		return 0;
 	}

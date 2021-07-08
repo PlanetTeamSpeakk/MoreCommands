@@ -1,5 +1,6 @@
-package com.ptsmods.morecommands.miscellaneous;
+package com.ptsmods.morecommands.util;
 
+import com.ptsmods.morecommands.miscellaneous.RollingAverage;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import java.math.BigDecimal;

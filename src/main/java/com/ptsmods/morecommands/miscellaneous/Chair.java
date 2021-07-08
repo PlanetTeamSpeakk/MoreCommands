@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chair {
-
 	private static final List<Chair> chairs = new ArrayList<>();
 	private static final List<StairShape> VALID_SHAPES = ImmutableList.of(StairShape.INNER_LEFT, StairShape.INNER_RIGHT, StairShape.STRAIGHT);
 	private ArrowEntity arrow = null;

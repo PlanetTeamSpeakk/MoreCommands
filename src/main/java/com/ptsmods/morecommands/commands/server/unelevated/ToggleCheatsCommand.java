@@ -9,13 +9,13 @@ import net.minecraft.util.Formatting;
 public class ToggleCheatsCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("togglecheats").executes(ctx -> {
-			MinecraftServer server = ctx.getSource().getMinecraftServer();
+		dispatcher.register(literalReq("togglecheats").executes(ctx -> {
+			MinecraftServer server = ctx.getSource().getServer();
 			if (server.isSinglePlayer()) {
 				server.getPlayerManager().setCheatsAllowed(!server.getPlayerManager().areCheatsAllowed());
 				sendMsg(ctx, "Cheats are now " + formatFromBool(server.getPlayerManager().areCheatsAllowed(), "allowed", "disallowed") + DF + ".");
 				return 1;
-			} else sendMsg(ctx, Formatting.RED + "This command can only be used on singleplayer.");
+			} else sendError(ctx, "This command can only be used on singleplayer.");
 			return 0;
 		}));
 	}

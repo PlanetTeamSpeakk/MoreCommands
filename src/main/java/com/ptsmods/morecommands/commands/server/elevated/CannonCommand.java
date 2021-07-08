@@ -19,7 +19,7 @@ import java.util.Objects;
 public class CannonCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("cannon").requires(IS_OP).executes(ctx -> fire(ctx.getSource(), 4, 1.5F, 80))
+		dispatcher.register(literalReqOp("cannon").executes(ctx -> fire(ctx.getSource(), 4, 1.5F, 80))
 		.then(argument("power", FloatArgumentType.floatArg(0F)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), 1.5F, 80))
 		.then(argument("motionMultiplier", FloatArgumentType.floatArg(0F)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), 80))
 		.then(argument("fuse", IntegerArgumentType.integer(0)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), ctx.getArgument("fuse", Integer.class)))))));

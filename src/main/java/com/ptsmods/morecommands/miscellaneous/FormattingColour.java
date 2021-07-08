@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.ptsmods.morecommands.util.Rainbow;
 import net.minecraft.util.Formatting;
 
 public enum FormattingColour {

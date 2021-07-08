@@ -17,7 +17,7 @@ import net.minecraft.util.Hand;
 public class BookCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("book").executes(ctx -> {
+		dispatcher.register(literalReq("book").executes(ctx -> {
 			ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
 			NbtCompound tag = stack.getTag();
 			if (stack.getItem() == Items.WRITTEN_BOOK) {
@@ -32,7 +32,7 @@ public class BookCommand extends Command {
 				stack.setTag(tag);
 				ctx.getSource().getPlayer().setStackInHand(Hand.MAIN_HAND, stack);
 				return 1;
-			} else sendMsg(ctx, Formatting.RED + "You're not holding a written book.");
+			} else sendError(ctx, "You're not holding a written book.");
 			return 0;
 		}));
 	}

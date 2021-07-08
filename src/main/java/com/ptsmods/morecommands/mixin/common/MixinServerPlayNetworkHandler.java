@@ -2,37 +2,17 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.MessageType;
-import net.minecraft.network.NetworkThreadUtils;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.network.packet.c2s.play.RenameItemC2SPacket;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.StringUtils;
@@ -85,6 +65,7 @@ public class MixinServerPlayNetworkHandler {
 		});
 	}
 
+	@Group(name = "bookUpdate1171Compat", min = 1, max = 1)
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtList; getString(I)Ljava/lang/String;"), method = "onBookUpdate(Lnet/minecraft/network/packet/c2s/play/BookUpdateC2SPacket;)V")
 	public String onBookUpdate_getString(NbtList list, int index) {
 		ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
@@ -92,6 +73,12 @@ public class MixinServerPlayNetworkHandler {
 		if (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel()))
 			s = Command.translateFormats(s);
 		return s;
+	}
+
+	@Group(name = "bookUpdate1171Compat", min = 1, max = 1)
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;limit(J)Ljava/util/stream/Stream;", remap = false), method = "onBookUpdate")
+	public Stream<String> onBookUpdate_limit(Stream<String> stream, long maxSize) {
+		return player.getServerWorld().getGameRules().getBoolean(MoreCommands.doBookColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel()) ? stream.limit(maxSize).map(Command::translateFormats) : stream.limit(maxSize);
 	}
 
 	@Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/StringUtils; normalizeSpace(Ljava/lang/String;)Ljava/lang/String;", remap = false), method = "onGameMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")

@@ -12,9 +12,9 @@ import net.minecraft.util.Formatting;
 public class RenameCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("rename").requires(IS_OP).then(argument("name", StringArgumentType.greedyString()).executes(ctx -> {
+		dispatcher.register(literalReqOp("rename").then(argument("name", StringArgumentType.greedyString()).executes(ctx -> {
 			ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
-			if (stack.isEmpty()) sendMsg(ctx, Formatting.RED + "You are not holding an item.");
+			if (stack.isEmpty()) sendError(ctx, "You are not holding an item.");
 			else {
 				String name = MoreCommands.translateFormattings(ctx.getArgument("name", String.class));
 				stack.setCustomName(new LiteralText(name));

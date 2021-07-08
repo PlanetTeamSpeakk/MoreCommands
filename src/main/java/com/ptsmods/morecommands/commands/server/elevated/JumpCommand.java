@@ -11,7 +11,7 @@ import java.util.Objects;
 public class JumpCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("jump").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("jump").executes(ctx -> {
 			MoreCommands.teleport(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160d, true, true).getPos(), Compat.getCompat().getEntityYaw(Objects.requireNonNull(ctx.getSource().getEntity())), Compat.getCompat().getEntityPitch(ctx.getSource().getEntity()));
 			return 1;
 		}));

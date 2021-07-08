@@ -20,7 +20,7 @@ public class ExtinguishCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("extinguish").requires(IS_OP).executes(ctx -> execute(ctx, null)).then(argument("targets", EntityArgumentType.entities()).executes(ctx -> execute(ctx, EntityArgumentType.getEntities(ctx, "targets")))));
+		dispatcher.register(literalReqOp("extinguish").executes(ctx -> execute(ctx, null)).then(argument("targets", EntityArgumentType.entities()).executes(ctx -> execute(ctx, EntityArgumentType.getEntities(ctx, "targets")))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, Collection<? extends Entity> entities) throws CommandSyntaxException {

@@ -47,14 +47,14 @@ public class HomeCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("home").executes(ctx -> executeHome(ctx, null)).then(argument("home", StringArgumentType.word()).executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
-		dispatcher.register(literal("homes").executes(ctx -> sendHomes(ctx.getSource().getPlayer())));
-		dispatcher.register(literal("sethome").executes(ctx -> executeSetHome(ctx, "home")).then(argument("name", StringArgumentType.word()).executes(ctx -> executeSetHome(ctx, ctx.getArgument("name", String.class)))));
-		dispatcher.register(literal("delhome").then(argument("home", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("home").executes(ctx -> executeHome(ctx, null)).then(argument("home", StringArgumentType.word()).executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
+		dispatcher.register(literalReq("homes").executes(ctx -> sendHomes(ctx.getSource().getPlayer())));
+		dispatcher.register(literalReq("sethome").executes(ctx -> executeSetHome(ctx, "home")).then(argument("name", StringArgumentType.word()).executes(ctx -> executeSetHome(ctx, ctx.getArgument("name", String.class)))));
+		dispatcher.register(literalReq("delhome").then(argument("home", StringArgumentType.word()).executes(ctx -> {
 			PlayerEntity p = ctx.getSource().getPlayer();
 			Home home = getHome(p, ctx.getArgument("home", String.class));
 			if (!homes.containsKey(p.getUuid())) sendHomes(p); // Will send error msg.
-			else if (home == null) sendMsg(ctx, Formatting.RED + "Could not find a home by that name.");
+			else if (home == null) sendError(ctx, "Could not find a home by that name.");
 			else {
 				getHomes(p).remove(home);
 				if (getHomes(p).isEmpty()) homes.remove(p.getUuid());
@@ -71,8 +71,8 @@ public class HomeCommand extends Command {
 		int max = p.getEntityWorld().getGameRules().getInt(MoreCommands.maxHomesRule);
 		if (max < 0) max = Integer.MAX_VALUE;
 		boolean bypass = isOp(ctx);
-		if (max == 0 && !bypass) sendMsg(ctx, Formatting.RED + "Homes are currently disabled, you can enable them by setting the maxHomes gamerule to a value greater than 0.");
-		else if (getHomes(p).size() >= max && !bypass) sendMsg(ctx, Formatting.RED + "You cannot set more than " + max + " homes.");
+		if (max == 0 && !bypass) sendError(ctx, "Homes are currently disabled, you can enable them by setting the maxHomes gamerule to a value greater than 0.");
+		else if (getHomes(p).size() >= max && !bypass) sendError(ctx, "You cannot set more than " + max + " homes.");
 		else {
 			if (!homes.containsKey(p.getUuid())) homes.put(p.getUuid(), new ArrayList<>());
 			getHomes(p).add(new Home(name, p.getPos().x, p.getPos().y, p.getPos().z, Compat.getCompat().getEntityPitch(p), Compat.getCompat().getEntityYaw(p), p.getEntityWorld().getRegistryKey().getValue()));

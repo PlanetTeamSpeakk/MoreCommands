@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.miscellaneous;
+package com.ptsmods.morecommands.util;
 
 import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
@@ -20,7 +20,7 @@ public class Rainbow {
 		try {
 			Formatting.valueOf("RAINBOW");
 		} catch (IllegalArgumentException e) {
-			LogManager.getLogger("MoreCommands-Rainbow").info("The RAINBOW formatting could not be found which means the Formatting class was initialised too early, no rainbows will be supported during this session. Are you using MultiMC perhaps?");
+			LogManager.getLogger("MoreCommands-Rainbow").warn("The RAINBOW formatting could not be found which means the Formatting class was initialised too early, no rainbows will be supported during this session. Are you using MultiMC perhaps?");
 			return null;
 		}
 		return instance == null ? instance = new Rainbow() : instance;

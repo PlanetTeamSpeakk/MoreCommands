@@ -1,8 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.miscellaneous.Rainbow;
+import com.ptsmods.morecommands.util.Rainbow;
 import net.minecraft.client.font.TextVisitFactory;
 import net.minecraft.text.CharacterVisitor;
 import net.minecraft.text.Style;

@@ -1,9 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import net.minecraft.block.Blocks;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.block.WallSignBlock;
-import net.minecraft.block.WallTorchBlock;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;

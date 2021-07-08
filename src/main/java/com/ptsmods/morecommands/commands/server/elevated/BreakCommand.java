@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 public class BreakCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("break").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("break").executes(ctx -> {
 			BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true)).getBlockPos();
 			PlayerEntity player = ctx.getSource().getPlayer();
 			if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");

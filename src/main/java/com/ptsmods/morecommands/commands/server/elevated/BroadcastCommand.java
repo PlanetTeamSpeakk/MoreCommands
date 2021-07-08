@@ -8,8 +8,8 @@ import net.minecraft.server.command.ServerCommandSource;
 public class BroadcastCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("broadcast").requires(IS_OP).then(argument("msg", StringArgumentType.greedyString()).executes(ctx -> {
-			broadcast(ctx.getSource().getMinecraftServer(), translateFormats(ctx.getArgument("msg", String.class)));
+		dispatcher.register(literalReqOp("broadcast").then(argument("msg", StringArgumentType.greedyString()).executes(ctx -> {
+			broadcast(ctx.getSource().getServer(), translateFormats(ctx.getArgument("msg", String.class)));
 			return 1;
 		})));
 	}

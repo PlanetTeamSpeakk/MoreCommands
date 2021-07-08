@@ -27,16 +27,18 @@ tasks.build.dependsOn shadowJar
 repositories {
 	mavenCentral()
 	maven { url "https://jitpack.io" }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "io.github.prospector:modmenu:v2.0.0-beta.4"
 	modImplementation "com.ptsmods:devlogin:1.2"
-	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.2")
+	modImplementation 'me.lucko:fabric-permissions-api:0.1-SNAPSHOT'
+	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.3")
 	shadow implementation("com.github.Vatuu:discord-rpc:1.6.2")
 	shadow implementation("com.esotericsoftware:reflectasm:1.11.9")
 }

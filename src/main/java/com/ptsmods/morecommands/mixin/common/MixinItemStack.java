@@ -2,12 +2,11 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -15,52 +14,47 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack {
+	@Unique private int level;
 
-	@Shadow private NbtCompound tag;
-	@Shadow private int count;
-
-	@Overwrite
-	public void addEnchantment(Enchantment enchantment, int level) {
-		this.getOrCreateTag();
-		if (!this.tag.contains("Enchantments", 9))
-			this.tag.put("Enchantments", new NbtList());
-		NbtList listTag = this.tag.getList("Enchantments", 10);
-		NbtCompound compoundTag = new NbtCompound();
-		compoundTag.putString("id", String.valueOf(Registry.ENCHANTMENT.getId(enchantment)));
-		// By default the lvl tag is read as an int (see EnchantmentHelper#getLevel).
-		compoundTag.putInt("lvl", level); // <-- Change here (removed byte and short cast so the level limit of enchants is now Integer#MAX_VALUE instead of 255)
-		listTag.add(compoundTag);
+	@Inject(at = @At("HEAD"), method = "addEnchantment")
+	public void addEnchantment(Enchantment enchantment, int level, CallbackInfo cbi) {
+		this.level = level;
 	}
 
-	@Shadow
-	public abstract NbtCompound getOrCreateTag();
+	@Group(name = "enchantmentLevel1171Compat", min = 1, max = 1)
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtCompound;putShort(Ljava/lang/String;S)V"), method = "addEnchantment")
+	public void addEnchantment_putShort(NbtCompound nbt, String key, short value) {
+		nbt.putInt(key, level);
+	}
 
-	@Inject(at = @At("RETURN"), method = "getTranslationKey()Ljava/lang/String;")
-	public String getTranslationKey(CallbackInfoReturnable<String> cbi) {
+	@Group(name = "enchantmentLevel1171Compat", min = 1, max = 1)
+	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;createNbt(Lnet/minecraft/util/Identifier;I)Lnet/minecraft/nbt/NbtCompound;"), method = "addEnchantment")
+	public int addEnchantment_createNbt_lvl(int lvl) {
+		return level;
+	}
+
+	@Inject(at = @At("RETURN"), method = "getTranslationKey()Ljava/lang/String;", cancellable = true)
+	public void getTranslationKey(CallbackInfoReturnable<String> cbi) {
 		ItemStack thiz = ReflectionHelper.cast(this);
-		if (thiz.getItem() == Items.SPAWNER) return "block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new Identifier(thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultId()).getTranslationKey();
-		else return cbi.getReturnValue();
+		if (thiz.getItem() == Items.SPAWNER) cbi.setReturnValue("block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new Identifier(thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultId()).getTranslationKey());
 	}
 
-	@Inject(at = @At("TAIL"), method = "getName()Lnet/minecraft/text/Text;")
-	public Text getName(CallbackInfoReturnable<Text> cbi) {
+	@Inject(at = @At("TAIL"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
+	public void getName(CallbackInfoReturnable<Text> cbi) {
 		ItemStack thiz = ReflectionHelper.cast(this);
 		NbtCompound compoundTag = thiz.getSubTag("display");
-		if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER) return new TranslatableText(thiz.getTranslationKey()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW));
-		return cbi.getReturnValue();
+		if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER) cbi.setReturnValue(new TranslatableText(thiz.getTranslationKey()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)));
 	}
 
-	@Inject(at = @At("RETURN"), method = "hasGlint()Z")
-	public boolean hasGlint(CallbackInfoReturnable<Boolean> cbi) {
-		return ClientOptions.Rendering.powertoolsGlint.getValue() && PowerToolCommand.isPowerTool(ReflectionHelper.cast(this)) || cbi.getReturnValue();
+	@Inject(at = @At("RETURN"), method = "hasGlint()Z", cancellable = true)
+	public void hasGlint(CallbackInfoReturnable<Boolean> cbi) {
+		cbi.setReturnValue(ClientOptions.Rendering.powertoolsGlint.getValue() && PowerToolCommand.isPowerTool(ReflectionHelper.cast(this)) || cbi.getReturnValue());
 	}
-
 }

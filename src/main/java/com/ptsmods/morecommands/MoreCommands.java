@@ -17,6 +17,7 @@ import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.common.accessor.*;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -78,7 +79,6 @@ import net.minecraft.world.border.WorldBorder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.SSLContext;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
@@ -88,9 +88,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -138,6 +135,7 @@ public class MoreCommands implements ModInitializer {
 	public static final GameRules.Key<GameRules.BooleanRule> doPathFindingRule = GameRuleRegistry.register("doPathFinding", grc, GameRuleFactory.createBooleanRule(true));
 	public static final GameRules.Key<GameRules.BooleanRule> doGoalsRule = GameRuleRegistry.register("doGoals", grc, GameRuleFactory.createBooleanRule(true));
 	public static final GameRules.Key<GameRules.BooleanRule> doStacktraceRule = GameRuleRegistry.register("doStacktrace", grc, GameRuleFactory.createBooleanRule(true));
+	public static final GameRules.Key<GameRules.BooleanRule> sendCommandFeedbackToOpsRule = GameRuleRegistry.register("sendCommandFeedbackToOps", grc, GameRuleFactory.createBooleanRule(true));
 	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
 	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
 	public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
@@ -253,8 +251,8 @@ public class MoreCommands implements ModInitializer {
 		}
 		try {
 			List<Path> classNames = new ArrayList<>();
-			// It should only be a directory in the case of a debug environment, otherwise it should always be a jar file.
-			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(jar.getAbsolutePath() + File.separator + String.join(File.separator, "com", "ptsmods", "morecommands", "commands", type) + File.separator).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
+			// It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
+			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
 			else {
 				ZipFile zip = new ZipFile(jar);
 				Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -288,7 +286,7 @@ public class MoreCommands implements ModInitializer {
 			log.catching(e);
 			return null;
 		}
-		if (jar.isDirectory() && jar.getName().equals("main")) jar = new File(jar.getParentFile().getParentFile().getAbsolutePath() + File.separator + "classes" + File.separator + "java" + File.separator + "main" + File.separator);
+		if (jar.isDirectory() && jar.getName().equals("main")) jar = new File(String.join(File.separator, jar.getParentFile().getParentFile().getAbsolutePath(), "classes", "java", "main", ""));
 		return jar;
 	}
 

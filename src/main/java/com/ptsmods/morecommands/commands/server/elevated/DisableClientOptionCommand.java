@@ -36,23 +36,23 @@ public class DisableClientOptionCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literal("disableclientoption").requires(IS_OP).then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getMappedOptions().keySet()))).executes(ctx -> {
+		dispatcher.register(literalReqOp("disableclientoption").then(argument("option", LimitedStringArgumentType.word(Lists.newArrayList(ClientOptions.getMappedOptions().keySet()))).executes(ctx -> {
 			String option = ctx.getArgument("option", String.class);
 			if (disabled.contains(option)) disabled.remove(option);
 			else disabled.add(option);
 			try {
 				MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "disabledClientOptions.json"), disabled);
 			} catch (IOException e) {
-				sendMsg(ctx, Formatting.RED + "The data file could not be saved.");
+				sendError(ctx, "The data file could not be saved.");
 				log.error("Could not save the disabled client options data file.", e);
 				return 0;
 			}
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
 			disabled.forEach(buf::writeString);
-			ctx.getSource().getMinecraftServer().getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
+			ctx.getSource().getServer().getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
 			sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + formatFromBool(disabled.contains(option), Formatting.RED + "disabled", Formatting.GREEN + "enabled") + DF + " for all regular players.");
 			return disabled.contains(option) ? 2 : 1;
-		})).then(literal("list").executes(ctx -> {
+		})).then(literalReqOp("list").executes(ctx -> {
 			sendMsg(ctx, "Currently disabled client options are: " + joinNicely(disabled) + DF + ".");
 			return disabled.size();
 		})));

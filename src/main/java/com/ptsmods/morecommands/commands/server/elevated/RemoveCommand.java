@@ -17,7 +17,7 @@ import java.util.Collection;
 public class RemoveCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literal("remove").requires(IS_OP).executes(ctx -> execute(ctx.getSource(), ImmutableList.of((ctx.getSource()).getEntityOrThrow()))).then(CommandManager.argument("targets", EntityArgumentType.entities()).executes(ctx -> execute(ctx.getSource(), EntityArgumentType.getEntities(ctx, "targets")))));
+		dispatcher.register(literalReqOp("remove").executes(ctx -> execute(ctx.getSource(), ImmutableList.of((ctx.getSource()).getEntityOrThrow()))).then(CommandManager.argument("targets", EntityArgumentType.entities()).executes(ctx -> execute(ctx.getSource(), EntityArgumentType.getEntities(ctx, "targets")))));
 	}
 
 	private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) {

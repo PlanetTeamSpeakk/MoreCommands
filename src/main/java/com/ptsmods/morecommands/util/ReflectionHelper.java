@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.miscellaneous;
+package com.ptsmods.morecommands.util;
 
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReflectionHelper {
-
 	private static final Map<Class<?>, Map<String, Field>> cachedFields = new HashMap<>();
 	private static final Map<Class<?>, Map<String, Method>> cachedMethods = new HashMap<>();
 

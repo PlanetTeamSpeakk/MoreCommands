@@ -9,7 +9,7 @@ import net.minecraft.server.command.ServerCommandSource;
 public class SuperPickaxeCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.getRoot().addChild(MoreCommands.createAlias("/", dispatcher.register(literal("superpickaxe").requires(IS_OP).executes(ctx -> {
+		dispatcher.getRoot().addChild(MoreCommands.createAlias("/", dispatcher.register(literalReqOp("superpickaxe").executes(ctx -> {
 			PlayerEntity p = ctx.getSource().getPlayer();
 			p.getDataTracker().set(MoreCommands.SUPERPICKAXE, !p.getDataTracker().get(MoreCommands.SUPERPICKAXE));
 			sendMsg(ctx, "Superpickaxe has been " + formatFromBool(p.getDataTracker().get(MoreCommands.SUPERPICKAXE), "enabled", "disabled") + DF + ".");

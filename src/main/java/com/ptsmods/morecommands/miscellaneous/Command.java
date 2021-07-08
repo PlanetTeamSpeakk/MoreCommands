@@ -6,7 +6,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.util.ReflectionHelper;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -19,6 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +37,7 @@ public abstract class Command {
 	public static Style DS = MoreCommands.DS;
 	public static Style SS = MoreCommands.SS;
 	public static final Logger log = MoreCommands.log;
-	public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getMinecraftServer().getOpPermissionLevel());
+	public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getServer().getOpPermissionLevel());
 	private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
 	private static final Map<Class<?>, Map<Event<?>, Object>> registeredCallbacks = new HashMap<>();
 
@@ -67,12 +71,25 @@ public abstract class Command {
 	}
 
 	public static int sendMsg(CommandContext<ServerCommandSource> ctx, Text msg) {
-		ctx.getSource().sendFeedback(msg.shallowCopy().setStyle(msg.getStyle() == null ? DS : msg.getStyle().getColor() == null ? msg.getStyle().withFormatting(DF) : msg.getStyle()), true);
+		ctx.getSource().sendFeedback(msg.shallowCopy().formatted(DF), true);
+		return 1;
+	}
+
+	public static int sendError(CommandContext<ServerCommandSource> ctx, String msg) {
+		return sendError(ctx, new LiteralText(fixResets(msg, Formatting.RED)));
+	}
+
+	public static int sendError(CommandContext<ServerCommandSource> ctx, Text msg) {
+		ctx.getSource().sendError(msg);
 		return 1;
 	}
 
 	static String fixResets(String s) {
-		return s.replace(Formatting.RESET.toString(), Formatting.RESET.toString() + DF).replaceAll("\n", "\n" + DF);
+		return fixResets(s, DF);
+	}
+
+	static String fixResets(String s, Formatting formatting) {
+		return s.replace(Formatting.RESET.toString(), Formatting.RESET.toString() + formatting).replaceAll("\n", "\n" + formatting);
 	}
 
 	public static int sendMsg(Entity entity, String msg) {
@@ -97,6 +114,14 @@ public abstract class Command {
 
 	public static LiteralArgumentBuilder<ServerCommandSource> literal(String literal) {
 		return CommandManager.literal(literal);
+	}
+
+	public static LiteralArgumentBuilder<ServerCommandSource> literalReqOp(String literal) {
+		return literal(literal).requires(hasPermissionOrOp("morecommands." + literal));
+	}
+
+	public static LiteralArgumentBuilder<ServerCommandSource> literalReq(String literal) {
+		return literal(literal).requires(hasPermission("morecommands." + literal));
 	}
 
 	public static <T> RequiredArgumentBuilder<ServerCommandSource, T> argument(String name, ArgumentType<T> type) {
@@ -184,5 +209,17 @@ public abstract class Command {
 		if (callback != null) event.register(callback); // So you can unregister callbacks by passing null as a callback to this method.
 		if (!registeredCallbacks.containsKey(getClass())) registeredCallbacks.put(getClass(), new HashMap<>());
 		registeredCallbacks.get(getClass()).put(event, callback);
+	}
+
+	protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission, int defaultRequiredLevel) {
+		return FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
+	}
+
+	protected static Predicate<ServerCommandSource> hasPermissionOrOp(@NotNull String permission) {
+		return hasPermission(permission, 2);
+	}
+
+	protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission) {
+		return hasPermission(permission, 0);
 	}
 }

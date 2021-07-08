@@ -1,12 +1,11 @@
 package com.ptsmods.morecommands.mixin.compat.compat17plus;
 
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

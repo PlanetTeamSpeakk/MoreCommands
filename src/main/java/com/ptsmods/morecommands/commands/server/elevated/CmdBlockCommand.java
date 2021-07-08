@@ -19,7 +19,7 @@ import net.minecraft.util.Formatting;
 public class CmdBlockCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("cmdblock").requires(IS_OP).executes(ctx -> giveCmdBlock(ctx, ctx.getSource().getPlayer(), 1))
+		dispatcher.register(literalReqOp("cmdblock").executes(ctx -> giveCmdBlock(ctx, ctx.getSource().getPlayer(), 1))
 				.then(argument("amount", IntegerArgumentType.integer(0)).executes(ctx -> giveCmdBlock(ctx, ctx.getSource().getPlayer(), ctx.getArgument("amount", Integer.class)))
 				.then(argument("player", EntityArgumentType.player()).executes(ctx -> giveCmdBlock(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
 	}

@@ -4,16 +4,15 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.callbacks.CommandsRegisteredCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
-import net.minecraft.command.CommandSource;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
@@ -21,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 // Instead of permissions, we add the ability to disable commands entirely and, where possible, just use Minecraft's default permission level instead.
 public class DisableCommand extends Command {
@@ -30,6 +28,7 @@ public class DisableCommand extends Command {
 	private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
 	private final List<String> disabledPaths = new ArrayList<>();
 	private static File file = null;
+	private static List<UUID> remindedLP = new ArrayList<>();
 
 	public void init(MinecraftServer server) {
 		if (new File("config/MoreCommands/disabled.json").exists()) MoreCommands.tryMove("config/MoreCommands/disabled.json", MoreCommands.getRelativePath() + "disabled.json");
@@ -59,17 +58,29 @@ public class DisableCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("disable").requires(IS_OP).then(argument("cmd", StringArgumentType.greedyString()).executes(ctx -> {
-			String cmd = ctx.getArgument("cmd", String.class);
-			ParseResults<ServerCommandSource> results = dispatcher.parse(cmd, ctx.getSource().getMinecraftServer().getCommandSource());
-			if (results.getContext().getNodes().isEmpty()) sendMsg(ctx, Formatting.RED + "That command could not be found.");
-			else {
-				List<CommandNode<ServerCommandSource>> nodes = new ArrayList<>();
-				results.getContext().getNodes().forEach(node -> nodes.add(node.getNode()));
-				sendMsg(ctx, "The command has been " + formatFromBool(!disable(nodes, true), "enabled", "disabled") + ".");
-				return 1;
+		dispatcher.register(literalReqOp("disable").then(argument("cmd", StringArgumentType.greedyString()).executes(ctx -> {
+			try {
+				String cmd = ctx.getArgument("cmd", String.class);
+				ParseResults<ServerCommandSource> results = dispatcher.parse(cmd, ctx.getSource().getServer().getCommandSource());
+				if (results.getContext().getNodes().isEmpty()) sendError(ctx, "That command could not be found.");
+				else {
+					List<CommandNode<ServerCommandSource>> nodes = new ArrayList<>();
+					results.getContext().getNodes().forEach(node -> nodes.add(node.getNode()));
+					sendMsg(ctx, "The command has been " + formatFromBool(!disable(nodes, true), "enabled", "disabled") + ".");
+					return 1;
+				}
+				return 0;
+			} finally {
+				if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrThrow().getUuid())) {
+					sendMsg(ctx, new LiteralText("").styled(style -> style.withFormatting(Formatting.RED))
+							.append(new LiteralText("This command is deprecated, you should consider using "))
+							.append(new LiteralText("").styled(style -> style.withFormatting(Formatting.UNDERLINE, Formatting.BOLD).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to download"))))
+									.append(new LiteralText("Luck").styled(style -> style.withFormatting(Formatting.AQUA)))
+									.append(new LiteralText("Perms").styled(style -> style.withFormatting(Formatting.DARK_AQUA))))
+							.append(new LiteralText(" instead.")));
+					remindedLP.add(ctx.getSource().getEntityOrThrow().getUuid());
+				}
 			}
-			return 0;
 		})));
 	}
 
@@ -135,7 +146,10 @@ public class DisableCommand extends Command {
 
 	private com.mojang.brigadier.Command<ServerCommandSource> createDisabledCommand(com.mojang.brigadier.Command<ServerCommandSource> original) {
 		return ctx -> {
-			if (isOp(ctx)) return original.run(ctx);
+			if (isOp(ctx)) {
+				log.info("Running original");
+				return original.run(ctx);
+			}
 			else throw DISABLED.create();
 		};
 	}

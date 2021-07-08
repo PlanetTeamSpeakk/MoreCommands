@@ -28,11 +28,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class WarpCommand extends Command {
 	private final Map<UUID, List<Warp>> warps = new HashMap<>();
 	private final List<Warp> allWarps = new ArrayList<>();
-	private final List<UUID> dirty = new ArrayList<>();
+	private final Set<UUID> dirty = new HashSet<>();
 
 	public void init(MinecraftServer server) {
 		File oldDir = new File("config/MoreCommands/warps/");
@@ -57,7 +58,7 @@ public class WarpCommand extends Command {
 				List<Warp> warpList = new ArrayList<>();
 				for (String name : data.keySet())
 					warpList.add(fromMap(server, name, owner, data.get(name)));
-				allWarps.addAll(warpList);
+				allWarps.addAll(warpList.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 				warps.put(owner, warpList);
 			}
 			allWarps.sort(Comparator.comparing(Warp::getCreationDate));
@@ -121,11 +122,6 @@ public class WarpCommand extends Command {
 			warps.put(owner, new ArrayList<>());
 		warps.get(owner).add(warp);
 		allWarps.add(warp);
-		try {
-			save();
-		} catch (IOException e) {
-			log.error("Could not save warps.", e);
-		}
 		return warp;
 	}
 
@@ -144,8 +140,10 @@ public class WarpCommand extends Command {
 	public void save(UUID owner) throws IOException {
 		if (dirty.contains(owner)) {
 			Map<String, Map<String, Object>> data = new HashMap<>();
-			for (Warp warp : warps.getOrDefault(owner, Collections.emptyList()))
-				data.put(warp.getName(), warp.toMap());
+			for (Warp warp : warps.getOrDefault(owner, Collections.emptyList())) {
+				Map<String, Object> warpData = warp.toMap();
+				if (warpData != null) data.put(warp.getName(), warpData);
+			}
 			File f = getWarpsFile(owner);
 			if (!f.exists()) f.createNewFile();
 			dirty.remove(owner);
@@ -159,34 +157,34 @@ public class WarpCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("warp").executes(ctx -> executeList(ctx, 1)).then(argument("page", IntegerArgumentType.integer(1)).executes(ctx -> executeList(ctx, ctx.getArgument("page", Integer.class)))).then(argument("name", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("warp").executes(ctx -> executeList(ctx, 1)).then(argument("page", IntegerArgumentType.integer(1)).executes(ctx -> executeList(ctx, ctx.getArgument("page", Integer.class)))).then(argument("name", StringArgumentType.word()).executes(ctx -> {
 			String name = ctx.getArgument("name", String.class);
 			if (MoreCommands.isInteger(name) && Integer.parseInt(name) > 0) return executeList(ctx, Integer.parseInt(name));
 			Warp warp = getWarp(ctx.getArgument("name", String.class));
-			if (warp == null) sendMsg(ctx, Formatting.RED + "A warp by that name could not be found.");
-			else if (!warp.mayTeleport(ctx.getSource().getPlayer())) sendMsg(ctx, Formatting.RED + "You may not go there, sorry!");
+			if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+			else if (!warp.mayTeleport(ctx.getSource().getPlayer())) sendError(ctx, "You may not go there, sorry!");
 			else {
 				warp.teleport(ctx.getSource().getPlayer());
 				return 1;
 			}
 			return 0;
 		})));
-		dispatcher.register(literal("setwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("setwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
 			String name = ctx.getArgument("name", String.class);
-			if (getWarp(name) != null) sendMsg(ctx, Formatting.RED + "A warp by that name already exists, please delete it first.");
+			if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
 			else {
-				Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getMinecraftServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
+				Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
 				sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF + "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF + "/limitwarp " + warp.getName() + DF + "." : ""));
 				return 1;
 			}
 			return 0;
 		})));
-		dispatcher.register(literal("delwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("delwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
 			String name = ctx.getArgument("name", String.class);
 			Warp warp = getWarp(name);
-			UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getMinecraftServer());
-			if (warp == null) sendMsg(ctx, Formatting.RED + "A warp by that name could not be found.");
-			else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendMsg(ctx, Formatting.RED + "You have no control over that warp.");
+			UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getServer());
+			if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+			else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendError(ctx, "You have no control over that warp.");
 			else {
 				warp.delete();
 				sendMsg(ctx, "The warp has been deleted.");
@@ -194,9 +192,9 @@ public class WarpCommand extends Command {
 			}
 			return 0;
 		})));
-		dispatcher.register(literal("limitwarp").requires(IS_OP).then(argument("name", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("limitwarp").requires(hasPermissionOrOp("morecommands.limitwarp")).then(argument("name", StringArgumentType.word()).executes(ctx -> {
 			Warp warp = getWarp(ctx.getArgument("name", String.class));
-			if (warp == null) sendMsg(ctx, Formatting.RED + "A warp by that name could not be found.");
+			if (warp == null) sendError(ctx, "A warp by that name could not be found.");
 			else {
 				warp.setLimited(!warp.isLimited());
 				sendMsg(ctx, "The given warp is now " + formatFromBool(warp.isLimited(), Formatting.GREEN + "limited", Formatting.RED + "unlimited") + DF + ".");
@@ -205,9 +203,9 @@ public class WarpCommand extends Command {
 			return 0;
 		})));
 		SimpleDateFormat format = new SimpleDateFormat("d MMMM yyyy HH:mm:ss");
-		dispatcher.register(literal("warpinfo").then(argument("name", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("warpinfo").then(argument("name", StringArgumentType.word()).executes(ctx -> {
 			Warp warp = getWarp(ctx.getArgument("name", String.class));
-			if (warp == null) sendMsg(ctx, Formatting.RED + "A warp by that name could not be found.");
+			if (warp == null) sendError(ctx, "A warp by that name could not be found.");
 			else {
 				StringBuilder header = new StringBuilder();
 				for (int i = 0; i < 35; i++)
@@ -215,7 +213,7 @@ public class WarpCommand extends Command {
 						header.append(DF).append("WARPINFO FOR ").append(SF).append(warp.getName());
 					else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
 				sendMsg(ctx, header.toString());
-				sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()) == null ? warp.getOwner() : MoreCommands.textToString(ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
+				sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()) == null ? warp.getOwner() : MoreCommands.textToString(ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
 				sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
 				sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
 				sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());
@@ -235,7 +233,7 @@ public class WarpCommand extends Command {
 
 	private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {
 		List<String> warps = getWarpNamesFor(ctx.getSource().getPlayer());
-		if (warps.isEmpty()) sendMsg(ctx, Formatting.RED + "There are no warps set as of right now.");
+		if (warps.isEmpty()) sendError(ctx, "There are no warps set as of right now.");
 		else {
 			int pages = warps.size() / 15 + 1;
 			if (page > pages) page = pages;
@@ -252,15 +250,20 @@ public class WarpCommand extends Command {
 	}
 
 	private Warp fromMap(MinecraftServer server, String name, UUID owner, Map<?, ?> data) {
+		for (String key : new String[] {"world", "x", "y", "z", "yaw", "pitch", "counter", "creationDate"}) if (!data.containsKey(key)) return null;
 		Identifier worldId = new Identifier((String) data.get("world"));
-		return new Warp(name, owner,
+		Warp warp = new Warp(name, owner,
 				new Location<>(server.getWorld(server.getWorldRegistryKeys().stream().filter(key -> key.getValue().equals(worldId)).findFirst().orElse(null)),
 						new Vec3d((Double) data.get("x"), (Double) data.get("y"), (Double) data.get("z")),
 						new Vec2f(((Double) data.get("yaw")).floatValue(), ((Double) data.get("pitch")).floatValue())),
-				(Boolean) data.get("isLimited"),
+				data.containsKey("isLimited") && (Boolean) data.get("isLimited"),
 				((Double) data.get("counter")).intValue(),
 				new Date(((Double) data.get("creationDate")).longValue())
 		);
+		// Forgot to save the isLimited variable at first, so old configs don't yet have it.
+		// For that reason, the warp is set to be dirty so it will be saved again later.
+		if (!data.containsKey("isLimited")) warp.setDirty(true);
+		return warp;
 	}
 
 	public class Warp {
@@ -342,8 +345,8 @@ public class WarpCommand extends Command {
 		}
 
 		public void setDirty(boolean b) {
-			if (b && !isDirty()) dirty.add(getOwner());
-			else if (!b && isDirty()) dirty.remove(getOwner());
+			if (b) dirty.add(getOwner());
+			else dirty.remove(getOwner());
 		}
 
 		public boolean mayTeleport(ServerPlayerEntity player) {

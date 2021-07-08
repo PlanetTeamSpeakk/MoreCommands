@@ -6,9 +6,8 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.UsageMonitorer;
+import com.ptsmods.morecommands.util.UsageMonitorer;
 import net.minecraft.server.command.ServerCommandSource;
-import oshi.SystemInfo;
 
 import java.io.IOException;
 import java.nio.file.FileStore;
@@ -19,7 +18,7 @@ import java.nio.file.Path;
 public class SysInfoCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("sysinfo").requires(IS_OP).executes(SysInfoCommand::sendSysInfo));
+		dispatcher.register(literalReqOp("sysinfo").executes(SysInfoCommand::sendSysInfo));
 	}
 
 	@Override

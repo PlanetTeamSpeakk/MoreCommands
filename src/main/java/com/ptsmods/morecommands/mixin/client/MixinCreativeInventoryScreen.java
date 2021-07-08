@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.compat.client.ClientCompat;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinClickableWidgetAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinItemGroupButtonWidgetAccessor;
 import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;

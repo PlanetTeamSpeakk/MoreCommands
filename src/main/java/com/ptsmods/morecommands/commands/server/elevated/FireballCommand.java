@@ -32,7 +32,7 @@ public class FireballCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("fireball").requires(IS_OP).executes(ctx -> execute(ctx, 4f, 1d, 1))
+		dispatcher.register(literalReqOp("fireball").executes(ctx -> execute(ctx, 4f, 1d, 1))
 		.then(argument("power", FloatArgumentType.floatArg(0f)).executes(ctx -> execute(ctx, ctx.getArgument("power", Float.class), 1d, 1))
 		.then(argument("speed", DoubleArgumentType.doubleArg(0)).executes(ctx -> execute(ctx, ctx.getArgument("power", Float.class), ctx.getArgument("speed", Double.class), 1))
 		.then(argument("impacts", IntegerArgumentType.integer(0)).executes(ctx -> execute(ctx, ctx.getArgument("power", Float.class), ctx.getArgument("speed", Double.class), ctx.getArgument("impacts", Integer.class)))))));

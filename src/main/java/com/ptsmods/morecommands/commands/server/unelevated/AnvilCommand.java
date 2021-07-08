@@ -13,7 +13,7 @@ import net.minecraft.text.TranslatableText;
 public class AnvilCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("anvil").executes(ctx -> {
+		dispatcher.register(literalReq("anvil").executes(ctx -> {
 			ServerPlayerEntity player = ctx.getSource().getPlayer();
 			ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new AnvilScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getServerWorld(), player.getBlockPos())) {
 				public boolean canUse(PlayerEntity player) {

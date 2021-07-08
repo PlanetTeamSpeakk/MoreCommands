@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.compat;
 
 import com.ptsmods.morecommands.commands.server.elevated.FireballCommand;
 import com.ptsmods.morecommands.compat.Compat;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.AbstractFireballEntity;
 import net.minecraft.entity.projectile.FireballEntity;

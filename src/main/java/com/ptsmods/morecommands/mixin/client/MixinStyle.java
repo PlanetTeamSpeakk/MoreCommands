@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.miscellaneous.Rainbow;
+import com.ptsmods.morecommands.util.Rainbow;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextColor;
 import org.spongepowered.asm.mixin.Mixin;

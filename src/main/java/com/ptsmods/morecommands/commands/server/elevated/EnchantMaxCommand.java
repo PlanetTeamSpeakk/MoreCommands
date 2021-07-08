@@ -10,9 +10,9 @@ import net.minecraft.util.registry.Registry;
 public class EnchantMaxCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literal("enchantmax").requires(IS_OP).executes(ctx -> {
+        dispatcher.register(literalReqOp("enchantmax").executes(ctx -> {
             ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
-            if (stack.isEmpty()) sendMsg(ctx, Formatting.RED + "You're not holding an item.");
+            if (stack.isEmpty()) sendError(ctx, "You're not holding an item.");
             else {
                 stack.getEnchantments().clear();
                 Registry.ENCHANTMENT.stream().filter(enchantment -> !enchantment.isCursed()).forEach(enchantment -> stack.addEnchantment(enchantment, Integer.MAX_VALUE));

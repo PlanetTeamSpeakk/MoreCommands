@@ -15,7 +15,7 @@ import net.minecraft.world.explosion.Explosion;
 public class ExplodeCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("explode").requires(IS_OP).executes(ctx -> execute(ctx, null, 4f, false, Explosion.DestructionType.BREAK, true))
+		dispatcher.register(literalReqOp("explode").executes(ctx -> execute(ctx, null, 4f, false, Explosion.DestructionType.BREAK, true))
 		.then(argument("pos", Vec3ArgumentType.vec3()).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), 4f, false, Explosion.DestructionType.BREAK, true))
 		.then(argument("power", FloatArgumentType.floatArg(0f)).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), false, Explosion.DestructionType.BREAK, true))
 		.then(argument("fire", BoolArgumentType.bool()).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), ctx.getArgument("fire", Boolean.class), Explosion.DestructionType.BREAK, true))
@@ -26,7 +26,7 @@ public class ExplodeCommand extends Command {
 	private int execute(CommandContext<ServerCommandSource> ctx, Vec3d pos, float power, boolean fire, Explosion.DestructionType destruct, boolean launch) {
 		if (pos == null) pos = ctx.getSource().getPosition();
 		World world = ctx.getSource().getWorld();
-		Explosion explosion = world.createExplosion(ctx.getSource().getEntity() != null && !launch ? ctx.getSource().getEntity() : null, pos.getX() + .5d, pos.getY() + .5d, pos.getZ() + .5d, power, fire, destruct);
+		Explosion explosion = world.createExplosion(ctx.getSource().getEntity() != null && !launch ? ctx.getSource().getEntity() : null, pos.getX(), pos.getY(), pos.getZ(), power, fire, destruct);
 		explosion.affectWorld(true);
 		return explosion.getAffectedBlocks().size();
 	}

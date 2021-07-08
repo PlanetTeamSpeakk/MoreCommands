@@ -12,7 +12,7 @@ import net.minecraft.server.command.ServerCommandSource;
 public class HatCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("hat").executes(ctx -> {
+		dispatcher.register(literalReq("hat").executes(ctx -> {
 			PlayerEntity player = ctx.getSource().getPlayer();
 			ItemStack stack = player.getEquippedStack(EquipmentSlot.HEAD);
 			Compat.getCompat().getInventory(player).armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());

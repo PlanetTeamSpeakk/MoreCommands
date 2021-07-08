@@ -25,7 +25,7 @@ import java.util.Objects;
 public class SpawnerCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("spawner").requires(IS_OP).then(argument("type", new RegistryArgumentType<>(Registry.ENTITY_TYPE)).executes(ctx -> {
+		dispatcher.register(literalReqOp("spawner").then(argument("type", new RegistryArgumentType<>(Registry.ENTITY_TYPE)).executes(ctx -> {
 			try {
 				BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160, true, true);
 				BlockState state = ctx.getSource().getWorld().getBlockState(result.getBlockPos());
@@ -59,7 +59,7 @@ public class SpawnerCommand extends Command {
 						stack.setTag(tag);
 						sendMsg(ctx, "Poof!");
 						return 1;
-					} else sendMsg(ctx, Formatting.RED + "You do not appear to be looking at or holding a spawner.");
+					} else sendError(ctx, "You do not appear to be looking at or holding a spawner.");
 				} else {
 					MobSpawnerBlockEntity be = (MobSpawnerBlockEntity) ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
 					MobSpawnerLogic logic = Objects.requireNonNull(be).getLogic();

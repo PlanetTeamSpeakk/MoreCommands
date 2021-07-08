@@ -17,7 +17,7 @@ import net.minecraft.util.Formatting;
 public class BarrierCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("barrier").requires(IS_OP).executes(ctx -> giveBarrier(ctx, ctx.getSource().getPlayer(), 1))
+		dispatcher.register(literalReqOp("barrier").executes(ctx -> giveBarrier(ctx, ctx.getSource().getPlayer(), 1))
 				.then(argument("amount", IntegerArgumentType.integer(0)).executes(ctx -> giveBarrier(ctx, ctx.getSource().getPlayer(), ctx.getArgument("amount", Integer.class)))
 				.then(argument("player", EntityArgumentType.player()).executes(ctx -> giveBarrier(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
 	}

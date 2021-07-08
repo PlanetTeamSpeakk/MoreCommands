@@ -42,10 +42,10 @@ public class KitCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literal("kit").then(argument("kit", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("kit").then(argument("kit", StringArgumentType.word()).executes(ctx -> {
 			String kit = ctx.getArgument("kit", String.class).toLowerCase(Locale.ROOT);
-			if (!kits.containsKey(kit)) sendMsg(ctx, Formatting.RED + "A kit by that name does not exist.");
-			else if (kits.get(kit).onCooldown(ctx.getSource().getPlayer())) sendMsg(ctx, Formatting.RED + "You're still on cooldown! Please wait " + MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayer()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
+			if (!kits.containsKey(kit)) sendError(ctx, "A kit by that name does not exist.");
+			else if (kits.get(kit).onCooldown(ctx.getSource().getPlayer())) sendError(ctx, "You're still on cooldown! Please wait " + MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayer()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
 			else {
 				kits.get(kit).give(ctx.getSource().getPlayer());
 				sendMsg(ctx, "You have been given the " + SF + kits.get(kit).getName() + DF + " kit.");
@@ -53,9 +53,9 @@ public class KitCommand extends Command {
 			}
 			return 0;
 		})));
-		dispatcher.register(literal("createkit").requires(IS_OP).then(argument("name", StringArgumentType.word()).then(argument("cooldown", IntegerArgumentType.integer(0)).executes(ctx -> {
+		dispatcher.register(literalReq("createkit").requires(hasPermissionOrOp("morecommands.createkit")).then(argument("name", StringArgumentType.word()).then(argument("cooldown", IntegerArgumentType.integer(0)).executes(ctx -> {
 			String name = ctx.getArgument("name", String.class);
-			if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendMsg(ctx, Formatting.RED + "A kit with that name already exists.");
+			if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendError(ctx, "A kit with that name already exists.");
 			else {
 				PlayerInventory inv = Compat.getCompat().getInventory(ctx.getSource().getPlayer());
 				kits.put(name.toLowerCase(Locale.ROOT), new Kit(name, ctx.getArgument("cooldown", Integer.class), Lists.newArrayList(inv.main, inv.armor, inv.offHand).stream().flatMap(List::stream).collect(Collectors.toList())));
@@ -65,9 +65,9 @@ public class KitCommand extends Command {
 			}
 			return 0;
 		}))));
-		dispatcher.register(literal("delkit").requires(IS_OP).then(argument("kit", StringArgumentType.word()).executes(ctx -> {
+		dispatcher.register(literalReq("delkit").requires(hasPermissionOrOp("morecommands.delkit")).then(argument("kit", StringArgumentType.word()).executes(ctx -> {
 			String kit = ctx.getArgument("kit", String.class);
-			if (!kits.containsKey(kit)) sendMsg(ctx, Formatting.RED + "No kit by that name exists.");
+			if (!kits.containsKey(kit)) sendError(ctx, "No kit by that name exists.");
 			else {
 				Kit kit0 = kits.remove(kit);
 				saveKits();

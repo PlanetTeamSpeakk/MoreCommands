@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.miscellaneous.FormattingColour;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 
 import java.io.File;
 import java.io.FileReader;

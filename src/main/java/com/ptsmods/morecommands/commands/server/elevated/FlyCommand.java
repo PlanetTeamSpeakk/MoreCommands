@@ -11,7 +11,7 @@ import net.minecraft.server.command.ServerCommandSource;
 public class FlyCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("fly").requires(IS_OP).executes(ctx -> {
+		dispatcher.register(literalReqOp("fly").executes(ctx -> {
 			PlayerEntity player = ctx.getSource().getPlayer();
 			PlayerAbilities abilities = Compat.getCompat().getAbilities(player);
 			abilities.allowFlying = !abilities.allowFlying;

@@ -18,7 +18,7 @@ import net.minecraft.util.registry.Registry;
 public class SpawnMobCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("spawnmob").requires(IS_OP).then(argument("type", new RegistryArgumentType<>(Registry.ENTITY_TYPE)).executes(ctx -> execute(ctx, 1)).then(argument("amount", IntegerArgumentType.integer(1)).executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
+		dispatcher.register(literalReqOp("spawnmob").then(argument("type", new RegistryArgumentType<>(Registry.ENTITY_TYPE)).executes(ctx -> execute(ctx, 1)).then(argument("amount", IntegerArgumentType.integer(1)).executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {

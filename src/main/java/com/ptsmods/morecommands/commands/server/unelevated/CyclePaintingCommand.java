@@ -19,7 +19,7 @@ import net.minecraft.util.registry.Registry;
 public class CyclePaintingCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("cyclepainting").executes(ctx -> execute(ctx, null)).then(argument("motive", new RegistryArgumentType<>(Registry.PAINTING_MOTIVE)).executes(ctx -> execute(ctx, ctx.getArgument("motive", PaintingMotive.class)))));
+		dispatcher.register(literalReq("cyclepainting").executes(ctx -> execute(ctx, null)).then(argument("motive", new RegistryArgumentType<>(Registry.PAINTING_MOTIVE)).executes(ctx -> execute(ctx, ctx.getArgument("motive", PaintingMotive.class)))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {
@@ -34,7 +34,7 @@ public class CyclePaintingCommand extends Command {
 			painting0.setPos(pos.getX(), pos.getY(), pos.getZ());
 			ctx.getSource().getWorld().spawnEntity(painting0);
 			return 1;
-		} else sendMsg(ctx, Formatting.RED + "It appears as if you're not looking at a painting.");
+		} else sendError(ctx, "It appears as if you're not looking at a painting.");
 		return 0;
 	}
 

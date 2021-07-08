@@ -5,15 +5,12 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.miscellaneous.ReflectionHelper;
+import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.server.command.ServerCommandSource;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 public class GmCommand extends Command {
-	private final Field literalField = ReflectionHelper.getField(LiteralArgumentBuilder.class, "literal");
-
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		CommandNode<ServerCommandSource> gamemode = dispatcher.getRoot().getChild("gamemode");
@@ -24,6 +21,8 @@ public class GmCommand extends Command {
 	}
 
 	private LiteralArgumentBuilder<ServerCommandSource> setLiteral(LiteralArgumentBuilder<ServerCommandSource> builder, String literal) {
-		return literal(literal).requires(builder.getRequirement()).forward(builder.getRedirect(), builder.getRedirectModifier(), builder.isFork()).executes(builder.getCommand());
+		LiteralArgumentBuilder<ServerCommandSource> cmd = literal(literal).requires(hasPermissionOrOp("morecommands." + literal)).forward(builder.getRedirect(), builder.getRedirectModifier(), builder.isFork()).executes(builder.getCommand());
+		builder.build().getChildren().forEach(child -> cmd.then(child.createBuilder()));
+		return cmd;
 	}
 }
