@@ -14,7 +14,7 @@ public class GameRuleDescCommand extends Command {
 		LiteralArgumentBuilder<ServerCommandSource> gamerule = literalReqOp("gamerule");
 		GameRules.accept(new GameRules.Visitor() {
 			public <T extends GameRules.Rule<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
-				gamerule.then(literal(key.getName()).then(literalReqOp("desc").executes(ctx -> {
+				gamerule.then(literal(key.getName()).then(literal("desc").executes(ctx -> {
 					sendMsg(ctx, new LiteralText("Description for gamerule " + key.getName() + ": ").append(new TranslatableText(key.getTranslationKey() + ".description")));
 					return 1;
 				})));

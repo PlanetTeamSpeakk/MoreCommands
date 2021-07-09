@@ -22,7 +22,7 @@ public class GetSkinCommand extends ClientCommand {
             String skinUrl = (String) ((Map<?, ?>) textures.get("SKIN")).get("url");
             String capeUrl = textures.containsKey("CAPE") ? (String) ((Map<?, ?>) textures.get("CAPE")).get("url") : null;
             sendMsg(new LiteralText(SF + player.getProfile().getName() + "'s " + DF + "skin can be found at ").setStyle(DS).append(new LiteralText(skinUrl).setStyle(SS.withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, skinUrl))))
-                    .append(capeUrl != null ? new LiteralText(" and their cape can be found at ").setStyle(DS).append(new LiteralText(capeUrl).setStyle(SS.withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, capeUrl)))) : Text.of(""))
+                    .append(capeUrl != null ? new LiteralText(" and their cape can be found at ").setStyle(DS).append(new LiteralText(capeUrl).setStyle(SS.withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, capeUrl)))) : new LiteralText(""))
                     .append(new LiteralText(".")));
             return 1;
         })));

@@ -24,11 +24,11 @@ import java.util.*;
 // Instead of permissions, we add the ability to disable commands entirely and, where possible, just use Minecraft's default permission level instead.
 public class DisableCommand extends Command {
 	private static final SimpleCommandExceptionType DISABLED = new SimpleCommandExceptionType(new LiteralText("This command is currently disabled."));
-	private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");;
+	private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");
+	private static final List<UUID> remindedLP = new ArrayList<>();
 	private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
 	private final List<String> disabledPaths = new ArrayList<>();
 	private static File file = null;
-	private static List<UUID> remindedLP = new ArrayList<>();
 
 	public void init(MinecraftServer server) {
 		if (new File("config/MoreCommands/disabled.json").exists()) MoreCommands.tryMove("config/MoreCommands/disabled.json", MoreCommands.getRelativePath() + "disabled.json");
@@ -146,10 +146,7 @@ public class DisableCommand extends Command {
 
 	private com.mojang.brigadier.Command<ServerCommandSource> createDisabledCommand(com.mojang.brigadier.Command<ServerCommandSource> original) {
 		return ctx -> {
-			if (isOp(ctx)) {
-				log.info("Running original");
-				return original.run(ctx);
-			}
+			if (isOp(ctx)) return original.run(ctx);
 			else throw DISABLED.create();
 		};
 	}

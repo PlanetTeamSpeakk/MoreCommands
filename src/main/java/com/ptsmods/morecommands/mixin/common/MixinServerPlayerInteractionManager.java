@@ -1,36 +1,27 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.compat.Compat;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.GameMode;
-import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 @Mixin(ServerPlayerInteractionManager.class)
 public class MixinServerPlayerInteractionManager {
-	@Shadow public ServerWorld world;
-	@Shadow public ServerPlayerEntity player;
+	@Shadow protected ServerWorld world;
+	@Final @Shadow protected ServerPlayerEntity player;
 	private boolean mc_isFlying = false;
 
 	// Preventing packet from being sent
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; sendAbilitiesUpdate()V"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendAbilitiesUpdate()V"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
 	public void sendAbilitiesUpdate(ServerPlayerEntity player) {}
 
 	@Inject(at = @At("HEAD"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")

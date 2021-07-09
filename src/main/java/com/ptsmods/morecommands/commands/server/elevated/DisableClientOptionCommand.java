@@ -52,7 +52,7 @@ public class DisableClientOptionCommand extends Command {
 			ctx.getSource().getServer().getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
 			sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + formatFromBool(disabled.contains(option), Formatting.RED + "disabled", Formatting.GREEN + "enabled") + DF + " for all regular players.");
 			return disabled.contains(option) ? 2 : 1;
-		})).then(literalReqOp("list").executes(ctx -> {
+		})).then(literal("list").executes(ctx -> {
 			sendMsg(ctx, "Currently disabled client options are: " + joinNicely(disabled) + DF + ".");
 			return disabled.size();
 		})));

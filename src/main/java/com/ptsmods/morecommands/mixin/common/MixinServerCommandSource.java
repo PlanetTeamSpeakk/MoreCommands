@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class MixinServerCommandSource {
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/command/ServerCommandSource;sendToOps(Lnet/minecraft/text/Text;)V"), method = "sendFeedback")
 	private void sendFeedback_sendToOps(ServerCommandSource source, Text message) {
-		if (source.getWorld() == null || source.getWorld().getGameRules().getBoolean(MoreCommands.sendCommandFeedbackToOpsRule)) sendToOps(Text.of(MoreCommands.textToString(message, null, false)));
+		if (source.getWorld() == null || source.getWorld().getGameRules().getBoolean(MoreCommands.sendCommandFeedbackToOpsRule)) sendToOps(new LiteralText(MoreCommands.textToString(message, null, false)));
 	}
 
 	@Shadow private void sendToOps(Text message) {}

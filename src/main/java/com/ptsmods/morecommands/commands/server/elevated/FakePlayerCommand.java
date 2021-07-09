@@ -39,10 +39,10 @@ public class FakePlayerCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReqOp("fakeplayer").then(literalReqOp("create").then(argument("name", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, null, null))
+		dispatcher.register(literalReqOp("fakeplayer").then(literal("create").then(argument("name", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, null, null))
 		.then(argument("skinname", new CrampedStringArgumentType(StringArgumentType.word(), 3, 16)).executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), null))
 		.then(argument("userid", new UuidArgumentType()).executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), ctx.getArgument("userid", UUID.class)))))))
-		.then(literalReqOp("kick").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		.then(literal("kick").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			ServerPlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
 			if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
 			else {

@@ -50,7 +50,7 @@ public class DiscordCommand extends Command {
 		dispatcher.register(literalReq("discord").executes(ctx -> {
 			sendMsg(ctx, discordUrl == null ? Formatting.RED + "This server does not have a Discord url set." : "Join our Discord server at " + Formatting.BLUE + Formatting.UNDERLINE + discordUrl + DF + ".");
 			return 1;
-		}).then(literalReq("set").requires(IS_OP).then(argument("url", StringArgumentType.greedyString()).executes(ctx -> {
+		}).then(literal("set").requires(IS_OP).then(argument("url", StringArgumentType.greedyString()).executes(ctx -> {
 			try {
 				URL url = new URL(ctx.getArgument("url", String.class));
 				discordUrl = url.toString();
@@ -75,7 +75,7 @@ public class DiscordCommand extends Command {
 				sendMsg(ctx, "A request has been sent to the player.");
 			}
 			return 1;
-		})).then(literalReq("send").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+		})).then(literal("send").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 			sendDiscordTag(ctx, player);
 			sendMsg(ctx, MoreCommands.textToString(player.getDisplayName(), SS, true) + DF + " has been sent your Discord tag.");
