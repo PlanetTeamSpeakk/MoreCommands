@@ -33,7 +33,7 @@ public class CompatASMReflection {
         try {
             return ctor.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            MoreCommands.log.error("Couldn't invoke constructor for " + ctor.getDeclaringClass().getName() + " class.", e);
+            MoreCommands.LOG.error("Couldn't invoke constructor for " + ctor.getDeclaringClass().getName() + " class.", e);
             return null;
         }
     }

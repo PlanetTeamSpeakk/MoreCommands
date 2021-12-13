@@ -3,9 +3,9 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
 import net.minecraft.world.border.WorldBorder;
 
 public class WildCommand extends Command {
@@ -13,7 +13,7 @@ public class WildCommand extends Command {
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReq("wild").executes(ctx -> {
 			WorldBorder border = ctx.getSource().getWorld().getWorldBorder();
-			double limit = Math.min(ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.wildLimitRule), border.getSize()/2);
+			double limit = Math.min(ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.wildLimitRule), border.getSize()/2);
 			if (limit <= 0) sendError(ctx, "The wild is unreachable!");
 			else {
 				Entity entity = ctx.getSource().getEntityOrThrow();

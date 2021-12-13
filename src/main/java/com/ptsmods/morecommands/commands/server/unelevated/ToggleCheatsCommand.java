@@ -11,7 +11,7 @@ public class ToggleCheatsCommand extends Command {
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReq("togglecheats").executes(ctx -> {
 			MinecraftServer server = ctx.getSource().getServer();
-			if (server.isSinglePlayer()) {
+			if (server.isSingleplayer()) {
 				server.getPlayerManager().setCheatsAllowed(!server.getPlayerManager().areCheatsAllowed());
 				sendMsg(ctx, "Cheats are now " + formatFromBool(server.getPlayerManager().areCheatsAllowed(), "allowed", "disallowed") + DF + ".");
 				return 1;

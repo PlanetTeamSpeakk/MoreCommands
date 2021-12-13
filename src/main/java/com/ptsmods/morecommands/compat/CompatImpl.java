@@ -63,7 +63,7 @@ class CompatImpl extends AbstractCompat {
 
     @Override
     public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return (Compat.is16() ? Compat16.instance : Compat17Plus.instance).writeSpawnerLogicNbt(logic, world, pos, nbt);
+        return (Compat.is16() ? Compat16.instance : Compat.is17() ? Compat17Plus.instance : Compat18Plus.instance).writeSpawnerLogicNbt(logic, world, pos, nbt);
     }
 
     @Override

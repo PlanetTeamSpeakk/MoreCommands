@@ -12,9 +12,12 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Objects;
 
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
@@ -22,6 +25,8 @@ public class MixinSignEditScreen {
 	private ButtonWidget mc_btn = null;
 	private static boolean mc_colourPickerOpen = false;
 	@Shadow private SelectionManager selectionManager;
+	private @Unique String lastContent;
+	private @Unique String lastContentTranslated;
 
 	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;getWidth(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
 	private String init_getWidth_s(String s) {
@@ -48,7 +53,9 @@ public class MixinSignEditScreen {
 
 	@ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V")
 	private String render_string2(String string2) {
-		return mc_translateFormattings ? Command.translateFormats(string2) : string2;
+		if (mc_translateFormattings && !Objects.equals(lastContent, string2)) lastContentTranslated = Command.translateFormats(string2);
+		lastContent = string2;
+		return mc_translateFormattings ? lastContentTranslated : string2;
 	}
 
 	@Inject(at = @At("HEAD"), method = "charTyped(CI)Z")

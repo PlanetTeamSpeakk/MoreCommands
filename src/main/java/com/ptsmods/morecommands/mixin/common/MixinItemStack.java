@@ -43,13 +43,13 @@ public abstract class MixinItemStack {
 	@Inject(at = @At("RETURN"), method = "getTranslationKey()Ljava/lang/String;", cancellable = true)
 	public void getTranslationKey(CallbackInfoReturnable<String> cbi) {
 		ItemStack thiz = ReflectionHelper.cast(this);
-		if (thiz.getItem() == Items.SPAWNER) cbi.setReturnValue("block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new Identifier(thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultId()).getTranslationKey());
+		if (thiz.getItem() == Items.SPAWNER) cbi.setReturnValue("block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getNbt() != null && thiz.getNbt().contains("BlockEntityTag", 10) && thiz.getNbt().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new Identifier(thiz.getNbt().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultId()).getTranslationKey());
 	}
 
 	@Inject(at = @At("TAIL"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
 	public void getName(CallbackInfoReturnable<Text> cbi) {
 		ItemStack thiz = ReflectionHelper.cast(this);
-		NbtCompound compoundTag = thiz.getSubTag("display");
+		NbtCompound compoundTag = thiz.getSubNbt("display");
 		if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER) cbi.setReturnValue(new TranslatableText(thiz.getTranslationKey()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)));
 	}
 

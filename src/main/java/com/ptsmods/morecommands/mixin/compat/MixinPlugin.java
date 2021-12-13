@@ -1,7 +1,9 @@
 package com.ptsmods.morecommands.mixin.compat;
 
 import com.ptsmods.morecommands.compat.Compat;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -19,9 +21,12 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        // Idk if it's just me, but this condition is quite confusing.
-        // I didn't make it, IntelliJ made it for me. ¯\_(ツ)_/¯
-        return (!mixinClassName.contains("compat16") || Compat.getIVer() <= 16) && (!mixinClassName.contains("compat17plus") || !Compat.is16());
+        if (mixinClassName.indexOf(".compat") == mixinClassName.lastIndexOf(".compat")) return true; // E.g. c.p.m.m.compat.MixinPlayerEntityAccessor, should load on all versions.
+        int iVer = Compat.getIVer();
+        int i = mixinClassName.lastIndexOf(".compat") + 7;
+        int iVerMixin = Integer.parseInt(mixinClassName.substring(i, i + 2));
+        Boolean support = mixinClassName.charAt(i + 2) == 'm' ? Boolean.FALSE : mixinClassName.charAt(i + 2) == 'p' ? Boolean.TRUE : null;
+        return iVer == iVerMixin || iVer < iVerMixin && support == Boolean.FALSE || iVer > iVerMixin && support == Boolean.TRUE;
     }
 
     @Override

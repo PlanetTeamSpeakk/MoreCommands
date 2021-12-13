@@ -1,10 +1,12 @@
 package com.ptsmods.morecommands.compat;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import com.ptsmods.morecommands.mixin.compat.MixinScoreboardCriterionAccessor;
 import com.ptsmods.morecommands.mixin.compat.MixinSimpleRegistryAccessor;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
@@ -19,8 +21,8 @@ public abstract class AbstractCompat extends CompatASMReflection implements Comp
     @Override
     public char gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
         char ch = string.charAt(index);
-        if (!string.startsWith("/") && ch == '\u00A7' && (thiz.player.getServerWorld().getGameRules().getBoolean(MoreCommands.doChatColoursRule) || player.hasPermissionLevel(server.getOpPermissionLevel())))
-            ch = '&';
+        if (!string.startsWith("/") && ch == '\u00A7' && (MoreGameRules.checkBooleanWithPerm(thiz.player.getWorld().getGameRules(), MoreGameRules.doChatColoursRule, thiz.player)
+                || player.hasPermissionLevel(server.getOpPermissionLevel()))) ch = '&';
         return ch;
     }
 
@@ -64,5 +66,10 @@ public abstract class AbstractCompat extends CompatASMReflection implements Comp
     public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
         Class<?> actionClass = Arrays.stream(PlayerListS2CPacket.class.getClasses()).filter(c -> c.getEnumConstants() != null).findFirst().orElseThrow(() -> new IllegalStateException("Could not find Action inner class of PlayerListS2CPacket class."));
         return invokeCtor(getCtor(PlayerListS2CPacket.class, actionClass, ServerPlayerEntity[].class), actionClass.getEnumConstants()[action], players);
+    }
+
+    @Override
+    public NbtCompound writeBENBT(BlockEntity be) {
+        return (NbtCompound) getMA(BlockEntity.class).invoke(be, getMI(BlockEntity.class, "method_11007", NbtCompound.class), new NbtCompound());
     }
 }

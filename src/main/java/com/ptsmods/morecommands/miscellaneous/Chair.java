@@ -9,15 +9,19 @@ import net.minecraft.block.enums.StairShape;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Chair {
 	private static final List<Chair> chairs = new ArrayList<>();
 	private static final List<StairShape> VALID_SHAPES = ImmutableList.of(StairShape.INNER_LEFT, StairShape.INNER_RIGHT, StairShape.STRAIGHT);
+	private static final Queue<Pair<Chair, World>> chairQueue = new ConcurrentLinkedQueue<>();
 	private ArrowEntity arrow = null;
 	private final PlayerEntity player;
 	private final BlockPos pos;
@@ -30,6 +34,10 @@ public class Chair {
 					if (chair.player.getVehicle() != chair.arrow) chair.arrow.kill();
 					if (!chair.arrow.isAlive()) chairs.remove(chair);
 				}
+			while (chairQueue.peek() != null) {
+				Pair<Chair, World> pair = chairQueue.poll();
+				pair.getLeft().place(pair.getRight());
+			}
 		});
 	}
 
@@ -37,10 +45,12 @@ public class Chair {
 		return BlockTags.STAIRS.contains(state.getBlock()) && VALID_SHAPES.contains(state.get(StairsBlock.SHAPE)) && state.get(StairsBlock.HALF) == BlockHalf.BOTTOM;
 	}
 
-	public static Chair createAndPlace(BlockPos pos, PlayerEntity player, World world) {
+	public static void createAndPlace(BlockPos pos, PlayerEntity player, World world) {
 		Chair chair = new Chair(pos, player);
-		chair.place(world);
-		return chair;
+		// This method should really only get called when receiving a packet for it,
+		// packets are received on the network thread but entities should be spawned
+		// on the server thread.
+		chairQueue.add(new Pair<>(chair, world));
 	}
 
 	private Chair(BlockPos pos, PlayerEntity player) {

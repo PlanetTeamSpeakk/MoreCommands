@@ -17,7 +17,6 @@
 	"MixinMinecraftServer",
 	"MixinTimeCommand",
 	"MixinBlock",
-	"MixinSpawnerBlock",
 	"MixinBlockItem",
 	"MixinPlayerInventory",
 	"MixinHopperBlockEntity",
@@ -28,7 +27,6 @@
 	"MixinClientConnection",
 	"MixinCommandManager",
 	"MixinFlowableFluid",
-	"MixinServerWorld",
 	"MixinServerNetworkIo",
 	"MixinFillCommand",
 	"MixinServerPlayerEntity",
@@ -55,7 +53,11 @@
 	"MixinTargetPredicate",
 	"MixinGoalSelector",
 	"accessor.MixinEntityTrackerAccessor",
-	"MixinFarmlandBlock"
+	"MixinArgumentTypes",
+	"MixinCommandSource",
+	"accessor.MixinPlayerEntityAccessor",
+	"accessor.MixinAbstractBlockAccessor",
+	"MixinDamageSource"
   ],
   "injectors": {
 	"defaultRequire": 1

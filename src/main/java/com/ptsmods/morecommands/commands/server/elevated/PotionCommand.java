@@ -6,9 +6,10 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.ptsmods.morecommands.arguments.PotionArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.arguments.HexIntegerArgumentType;
-import com.ptsmods.morecommands.arguments.RegistryArgumentType;
+import net.minecraft.command.argument.StatusEffectArgumentType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
@@ -31,7 +32,7 @@ public class PotionCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		 dispatcher.register(literalReqOp("potion").then(literal("add").then(argument("effect", new RegistryArgumentType<>(Registry.STATUS_EFFECT)).executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true)).then(argument("duration", IntegerArgumentType.integer(1)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true)).then(argument("amplifier", IntegerArgumentType.integer(0, 255)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true)).then(argument("ambient", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), true)).then(argument("showParticles", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
+		 dispatcher.register(literalReqOp("potion").then(literal("add").then(argument("effect", StatusEffectArgumentType.statusEffect()).executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true)).then(argument("duration", IntegerArgumentType.integer(1)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true)).then(argument("amplifier", IntegerArgumentType.integer(0, 255)).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true)).then(argument("ambient", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), true)).then(argument("showParticles", BoolArgumentType.bool()).executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
 		.then(literal("remove").then(argument("index", IntegerArgumentType.integer(1)).executes(ctx -> {
 			ItemStack stack = checkHeldItem(ctx);
 			List<StatusEffectInstance> effects = PotionUtil.getCustomPotionEffects(stack);
@@ -44,12 +45,12 @@ public class PotionCommand extends Command {
 				return effects.size()+1;
 			}
 			return 0;
-		}))).then(literal("settype").then(argument("type", new RegistryArgumentType<>(Registry.POTION)).executes(ctx -> {
+		}))).then(literal("settype").then(argument("type", new PotionArgumentType()).executes(ctx -> {
 			ItemStack stack = checkHeldItem(ctx);
 			Potion old = PotionUtil.getPotion(stack);
 			PotionUtil.setPotion(stack, ctx.getArgument("type", Potion.class));
 			sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtil.getPotion(stack)) + DF + ".");
-			return 0;
+			return 1;
 		}))).then(literal("setcolour").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour)))
 		.then(literal("setcolor").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour))));
 	}
@@ -57,7 +58,7 @@ public class PotionCommand extends Command {
 	private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		int colour = ctx.getArgument("colour", Integer.class);
 		ItemStack stack = checkHeldItem(ctx);
-		stack.getOrCreateTag().putInt("CustomPotionColor", colour);
+		stack.getOrCreateNbt().putInt("CustomPotionColor", colour);
 		sendMsg(ctx, new LiteralText("The potion's colour has been set to ").setStyle(DS).append(new LiteralText(String.format("#%06X", colour)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))).append(new LiteralText(".").setStyle(DS))));
 		return colour;
 	}

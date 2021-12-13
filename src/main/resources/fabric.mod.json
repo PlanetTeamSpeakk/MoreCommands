@@ -42,6 +42,9 @@
 	"fabric": "*",
 	"minecraft": ">=1.16"
   },
+  "recommends": {
+    "luckperms": "*"
+  },
   "custom": {
     "modmenu": {
       "links": {

@@ -13,7 +13,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class LockLookComand extends ClientCommand {
+public class LockLookCommand extends ClientCommand {
 	private Entity target = null;
 	private boolean smooth = false;
 

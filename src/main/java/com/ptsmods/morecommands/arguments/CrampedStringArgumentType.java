@@ -6,12 +6,13 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.ptsmods.morecommands.MoreCommands;
 import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.network.PacketByteBuf;
 
-public class CrampedStringArgumentType implements ArgumentType<String> {
-
-	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given string exceeds the maximum length");
+public class CrampedStringArgumentType implements ArgumentType<String>, ServerSideArgumentType {
+	private static final SimpleCommandExceptionType excMax = new SimpleCommandExceptionType(() -> "The given string exceeds the maximum length");
+	private static final SimpleCommandExceptionType excMin = new SimpleCommandExceptionType(() -> "The given string exceeds the minimum length");
 	private final StringArgumentType parent;
 	private final int minLength, maxLength;
 
@@ -21,15 +22,24 @@ public class CrampedStringArgumentType implements ArgumentType<String> {
 		this.maxLength = maxLength;
 	}
 
+//	public static ArgumentType<String> crampedString(StringArgumentType parent, int minLength, int maxLength) {
+//		return MoreCommands.isServerOnly();
+//	}
+
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
 		String s = parent.parse(reader);
-		if (s.length() > maxLength || s.length() < minLength) throw exc.createWithContext(reader);
+		if (s.length() > maxLength) throw excMax.createWithContext(reader);
+		if (s.length() < minLength) throw excMin.createWithContext(reader);
 		else return s;
 	}
 
-	public static class Serialiser implements ArgumentSerializer<CrampedStringArgumentType> {
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return parent;
+	}
 
+	public static class Serialiser implements ArgumentSerializer<CrampedStringArgumentType> {
 		@Override
 		public void toPacket(CrampedStringArgumentType arg, PacketByteBuf buf) {
 			buf.writeByte(arg.parent.getType().ordinal());
@@ -50,5 +60,4 @@ public class CrampedStringArgumentType implements ArgumentType<String> {
 			json.addProperty("maxLength", arg.maxLength);
 		}
 	}
-
 }

@@ -16,6 +16,9 @@ public interface MixinJsonUnbakedModelAccessor {
     @Accessor @Mutable
     void setTransformations(ModelTransformation transformations);
 
+    @Accessor("transformations")
+    ModelTransformation getRawTransformations();
+
     @Accessor
     JsonUnbakedModel getParent();
 

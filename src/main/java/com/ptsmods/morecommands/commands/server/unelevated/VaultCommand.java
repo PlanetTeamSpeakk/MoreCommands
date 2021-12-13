@@ -7,6 +7,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -36,11 +38,11 @@ public class VaultCommand extends Command {
 
 	public int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity owner) throws CommandSyntaxException {
 		int vault = ctx.getArgument("vault", Integer.class);
-		int maxVaults = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule);
+		int maxVaults = getCountFromPerms(ctx.getSource(), "morecommands.vault.max.", ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.vaultsRule));
 		if (maxVaults == 0) sendError(ctx, "Vaults are disabled on this server.");
-		else if (vault > maxVaults) sendError(ctx, (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultsRule) + Formatting.RED + " vaults.");
+		else if (vault > maxVaults) sendError(ctx, (owner == ctx.getSource().getPlayer() ? "You" : MoreCommands.textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) + " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.vaultsRule) + Formatting.RED + " vaults.");
 		else {
-			int rows = ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.vaultRowsRule);
+			int rows = getCountFromPerms(ctx.getSource(), "morecommands.vault.rows.", ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.vaultRowsRule));
 			ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, player) -> new GenericContainerScreenHandler(types.get(rows - 1), syncId, inv, Objects.requireNonNull(getVault(vault, owner)), rows), new LiteralText("" + DF + Formatting.BOLD + "Vault " + SF + Formatting.BOLD + vault)));
 			return 1;
 		}
@@ -48,10 +50,10 @@ public class VaultCommand extends Command {
 	}
 
 	public static Inventory getVault(int id, PlayerEntity player) {
-		int maxVaults = player.getEntityWorld().getGameRules().getInt(MoreCommands.vaultsRule);
+		int maxVaults = player.getEntityWorld().getGameRules().getInt(MoreGameRules.vaultsRule);
 		if (id > maxVaults) return null;
-		int rows = player.getEntityWorld().getGameRules().getInt(MoreCommands.vaultRowsRule);
-		NbtList list = player.getDataTracker().get(MoreCommands.VAULTS).getList("Vaults", 9);
+		int rows = player.getEntityWorld().getGameRules().getInt(MoreGameRules.vaultRowsRule);
+		NbtList list = player.getDataTracker().get(DataTrackerHelper.VAULTS).getList("Vaults", 9);
 		if (list.size() < maxVaults)
 			for (int i = 0; i < maxVaults - list.size() + 1; i++)
 				list.add(new NbtList());
@@ -65,7 +67,7 @@ public class VaultCommand extends Command {
 			for (int i = 0; i < inv.size(); i++)
 				stacks.add(inv.getStack(i).writeNbt(new NbtCompound()));
 			list.add(id-1, stacks);
-			player.getDataTracker().set(MoreCommands.VAULTS, MoreCommands.wrapTag("Vaults", list));
+			player.getDataTracker().set(DataTrackerHelper.VAULTS, MoreCommands.wrapTag("Vaults", list));
 		});
 		return inv;
 	}

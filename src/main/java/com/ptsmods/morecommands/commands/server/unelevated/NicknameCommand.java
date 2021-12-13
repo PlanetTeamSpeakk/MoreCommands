@@ -7,8 +7,9 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.arguments.IgnorantStringArgumentType;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -28,9 +29,9 @@ public class NicknameCommand extends Command {
 	private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {
 		boolean self = player == null;
 		if (self) player = ctx.getSource().getPlayer();
-		if (nickname != null && Objects.requireNonNull(Formatting.strip(nickname)).length() > ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) && !isOp(ctx)) sendError(ctx, "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreCommands.nicknameLimitRule) + " characters which is exceeded by the length of the given nickname (" + Formatting.strip(nickname).length() + ").");
+		if (nickname != null && Objects.requireNonNull(Formatting.strip(nickname)).length() > ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.nicknameLimitRule) && !isOp(ctx)) sendError(ctx, "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.nicknameLimitRule) + " characters which is exceeded by the length of the given nickname (" + Formatting.strip(nickname).length() + ").");
 		else {
-			player.getDataTracker().set(MoreCommands.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
+			player.getDataTracker().set(DataTrackerHelper.NICKNAME, nickname == null ? Optional.empty() : Optional.of(new LiteralText(nickname)));
 			ctx.getSource().getServer().getPlayerManager().sendToAll(Compat.getCompat().newPlayerListS2CPacket(3, player)); // UPDATE_DISPLAY_NAME
 			sendMsg(ctx, (self ? "Your" : MoreCommands.textToString(player.getName(), SS, true) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." : " nickname has been set to " + SF + nickname + DF + "."));
 			return 1;

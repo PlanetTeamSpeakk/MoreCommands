@@ -7,34 +7,58 @@ import com.ptsmods.morecommands.callbacks.MouseCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 public class PowerToolCommand extends Command {
-	public void preinit() {
-		registerCallback(MouseCallback.EVENT, (button, action, mods) -> checkPowerTool(action));
+
+	@Override
+	public void preinit(boolean serverOnly) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) registerCallback(MouseCallback.EVENT, (button, action, mods) -> checkPowerToolClient(action));
+		else if (serverOnly) {
+			UseBlockCallback.EVENT.register((player, world, hand, hit) -> checkPowerToolServer(player, hand));
+			UseItemCallback.EVENT.register((player, world, hand) -> checkPowerToolServer(player, hand) == ActionResult.CONSUME ?
+					TypedActionResult.consume(player.getStackInHand(hand)) : TypedActionResult.pass(player.getStackInHand(hand)));
+		}
 	}
 
 	@Environment(EnvType.CLIENT)
-	private boolean checkPowerTool(int action) {
+	private boolean checkPowerToolClient(int action) {
 		PlayerEntity player = MinecraftClient.getInstance().player;
 		if (player != null && action == 1 && MinecraftClient.getInstance().currentScreen == null) {
-			String cmd = Optional.ofNullable(getPowerTool(player, player.getStackInHand(Hand.MAIN_HAND))).orElse(getPowerTool(player, player.getStackInHand(Hand.OFF_HAND)));
+			String cmd = Optional.ofNullable(getPowerTool(player, Hand.MAIN_HAND)).orElse(getPowerTool(player, Hand.OFF_HAND));
 			if (cmd != null) {
 				MinecraftClient.getInstance().player.sendChatMessage("/" + cmd);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	@Environment(EnvType.SERVER)
+	private ActionResult checkPowerToolServer(PlayerEntity player, Hand hand) {
+		if (player != null) {
+			String cmd = getPowerTool(player, hand);
+			if (cmd != null) {
+				Objects.requireNonNull(player.getServer()).getCommandManager().execute(player.getCommandSource(), cmd);
+				return ActionResult.CONSUME;
+			}
+		}
+		return ActionResult.PASS;
 	}
 
 	@Override
@@ -63,12 +87,13 @@ public class PowerToolCommand extends Command {
 		})))));
 	}
 
-	public static String getPowerTool(PlayerEntity player, ItemStack stack) {
-		return isPowerTool(stack) && getPowerToolOwner(stack).equals(player.getUuid()) ? Objects.requireNonNull(stack.getTag()).getCompound("PowerTool").getString("Command") : null;
+	public static String getPowerTool(PlayerEntity player, Hand hand) {
+		ItemStack stack = player.getStackInHand(hand);
+		return isPowerTool(stack) && getPowerToolOwner(stack).equals(player.getUuid()) ? Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool").getString("Command") : null;
 	}
 
 	public static void setPowerTool(PlayerEntity owner, ItemStack stack, String command) {
-		NbtCompound tag = stack.getOrCreateTag();
+		NbtCompound tag = stack.getOrCreateNbt();
 		if (command == null && tag.contains("PowerTool", 10)) tag.remove("PowerTool");
 		else if (command != null) {
 			if (command.startsWith("/")) command = command.substring(1);
@@ -79,16 +104,16 @@ public class PowerToolCommand extends Command {
 	}
 
 	public static UUID getPowerToolOwner(ItemStack stack) {
-		return stack.getOrCreateTag().getCompound("PowerTool").getUuid("Owner");
+		return stack.getOrCreateNbt().getCompound("PowerTool").getUuid("Owner");
 	}
 
 	public static ItemStack getPowerToolStack(PlayerEntity player) {
 		ItemStack stack = player.getMainHandStack();
-		if (stack.getTag() == null || !stack.getTag().contains("PowerTool", 10)) stack = player.getOffHandStack();
-		return stack.getTag() == null || !stack.getTag().contains("PowerTool", 10) ? null : stack;
+		if (stack.getNbt() == null || !stack.getNbt().contains("PowerTool", 10)) stack = player.getOffHandStack();
+		return stack.getNbt() == null || !stack.getNbt().contains("PowerTool", 10) ? null : stack;
 	}
 
 	public static boolean isPowerTool(ItemStack stack) {
-		return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("PowerTool", 10);
+		return stack.hasNbt() && Objects.requireNonNull(stack.getNbt()).contains("PowerTool", 10);
 	}
 }

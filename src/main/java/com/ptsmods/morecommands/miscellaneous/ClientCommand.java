@@ -27,7 +27,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -47,13 +49,19 @@ public abstract class ClientCommand extends Command {
 	static {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.currentScreen == null && scheduledScreen != null) {
-				client.openScreen(scheduledScreen);
+				client.setScreen(scheduledScreen);
 				scheduledScreen = null;
 			}
 		});
 	}
 
-	public final void init(MinecraftServer server) {}
+	public final void preinit(boolean serverOnly) {
+		preinit();
+	}
+
+	public void preinit() {}
+
+	public final void init(boolean serverOnly, MinecraftServer server) {}
 
 	@Override
 	public final void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
@@ -94,6 +102,14 @@ public abstract class ClientCommand extends Command {
 
 	public static void sendAbMsg(Text t) {
 		getPlayer().sendMessage(t, true);
+	}
+
+	public static void sendError(String error) {
+		sendError(new LiteralText(fixResets(error, Formatting.RED)).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+	}
+
+	public static void sendError(Text error) {
+		getPlayer().sendMessage(error.getStyle().isEmpty() ? error.copy().setStyle(Style.EMPTY.withColor(Formatting.RED)) : error, false);
 	}
 
 	public static ClientPlayerEntity getPlayer() {

@@ -23,7 +23,7 @@ public class DisableClientCommandCommand extends Command {
 	private final List<String> disabled = new ArrayList<>();
 
 	@Override
-	public void init(MinecraftServer server) throws Exception {
+	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
 		disabled.addAll(MoreObjects.firstNonNull(MoreCommands.readJson(new File(MoreCommands.getRelativePath(server) + "disabledClientCommands.json")), new ArrayList<>()));
 		registerCallback(PlayerConnectionCallback.JOIN, player -> {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());

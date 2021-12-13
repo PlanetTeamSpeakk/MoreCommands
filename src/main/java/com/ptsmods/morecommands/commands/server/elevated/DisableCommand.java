@@ -30,7 +30,7 @@ public class DisableCommand extends Command {
 	private final List<String> disabledPaths = new ArrayList<>();
 	private static File file = null;
 
-	public void init(MinecraftServer server) {
+	public void init(boolean serverOnly, MinecraftServer server) {
 		if (new File("config/MoreCommands/disabled.json").exists()) MoreCommands.tryMove("config/MoreCommands/disabled.json", MoreCommands.getRelativePath() + "disabled.json");
 		file = new File(MoreCommands.getRelativePath() + "disabled.json");
 		if (!file.exists()) saveData();

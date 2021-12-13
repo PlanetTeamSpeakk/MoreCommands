@@ -166,7 +166,7 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public NbtCompound getTag() {
-			return this.blockEntity.writeNbt(new NbtCompound());
+			return Compat.getCompat().writeBENBT(blockEntity);
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
@@ -185,7 +185,7 @@ public class CdataCommand extends ClientCommand {
 			public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
 				ItemStack stack = getPlayer().getMainHandStack();
 				if (stack.isEmpty()) throw NO_ITEM_EXCEPTION.create();
-				else if (!stack.hasTag()) throw NO_DATA_EXCEPTION.create();
+				else if (!stack.hasNbt()) throw NO_DATA_EXCEPTION.create();
 				else return new ClientItemDataObject(getPlayer().getMainHandStack());
 			}
 
@@ -200,7 +200,7 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public NbtCompound getTag() {
-			return this.stack.getTag();
+			return this.stack.getNbt();
 		}
 
 		public Text feedbackQuery(NbtElement tag) {

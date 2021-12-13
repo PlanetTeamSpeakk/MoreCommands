@@ -44,7 +44,7 @@ public class MixinClientPlayerEntity {
 						ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
 					} catch (Exception e) {
 						ClientCommand.sendMsg(new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
-						MoreCommands.log.catching(e);
+						MoreCommands.LOG.catching(e);
 					}
 				return;
 			}
@@ -69,6 +69,8 @@ public class MixinClientPlayerEntity {
 				moveStopped = true; // Without this variable, you would be able to bhop by combining sprintAutoJump and immediateMoveStop and immediateMoveStop would also act as anti-kb.
 			}
 		} else moveStopped = false;
-		if (ClientOptions.Cheats.sprintAutoJump.getValue() && MoreCommands.isSingleplayer() && thiz.isSprinting() && (thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking()) thiz.jump();
+		if (ClientOptions.Cheats.sprintAutoJump.getValue() && MoreCommands.isSingleplayer() && thiz.isSprinting() &&
+				(thiz.forwardSpeed != 0 || thiz.sidewaysSpeed != 0) && thiz.isOnGround() && !thiz.isSneaking())
+			thiz.jump();
 	}
 }

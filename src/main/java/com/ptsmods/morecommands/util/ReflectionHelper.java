@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.util;
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class ReflectionHelper {
 		try {
 			return cast(f.get(instance));
 		} catch (IllegalAccessException e) {
-			MoreCommands.log.catching(e);
+			MoreCommands.LOG.catching(e);
 			return null;
 		}
 	}
@@ -38,7 +37,7 @@ public class ReflectionHelper {
 			f.set(instance, value);
 			return true;
 		} catch (IllegalAccessException e) {
-			MoreCommands.log.catching(e);
+			MoreCommands.LOG.catching(e);
 			return false;
 		}
 	}
@@ -105,7 +104,7 @@ public class ReflectionHelper {
 		try {
 			return cast(m.invoke(instance, args));
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			MoreCommands.log.catching(e);
+			MoreCommands.LOG.catching(e);
 			return null;
 		}
 	}

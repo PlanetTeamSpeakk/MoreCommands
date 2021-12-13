@@ -15,7 +15,7 @@ public class UnlimitedCommand extends Command {
 		dispatcher.register(literalReqOp("unlimited").executes(ctx -> {
 			ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
 			if (stack != null && stack.getItem() != Items.AIR) {
-				NbtCompound tag = stack.getOrCreateTag();
+				NbtCompound tag = stack.getOrCreateNbt();
 				if (tag.contains("Unlimited")) tag.remove("Unlimited");
 				else tag.putByte("Unlimited", (byte) 1);
 				stack.setCount(1);
@@ -28,6 +28,6 @@ public class UnlimitedCommand extends Command {
 	}
 
 	public static boolean isUnlimited(ItemStack stack) {
-		return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("Unlimited");
+		return stack.hasNbt() && Objects.requireNonNull(stack.getNbt()).contains("Unlimited");
 	}
 }

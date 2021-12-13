@@ -54,7 +54,8 @@
 	"accessor.MixinSuggestionWindowAccessor",
 	"MixinMoreOptionsDialog",
 	"MixinItemModelGenerator",
-	"accessor.MixinMouseAccessor"
+	"accessor.MixinMouseAccessor",
+	"accessor.MixinMapColorAccessor"
   ],
   "injectors": {
 	"defaultRequire": 1

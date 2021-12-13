@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -18,8 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
-
+public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T>, ServerSideArgumentType {
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "Could not find a value with the given name");
 	private final Class<T> clazz;
 	private final T[] values;
@@ -47,7 +47,7 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 		String s = reader.readUnquotedString();
 		for (int i = 0; i < strings.size() && i < values.length; i++)
 			if (s.equalsIgnoreCase(strings.get(i)))
-				return (T) values[i];
+				return values[i];
 		throw exc.createWithContext(reader);
 	}
 
@@ -65,6 +65,11 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 		return strings;
 	}
 
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return StringArgumentType.word();
+	}
+
 	public static class Serialiser<T extends Enum<T>> implements ArgumentSerializer<EnumArgumentType<T>> {
 
 		@Override
@@ -77,10 +82,11 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 			arg.strings.forEach(buf::writeString);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public EnumArgumentType<T> fromPacket(PacketByteBuf buf) {
 			try {
-				Class<Enum<?>> clazz = (Class<Enum<?>>) Class.forName(buf.readString());
+				Class<T> clazz = (Class<T>) Class.forName(buf.readString());
 				int x = buf.readVarInt();
 				List<Enum<?>> enums = new ArrayList<>();
 				for (int i = 0; i < x; i++) {
@@ -93,7 +99,7 @@ public class EnumArgumentType<T extends Enum<T>> implements ArgumentType<T> {
 				x = buf.readVarInt();
 				for (int i = 0; i < x; i++)
 					strings.add(buf.readString());
-				return new EnumArgumentType(clazz, enums.toArray(new Enum[0]), strings);
+				return new EnumArgumentType<>(clazz, (T[]) enums.toArray(new Enum[0]), strings);
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e); // Should not happen.
 			}

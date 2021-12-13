@@ -1,7 +1,6 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
 import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
@@ -9,7 +8,6 @@ import com.ptsmods.morecommands.miscellaneous.Location;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
 import java.util.HashMap;
@@ -20,7 +18,7 @@ public class BackCommand extends Command {
 	private final Map<UUID, Pair<Location<ServerWorld>, Boolean>> lastLocations = new HashMap<>();
 
 	@Override
-	public void preinit() {
+	public void preinit(boolean serverOnly) {
 		registerCallback(EntityTeleportCallback.EVENT, (entity, worldFrom, worldTo, from, to) -> {
 			if (entity instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) entity;

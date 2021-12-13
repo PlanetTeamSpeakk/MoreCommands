@@ -44,11 +44,27 @@ public abstract class MixinModelLoader {
         } catch (IOException e) {
             if (id.getPath().startsWith("item/"))
                 try {
-                    Map<String, Object> blockstate = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(new Identifier(id.getNamespace(), id.getPath().replace("item/", "blockstates/") + ".json")).getInputStream())), Map.class);
+                    Map<String, Object> blockstate = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(
+                            new Identifier(id.getNamespace(), id.getPath().replace("item/", "blockstates/") + ".json")).getInputStream())), Map.class);
                     if (!blockstate.containsKey("variants") && !blockstate.containsKey("multipart")) return (JsonUnbakedModel) unbakedModels.get(ModelLoader.MISSING_ID);
-                    String modelId = blockstate.containsKey("variants") ? (String) ((Map<String, Map<String, Object>>) blockstate.get("variants")).values().stream().findFirst().map(m -> m.get("model")).orElseThrow(() -> new IOException("Couldn't find block model for block " + id.toString().replace("item/", "blockstates/"))) :
-                            ((List<Map<String, Object>>) blockstate.get("multipart")).stream().map(m -> (List<Map<String, String>>) m.get("apply")).findFirst().filter(l -> l.size() > 0 && l.stream().anyMatch(m -> m.containsKey("model"))).map(l -> l.stream().findFirst().map(m -> m.get("model")).orElseThrow(() -> new AssertionError("This shouldn't happen."))).orElseThrow(() -> new IOException("Couldn't find model for block " + id.toString().replace("item/", "blockstates/")));
-                    Map<String, Object> modelRaw = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(new Identifier(id.getNamespace(), "models/block/" + new Identifier(modelId).getPath().substring(6) + ".json")).getInputStream())), Map.class);
+
+                    String modelId = blockstate.containsKey("variants") ? (String) ((Map<String, Map<String, Object>>) blockstate.get("variants")).values().stream()
+                            .findFirst()
+                            .map(m -> m.get("model"))
+                            .orElseThrow(() -> new IOException("Couldn't find block model for block " + id.toString().replace("item/", "blockstates/"))) :
+                            ((List<Map<String, Object>>) blockstate.get("multipart")).stream()
+                                    .map(m -> (List<Map<String, String>>) m.get("apply"))
+                                    .findFirst()
+                                    .filter(l -> l.size() > 0 && l.stream()
+                                            .anyMatch(m -> m.containsKey("model")))
+                                    .map(l -> l.stream()
+                                            .findFirst()
+                                            .map(m -> m.get("model"))
+                                            .orElseThrow(() -> new AssertionError("This shouldn't happen.")))
+                                    .orElseThrow(() -> new IOException("Couldn't find model for block " + id.toString().replace("item/", "blockstates/")));
+
+                    Map<String, Object> modelRaw = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(
+                            new Identifier(id.getNamespace(), "models/block/" + new Identifier(modelId).getPath().substring(6) + ".json")).getInputStream())), Map.class);
                     if (defDisplay == null) {
                         defDisplay = new ModelTransformation(
                                 new Transformation(new Vec3f(75, 45, 0), new Vec3f(0, 0.15625F, 0), new Vec3f(0.375F, 0.375F, 0.375F)),
@@ -63,22 +79,27 @@ public abstract class MixinModelLoader {
                         missingModel = loadModelFromJson(ModelLoader.MISSING_ID);
                         ((MixinJsonUnbakedModelAccessor) missingModel).setTransformations(defDisplay);
                     }
+
                     JsonUnbakedModel model = JsonUnbakedModel.deserialize(gson.toJson(modelRaw));
                     model.getTextureDependencies(id0 -> ReflectionHelper.<ModelLoader>cast(this).getOrLoadModel(id0), new LinkedHashSet<>());
                     JsonUnbakedModel parent = model;
                     boolean cross = false;
                     boolean empty = true;
                     Map<String, Either<SpriteIdentifier, String>> textureMap = null;
+
                     while (parent != null) {
-                        if (Optional.ofNullable(((MixinJsonUnbakedModelAccessor) model).getParentId()).map(pid -> pid.equals(new Identifier("minecraft:block/cross")) || pid.equals(new Identifier("minecraft:block/tinted_cross"))).orElse(false)) cross = true;
+                        if (Optional.ofNullable(((MixinJsonUnbakedModelAccessor) model).getParentId()).map(pid -> pid.equals(new Identifier("minecraft:block/cross")) ||
+                                pid.equals(new Identifier("minecraft:block/tinted_cross"))).orElse(false)) cross = true;
                         if (!model.getElements().isEmpty()) empty = false;
                         if (textureMap == null && ((MixinJsonUnbakedModelAccessor) model).getTextureMap() != null) textureMap = ((MixinJsonUnbakedModelAccessor) model).getTextureMap();
                         if (parent == ((MixinJsonUnbakedModelAccessor) model).getParent()) break;
                         parent = ((MixinJsonUnbakedModelAccessor) model).getParent();
                     }
+
                     // Thanks to Draydenspace_FS#0001 on Discord for this json model.
                     // It is what's responsible for the water block having colour.
                     if (empty) return textureMap != null && textureMap.containsKey("particle") && textureMap.get("particle").left().isPresent() ? JsonUnbakedModel.deserialize("{\"parent\":\"block/block\",\"textures\":{\"tex\":\"" + textureMap.get("particle").left().get().getTextureId() + "\",\"particle\":\"#tex\"},\"elements\":[{\"from\":[0,0,0],\"to\":[16,16,16],\"faces\":{\"down\":{\"texture\":\"#tex\",\"cullface\":\"down\",\"tintindex\":0},\"up\":{\"texture\":\"#tex\",\"cullface\":\"up\",\"tintindex\":0},\"north\":{\"texture\":\"#tex\",\"cullface\":\"north\",\"tintindex\":0},\"south\":{\"texture\":\"#tex\",\"cullface\":\"south\",\"tintindex\":0},\"west\":{\"texture\":\"#tex\",\"cullface\":\"west\",\"tintindex\":0},\"east\":{\"texture\":\"#tex\",\"cullface\":\"east\",\"tintindex\":0}}}]}") : missingModel;
+
                     if (cross) {
                         if (textureMap != null && textureMap.containsKey("cross") && textureMap.get("cross").left().isPresent()) return JsonUnbakedModel.deserialize("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + textureMap.get("cross").left().get().getTextureId() + "\"}}");
                     } else {
@@ -89,6 +110,7 @@ public abstract class MixinModelLoader {
                             parent = ((MixinJsonUnbakedModelAccessor) model).getParent();
                         }
                     }
+
                     return model;
                 } catch (Exception e0) {
                     // IOExceptions get caught by the parent method, so it'll just get printed to the console as a warning.

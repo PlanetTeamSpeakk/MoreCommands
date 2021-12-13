@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.CommandsRegisteredCallback;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -30,6 +30,6 @@ public class MixinCommandManager {
 
 	@Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z", remap = false), method = "execute")
 	private boolean execute_isDebugEnabled(Logger logger) {
-		return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreCommands.doStacktraceRule) || logger.isDebugEnabled();
+		return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreGameRules.doStacktraceRule) || logger.isDebugEnabled();
 	}
 }

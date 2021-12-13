@@ -14,7 +14,7 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.Collection;
 
 // Doesn't care what characters you put in an unquoted string.
-public class IgnorantStringArgumentType implements ArgumentType<String> {
+public class IgnorantStringArgumentType implements ArgumentType<String>, ServerSideArgumentType {
 
 	private final StringArgumentType.StringType type;
 
@@ -56,6 +56,11 @@ public class IgnorantStringArgumentType implements ArgumentType<String> {
 	@Override
 	public Collection<String> getExamples() {
 		return ImmutableList.of("Yeet", "&1");
+	}
+
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return type == StringArgumentType.StringType.GREEDY_PHRASE ? StringArgumentType.greedyString() : type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() : StringArgumentType.string();
 	}
 
 	public static class Serialiser implements ArgumentSerializer<IgnorantStringArgumentType> {

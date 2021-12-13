@@ -160,7 +160,7 @@ public class WorldInitCommandsScreen extends Screen {
     @Override
     public void onClose() {
         update();
-        Objects.requireNonNull(client).openScreen(parent);
+        Objects.requireNonNull(client).setScreen(parent);
     }
 
     private void update() {

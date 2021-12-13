@@ -1,16 +1,12 @@
 package com.ptsmods.morecommands.commands.client;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.BiMap;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.callbacks.PlayerListCallback;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -19,9 +15,7 @@ import net.minecraft.util.Formatting;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class JoinNotifyCommand extends ClientCommand {
 	private static final Map<String, String> players = new HashMap<>();

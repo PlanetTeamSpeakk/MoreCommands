@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.arguments;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
@@ -10,7 +11,7 @@ import net.minecraft.text.LiteralText;
 
 import java.util.Collection;
 
-public class HexIntegerArgumentType implements ArgumentType<Integer> {
+public class HexIntegerArgumentType implements ArgumentType<Integer>, ServerSideArgumentType {
 
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(new LiteralText("The given value is not a (hexa)decimal number between #000000 and #FFFFFF"));
 
@@ -27,5 +28,10 @@ public class HexIntegerArgumentType implements ArgumentType<Integer> {
 	@Override
 	public Collection<String> getExamples() {
 		return ImmutableList.of("#FFAA00", "FFAA00", "" + 0xFFFFFF);
+	}
+
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return StringArgumentType.word();
 	}
 }

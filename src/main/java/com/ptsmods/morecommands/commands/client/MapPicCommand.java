@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinMapColorAccessor;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.entity.Entity;
@@ -100,7 +101,7 @@ public class MapPicCommand extends ClientCommand {
 	}
 
 	private MapState getMapState(ItemStack stack) {
-		return stack.getItem() == Items.FILLED_MAP ? getWorld().getMapState(FilledMapItem.getMapName(FilledMapItem.getMapId(stack))) : null;
+		return stack.getItem() == Items.FILLED_MAP ? getWorld().getMapState(FilledMapItem.getMapName(Objects.requireNonNull(FilledMapItem.getMapId(stack)))) : null;
 	}
 
 	private MapState getMapState(BlockPos pos) {
@@ -182,7 +183,7 @@ public class MapPicCommand extends ClientCommand {
 		for (int i = 0; i < state.colors.length; i++) {
 			int colour = Byte.toUnsignedInt(state.colors[i]);
 			int ac = colour % 4;
-			MapColor mcolour = MapColor.COLORS[(colour-ac)/4];
+			MapColor mcolour = MixinMapColorAccessor.getColors()[(colour-ac)/4];
 			if (mcolour != MapColor.CLEAR) img.setRGB(i % dim, i / dim, getRGB(mcolour, ac));
 		}
 		while (rotation != 0) {

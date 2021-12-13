@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
@@ -22,7 +22,7 @@ public class MixinEntityTrackerEntry {
 
 	@Inject(at = @At("HEAD"), method = "sendPackets(Ljava/util/function/Consumer;)V", cancellable = true)
 	public void sendPackets(Consumer<Packet<?>> sender, CallbackInfo cbi) {
-		if (entity instanceof PlayerEntity && entity.getDataTracker().get(MoreCommands.VANISH)) cbi.cancel();
+		if (entity instanceof PlayerEntity && entity.getDataTracker().get(DataTrackerHelper.VANISH)) cbi.cancel();
 	}
 
 }

@@ -10,6 +10,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerAbilitiesAccessor;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.attribute.*;
 import net.minecraft.server.command.ServerCommandSource;
@@ -65,11 +66,11 @@ public class SpeedCommand extends Command {
 
 	public enum SpeedType {
 		WALK((player, speed) -> {
-			UUID speedModId = player.getDataTracker().get(MoreCommands.SPEED_MODIFIER).orElseThrow(() -> new AssertionError("This shouldn't happen."));
+			UUID speedModId = player.getDataTracker().get(DataTrackerHelper.SPEED_MODIFIER).orElseThrow(() -> new AssertionError("This shouldn't happen."));
 			EntityAttributeInstance attr = Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED));
 			attr.removeModifier(speedModId);
 			attr.addPersistentModifier(new EntityAttributeModifier(speedModId, "MoreCommands Speed Modifier", speed - 1, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
-		}, player -> Optional.ofNullable(Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getModifier(player.getDataTracker().get(MoreCommands.SPEED_MODIFIER).orElseThrow(() -> new AssertionError("This shouldn't happen.")))).map(attr -> attr.getValue() + 1).orElse(1D)),
+		}, player -> Optional.ofNullable(Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getModifier(player.getDataTracker().get(DataTrackerHelper.SPEED_MODIFIER).orElseThrow(() -> new AssertionError("This shouldn't happen.")))).map(attr -> attr.getValue() + 1).orElse(1D)),
 		FLY((player, speed) -> {
 			((MixinPlayerAbilitiesAccessor) Compat.getCompat().getAbilities(player)).setFlySpeed_((float) (speed / 20));
 			player.sendAbilitiesUpdate();

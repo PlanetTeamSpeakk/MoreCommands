@@ -9,6 +9,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -35,7 +36,7 @@ public class KitCommand extends Command {
 	private final Map<String, Kit> kits = new LinkedHashMap<>();
 
 	@Override
-	public void init(MinecraftServer server) throws Exception {
+	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
 		instance = this;
 		kits.putAll(MoreObjects.firstNonNull(MoreCommands.<Map<String, Map<String, Object>>>readJson(new File(MoreCommands.getRelativePath(server) + "kits.json")), new HashMap<String, Map<String, Object>>()).entrySet().stream().map(entry -> new Pair<>(entry.getKey(), Kit.deserialise(entry.getValue()))).collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
 	}
@@ -46,6 +47,7 @@ public class KitCommand extends Command {
 			String kit = ctx.getArgument("kit", String.class).toLowerCase(Locale.ROOT);
 			if (!kits.containsKey(kit)) sendError(ctx, "A kit by that name does not exist.");
 			else if (kits.get(kit).onCooldown(ctx.getSource().getPlayer())) sendError(ctx, "You're still on cooldown! Please wait " + MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayer()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
+			else if (isPermissionsLoaded() && !Permissions.check(ctx.getSource(), "morecommands.kit." + kit, true)) sendError(ctx, "You do not have permission to use that kit.");
 			else {
 				kits.get(kit).give(ctx.getSource().getPlayer());
 				sendMsg(ctx, "You have been given the " + SF + kits.get(kit).getName() + DF + " kit.");
@@ -87,13 +89,13 @@ public class KitCommand extends Command {
 		Map<String, Object> data = new HashMap<>();
 		data.put("item", Registry.ITEM.getId(stack.getItem()).toString());
 		data.put("count", stack.getCount());
-		data.put("tag", stack.hasTag() ? nbtToByteString(stack.getTag()) : null);
+		data.put("tag", stack.hasNbt() ? nbtToByteString(stack.getNbt()) : null);
 		return data;
 	}
 
 	private static ItemStack deserialiseItemStack(Map<String, Object> data) {
 		ItemStack stack = new ItemStack(Registry.ITEM.get(new Identifier((String) data.get("item"))), ((Double) data.get("count")).intValue());
-		stack.setTag(nbtFromByteString((String) data.get("tag")));
+		stack.setNbt(nbtFromByteString((String) data.get("tag")));
 		return stack;
 	}
 

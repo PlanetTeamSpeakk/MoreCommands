@@ -96,7 +96,7 @@ public class MixinChatScreen {
 		return null;
 	}
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ChatScreen; handleTextClick(Lnet/minecraft/text/Style;)Z"), method = "mouseClicked(DDI)Z")
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ChatScreen;handleTextClick(Lnet/minecraft/text/Style;)Z"), method = "mouseClicked(DDI)Z")
 	private boolean mouseClicked_handleTextClick(ChatScreen thiz, Style style, double mouseX, double mouseY, int button) {
 		if (style != null && style.getClickEvent() != null && style.getClickEvent().getAction() == SearchCommand.SCROLL_ACTION) {
 			ChatHud chat = MinecraftClient.getInstance().inGameHud.getChatHud();

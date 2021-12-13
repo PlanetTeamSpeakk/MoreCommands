@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.attribute.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,7 +22,11 @@ public class ReachCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReqOp("reach").executes(ctx -> {
+		if (MoreCommands.isServerOnly()) dispatcher.register(literalReqOp("reach").executes(ctx -> {
+			sendError(ctx, "Reach cannot be used in server only mode.");
+			return 0;
+		}));
+		else dispatcher.register(literalReqOp("reach").executes(ctx -> {
 			double reach = ctx.getSource().getPlayer().getAttributeValue(reachAttribute);
 			double base = ctx.getSource().getPlayer().getAttributeBaseValue(reachAttribute);
 			sendMsg(ctx, "Your reach is currently " + SF + reach + DF + (base != reach ? " (" + SF + base + " base" + DF + ")" : "") + ".");
@@ -39,13 +44,15 @@ public class ReachCommand extends Command {
 	}
 
 	private void addModifier(String id, ServerPlayerEntity player, double reach) {
-		Optional.ofNullable(Registry.ATTRIBUTE.get(new Identifier(id))).map(player::getAttributeInstance).ifPresent(atr -> {
-			atr.tryRemoveModifier(morecommandsModifier);
-			atr.addPersistentModifier(new EntityAttributeModifier(morecommandsModifier, "MoreCommands Modifier", reach / 4.5D, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
-		});
+		Optional.ofNullable(Registry.ATTRIBUTE.get(new Identifier(id)))
+				.map(player::getAttributeInstance)
+				.ifPresent(atr -> {
+					atr.tryRemoveModifier(morecommandsModifier);
+					atr.addPersistentModifier(new EntityAttributeModifier(morecommandsModifier, "MoreCommands Modifier", reach / 4.5D, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+				});
 	}
 
 	public static double getReach(PlayerEntity player, boolean squared) {
-		return Math.pow(player.getAttributeValue(reachAttribute) + (player instanceof ServerPlayerEntity ? 1.5d : 0), squared ? 2 : 1);
+		return Math.pow(player.getAttributeValue(reachAttribute) + (player instanceof ServerPlayerEntity && squared ? 1.5d : 0), squared ? 2 : 1);
 	}
 }

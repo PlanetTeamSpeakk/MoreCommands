@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,7 +30,7 @@ public class MixinEnchantmentScreenHandler {
 		int i = item.getEnchantability();
 		if (i <= 0) return 0;
 		else {
-			if (bookshelfCount > 15 && playerInv.player.world.getGameRules().getBoolean(MoreCommands.doEnchantLevelLimitRule)) bookshelfCount = 15;
+			if (bookshelfCount > 15 && MoreGameRules.checkBooleanWithPerm(playerInv.player.getWorld().getGameRules(), MoreGameRules.doEnchantLevelLimitRule, playerInv.player)) bookshelfCount = 15;
 			int j = random.nextInt(8) + 1 + (bookshelfCount >> 1) + random.nextInt(bookshelfCount + 1);
 			if (slotIndex == 0) return Math.max(j / 3, 1);
 			else return slotIndex == 1 ? j * 2 / 3 + 1 : Math.max(j, bookshelfCount * 2);

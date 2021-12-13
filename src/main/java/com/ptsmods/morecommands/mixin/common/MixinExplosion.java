@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.spongepowered.asm.mixin.Final;
@@ -17,12 +17,12 @@ public class MixinExplosion {
 
 	@Inject(at = @At("HEAD"), method = "collectBlocksAndDamageEntities()V", cancellable = true)
 	public void collectBlocksAndDamageEntities(CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreCommands.doExplosionsRule)) cbi.cancel();
+		if (!world.getGameRules().getBoolean(MoreGameRules.doExplosionsRule)) cbi.cancel();
 	}
 
 	@Inject(at = @At("HEAD"), method = "affectWorld(Z)V", cancellable = true)
 	public void affectWorld(boolean bl, CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreCommands.doExplosionsRule)) cbi.cancel();
+		if (!world.getGameRules().getBoolean(MoreGameRules.doExplosionsRule)) cbi.cancel();
 	}
 
 }

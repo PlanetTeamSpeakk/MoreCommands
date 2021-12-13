@@ -102,7 +102,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 				}
 				String name = f.getName().substring(f.getName().contains("MOUSE") ? 18 : 9);
 				if (keyCode >= 0 && !name.equals("LAST")) {
-					if (keys.containsValue(keyCode)) keys.remove(keysReverse.remove(keyCode)); // Aliases :/
+					if (keys.containsValue(keyCode)) continue; // Aliases :/
 					keysReverse.put(keyCode, name);
 					keys.put(keysReverse.get(keyCode), keyCode);
 				}
@@ -132,9 +132,11 @@ public class MoreCommandsClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientOptions.read();
 		MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
+
 		List<ItemConvertible> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
 		if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));
 		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemConvertible[0]));
+
 		if (!MinecraftClient.IS_SYSTEM_MAC)
 			DiscordRPC.discordInitialize("754048885755871272", new DiscordEventHandlers.Builder()
 					.setReadyEventHandler(user -> {
@@ -145,6 +147,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 					.setErroredEventHandler((errorCode, message) -> log.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
 		updatePresence();
 		C2SPlayChannelEvents.REGISTER.register(((handler, sender, client, channels) -> updateTag()));
+
 		AtomicInteger wicWarmup = new AtomicInteger();
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			if (scheduleWorldInitCommands) wicWarmup.set(10);
@@ -153,9 +156,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommandManager().execute(server.getCommandSource(), cmd));
 		});
+
 		Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
-		Language.setInstance(Language.getInstance()); // Wrap the current instance so it can translate all enchant levels and spawner names. :3 (Look at MixinLanguage)
 		KeyBindingHelper.registerKeyBinding(toggleInfoHudBinding);
+
 		if (!wicFile.exists()) saveWorldInitCommands();
 		try {
 			List<String> wic = MoreCommands.readJson(wicFile);
@@ -163,9 +167,11 @@ public class MoreCommandsClient implements ClientModInitializer {
 		} catch (IOException e) {
 			log.error("Could not read World Init Commands.", e);
 		}
+
 		HudRenderCallback.EVENT.register((stack, tickDelta) -> {
 			if (ClientOptions.Tweaks.enableInfoHud.getValue()) InfoHud.instance.render(stack, tickDelta);
 		});
+
 		ClientTickEvents.START_WORLD_TICK.register(world -> {
 			if (toggleInfoHudBinding.wasPressed()) {
 				ClientOptions.Tweaks.enableInfoHud.setValue(!ClientOptions.Tweaks.enableInfoHud.getValue());
@@ -190,6 +196,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 					for (int i = 0; i < 2; i++)
 						MinecraftClient.getInstance().particleManager.addParticle(new VexParticle(entity));
 		});
+
 		List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
 		ClientCommandRegistrationCallback.EVENT.register(dispatcher -> clientCommands.forEach(cmd -> {
 			try {
@@ -198,6 +205,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 				log.error("Could not register command " + cmd.getClass().getName() + ".", e);
 			}
 		}));
+
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:formatting_update"), (client, handler, buf, responseSender) -> {
 			int id = buf.readByte();
 			int index = buf.readByte();
@@ -214,18 +222,21 @@ public class MoreCommandsClient implements ClientModInitializer {
 					break;
 			}
 		});
+
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_options"), (client, handler, buf, responseSender) -> {
 			ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
 			int length = buf.readVarInt();
 			for (int i = 0; i < length; i++)
 				Optional.ofNullable(ClientOptions.getOption(buf.readString())).ifPresent(option -> option.setDisabled(true));
 		});
+
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_commands"), (client, handler, buf, responseSender) -> {
 			disabledCommands.clear();
 			int length = buf.readVarInt();
 			for (int i = 0; i < length; i++)
 				disabledCommands.add(buf.readString());
 		});
+
 		ChatMessageSendCallback.EVENT.register(message -> {
 			if (message.startsWith("/easteregg")) {
 				if (easterEggSound == null) MinecraftClient.getInstance().getSoundManager().play(easterEggSound = new EasterEggSound());
@@ -237,6 +248,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 			}
 			return message;
 		});
+
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 			if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && ClientPlayNetworking.canSend(new Identifier("morecommands:sit_on_stairs"))) {
 				ClientPlayNetworking.send(new Identifier("morecommands:sit_on_stairs"), new PacketByteBuf(Unpooled.buffer()).writeBlockPos(hitResult.getBlockPos()));
@@ -244,6 +256,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 			}
 			return ActionResult.PASS;
 		});
+
 		MoreCommands.execute(() -> {
 			try {
 				@SuppressWarnings("UnstableApiUsage")
@@ -258,7 +271,9 @@ public class MoreCommandsClient implements ClientModInitializer {
 
 	public static String getWorldName() {
 		// MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
-		return MinecraftClient.getInstance().world == null ? null : MinecraftClient.getInstance().getCurrentServerEntry() == null ? MinecraftClient.getInstance().getServer() == null ? null : Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getSaveProperties().getLevelName() : MinecraftClient.getInstance().getCurrentServerEntry().address;
+		return MinecraftClient.getInstance().world == null ? null : MinecraftClient.getInstance().getCurrentServerEntry() == null ?
+				MinecraftClient.getInstance().getServer() == null ? null : Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getSaveProperties().getLevelName() :
+				MinecraftClient.getInstance().getCurrentServerEntry().address;
 	}
 
 	public static void updatePresence() {

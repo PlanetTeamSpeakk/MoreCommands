@@ -1,10 +1,13 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AnvilScreenHandler;
+import net.minecraft.screen.ForgingScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.ScreenHandlerType;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +26,6 @@ public class MixinAnvilScreenHandler {
 
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getRepairCost()I"), method = "updateResult()V")
 	public int updateResult_getRepairCost(ItemStack stack) {
-		return playerInv.player.world.getGameRules().getBoolean(MoreCommands.doPriorWorkPenaltyRule) ? stack.getRepairCost() : 0;
+		return MoreGameRules.checkBooleanWithPerm(playerInv.player.world.getGameRules(), MoreGameRules.doPriorWorkPenaltyRule, playerInv.player) ? stack.getRepairCost() : 0;
 	}
 }

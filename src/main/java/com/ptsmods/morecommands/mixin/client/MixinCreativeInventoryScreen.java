@@ -68,8 +68,12 @@ public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScre
 		if (!searchBox.isFocused() && ClientOptions.Tweaks.creativeKeyPager.getValue()) {
 			GameOptions options = MinecraftClient.getInstance().options;
 			FabricCreativeGuiComponents.ItemGroupButtonWidget btn = null;
-			if ((options.keyLeft.matchesKey(keyCode, scanCode) || options.keyBack.matchesKey(keyCode, scanCode) || keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && pagerPrev != null && pagerPrev.active) btn = pagerPrev;
-			else if ((options.keyRight.matchesKey(keyCode, scanCode) || options.keyForward.matchesKey(keyCode, scanCode) || keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && pagerNext != null && pagerNext.active) btn = pagerNext;
+			if ((options.keyLeft.matchesKey(keyCode, scanCode) || options.keyBack.matchesKey(keyCode, scanCode) ||
+					keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && pagerPrev != null && pagerPrev.active)
+				btn = pagerPrev;
+			else if ((options.keyRight.matchesKey(keyCode, scanCode) || options.keyForward.matchesKey(keyCode, scanCode) ||
+					keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && pagerNext != null && pagerNext.active)
+				btn = pagerNext;
 			if (btn != null) {
 				btn.onPress();
 				btn.playDownSound(MinecraftClient.getInstance().getSoundManager());

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -31,7 +32,7 @@ class Compat17Plus extends AbstractCompat {
         instance = Compat.is16() ? null : new Compat17Plus();
     }
 
-    private Compat17Plus() {} // Private constructor
+    Compat17Plus() {} // Package-private constructor
 
     @Override
     public boolean isRemoved(Entity entity) {
@@ -70,7 +71,7 @@ class Compat17Plus extends AbstractCompat {
 
     @Override
     public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.writeNbt(world, pos, nbt);
+        return (NbtCompound) getMA(MobSpawnerLogic.class).invoke(logic, getMI(MobSpawnerLogic.class, "method_8272", World.class, BlockPos.class, NbtCompound.class), world, pos, nbt);
     }
 
     @Override

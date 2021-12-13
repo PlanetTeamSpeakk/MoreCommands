@@ -30,7 +30,7 @@ public class MixinOptionsScreen extends Screen {
 			x = this.width / 2 + 5; // above sounds
 			y = this.height / 6 + 24 - 6;
 		}
-		ClientCompat.getCompat().addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().openScreen(new ClientOptionsScreen(this))));
+		ClientCompat.getCompat().addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
 	}
 
 	@Unique

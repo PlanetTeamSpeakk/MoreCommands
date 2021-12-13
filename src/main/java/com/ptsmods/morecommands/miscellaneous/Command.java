@@ -36,7 +36,7 @@ public abstract class Command {
 	public static Formatting SF = MoreCommands.SF;
 	public static Style DS = MoreCommands.DS;
 	public static Style SS = MoreCommands.SS;
-	public static final Logger log = MoreCommands.log;
+	public static final Logger log = MoreCommands.LOG;
 	public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getServer().getOpPermissionLevel());
 	private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
 	private static final Map<Class<?>, Map<Event<?>, Object>> registeredCallbacks = new HashMap<>();
@@ -45,16 +45,18 @@ public abstract class Command {
 	 * Gets called once when the command is initialised.
 	 * Mostly useless now as the no-arg constructor achieves the same thing.
 	 * @throws Exception Can be anything
+	 * @param serverOnly Whether to make register commands with only vanilla argumenttypes to be compatible with clients without this mod installed.
 	 */
-	public void preinit() throws Exception {}
+	public void preinit(boolean serverOnly) throws Exception {}
 
 	/**
 	 * Gets called every time a new server is created.
 	 * So also whenever the player joins a singleplayer world.
+	 * @param serverOnly Whether to make register commands with only vanilla argumenttypes to be compatible with clients without this mod installed.
 	 * @param server The server that was created
 	 * @throws Exception Can be anything
 	 */
-	public void init(MinecraftServer server) throws Exception {}
+	public void init(boolean serverOnly, MinecraftServer server) throws Exception {}
 
 	public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
 
@@ -178,7 +180,7 @@ public abstract class Command {
 	public static void doInitialisations(MinecraftServer server) {
 		for (Command cmd : activeInstances.values())
 			try {
-				cmd.init(server);
+				cmd.init(false, server);
 			} catch (Exception e) {
 				log.error("Error invoking initialisation method on class " + cmd.getClass().getName() + ".", e);
 			}
@@ -212,7 +214,7 @@ public abstract class Command {
 	}
 
 	protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission, int defaultRequiredLevel) {
-		return FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
+		return isPermissionsLoaded() ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
 	}
 
 	protected static Predicate<ServerCommandSource> hasPermissionOrOp(@NotNull String permission) {
@@ -221,5 +223,19 @@ public abstract class Command {
 
 	protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission) {
 		return hasPermission(permission, 0);
+	}
+
+	public static boolean isPermissionsLoaded() {
+		return FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0");
+	}
+
+	protected int getCountFromPerms(ServerCommandSource source, String prefix, int max) {
+		final int finalMax = max;
+		if (isPermissionsLoaded())
+			for (int i = 0; i < 100; i++)
+				if (Permissions.check(source, prefix + i, i <= finalMax))
+					max = i;
+				else break;
+		return max;
 	}
 }

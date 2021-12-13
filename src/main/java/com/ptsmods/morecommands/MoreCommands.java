@@ -1,11 +1,13 @@
 package com.ptsmods.morecommands;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -17,6 +19,7 @@ import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.common.accessor.*;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.ReflectionHelper;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
@@ -25,10 +28,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
-import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.ModContainer;
@@ -36,14 +36,13 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.ArgumentTypes;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -60,22 +59,17 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
-import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraft.world.border.WorldBorder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -101,65 +95,38 @@ import java.util.zip.ZipFile;
 import static net.minecraft.block.Blocks.*;
 
 public class MoreCommands implements ModInitializer {
-	public static final Logger log = LogManager.getLogger();
+	public static final Logger LOG = LogManager.getLogger();
 	public static Formatting DF = ClientOptions.Tweaks.defColour.getValue().asFormatting();
 	public static Formatting SF = ClientOptions.Tweaks.secColour.getValue().asFormatting();
 	public static Style DS = Style.EMPTY.withColor(DF);
 	public static Style SS = Style.EMPTY.withColor(SF);
-	public static final CustomGameRuleCategory grc = new CustomGameRuleCategory(new Identifier("morecommands:main"), new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(ClientOptions.Tweaks.defColour.getValue().asFormatting()).withBold(true)));
-	public static final GameRules.Key<EnumRule<FormattingColour>> DFrule = GameRuleRegistry.register("defaultFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.GOLD, (server, value) -> updateFormatting(server, 0, value.get())));;
-	public static final GameRules.Key<EnumRule<FormattingColour>> SFrule = GameRuleRegistry.register("secondaryFormatting", grc, GameRuleFactory.createEnumRule(FormattingColour.YELLOW, (server, value) -> updateFormatting(server, 1, value.get())));
-	public static final GameRules.Key<GameRules.BooleanRule> doMeltRule = GameRuleRegistry.register("doMelt", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.IntRule> maxHomesRule = GameRuleRegistry.register("maxHomes", grc, GameRuleFactory.createIntRule(3, -1));
-	public static final GameRules.Key<GameRules.BooleanRule> doSilkSpawnersRule = GameRuleRegistry.register("doSilkSpawners", grc, GameRuleFactory.createBooleanRule(false));
-	public static final GameRules.Key<GameRules.BooleanRule> randomOrderPlayerTickRule = GameRuleRegistry.register("randomOrderPlayerTick", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.IntRule> hopperTransferCooldownRule = GameRuleRegistry.register("hopperTransferCooldown", grc, GameRuleFactory.createIntRule(8, 0));
-	public static final GameRules.Key<GameRules.IntRule> hopperTransferRateRule = GameRuleRegistry.register("hopperTransferRate", grc, GameRuleFactory.createIntRule(1, 1, 64));
-	public static final GameRules.Key<GameRules.BooleanRule> doFarmlandTrampleRule = GameRuleRegistry.register("doFarmlandTrample", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doJoinMessageRule = GameRuleRegistry.register("doJoinMessage", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doExplosionsRule = GameRuleRegistry.register("doExplosions", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.IntRule> wildLimitRule = GameRuleRegistry.register("wildLimit", grc, GameRuleFactory.createIntRule(5000, 0, (int) WorldBorder.DEFAULT_BORDER.getSize()/2));
-	public static final GameRules.Key<GameRules.IntRule> tpaTimeoutRule = GameRuleRegistry.register("tpaTimeout", grc, GameRuleFactory.createIntRule(2400, 600));
-	public static final GameRules.Key<GameRules.BooleanRule> fluidsInfiniteRule = GameRuleRegistry.register("fluidsInfinite", grc, GameRuleFactory.createBooleanRule(false));
-	public static final GameRules.Key<GameRules.BooleanRule> doLiquidFlowRule = GameRuleRegistry.register("doLiquidFlow", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.IntRule> vaultRowsRule = GameRuleRegistry.register("vaultRows", grc, GameRuleFactory.createIntRule(6, 1, 6));
-	public static final GameRules.Key<GameRules.IntRule> vaultsRule = GameRuleRegistry.register("vaults", grc, GameRuleFactory.createIntRule(3, 0));
-	public static final GameRules.Key<GameRules.IntRule> nicknameLimitRule = GameRuleRegistry.register("nicknameLimit", grc, GameRuleFactory.createIntRule(16, 0));
-	public static final GameRules.Key<GameRules.BooleanRule> doSignColoursRule = GameRuleRegistry.register("doSignColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doBookColoursRule = GameRuleRegistry.register("doBookColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doChatColoursRule = GameRuleRegistry.register("doChatColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doItemColoursRule = GameRuleRegistry.register("doItemColours", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doEnchantLevelLimitRule = GameRuleRegistry.register("doEnchantLevelLimit", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doPriorWorkPenaltyRule = GameRuleRegistry.register("doPriorWorkPenalty", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doItemsFireDamageRule = GameRuleRegistry.register("doItemsFireDamage", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doPathFindingRule = GameRuleRegistry.register("doPathFinding", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doGoalsRule = GameRuleRegistry.register("doGoals", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> doStacktraceRule = GameRuleRegistry.register("doStacktrace", grc, GameRuleFactory.createBooleanRule(true));
-	public static final GameRules.Key<GameRules.BooleanRule> sendCommandFeedbackToOpsRule = GameRuleRegistry.register("sendCommandFeedbackToOps", grc, GameRuleFactory.createBooleanRule(true));
-	public static final List<Block> blockBlacklist = Lists.newArrayList(AIR, BEDROCK, LAVA, CACTUS, MAGMA_BLOCK, ACACIA_FENCE, ACACIA_FENCE_GATE, BIRCH_FENCE, BIRCH_FENCE_GATE, DARK_OAK_FENCE, DARK_OAK_FENCE_GATE, JUNGLE_FENCE, JUNGLE_FENCE_GATE, NETHER_BRICK_FENCE, OAK_FENCE, OAK_FENCE_GATE, SPRUCE_FENCE, SPRUCE_FENCE_GATE, FIRE, COBWEB, SPAWNER, END_PORTAL, END_PORTAL_FRAME, TNT, IRON_TRAPDOOR, ACACIA_TRAPDOOR, BIRCH_TRAPDOOR, CRIMSON_TRAPDOOR, DARK_OAK_TRAPDOOR, JUNGLE_TRAPDOOR, SPRUCE_TRAPDOOR, WARPED_TRAPDOOR, BREWING_STAND);
-	public static final List<Block> blockWhitelist = Lists.newArrayList(AIR, DEAD_BUSH, VINE, TALL_GRASS, ACACIA_DOOR, BIRCH_DOOR, DARK_OAK_DOOR, IRON_DOOR, JUNGLE_DOOR, OAK_DOOR, SPRUCE_DOOR, POPPY, DANDELION, BROWN_MUSHROOM, RED_MUSHROOM, LILY_PAD, BEETROOTS, CARROTS, WHEAT, POTATOES, PUMPKIN_STEM, MELON_STEM, SNOW);
+	public static final boolean SERVER_ONLY;
+	public static final Set<Block> blockBlacklist = new HashSet<>();
+	public static final Set<Block> blockWhitelist = new HashSet<>();
 	public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
 	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
 	public static final Item netherPortalItem = new BlockItem(NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
 	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).build();
 	public static MinecraftServer serverInstance = null;
-	public static final TrackedData<Boolean> MAY_FLY = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-	public static final TrackedData<Boolean> INVULNERABLE = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-	public static final TrackedData<Boolean> SUPERPICKAXE = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-	public static final TrackedData<Boolean> VANISH = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-	public static final TrackedData<Boolean> VANISH_TOGGLED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-	public static final TrackedData<Optional<BlockPos>> CHAIR = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
-	public static final TrackedData<NbtCompound> VAULTS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND);
-	public static final TrackedData<Optional<Text>> NICKNAME = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT);
-	public static final TrackedData<Optional<UUID>> SPEED_MODIFIER = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final ScoreboardCriterion LATENCY;
 	public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	public static final Map<PlayerEntity, DiscordUser> discordTags = new HashMap<>();
-	public static final Set<PlayerEntity> discordTagNoPerm = new HashSet<>();
+	public static final Map<PlayerEntity, DiscordUser> discordTags = new WeakHashMap<>();
+	public static final Set<PlayerEntity> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
+	public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
+	private static Field customSuggestionsField = null;
 
 	static {
+		SERVER_ONLY = Arrays.stream(MoreObjects.firstNonNull(new File("config/MoreCommands/").listFiles(), new File[0])).anyMatch(f -> f.getName().startsWith("SERVERONLY"));
+		if (isServerOnly()) {
+			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+			LOG.info("-=-RUNNING IN SERVER-ONLY MODE-=-");
+			LOG.info("-=CLIENTS WILL NOT NEED THE MOD=-");
+			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+		}
+		MoreGameRules.init();
+		DataTrackerHelper.init();
 		Compat.getCompat().putCriterion("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 	}
 
@@ -168,53 +135,105 @@ public class MoreCommands implements ModInitializer {
 		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		File dir = new File("config/MoreCommands");
 		if (!dir.exists()) dir.mkdirs();
-		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
-		Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:easteregg"), new SoundEvent(new Identifier("morecommands:easteregg")));
-		Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
-		Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
-		Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
-		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
-		Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
-		List<Command> serverCommands = getCommandClasses("server", Command.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
+
+		List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
+				.map(MoreCommands::getInstance)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			serverCommands.stream().filter(cmd -> !cmd.forDedicated() || dedicated).forEach(cmd -> {
 				try {
 					cmd.register(dispatcher, dedicated);
 				} catch (Exception e) {
-					log.error("Could not register command " + cmd.getClass().getName() + ".", e);
+					LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
 				}
 			});
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
-		S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
-			if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
-		});
-		ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:sit_on_stairs"), (server, player, handler, buf, responseSender) -> {
-			BlockPos pos = buf.readBlockPos();
-			BlockState state = player.getServerWorld().getBlockState(pos);
-			if (Chair.isValid(state))
-				Chair.createAndPlace(pos, player, player.getServerWorld());
-		});
-		ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:discord_data"), (server, player, handler, buf, responseSender) -> {
-			DiscordUser user = new DiscordUser();
-			if (buf.readBoolean()) discordTagNoPerm.add(player);
-			else discordTagNoPerm.remove(player);
-			user.userId = buf.readString();
-			user.username = buf.readString();
-			user.discriminator = buf.readString();
-			user.avatar = buf.readString();
-			discordTags.put(player, user);
-		});
+
 		PostInitCallback.EVENT.register(() -> {
-			Identifier redstoneWire = new Identifier("redstone_wire"); // Completely breaks redstone dust in the creative inventory.
+			blockBlacklist.clear();
+			blockWhitelist.clear();
 			Registry.BLOCK.forEach(block -> {
-				Identifier id = Registry.BLOCK.getId(block);
-				if (!Compat.getCompat().registryContainsId(Registry.ITEM, id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
-			});
-			Registry.ITEM.forEach(item -> {
-				if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
+				if (block instanceof FluidBlock || !((MixinAbstractBlockAccessor) block).isCollidable()) blockBlacklist.add(block);
+				try {
+					VoxelShape shape = block.getDefaultState().getCollisionShape(null, null);
+					if (shape.getMax(Direction.Axis.Y) > 16) blockBlacklist.add(block); // Will fall through if teleported on. (E.g. fences)
+					if (shape.getMin(Direction.Axis.Z) > 6 / 16d || shape.getMax(Direction.Axis.Z) < 10 / 16d || // Can't stand on this. (E.g. doors)
+							shape.getMin(Direction.Axis.X) > 6 / 16d || shape.getMax(Direction.Axis.X) < 10 / 16d) blockBlacklist.add(block);
+					if (shape.getMin(Direction.Axis.Y) == shape.getMax(Direction.Axis.Y)) blockBlacklist.add(block); // Will fall straight through.
+
+					if (!block.getDefaultState().getMaterial().blocksMovement() || !Block.isShapeFullCube(shape)) blockWhitelist.add(block); // Block does not cause suffocation.
+				} catch (Exception ignored) {} // Getting collision shape probably requires a world and position which we don't have.
+
+
+				Method onEntityCollision = ReflectionHelper.getYarnMethod(block.getClass(), "onEntityCollision", "method_9548", BlockState.class, World.class, BlockPos.class, Entity.class);
+				if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
+
+				onEntityCollision = ReflectionHelper.getYarnMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", World.class, BlockPos.class, Entity.class);
+				if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.AbstractBlockState.class) blockBlacklist.add(block);
+				// onEntityCollision method was overridden, block does something to entities on collision, assume it's malicious.
 			});
 		});
+
+		if (!isServerOnly()) {
+			Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
+			Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:easteregg"), new SoundEvent(new Identifier("morecommands:easteregg")));
+			Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
+			Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
+			Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
+			Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
+			Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
+
+			S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
+				if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
+			});
+			ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:sit_on_stairs"), (server, player, handler, buf, responseSender) -> {
+				BlockPos pos = buf.readBlockPos();
+				BlockState state = player.getWorld().getBlockState(pos);
+				if (Chair.isValid(state))
+					Chair.createAndPlace(pos, player, player.getWorld());
+			});
+			ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:discord_data"), (server, player, handler, buf, responseSender) -> {
+				DiscordUser user = new DiscordUser();
+				if (buf.readBoolean()) discordTagNoPerm.add(player);
+				else discordTagNoPerm.remove(player);
+				user.userId = buf.readString();
+				user.username = buf.readString();
+				user.discriminator = buf.readString();
+				user.avatar = buf.readString();
+				discordTags.put(player, user);
+			});
+
+			PostInitCallback.EVENT.register(() -> {
+				Identifier redstoneWire = new Identifier("redstone_wire"); // Completely breaks redstone dust in the creative inventory.
+				Registry.BLOCK.forEach(block -> {
+					Identifier id = Registry.BLOCK.getId(block);
+					if (!Compat.getCompat().registryContainsId(Registry.ITEM, id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
+				});
+				Registry.ITEM.forEach(item -> {
+					if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
+				});
+			});
+
+			ArgumentTypes.register("morecommands:enum_argument", EnumArgumentType.class, new EnumArgumentType.Serialiser());
+			ArgumentTypes.register("morecommands:cramped_string", CrampedStringArgumentType.class, new CrampedStringArgumentType.Serialiser());
+			ArgumentTypes.register("morecommands:time_argument", TimeArgumentType.class, new ConstantArgumentSerializer<>(TimeArgumentType::new));
+			ArgumentTypes.register("morecommands:hexinteger", HexIntegerArgumentType.class, new ConstantArgumentSerializer<>(HexIntegerArgumentType::new));
+			ArgumentTypes.register("morecommands:ignorant_string", IgnorantStringArgumentType.class, new IgnorantStringArgumentType.Serialiser());
+			ArgumentTypes.register("morecommands:painting_motive", PaintingMotiveArgumentType.class, new ConstantArgumentSerializer<>(PaintingMotiveArgumentType::new));
+			ArgumentTypes.register("morecommands:potion", PotionArgumentType.class, new ConstantArgumentSerializer<>(PotionArgumentType::new));
+		} else {
+			UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
+				BlockState state = world.getBlockState(hit.getBlockPos());
+				if (!player.isSneaking() && BlockTags.STAIRS.contains(state.getBlock()) && Chair.isValid(state)) {
+					Chair.createAndPlace(hit.getBlockPos(), player, world);
+					return ActionResult.SUCCESS;
+				}
+				return ActionResult.PASS;
+			});
+		}
+
 		Set<ServerPlayerEntity> howlingPlayers = new HashSet<>();
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			// This does absolutely nothing whatsoever, just pass along. :)
@@ -223,36 +242,31 @@ public class MoreCommands implements ModInitializer {
 					float pitch = MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(p));
 					float yaw = MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(p));
 					double moonWidth = Math.PI / 32 * -pitch;
-					long dayTime = p.getServerWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-					if (!howlingPlayers.contains(p) && p.getServerWorld().getDimension().getMoonPhase(p.getServerWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+					long dayTime = p.getWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
+					if (!howlingPlayers.contains(p) && p.getWorld().getDimension().getMoonPhase(p.getWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
 						double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
 						if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
-							p.getServerWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
+							p.getWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
 							howlingPlayers.add(p);
 						}
 					}
 				} else howlingPlayers.remove(p);
 		});
-		ArgumentTypes.register("morecommands:registry_argument", RegistryArgumentType.class, new RegistryArgumentType.Serialiser());
-		ArgumentTypes.register("morecommands:limited_string", LimitedStringArgumentType.class, new LimitedStringArgumentType.Serialiser());
-		ArgumentTypes.register("morecommands:enum_argument", EnumArgumentType.class, new EnumArgumentType.Serialiser());
-		ArgumentTypes.register("morecommands:cramped_string", CrampedStringArgumentType.class, new CrampedStringArgumentType.Serialiser());
-		ArgumentTypes.register("morecommands:time_argument", TimeArgumentType.class, new ConstantArgumentSerializer<>(TimeArgumentType::new));
-		ArgumentTypes.register("morecommands:hexinteger", HexIntegerArgumentType.class, new ConstantArgumentSerializer<>(HexIntegerArgumentType::new));
-		ArgumentTypes.register("morecommands:ignorant_string", IgnorantStringArgumentType.class, new IgnorantStringArgumentType.Serialiser());
 	}
 
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
 		List<Class<T>> classes = new ArrayList<>();
 		File jar = getJar();
 		if (jar == null) {
-			log.error("Could not find the jarfile of the mod, no commands will be registered.");
+			LOG.error("Could not find the jarfile of the mod, no commands will be registered.");
 			return classes;
 		}
 		try {
 			List<Path> classNames = new ArrayList<>();
 			// It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
-			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath()).filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
+			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath())
+					.filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
+					.collect(Collectors.toList()));
 			else {
 				ZipFile zip = new ZipFile(jar);
 				Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -268,22 +282,23 @@ public class MoreCommands implements ModInitializer {
 					Class<?> clazz0 = Class.forName(name);
 					if (clazz.isAssignableFrom(clazz0)) classes.add(ReflectionHelper.cast(clazz0));
 				} catch (Exception e) {
-					log.error("Error loading class " + name, e);
+					LOG.error("Error loading class " + name, e);
 				}
 			});
-			log.info("Found " + classes.size() + " commands to load for type " + type + ".");
+			LOG.info("Found " + classes.size() + " commands to load for type " + type + ".");
 		} catch (IOException e) {
-			log.error("Couldn't find commands for type " + type + " this means none of said type will be loaded.", e);
+			LOG.error("Couldn't find commands for type " + type + ". This means none of said type will be loaded.", e);
 		}
 		return classes;
 	}
 
+	@SuppressWarnings("deprecation") // Internal stuff, not API. Required to get this mod's
 	static File getJar() {
 		File jar;
 		try {
 			jar = new File(((ModContainer) FabricLoader.getInstance().getModContainer("morecommands").orElseThrow(NullPointerException::new)).getOriginUrl().toURI().getPath());
 		} catch (URISyntaxException e) {
-			log.catching(e);
+			LOG.catching(e);
 			return null;
 		}
 		if (jar.isDirectory() && jar.getName().equals("main")) jar = new File(String.join(File.separator, jar.getParentFile().getParentFile().getAbsolutePath(), "classes", "java", "main", ""));
@@ -302,16 +317,18 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void updateFormatting(MinecraftServer server, int id, FormattingColour value) {
+		if (isServerOnly()) return;
+
 		switch (id) {
 			case 0:
-				value = value == null ? server.getGameRules().get(DFrule).get() : value;
+				value = value == null ? server.getGameRules().get(MoreGameRules.DFrule).get() : value;
 				if (value.asFormatting() != DF) {
 					setFormattings(value.asFormatting(), null);
 					sendFormattingUpdate(server, 0, DF);
 				}
 				break;
 			case 1:
-				value = value == null ? server.getGameRules().get(SFrule).get() : value;
+				value = value == null ? server.getGameRules().get(MoreGameRules.SFrule).get() : value;
 				if (value.asFormatting() != SF) {
 					setFormattings(null, value.asFormatting());
 					sendFormattingUpdate(server, 1, SF);
@@ -321,6 +338,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void sendFormattingUpdates(ServerPlayerEntity p) {
+		if (isServerOnly()) return;
 		sendFormattingUpdate(p, 0, DF);
 		sendFormattingUpdate(p, 1, SF);
 	}
@@ -346,14 +364,14 @@ public class MoreCommands implements ModInitializer {
 			con.setAccessible(true);
 			instance = con.newInstance();
 		} catch (Exception e) {
-			log.error("Could not instantiate command class " + cmd.getName() + ".", e);
+			LOG.error("Could not instantiate command class " + cmd.getName() + ".", e);
 			return null;
 		}
 		instance.setActiveInstance();
 		try {
-			instance.preinit();
+			instance.preinit(isServerOnly());
 		} catch (Exception e) {
-			log.error("Error invoking pre-initialisation method on class " + cmd.getName() + ".", e);
+			LOG.error("Error invoking pre-initialisation method on class " + cmd.getName() + ".", e);
 		}
 		return ReflectionHelper.cast(instance);
 	}
@@ -633,18 +651,6 @@ public class MoreCommands implements ModInitializer {
 		if (target instanceof PathAwareEntity) ((PathAwareEntity) target).getNavigation().stop();
 	}
 
-	public static <T> Registry<T> getRegistry(RegistryKey<T> key) {
-		return ReflectionHelper.cast(getRootRegistry().get(ReflectionHelper.<RegistryKey<MutableRegistry<?>>>cast(key)));
-	}
-
-	public static <T> RegistryKey<MutableRegistry<?>> getKey(MutableRegistry<T> registry) {
-		return getRootRegistry().getKey(registry).orElse(null);
-	}
-
-	public static MutableRegistry<MutableRegistry<?>> getRootRegistry() {
-		return MixinRegistryAccessor.getRoot();
-	}
-
 	public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
 		removeNode(dispatcher.getRoot(), child);
 	}
@@ -662,7 +668,7 @@ public class MoreCommands implements ModInitializer {
 	public static String getHTML(String url) throws IOException {
 		URL url0 = new URL(url);
 		URLConnection connection = url0.openConnection();
-		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 OPR/81.0.4196.61");
 		return readInputStream(connection.getInputStream());
 	}
 
@@ -675,7 +681,34 @@ public class MoreCommands implements ModInitializer {
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
 		Command.doInitialisations(server);
-		log.info("MoreCommands data path: " + getRelativePath(server));
+		// Below line is for suggestions of server-side only commands when running in server-only mode.
+		// All custom argumenttypes would have empty suggestions without it.
+		if (isServerOnly()) checkArgTypes(server.getCommandManager().getDispatcher().getRoot(), new HashSet<>());
+		MoreGameRules.checkPerms(server);
+		LOG.info("MoreCommands data path: " + getRelativePath(server));
+	}
+
+	private static <T extends CommandSource> void checkArgTypes(CommandNode<T> node, Set<CommandNode<T>> nodesToIgnore) {
+		if (nodesToIgnore.contains(node)) return;
+		nodesToIgnore.add(node);
+		if (node instanceof ArgumentCommandNode) {
+			ArgumentCommandNode<?, T> argumentNode = (ArgumentCommandNode<?, T>) node;
+			if (argumentNode.getType() instanceof ServerSideArgumentType && argumentNode.getCustomSuggestions() == null) {
+				if (customSuggestionsField == null)
+					try {
+						customSuggestionsField = ArgumentCommandNode.class.getDeclaredField("customSuggestions");
+						customSuggestionsField.setAccessible(true);
+					} catch (NoSuchFieldException ignored) {}
+				SuggestionProvider<Object> suggestionProvider = argumentNode.getType()::listSuggestions;
+				try {
+					Objects.requireNonNull(customSuggestionsField).set(argumentNode, suggestionProvider);
+				} catch (IllegalAccessException e) {
+					MoreCommands.LOG.error("Could not set custom suggestions on commandnode " + node);
+				}
+			}
+		}
+		node.getChildren().forEach(child -> checkArgTypes(child, nodesToIgnore));
+		if (node.getRedirect() != null) checkArgTypes(node.getRedirect(), nodesToIgnore);
 	}
 
 	public static boolean isAprilFirst() {
@@ -816,12 +849,12 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static Vec3d getRotationVector(float pitch, float yaw) {
-		float f = pitch * 0.017453292F;
-		float g = -yaw * 0.017453292F;
-		float h = MathHelper.cos(g);
-		float i = MathHelper.sin(g);
-		float j = MathHelper.cos(f);
-		float k = MathHelper.sin(f);
+		float pitchRad = pitch * 0.017453292F;
+		float yawRad = -yaw * 0.017453292F;
+		float h = MathHelper.cos(yawRad);
+		float i = MathHelper.sin(yawRad);
+		float j = MathHelper.cos(pitchRad);
+		float k = MathHelper.sin(pitchRad);
 		return new Vec3d(i * j, -k, h * j);
 	}
 
@@ -881,7 +914,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static VoxelShape getFluidShape(BlockState state) {
-		return VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8*(8-state.get(FluidBlock.LEVEL)), 1);
+		return VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8 * (8-state.get(FluidBlock.LEVEL)), 1);
 	}
 
 	public static String getRelativePath() {
@@ -896,12 +929,13 @@ public class MoreCommands implements ModInitializer {
 		try {
 			Files.move(Paths.get(from), Paths.get(to));
 		} catch (IOException e) {
-			log.catching(e);
+			LOG.catching(e);
 		}
 	}
 
 	public static boolean isSingleplayer() {
-		return MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
+		return FabricLoader.getInstance().getEnvironmentType() != EnvType.SERVER && MinecraftClient.getInstance() != null &&
+				MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
 	}
 
 	public static String formatSeconds(long seconds, Formatting mainColour, Formatting commaColour) {
@@ -917,5 +951,9 @@ public class MoreCommands implements ModInitializer {
 		String s = sb.toString();
 		if (s.contains(",")) s = s.substring(0, s.lastIndexOf(',')) + " and" + s.substring(s.lastIndexOf(',') + 1);
 		return s;
+	}
+
+	public static boolean isServerOnly() {
+		return FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER && SERVER_ONLY;
 	}
 }

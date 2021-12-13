@@ -40,16 +40,16 @@ public class ClientOptionsScreen extends Screen {
 			if (!c.isInterface() && !isHidden(c)) {
 				int x = width / 2 + (right ? 5 : -155);
 				int y = height / 6 + 24 * (row + 1) - 6;
-				btnClasses.put(compat.addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText(ClientOptionsChildScreen.getCleanName(c.getSimpleName()).trim()), button -> client.openScreen(new ClientOptionsChildScreen(this, c)))), c);
+				btnClasses.put(compat.addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText(ClientOptionsChildScreen.getCleanName(c.getSimpleName()).trim()), button -> client.setScreen(new ClientOptionsChildScreen(this, c)))), c);
 				if (right) row++;
 				right = !right;
 			}
-		btnClasses.put(compat.addButton(this, new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"), button -> client.openScreen(new WorldInitCommandsScreen(this)))), WorldInitCommandsScreen.class);
+		btnClasses.put(compat.addButton(this, new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"), button -> client.setScreen(new WorldInitCommandsScreen(this)))), WorldInitCommandsScreen.class);
 		compat.addButton(this, new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, new LiteralText("Reset"), btn -> {
 			ClientOptions.reset();
 			init();
 		}));
-		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, buttonWidget -> client.openScreen(parent)));
+		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, buttonWidget -> client.setScreen(parent)));
 	}
 
 	@Override
@@ -77,6 +77,6 @@ public class ClientOptionsScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		Objects.requireNonNull(client).openScreen(parent);
+		Objects.requireNonNull(client).setScreen(parent);
 	}
 }

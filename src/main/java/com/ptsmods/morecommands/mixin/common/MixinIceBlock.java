@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IceBlock;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinIceBlock {
 	@Inject(at = @At("HEAD"), method = "melt(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V", cancellable = true)
 	protected void melt(BlockState state, World world, BlockPos pos, CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreCommands.doMeltRule)) cbi.cancel();
+		if (!world.getGameRules().getBoolean(MoreGameRules.doMeltRule)) cbi.cancel();
 	}
 }

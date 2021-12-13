@@ -20,8 +20,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +33,7 @@ public class WarpCommand extends Command {
 	private final List<Warp> allWarps = new ArrayList<>();
 	private final Set<UUID> dirty = new HashSet<>();
 
-	public void init(MinecraftServer server) {
+	public void init(boolean serverOnly, MinecraftServer server) {
 		File oldDir = new File("config/MoreCommands/warps/");
 		if (oldDir.exists()) {
 			for (File f : MoreObjects.firstNonNull(oldDir.listFiles(), new File[0]))

@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "0.8-SNAPSHOT"
+	id "fabric-loom" version "0.10-SNAPSHOT"
 	id "com.github.johnrengelman.shadow" version "7.0.0"
 	id "maven-publish"
 }
@@ -12,7 +12,7 @@ version = project.mod_version
 group = project.maven_group
 
 shadowJar {
-	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version_most}.${archiveExtension.get()}"
+	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version}.${archiveExtension.get()}"
 	from remapJar
 	configurations = [project.configurations.shadow] // Only take dependencies that are included with 'shadow' in the dependencies section.
 	exclude("/mappings/") // Included within project.configurations.implementation for some reason.
@@ -36,7 +36,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "io.github.prospector:modmenu:v2.0.0-beta.4"
-	modImplementation "com.ptsmods:devlogin:1.2"
+	modImplementation "com.ptsmods:devlogin:2.0"
 	modImplementation 'me.lucko:fabric-permissions-api:0.1-SNAPSHOT'
 	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.3")
 	shadow implementation("com.github.Vatuu:discord-rpc:1.6.2")

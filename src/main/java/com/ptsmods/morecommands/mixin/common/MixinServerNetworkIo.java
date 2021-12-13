@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.ServerNetworkIo;
@@ -15,7 +15,7 @@ import java.util.*;
 public class MixinServerNetworkIo {
 	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", remap = false), method = "tick")
 	private Iterator<ClientConnection> tick_newArrayList(List<ClientConnection> connections) {
-		if (Objects.requireNonNull(ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreCommands.randomOrderPlayerTickRule)) Collections.shuffle(connections);
+		if (Objects.requireNonNull(ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.randomOrderPlayerTickRule)) Collections.shuffle(connections);
 		return connections.iterator();
 	}
 }

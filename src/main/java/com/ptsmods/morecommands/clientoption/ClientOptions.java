@@ -106,11 +106,13 @@ public class ClientOptions {
 
 	private static final Properties props = new Properties();
 	private static final File f = new File("config/MoreCommands/clientoptions.txt");
-	@SuppressWarnings("UnstableApiUsage")
-	private static final List<Field> fields = Arrays.stream(ClientOptions.class.getClasses()).filter(c -> !c.isInterface()).sorted(Comparator.comparingInt(c -> ReflectionHelper.getFieldValue(c, "ordinal", null))).flatMap(c -> Arrays.stream(c.getFields())).filter(field -> ClientOption.class.isAssignableFrom(field.getType())).collect(ImmutableList.toImmutableList());
-	@SuppressWarnings("UnstableApiUsage")
+	private static final List<Field> fields = Arrays.stream(ClientOptions.class.getClasses())
+			.filter(c -> !c.isInterface())
+			.sorted(Comparator.comparingInt(c -> ReflectionHelper.getFieldValue(c, "ordinal", null)))
+			.flatMap(c -> Arrays.stream(c.getFields()))
+			.filter(field -> ClientOption.class.isAssignableFrom(field.getType()))
+			.collect(ImmutableList.toImmutableList());
 	private static final Map<String, ClientOption<?>> mappedOptions = fields.stream().collect(ImmutableMap.toImmutableMap(Field::getName, field -> ReflectionHelper.getFieldValue(field, null)));
-	@SuppressWarnings("UnstableApiUsage")
 	private static final Map<ClientOption<?>, String> reversedMappedOptions = mappedOptions.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getValue, Map.Entry::getKey));
 
 	public static void update() {
@@ -126,7 +128,7 @@ public class ClientOptions {
 			try {
 				if (!f.createNewFile()) return false;
 			} catch (IOException e) {
-				MoreCommands.log.catching(e);
+				MoreCommands.LOG.catching(e);
 				return false;
 			}
 		}
@@ -135,7 +137,7 @@ public class ClientOptions {
 			writer.flush();
 			return true;
 		} catch (Exception e) {
-			MoreCommands.log.error("An error occurred while saving the clientoptions.", e);
+			MoreCommands.LOG.error("An error occurred while saving the clientoptions.", e);
 			return false;
 		}
 	}
@@ -148,7 +150,7 @@ public class ClientOptions {
 					if (props.containsKey(key)) value.setValueString(props.getProperty(key));
 				});
 			} catch (IOException e) {
-				MoreCommands.log.catching(e);
+				MoreCommands.LOG.catching(e);
 			}
 		else write();
 	}

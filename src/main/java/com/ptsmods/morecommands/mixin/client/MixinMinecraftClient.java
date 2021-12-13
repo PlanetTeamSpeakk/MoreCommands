@@ -55,8 +55,15 @@ public class MixinMinecraftClient {
 		MoreCommandsClient.updatePresence();
 	}
 
+	@Group(name = "postInitClient", min = 1, max = 1)
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/fabricmc/loader/entrypoint/minecraft/hooks/EntrypointClient;start(Ljava/io/File;Ljava/lang/Object;)V", remap = false, shift = At.Shift.AFTER), method = "<init>")
-	private void postInit(RunArgs args, CallbackInfo ci) {
+	private void postInitOld(RunArgs args, CallbackInfo cbi) {
+		PostInitCallback.EVENT.invoker().postInit();
+	}
+
+	@Group(name = "postInitClient", min = 1, max = 1)
+	@Inject(at = @At(value = "INVOKE", target = "Lnet/fabricmc/loader/impl/game/minecraft/Hooks;startClient(Ljava/io/File;Ljava/lang/Object;)V", remap = false, shift = At.Shift.AFTER), method = "<init>")
+	private void postInitNew(RunArgs args, CallbackInfo cbi) {
 		PostInitCallback.EVENT.invoker().postInit();
 	}
 

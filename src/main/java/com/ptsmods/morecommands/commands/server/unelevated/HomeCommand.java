@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -27,7 +28,7 @@ public class HomeCommand extends Command {
 	private static File dataFile = null;
 	private final Map<UUID, List<Home>> homes = new HashMap<>();
 
-	public void init(MinecraftServer server) {
+	public void init(boolean serverOnly, MinecraftServer server) {
 		if (new File("config/MoreCommands/homes.json").exists()) MoreCommands.tryMove("config/MoreCommands/homes.json", MoreCommands.getRelativePath() + "homes.json");
 		dataFile = new File(MoreCommands.getRelativePath() + "homes.json");
 		Map<String, Map<String, Map<String, Object>>> data = null;
@@ -68,10 +69,11 @@ public class HomeCommand extends Command {
 
 	private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
 		PlayerEntity p = ctx.getSource().getPlayer();
-		int max = p.getEntityWorld().getGameRules().getInt(MoreCommands.maxHomesRule);
+		int globalMax = p.getEntityWorld().getGameRules().getInt(MoreGameRules.maxHomesRule);
+		int max = getCountFromPerms(ctx.getSource(), "morecommands.sethome.", globalMax);
 		if (max < 0) max = Integer.MAX_VALUE;
 		boolean bypass = isOp(ctx);
-		if (max == 0 && !bypass) sendError(ctx, "Homes are currently disabled, you can enable them by setting the maxHomes gamerule to a value greater than 0.");
+		if (max == 0 && !bypass) sendError(ctx, "Homes are currently disabled" + (globalMax > 0 ? " (for you)" : "") + ".");
 		else if (getHomes(p).size() >= max && !bypass) sendError(ctx, "You cannot set more than " + max + " homes.");
 		else {
 			if (!homes.containsKey(p.getUuid())) homes.put(p.getUuid(), new ArrayList<>());

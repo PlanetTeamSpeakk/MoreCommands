@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 
 public class EnchantMaxCommand extends Command {
@@ -15,7 +14,7 @@ public class EnchantMaxCommand extends Command {
             if (stack.isEmpty()) sendError(ctx, "You're not holding an item.");
             else {
                 stack.getEnchantments().clear();
-                Registry.ENCHANTMENT.stream().filter(enchantment -> !enchantment.isCursed()).forEach(enchantment -> stack.addEnchantment(enchantment, Integer.MAX_VALUE));
+                Registry.ENCHANTMENT.stream().filter(enchantment -> !enchantment.isCursed()).forEach(enchantment -> stack.addEnchantment(enchantment, Short.MAX_VALUE));
                 sendMsg(ctx, "Your item has been enchanted.");
                 return stack.getEnchantments().size();
             }

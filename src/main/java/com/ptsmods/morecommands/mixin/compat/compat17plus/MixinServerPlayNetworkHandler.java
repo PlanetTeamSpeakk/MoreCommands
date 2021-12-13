@@ -16,7 +16,7 @@ public class MixinServerPlayNetworkHandler {
     @Shadow @Final private MinecraftServer server;
     @Shadow public ServerPlayerEntity player;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "onGameMessage")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String;charAt(I)C", remap = false), method = "onChatMessage")
     public char method_31286_charAt(String string, int index) {
         return Compat.getCompat().gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
     }

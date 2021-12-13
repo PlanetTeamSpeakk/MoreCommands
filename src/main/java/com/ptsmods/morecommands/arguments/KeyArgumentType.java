@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 @Environment(EnvType.CLIENT)
-public class KeyArgumentType implements ArgumentType<Integer> {
+public class KeyArgumentType implements ArgumentType<Integer>, ServerSideArgumentType {
 
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
 	private final StringArgumentType parent = StringArgumentType.word();
@@ -44,4 +44,8 @@ public class KeyArgumentType implements ArgumentType<Integer> {
 		return ImmutableList.copyOf(possibilities);
 	}
 
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return StringArgumentType.word();
+	}
 }

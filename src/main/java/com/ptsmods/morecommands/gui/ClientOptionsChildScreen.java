@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.gui;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.compat.client.ClientCompat;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
@@ -17,7 +16,7 @@ import net.minecraft.util.Pair;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static com.ptsmods.morecommands.MoreCommands.log;
+import static com.ptsmods.morecommands.MoreCommands.LOG;
 
 public class ClientOptionsChildScreen extends Screen {
 	private final Class<?> c;
@@ -89,7 +88,7 @@ public class ClientOptionsChildScreen extends Screen {
 			ClientOptions.reset();
 			init();
 		}));
-		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> Objects.requireNonNull(client).openScreen(this.parent)));
+		compat.addButton(this, new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, button -> Objects.requireNonNull(client).setScreen(this.parent)));
 	}
 
 	@Override
@@ -110,7 +109,7 @@ public class ClientOptionsChildScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		Objects.requireNonNull(client).openScreen(parent);
+		Objects.requireNonNull(client).setScreen(parent);
 	}
 
 	private void updatePage() {
@@ -154,7 +153,7 @@ public class ClientOptionsChildScreen extends Screen {
 		try {
 			return ClientOption.class.isAssignableFrom(f.getType()) ? (ClientOption<?>) f.get(null) : null;
 		} catch (IllegalAccessException e) {
-			log.error("An unknown error occurred while getting type of field " + f + ".", e);
+			LOG.error("An unknown error occurred while getting type of field " + f + ".", e);
 			return null;
 		}
 	}

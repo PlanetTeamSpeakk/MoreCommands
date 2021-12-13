@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.EarlyRiser;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -47,6 +48,10 @@ public interface Compat {
 
     static boolean is17() {
         return getIVer() == 17;
+    }
+
+    static boolean is18() {
+        return getIVer() == 18;
     }
 
     boolean isRemoved(Entity entity);
@@ -96,4 +101,6 @@ public interface Compat {
     void playerSetWorld(ServerPlayerEntity player, ServerWorld world);
 
     PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players);
+
+    NbtCompound writeBENBT(BlockEntity be);
 }

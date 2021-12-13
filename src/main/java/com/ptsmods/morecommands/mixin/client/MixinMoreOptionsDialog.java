@@ -23,7 +23,8 @@ public class MixinMoreOptionsDialog {
 
     @Inject(at = @At("TAIL"), method = "init")
     private void init(CreateWorldScreen parent, MinecraftClient client, TextRenderer textRenderer, CallbackInfo ci) {
-        ClientCompat.getCompat().addButton(parent, wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, new LiteralText("Initialisation Commands"), btn -> MinecraftClient.getInstance().openScreen(new WorldInitCommandsScreen(parent)))).visible = false;
+        ClientCompat.getCompat().addButton(parent, wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, new LiteralText("Initialisation Commands"),
+                btn -> MinecraftClient.getInstance().setScreen(new WorldInitCommandsScreen(parent)))).visible = false;
     }
 
     @Inject(at = @At("TAIL"), method = "setVisible")

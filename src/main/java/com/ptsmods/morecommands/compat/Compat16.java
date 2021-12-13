@@ -38,7 +38,7 @@ class Compat16 extends AbstractCompat {
         instance = Compat.is16() ? new Compat16() : null;
     }
 
-    private Compat16() {} // Private constructor
+    Compat16() {} // Package-private constructor
 
     @Override
     public boolean isRemoved(Entity entity) {

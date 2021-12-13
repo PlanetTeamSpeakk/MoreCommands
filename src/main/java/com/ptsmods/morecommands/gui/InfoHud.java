@@ -45,7 +45,7 @@ public class InfoHud extends DrawableHelper {
 				loadLines();
 				lastRead = System.currentTimeMillis();
 			} catch (IOException e) {
-				MoreCommands.log.catching(e);
+				MoreCommands.LOG.catching(e);
 				setupDefaultLines();
 			}
 		}
@@ -181,7 +181,7 @@ public class InfoHud extends DrawableHelper {
 			} catch (Exception e) {
 				StackTraceElement element = e.getStackTrace()[0];
 				if (!printedExceptions.contains(element)) {
-					MoreCommands.log.catching(e);
+					MoreCommands.LOG.catching(e);
 					printedExceptions.add(element);
 				}
 				output = "ERROR";

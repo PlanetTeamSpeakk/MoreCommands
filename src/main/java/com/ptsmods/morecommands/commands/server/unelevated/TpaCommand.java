@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -18,10 +19,10 @@ public class TpaCommand extends Command {
 
 	private static final List<TpaRequest> requests = new ArrayList<>();
 
-	public void preinit() {
+	public void preinit(boolean serverOnly) {
 		registerCallback(ServerTickEvents.END_WORLD_TICK, world -> {
 			for (TpaRequest request : new ArrayList<>(requests))
-				if (world == request.to.getServerWorld() && world.getTime() - request.creationTick >= world.getGameRules().getInt(MoreCommands.tpaTimeoutRule)) {
+				if (world == request.to.getWorld() && world.getTime() - request.creationTick >= world.getGameRules().getInt(MoreGameRules.tpaTimeoutRule)) {
 					request.timeout();
 					requests.remove(request);
 				}
@@ -67,7 +68,7 @@ public class TpaCommand extends Command {
 		private final long creationTick;
 
 		private TpaRequest(ServerPlayerEntity from, ServerPlayerEntity to, boolean here) {
-			creationTick = from.getServerWorld().getTime();
+			creationTick = from.getWorld().getTime();
 			this.from = from;
 			this.to = to;
 			this.here = here;
@@ -80,7 +81,7 @@ public class TpaCommand extends Command {
 		private void accept() {
 			ServerPlayerEntity from = here ? this.to : this.from;
 			ServerPlayerEntity to = here ? this.from : this.to;
-			MoreCommands.teleport(from, to.getServerWorld(), to.getPos(), Compat.getCompat().getEntityYaw(to), Compat.getCompat().getEntityPitch(to));
+			MoreCommands.teleport(from, to.getWorld(), to.getPos(), Compat.getCompat().getEntityYaw(to), Compat.getCompat().getEntityPitch(to));
 		}
 
 		private void deny() {

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -15,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime> {
+public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime>, ServerSideArgumentType {
 
 	private static final SimpleCommandExceptionType PARSE_EXCEPTION = new SimpleCommandExceptionType(() -> "The given value could not be parsed into time");
 	private static final SimpleCommandExceptionType HOURS_EXCEPTION = new SimpleCommandExceptionType(() -> "Days only have 24 hours, silly");
@@ -108,6 +109,11 @@ public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime
 	@Override
 	public Collection<String> getExamples() {
 		return Lists.newArrayList("18000", "@12000", "12:30");
+	}
+
+	@Override
+	public ArgumentType<?> toVanillaArgumentType() {
+		return StringArgumentType.word();
 	}
 
 	public static class WorldTime {

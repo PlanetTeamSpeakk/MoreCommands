@@ -34,7 +34,7 @@ public class MixinPlayerListHud {
 		return s + (ClientOptions.Rendering.showExactLatency.getValue() ? 15 : 0);
 	}
 
-	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/PlayerListHud; fill(Lnet/minecraft/client/util/math/MatrixStack;IIIII)V"), index = 3, method = "render(Lnet/minecraft/client/util/math/MatrixStack;ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreboardObjective;)V")
+	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/PlayerListHud;fill(Lnet/minecraft/client/util/math/MatrixStack;IIIII)V"), index = 3, method = "render(Lnet/minecraft/client/util/math/MatrixStack;ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreboardObjective;)V")
 	public int render_fill_x2(int x2) {
 		return x2 + (ClientOptions.Rendering.showExactLatency.getValue() ? 2 : 1);
 	}

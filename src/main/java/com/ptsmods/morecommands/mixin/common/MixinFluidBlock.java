@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 public class MixinFluidBlock {
     /**
      * @author PlanetTeamSpeak
+     * @reason We give fluids an outline shape when the targetFluids client tweak option is enabled.
      */
     @Overwrite
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {

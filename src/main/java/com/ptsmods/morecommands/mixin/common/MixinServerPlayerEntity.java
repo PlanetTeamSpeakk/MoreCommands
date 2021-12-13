@@ -2,7 +2,9 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.ReflectionHelper;
+import net.minecraft.entity.data.DataTracker;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -23,6 +25,7 @@ public class MixinServerPlayerEntity {
 
 	/**
 	 * @author PlanetTeamSpeak
+	 * @reason To account for nicknames.
 	 */
 	@Nullable
 	@Overwrite
@@ -49,4 +52,19 @@ public class MixinServerPlayerEntity {
 	private void teleport_refreshPositionAndAngles(ServerPlayerEntity thiz, double x, double y, double z, float yaw, float pitch, ServerWorld targetWorld, double x0, double y0, double z0, float yaw0, float pitch0) {
 		Compat.getCompat().playerSetWorld(thiz, targetWorld);
 	}
+
+	@Inject(at = @At("RETURN"), method = "copyFrom")
+	private void copyFrom(ServerPlayerEntity player, boolean alive, CallbackInfo cbi) {
+		DataTracker dataTrackerNew = ReflectionHelper.<ServerPlayerEntity>cast(this).getDataTracker();
+		DataTracker dataTrackerOld = player.getDataTracker();
+
+		dataTrackerNew.set(DataTrackerHelper.MAY_FLY, dataTrackerOld.get(DataTrackerHelper.MAY_FLY));
+		dataTrackerNew.set(DataTrackerHelper.INVULNERABLE, dataTrackerOld.get(DataTrackerHelper.INVULNERABLE));
+		dataTrackerNew.set(DataTrackerHelper.SUPERPICKAXE, dataTrackerOld.get(DataTrackerHelper.SUPERPICKAXE));
+		dataTrackerNew.set(DataTrackerHelper.VANISH, dataTrackerOld.get(DataTrackerHelper.VANISH));
+		dataTrackerNew.set(DataTrackerHelper.VAULTS, dataTrackerOld.get(DataTrackerHelper.VAULTS));
+		dataTrackerNew.set(DataTrackerHelper.NICKNAME, dataTrackerOld.get(DataTrackerHelper.NICKNAME));
+		dataTrackerNew.set(DataTrackerHelper.SPEED_MODIFIER, dataTrackerOld.get(DataTrackerHelper.SPEED_MODIFIER));
+	}
+
 }

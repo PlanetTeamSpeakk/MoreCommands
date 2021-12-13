@@ -25,7 +25,9 @@
     "compat17plus.MixinScreenHandler",
     "compat17plus.MixinHopperBlockEntity",
     "compat17plus.MixinHopperBlockEntityAccessor",
-    "compat17plus.MixinFuzzyPositions"
+    "compat17plus.MixinFuzzyPositions",
+    "compat17min.MixinServerWorld",
+    "compat18plus.MixinServerWorld"
   ],
   "injectors": {
 	"defaultRequire": 0
