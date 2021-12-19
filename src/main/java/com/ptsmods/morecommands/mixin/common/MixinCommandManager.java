@@ -16,20 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CommandManager.class)
 public class MixinCommandManager {
-	private @Unique ServerCommandSource lastCommandSource = null;
 
 	@Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/command/CommandManager$RegistrationEnvironment;)V")
 	private void init(CommandManager.RegistrationEnvironment environment, CallbackInfo cbi) {
 		CommandsRegisteredCallback.EVENT.invoker().onRegistered(ReflectionHelper.<CommandManager>cast(this).getDispatcher());
-	}
-
-	@Inject(at = @At("HEAD"), method = "execute")
-	private void onExecute(ServerCommandSource commandSource, String command, CallbackInfoReturnable<Integer> cir) {
-		lastCommandSource = commandSource;
-	}
-
-	@Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z", remap = false), method = "execute")
-	private boolean execute_isDebugEnabled(Logger logger) {
-		return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreGameRules.doStacktraceRule) || logger.isDebugEnabled();
 	}
 }

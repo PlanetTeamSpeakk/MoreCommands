@@ -1,9 +1,6 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.compat.client.ClientCompat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -26,6 +23,9 @@ import java.util.Random;
 // And I fixed the rendering since that wasn't working properly. (See the if-statement in the for-loop in #buildGeometry)
 // https://github.com/InnovativeOnlineIndustries/Industrial-Foregoing/blob/1.16/src/main/java/com/buuz135/industrial/proxy/client/particle/ParticleVex.java
 // Only for the cool kids tho, have a look at MoreCommands#isCool.
+//
+// Currently not working for whatever reason, already looked at what Industrial Foregoing
+// changed, but that didn't fix anything here.
 public class VexParticle extends Particle {
 	public static final float r = 214f / 255, g = 104f / 255, b = 14f / 255;
 	public static final ParticleTextureSheet pts = new ParticleTextureSheet() {

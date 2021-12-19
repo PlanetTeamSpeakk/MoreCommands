@@ -116,6 +116,7 @@ public class MoreCommands implements ModInitializer {
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
 	private static Field customSuggestionsField = null;
+	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 	static {
 		SERVER_ONLY = Arrays.stream(MoreObjects.firstNonNull(new File("config/MoreCommands/").listFiles(), new File[0])).anyMatch(f -> f.getName().startsWith("SERVERONLY"));
@@ -167,12 +168,14 @@ public class MoreCommands implements ModInitializer {
 				} catch (Exception ignored) {} // Getting collision shape probably requires a world and position which we don't have.
 
 
-				Method onEntityCollision = ReflectionHelper.getYarnMethod(block.getClass(), "onEntityCollision", "method_9548", BlockState.class, World.class, BlockPos.class, Entity.class);
-				if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
+				try {
+					Method onEntityCollision = ReflectionHelper.getYarnMethod(block.getClass(), "onEntityCollision", "method_9548", BlockState.class, World.class, BlockPos.class, Entity.class);
+					if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
 
-				onEntityCollision = ReflectionHelper.getYarnMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", World.class, BlockPos.class, Entity.class);
-				if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.AbstractBlockState.class) blockBlacklist.add(block);
-				// onEntityCollision method was overridden, block does something to entities on collision, assume it's malicious.
+					onEntityCollision = ReflectionHelper.getYarnMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", World.class, BlockPos.class, Entity.class);
+					if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.AbstractBlockState.class) blockBlacklist.add(block);
+					// onEntityCollision method was overridden, block does something to entities on collision, assume it's malicious.
+				} catch (Throwable ignored) {} // For some reason, this can throw NoClassDefFoundErrors.
 			});
 		});
 
@@ -955,5 +958,32 @@ public class MoreCommands implements ModInitializer {
 
 	public static boolean isServerOnly() {
 		return FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER && SERVER_ONLY;
+	}
+
+	// Following 2 methods are from Apache Commons Codec.
+	public static String encodeHex(byte[] data) {
+		char[] out = new char[data.length << 1];
+
+		for (int i = 0, j = 0; i < data.length; i++) {
+			out[j++] = HEX_DIGITS[(0xF0 & data[i]) >>> 4];
+			out[j++] = HEX_DIGITS[0x0F & data[i]];
+		}
+
+		return new String(out);
+	}
+
+	public static byte[] decodeHex(String data) {
+		char[] dataChars = data.toCharArray();
+		byte[] out = new byte[dataChars.length >> 1];
+
+		for (int i = 0, j = 0; j < dataChars.length; i++) {
+			int f = Character.digit(dataChars[j], 16) << 4;
+			j++;
+			f = f | Character.digit(dataChars[j], 16);
+			j++;
+			out[i] = (byte) (f & 0xFF);
+		}
+
+		return out;
 	}
 }

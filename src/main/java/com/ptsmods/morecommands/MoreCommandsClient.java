@@ -12,6 +12,7 @@ import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -38,6 +39,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemConvertible;
@@ -132,6 +135,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientOptions.read();
 		MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
+
+		List<ParticleTextureSheet> list = new ArrayList<>(MixinParticleManagerAccessor.getParticleTextureSheets());
+		list.add(VexParticle.pts);
+		MixinParticleManagerAccessor.setParticleTextureSheets(list);
 
 		List<ItemConvertible> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
 		if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));

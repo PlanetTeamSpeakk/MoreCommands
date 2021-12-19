@@ -20,12 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity {
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity; updateVelocity(FLnet/minecraft/util/math/Vec3d;)V"), method = "travel(Lnet/minecraft/util/math/Vec3d;)V")
-	private void travel_updateVelocity(LivingEntity thiz, float speed, Vec3d movementInput) {
-		// Applying swim speed
-		thiz.updateVelocity(speed * (thiz instanceof PlayerEntity ? (float) thiz.getAttributeValue(SpeedCommand.SpeedType.swimSpeedAttribute) : 1f), movementInput);
-	}
-
 	@Inject(at = @At("HEAD"), method = "canWalkOnFluid", cancellable = true)
 	public void canWalkOnFluid(Fluid fluid, CallbackInfoReturnable<Boolean> cbi) {
 		if (ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS)) cbi.setReturnValue(true);

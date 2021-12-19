@@ -57,7 +57,9 @@
 	"MixinCommandSource",
 	"accessor.MixinPlayerEntityAccessor",
 	"accessor.MixinAbstractBlockAccessor",
-	"MixinDamageSource"
+	"MixinDamageSource",
+	"MixinCommandManagerCarpetCompat",
+	"MixinLivingEntityOriginsCompat"
   ],
   "injectors": {
 	"defaultRequire": 1

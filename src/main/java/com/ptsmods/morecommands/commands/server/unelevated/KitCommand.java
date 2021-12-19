@@ -21,8 +21,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -107,15 +105,15 @@ public class KitCommand extends Command {
 			// Shouldn't be possible as this is a memory output stream, it's not outputting to a file or whatever.
 			log.error("An unknown error occurred while writing the NBT data to bytes.", e);
 		}
-		return Hex.encodeHexString(bytestream.toByteArray());
+		return MoreCommands.encodeHex(bytestream.toByteArray());
 	}
 
 	private static NbtCompound nbtFromByteString(String byteString) {
 		if (byteString == null) return null;
 		byte[] bytes;
 		try {
-			bytes = Hex.decodeHex(byteString.toCharArray());
-		} catch (DecoderException e) {
+			bytes = MoreCommands.decodeHex(byteString);
+		} catch (Exception e) {
 			log.error("Could not decode byte string " + byteString, e);
 			return null;
 		}
@@ -129,7 +127,8 @@ public class KitCommand extends Command {
 
 	private static void saveKits() {
 		try {
-			MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "kits.json"), instance.kits.entrySet().stream().map(entry -> new Pair<>(entry.getKey(), entry.getValue().serialise())).collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
+			MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "kits.json"), instance.kits.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().serialise())));
 		} catch (IOException e) {
 			log.error("Couldn't save kits file.", e);
 		}

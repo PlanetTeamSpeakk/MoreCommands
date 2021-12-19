@@ -11,6 +11,7 @@ import java.util.Set;
 public class MixinPlugin implements IMixinConfigPlugin {
 	private static final boolean tweakerooLoaded = FabricLoader.getInstance().isModLoaded("tweakeroo");
 	private static final boolean originsLoaded = FabricLoader.getInstance().isModLoaded("origins");
+	private static final boolean carpetLoaded = FabricLoader.getInstance().isModLoaded("carpet");
 
 	@Override
 	public void onLoad(String mixinPackage) {}
@@ -22,8 +23,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		if (originsLoaded && mixinClassName.contains("MixinLivingEntity")) return false;
-		return !tweakerooLoaded || !mixinClassName.contains("TweakerooCompat");
+		if (originsLoaded && mixinClassName.contains("OriginsCompat")) return false;
+		if (tweakerooLoaded && mixinClassName.contains("TweakerooCompat")) return false;
+		if (carpetLoaded && mixinClassName.contains("CarpetCompat")) return false;
+
+		return true;
 	}
 
 	@Override
