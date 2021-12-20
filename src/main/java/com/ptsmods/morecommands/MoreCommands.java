@@ -119,13 +119,26 @@ public class MoreCommands implements ModInitializer {
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 	static {
-		SERVER_ONLY = Arrays.stream(MoreObjects.firstNonNull(new File("config/MoreCommands/").listFiles(), new File[0])).anyMatch(f -> f.getName().startsWith("SERVERONLY"));
+		File serverOnlyFile = new File("config/MoreCommands/SERVERONLY.txt");
+		boolean serverOnly = false;
+		if (serverOnlyFile.exists()) {
+			Properties props = new Properties();
+			try {
+				props.load(new FileReader(serverOnlyFile));
+				serverOnly = Boolean.parseBoolean(props.getProperty("serverOnly", "false"));
+			} catch (IOException e) {
+				LOG.error("Could not read server-only state.", e);
+			}
+		}
+		SERVER_ONLY = serverOnly;
+
 		if (isServerOnly()) {
 			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 			LOG.info("-=-RUNNING IN SERVER-ONLY MODE-=-");
 			LOG.info("-=CLIENTS WILL NOT NEED THE MOD=-");
 			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 		}
+
 		MoreGameRules.init();
 		DataTrackerHelper.init();
 		Compat.getCompat().putCriterion("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
@@ -684,6 +697,21 @@ public class MoreCommands implements ModInitializer {
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
 		Command.doInitialisations(server);
+
+		File file = new File("config/MoreCommands/SERVERONLY.txt");
+
+		try {
+			if (server.isDedicated() && (!file.exists() || Files.readAllLines(file.toPath()).isEmpty())) {
+				Properties props = new Properties();
+				props.setProperty("serverOnly", "" + file.exists());
+
+				props.store(new PrintWriter(file), "Set the below value to true to enable server-only mode for MoreCommands.\n" +
+						"Clients will not need the mod to join the server when enabled.");
+			}
+		} catch (IOException e) {
+			LOG.catching(e);
+		}
+
 		// Below line is for suggestions of server-side only commands when running in server-only mode.
 		// All custom argumenttypes would have empty suggestions without it.
 		if (isServerOnly()) checkArgTypes(server.getCommandManager().getDispatcher().getRoot(), new HashSet<>());
@@ -693,6 +721,7 @@ public class MoreCommands implements ModInitializer {
 
 	private static <T extends CommandSource> void checkArgTypes(CommandNode<T> node, Set<CommandNode<T>> nodesToIgnore) {
 		if (nodesToIgnore.contains(node)) return;
+
 		nodesToIgnore.add(node);
 		if (node instanceof ArgumentCommandNode) {
 			ArgumentCommandNode<?, T> argumentNode = (ArgumentCommandNode<?, T>) node;
@@ -702,6 +731,7 @@ public class MoreCommands implements ModInitializer {
 						customSuggestionsField = ArgumentCommandNode.class.getDeclaredField("customSuggestions");
 						customSuggestionsField.setAccessible(true);
 					} catch (NoSuchFieldException ignored) {}
+
 				SuggestionProvider<Object> suggestionProvider = argumentNode.getType()::listSuggestions;
 				try {
 					Objects.requireNonNull(customSuggestionsField).set(argumentNode, suggestionProvider);
