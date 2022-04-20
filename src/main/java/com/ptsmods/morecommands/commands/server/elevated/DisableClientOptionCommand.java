@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
 import com.ptsmods.morecommands.clientoption.BooleanClientOption;
-import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -39,7 +39,7 @@ public class DisableClientOptionCommand extends Command {
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
 		LiteralArgumentBuilder<ServerCommandSource> disableclientoption = literalReqOp("disableclientoption");
 
-		ClientOptions.getMappedOptions().entrySet().stream()
+		ClientOption.getUnmappedOptions().entrySet().stream()
 				.filter(entry -> entry.getValue() instanceof BooleanClientOption)
 				.map(Map.Entry::getKey)
 				.forEach(option -> disableclientoption.then(literal(option).executes(ctx -> {
@@ -66,7 +66,7 @@ public class DisableClientOptionCommand extends Command {
 	}
 
 	@Override
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return true;
 	}
 }

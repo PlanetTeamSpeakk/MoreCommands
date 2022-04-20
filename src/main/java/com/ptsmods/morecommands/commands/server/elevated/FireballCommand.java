@@ -8,8 +8,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -54,13 +55,16 @@ public class FireballCommand extends Command {
 				else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
 				if (!this.world.isClient) {
 					this.world.createExplosion(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY);
-					if (impactsDone.addAndGet(1) >= impacts) Compat.getCompat().setRemoved(this, 1);
+					if (impactsDone.addAndGet(1) >= impacts) CompatHolder.getCompat().setRemoved(this, 1);
 				}
 			}
-		} : Compat.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
+		} : CompatHolder.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
 		fireball.setVelocity(velocity0);
-		Compat.getCompat().setEntityPitch(fireball, ctx.getSource().getRotation().x);
-		Compat.getCompat().setEntityYaw(fireball, ctx.getSource().getRotation().y);
+
+        MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;
+        accessor.setPitch_(ctx.getSource().getRotation().x);
+        accessor.setYaw_(ctx.getSource().getRotation().y);
+
 		fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeHeight(ctx.getSource().getEntity().getPose())), ctx.getSource().getPosition().z);
 		fireball.tick();
 		ctx.getSource().getWorld().spawnEntity(fireball);

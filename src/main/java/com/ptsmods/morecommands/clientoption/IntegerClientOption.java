@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.clientoption;
 
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -11,26 +10,26 @@ import java.util.function.BiConsumer;
 public class IntegerClientOption extends ClientOption<Integer> {
     private final int min, max;
 
-    IntegerClientOption(Integer defaultValue, int min, int max) {
-        super(defaultValue);
+    IntegerClientOption(ClientOptionCategory category, String name, int defaultValue, int min, int max) {
+        super(category, name, defaultValue);
         this.min = min;
         this.max = max;
     }
 
-    IntegerClientOption(Integer defaultValue, BiConsumer<Integer, Integer> updateConsumer, int min, int max) {
-        super(defaultValue, updateConsumer);
+    IntegerClientOption(ClientOptionCategory category, String name, int defaultValue, int min, int max, BiConsumer<Integer, Integer> updateConsumer) {
+        super(category, name, defaultValue, updateConsumer);
         this.min = min;
         this.max = max;
     }
 
-    IntegerClientOption(Integer defaultValue, int min, int max, String... comments) {
-        super(defaultValue, comments);
+    IntegerClientOption(ClientOptionCategory category, String name, int defaultValue, int min, int max, String... comments) {
+        super(category, name, defaultValue, comments);
         this.min = min;
         this.max = max;
     }
 
-    IntegerClientOption(Integer defaultValue, BiConsumer<Integer, Integer> updateConsumer, int min, int max, String... comments) {
-        super(defaultValue, updateConsumer, comments);
+    IntegerClientOption(ClientOptionCategory category, String name, int defaultValue, int min, int max, BiConsumer<Integer, Integer> updateConsumer, String... comments) {
+        super(category, name, defaultValue, updateConsumer, comments);
         this.min = min;
         this.max = max;
     }

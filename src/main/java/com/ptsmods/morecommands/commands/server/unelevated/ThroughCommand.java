@@ -2,8 +2,8 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -48,7 +48,7 @@ public class ThroughCommand extends Command {
 					Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock(); // Block under your feet.
 					Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock(); // Block at your feet.
 					Block tpblock2 = world.getBlockState(new BlockPos(x, y + 1, z)).getBlock(); // Block at your head.
-					if ((!MoreCommands.blockBlacklist.contains(block) || entity instanceof PlayerEntity && Compat.getCompat().getAbilities((PlayerEntity) entity).flying) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
+					if ((!MoreCommands.blockBlacklist.contains(block) || entity instanceof PlayerEntity && ((MixinPlayerEntityAccessor) entity).getAbilities_().flying) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
 						entity.teleport(x + entity.getX() - Math.floor(entity.getX()), y, z + entity.getZ() - Math.floor(entity.getZ()));
 						sendMsg(ctx, "You have been teleported through the wall.");
 						return 1;

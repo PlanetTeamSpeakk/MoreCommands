@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
 
 public class ToggleCheatsCommand extends Command {
 	@Override

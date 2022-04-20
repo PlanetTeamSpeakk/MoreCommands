@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.block.WallSignBlock;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;

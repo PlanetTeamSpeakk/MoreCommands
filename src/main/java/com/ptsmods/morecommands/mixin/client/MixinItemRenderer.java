@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.commands.server.elevated.UnlimitedCommand;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.item.ItemStack;

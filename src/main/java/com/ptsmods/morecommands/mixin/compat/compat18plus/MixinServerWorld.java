@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat.compat18plus;
 
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

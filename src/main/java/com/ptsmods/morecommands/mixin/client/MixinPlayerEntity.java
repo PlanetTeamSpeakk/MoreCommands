@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

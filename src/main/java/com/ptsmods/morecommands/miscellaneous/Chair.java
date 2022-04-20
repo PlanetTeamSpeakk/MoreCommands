@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import com.google.common.collect.ImmutableList;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.StairsBlock;
@@ -8,7 +9,7 @@ import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.StairShape;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -42,7 +43,7 @@ public class Chair {
 	}
 
 	public static boolean isValid(BlockState state) {
-		return BlockTags.STAIRS.contains(state.getBlock()) && VALID_SHAPES.contains(state.get(StairsBlock.SHAPE)) && state.get(StairsBlock.HALF) == BlockHalf.BOTTOM;
+		return CompatHolder.getCompat().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && VALID_SHAPES.contains(state.get(StairsBlock.SHAPE)) && state.get(StairsBlock.HALF) == BlockHalf.BOTTOM;
 	}
 
 	public static void createAndPlace(BlockPos pos, PlayerEntity player, World world) {

@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
@@ -56,7 +56,7 @@ public class VanishCommand extends Command {
 	public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
 		player.getDataTracker().set(DataTrackerHelper.VANISH, true);
 		player.getDataTracker().set(DataTrackerHelper.VANISH_TOGGLED, true);
-		Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.getCompat().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
+		Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(CompatHolder.getCompat().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
 		player.getWorld().getChunkManager().unloadEntity(player);
 		if (sendmsg && MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player)) player.getServer().getPlayerManager().broadcast(new TranslatableText("multiplayer.player.left", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
 	}
@@ -64,7 +64,7 @@ public class VanishCommand extends Command {
 	public static void unvanish(ServerPlayerEntity player) {
 		if (player.getDataTracker().get(DataTrackerHelper.VANISH)) {
 			player.getDataTracker().set(DataTrackerHelper.VANISH, false);
-			Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.getCompat().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
+			Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(CompatHolder.getCompat().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
 			trackers.remove(player);
 			player.getWorld().getChunkManager().loadEntity(player);
 			if (MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player)) player.getServer().getPlayerManager().broadcast(new TranslatableText("multiplayer.player.joined", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);

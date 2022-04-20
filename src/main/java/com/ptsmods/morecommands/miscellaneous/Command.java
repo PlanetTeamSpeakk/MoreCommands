@@ -6,7 +6,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
+import eu.pb4.placeholders.PlaceholderAPI;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.loader.api.FabricLoader;
@@ -26,10 +29,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static com.ptsmods.morecommands.MoreCommands.*;
+import static com.ptsmods.morecommands.MoreCommands.getChar;
 
 public abstract class Command {
 	public static Formatting DF = MoreCommands.DF;
@@ -64,27 +68,56 @@ public abstract class Command {
 		register(dispatcher);
 	}
 
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return false;
 	}
 
-	public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg) {
-		return sendMsg(ctx, new LiteralText(fixResets(msg)).setStyle(DS));
+	public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
+		return sendMsg(ctx, new LiteralText(fixResets(formats.length == 0 ? msg : formatted(msg, formats))).setStyle(DS));
 	}
 
 	public static int sendMsg(CommandContext<ServerCommandSource> ctx, Text msg) {
+		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? ctx.getSource().getEntity() instanceof ServerPlayerEntity ?
+				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) ctx.getSource().getEntity()) : PlaceholderAPI.parseText(msg, ctx.getSource().getServer()) : msg;
+
 		ctx.getSource().sendFeedback(msg.shallowCopy().formatted(DF), true);
 		return 1;
 	}
 
-	public static int sendError(CommandContext<ServerCommandSource> ctx, String msg) {
-		return sendError(ctx, new LiteralText(fixResets(msg, Formatting.RED)));
+	public static int sendError(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
+		return sendError(ctx, new LiteralText(fixResets(formatted(msg, formats), Formatting.RED)));
 	}
 
 	public static int sendError(CommandContext<ServerCommandSource> ctx, Text msg) {
+		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? ctx.getSource().getEntity() instanceof ServerPlayerEntity ?
+				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) ctx.getSource().getEntity()) : PlaceholderAPI.parseText(msg, ctx.getSource().getServer()) : msg;
+
 		ctx.getSource().sendError(msg);
 		return 1;
 	}
+
+    public static int sendMsg(Entity entity, String msg, Object... formats) {
+        return sendMsg(entity, new LiteralText(formatted(msg, formats)).setStyle(DS));
+    }
+
+    public static int sendMsg(Entity entity, Text msg) {
+        msg = msg.shallowCopy().setStyle(msg.getStyle().isEmpty() ? DS : msg.getStyle());
+        msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? entity instanceof ServerPlayerEntity ?
+                PlaceholderAPI.parseText(msg, (ServerPlayerEntity) entity) : PlaceholderAPI.parseText(msg, entity.getServer()) : msg;
+
+        if (entity instanceof PlayerEntity) ((PlayerEntity) entity).sendMessage(msg, false);
+        else entity.sendSystemMessage(msg, entity.getUuid());
+        return 1;
+    }
+
+    public static void broadcast(MinecraftServer server, String msg, Object... formats) {
+        broadcast(server, new LiteralText(formatted(msg, formats)).setStyle(DS));
+    }
+
+    public static void broadcast(MinecraftServer server, Text msg) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList())
+            sendMsg(player, FabricLoader.getInstance().isModLoaded("placeholder-api") ? PlaceholderAPI.parseText(msg, player) : msg);
+    }
 
 	static String fixResets(String s) {
 		return fixResets(s, DF);
@@ -92,26 +125,6 @@ public abstract class Command {
 
 	static String fixResets(String s, Formatting formatting) {
 		return s.replace(Formatting.RESET.toString(), Formatting.RESET.toString() + formatting).replaceAll("\n", "\n" + formatting);
-	}
-
-	public static int sendMsg(Entity entity, String msg) {
-		return sendMsg(entity, new LiteralText(msg).setStyle(DS));
-	}
-
-	public static int sendMsg(Entity entity, Text msg) {
-		msg = msg.shallowCopy().setStyle(msg.getStyle() == null ? DS : msg.getStyle());
-		if (entity instanceof PlayerEntity) ((PlayerEntity) entity).sendMessage(msg, false);
-		else entity.sendSystemMessage(msg, entity.getUuid());
-		return 1;
-	}
-
-	public static void broadcast(MinecraftServer server, String msg) {
-		broadcast(server, new LiteralText(msg).setStyle(DS));
-	}
-
-	public static void broadcast(MinecraftServer server, Text msg) {
-		for (PlayerEntity player : server.getPlayerManager().getPlayerList())
-			sendMsg(player, msg);
 	}
 
 	public static LiteralArgumentBuilder<ServerCommandSource> literal(String literal) {
@@ -127,7 +140,11 @@ public abstract class Command {
 	}
 
 	public static <T> RequiredArgumentBuilder<ServerCommandSource, T> argument(String name, ArgumentType<T> type) {
-		return CommandManager.argument(name, type);
+		RequiredArgumentBuilder<ServerCommandSource, T> builder = CommandManager.argument(name, type instanceof CompatArgumentType<?, ?, ?> && IMoreCommands.get().isServerOnly() ?
+                ((CompatArgumentType<?, T, ?>) type).toVanillaArgumentType() : type);
+
+        if (IMoreCommands.get().isServerOnly()) builder.suggests(type::listSuggestions);
+        return builder;
 	}
 
 	public static String translateFormats(String s) {
@@ -156,9 +173,9 @@ public abstract class Command {
 		return formatFromBool(b) + (b ? yes : no);
 	}
 
-	public static String formatFromFloat(float v, float max, float yellow, float green, boolean includeMax) {
+	public static String formatFromFloat(float v, float max, float yellow, float green, boolean colourOnly) {
 		float percent = v/max;
-		return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) + (includeMax ? DF + "/" + Formatting.GREEN + max : "");
+		return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) + (colourOnly ? "" : new DecimalFormat("#.##").format(percent) + DF + "/" + Formatting.GREEN + max);
 	}
 
 	public static boolean isOp(CommandContext<ServerCommandSource> ctx) {
@@ -238,4 +255,16 @@ public abstract class Command {
 				else break;
 		return max;
 	}
+
+    protected static String formatted(String s, Object... formats) {
+        return formats == null || formats.length == 0 ? s : String.format(s);
+    }
+
+    protected static String coloured(Object o) {
+        return coloured(o, SF);
+    }
+
+    protected static String coloured(Object o, Formatting colour) {
+        return "" + colour + o + DF;
+    }
 }

@@ -13,23 +13,23 @@ import java.util.function.BiConsumer;
 public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     private final Class<T> type;
 
-    EnumClientOption(Class<T> type, T defaultValue) {
-        super(defaultValue);
+    EnumClientOption(ClientOptionCategory category, String name, Class<T> type, T defaultValue) {
+        super(category, name, defaultValue);
         this.type = type;
     }
 
-    EnumClientOption(Class<T> type, T defaultValue, BiConsumer<T, T> updateConsumer) {
-        super(defaultValue, updateConsumer);
+    EnumClientOption(ClientOptionCategory category, String name, Class<T> type, T defaultValue, BiConsumer<T, T> updateConsumer) {
+        super(category, name, defaultValue, updateConsumer);
         this.type = type;
     }
 
-    EnumClientOption(Class<T> type, T defaultValue, String... comments) {
-        super(defaultValue, comments);
+    EnumClientOption(ClientOptionCategory category, String name, Class<T> type, T defaultValue, String... comments) {
+        super(category, name, defaultValue, comments);
         this.type = type;
     }
 
-    EnumClientOption(Class<T> type, T defaultValue, BiConsumer<T, T> updateConsumer, String... comments) {
-        super(defaultValue, updateConsumer, comments);
+    EnumClientOption(ClientOptionCategory category, String name, Class<T> type, T defaultValue, BiConsumer<T, T> updateConsumer, String... comments) {
+        super(category, name, defaultValue, updateConsumer, comments);
         this.type = type;
     }
 
@@ -40,7 +40,10 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
 
     @Override
     public void setValueString(String s) {
-        setValue(s == null || "null".equals(s) ? null : Arrays.stream(type.getEnumConstants()).filter(value -> value.name().equals(s)).findFirst().orElse(getDefaultValue()));
+        setValue(s == null || "null".equals(s) ? null : Arrays.stream(type.getEnumConstants())
+                .filter(value -> value.name().equals(s))
+                .findFirst()
+                .orElse(getDefaultValue()));
     }
 
     @Override

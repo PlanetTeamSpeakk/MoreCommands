@@ -2,11 +2,11 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.commands.client.SearchCommand;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.miscellaneous.CopySound;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.commands.client.SearchCommand;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinChatHudAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.option.ChatVisibility;
+import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.client.util.Clipboard;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -55,7 +56,7 @@ public class MixinChatScreen {
 					if (t != null) {
 						String s = MoreCommands.textToString(t, null, true, Screen.hasControlDown());
 						clipboard.setClipboard(MinecraftClient.getInstance().getWindow().getHandle(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : MoreCommands.stripFormattings(s));
-						MinecraftClient.getInstance().getSoundManager().play(new CopySound());
+						MinecraftClient.getInstance().getSoundManager().play((MovingSoundInstance) CompatHolder.getCompat().newInstance(MoreCommandsClient.getCopySoundClass()));
 						b = true;
 					}
 				} else if (button == 1 && ClientOptions.Chat.chatMsgRemove.getValue()) {
@@ -74,11 +75,11 @@ public class MixinChatScreen {
 		List<ChatHudLine<OrderedText>> visibleMessages = ((MixinChatHudAccessor) hud).getVisibleMessages();
 		List<ChatHudLine<Text>> messages = ((MixinChatHudAccessor) hud).getMessages();
 		int scrolledLines = ((MixinChatHudAccessor) hud).getScrolledLines();
-		if (visibleMessages != null && client.currentScreen instanceof ChatScreen && !client.options.hudHidden && client.options.chatVisibility != ChatVisibility.HIDDEN) {
+		if (visibleMessages != null && client.currentScreen instanceof ChatScreen && !client.options.hudHidden && CompatHolder.getClientCompat().getChatVisibility(client.options) != ChatVisibility.HIDDEN) {
 			double d = x - 2.0D;
 			double e = (double) client.getWindow().getScaledHeight() - y - 40.0D;
 			d = MathHelper.floor(d / hud.getChatScale());
-			e = MathHelper.floor(e / (hud.getChatScale() * (client.options.chatLineSpacing + 1.0D)));
+			e = MathHelper.floor(e / (hud.getChatScale() * (CompatHolder.getClientCompat().getChatLineSpacing(client.options) + 1.0D)));
 			if (d >= 0.0D && e >= 0.0D) {
 				int i = Math.min(hud.getVisibleLineCount(), visibleMessages.size());
 				if (d <= (double) MathHelper.floor((double) hud.getWidth() / hud.getChatScale()))

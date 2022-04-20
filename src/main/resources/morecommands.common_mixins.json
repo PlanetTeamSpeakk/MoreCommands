@@ -11,7 +11,6 @@
 	"MixinServerPlayNetworkHandler",
 	"MixinServerPlayerInteractionManager",
 	"MixinIceBlock",
-	"MixinSnowBlock",
 	"MixinEnchantCommand",
 	"MixinItemStack",
 	"MixinMinecraftServer",
@@ -25,13 +24,10 @@
 	"MixinExplosion",
 	"MixinLivingEntity",
 	"MixinClientConnection",
-	"MixinCommandManager",
 	"MixinFlowableFluid",
 	"MixinServerNetworkIo",
-	"MixinFillCommand",
 	"MixinServerPlayerEntity",
 	"MixinFluidBlock",
-	"MixinEnchantmentScreenHandler",
 	"MixinAnvilScreenHandler",
 	"MixinEntity",
 	"accessor.MixinItemAccessor",
@@ -53,13 +49,14 @@
 	"MixinTargetPredicate",
 	"MixinGoalSelector",
 	"accessor.MixinEntityTrackerAccessor",
-	"MixinArgumentTypes",
 	"MixinCommandSource",
 	"accessor.MixinPlayerEntityAccessor",
 	"accessor.MixinAbstractBlockAccessor",
 	"MixinDamageSource",
 	"MixinCommandManagerCarpetCompat",
-	"MixinLivingEntityOriginsCompat"
+	"MixinLivingEntityOriginsCompat",
+    "accessor.MixinLootTableAccessor",
+    "accessor.MixinLootPoolAccessor"
   ],
   "injectors": {
 	"defaultRequire": 1

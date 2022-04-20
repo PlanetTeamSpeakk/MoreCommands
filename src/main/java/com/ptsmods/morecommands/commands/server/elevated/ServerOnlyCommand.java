@@ -32,13 +32,14 @@ public class ServerOnlyCommand extends Command {
                     }
 
                     boolean b = Boolean.parseBoolean(props.getProperty("serverOnly"));
-                    sendMsg(ctx, "Server-only mode has been " + formatFromBool(b, "enabled", "disabled") + DF + ". Clients will " + (b ? "now" : "no longer") + " need to have MoreCommands installed." + (b != MoreCommands.SERVER_ONLY ? "\n" + Formatting.RED + "A server restart is required." : ""));
+                    sendMsg(ctx, "Server-only mode has been " + formatFromBool(b, "enabled", "disabled") + DF + ". Clients will " + (b ? "now" : "no longer") +
+                            " need to have MoreCommands installed." + (b != MoreCommands.SERVER_ONLY ? "\n" + Formatting.RED + "A server restart is required." : ""));
                     return b ? 2 : 1;
                 }));
     }
 
     @Override
-    public boolean forDedicated() {
+    public boolean isDedicatedOnly() {
         return true;
     }
 }

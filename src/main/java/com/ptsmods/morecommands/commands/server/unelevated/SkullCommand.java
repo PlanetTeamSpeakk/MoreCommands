@@ -8,7 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.util.UUIDTypeAdapter;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,7 +18,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Formatting;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,7 +45,7 @@ public class SkullCommand extends Command {
 		} catch (IllegalArgumentException ignored) {} // Given playername is not a UUID.
 		tag.putString("SkullOwner", playername);
 		stack.setNbt(tag);
-		if (ctx.getSource().getEntity() instanceof PlayerEntity) Compat.getCompat().getInventory(ctx.getSource().getPlayer()).insertStack(stack);
+		if (ctx.getSource().getEntity() instanceof PlayerEntity) CompatHolder.getCompat().getInventory(ctx.getSource().getPlayer()).insertStack(stack);
 		else ctx.getSource().getEntityOrThrow().dropStack(stack, ctx.getSource().getEntityOrThrow().getEyeHeight(ctx.getSource().getEntityOrThrow().getPose()));
 		ctx.getSource().getWorld().playSound(null, ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, ((ctx.getSource().getWorld().random.nextFloat() - ctx.getSource().getWorld().random.nextFloat()) * 0.7F + 1.0F) * 2.0F, 1F);
 		sendMsg(ctx, "Your skull" + (stack.getCount() == 1 ? "" : "s") + " ha" + (stack.getCount() == 1 ? "s" : "ve") + " arrived.");

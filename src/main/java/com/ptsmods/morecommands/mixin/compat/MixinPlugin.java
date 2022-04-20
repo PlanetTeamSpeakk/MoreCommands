@@ -1,9 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat;
 
-import com.ptsmods.morecommands.compat.Compat;
-import org.objectweb.asm.MethodVisitor;
+import com.ptsmods.morecommands.api.Version;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -22,11 +20,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.indexOf(".compat") == mixinClassName.lastIndexOf(".compat")) return true; // E.g. c.p.m.m.compat.MixinPlayerEntityAccessor, should load on all versions.
-        int iVer = Compat.getIVer();
+        int minor = Version.getCurrent().minor;
         int i = mixinClassName.lastIndexOf(".compat") + 7;
         int iVerMixin = Integer.parseInt(mixinClassName.substring(i, i + 2));
         Boolean support = mixinClassName.charAt(i + 2) == 'm' ? Boolean.FALSE : mixinClassName.charAt(i + 2) == 'p' ? Boolean.TRUE : null;
-        return iVer == iVerMixin || iVer < iVerMixin && support == Boolean.FALSE || iVer > iVerMixin && support == Boolean.TRUE;
+        return minor == iVerMixin || minor < iVerMixin && support == Boolean.FALSE || minor > iVerMixin && support == Boolean.TRUE;
     }
 
     @Override
@@ -41,5 +39,9 @@ public class MixinPlugin implements IMixinConfigPlugin {
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 
     @Override
-    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+//        if (Compat.getIVer() <= 18 && mixinClassName.endsWith("compat18min.MixinMinecraftClient")) {
+//
+//        }
+    }
 }

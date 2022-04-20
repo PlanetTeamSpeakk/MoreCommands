@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "morecommands-compat16",
+  "version": "${version}",
+
+  "name": "MoreCommands Compat16",
+  "description": "Mod containing compatibility classes and methods for 1.16 used by MoreCommands.",
+  "authors": [
+    "PlanetTeamSpeak"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/morecommands",
+    "sources": "https://github.com/PlanetTeamSpeakk/MoreCommands",
+    "issues": "https://github.com/PlanetTeamSpeakk/MoreCommands/issues",
+    "discord": "https://discord.gg/tzsmCyk"
+  },
+
+  "license": "CC0-1.0",
+
+  "environment": "*",
+  "entrypoints": {},
+  "mixins": [],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "*"
+  },
+
+  "custom": {
+    "modmenu": {
+      "parent": "morecommands",
+      "badges": ["library"]
+    }
+  }
+}

@@ -90,7 +90,7 @@ public class DiscordCommand extends Command {
 	}
 
 	@Override
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return true;
 	}
 }

@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
@@ -38,17 +38,17 @@ public class DropstoreCommand extends Command {
 		ChestBlockEntity chest = Objects.requireNonNull((ChestBlockEntity) player.getEntityWorld().getBlockEntity(pos.add(1, 0, 0)));
 		int i0 = 0;
 		for (int i = 9; i < 36; i++, i0++)
-			chest.setStack(i0, Compat.getCompat().getInventory(player).getStack(i));
+			chest.setStack(i0, CompatHolder.getCompat().getInventory(player).getStack(i));
 		i0 %= 27;
 		chest = Objects.requireNonNull((ChestBlockEntity) player.getEntityWorld().getBlockEntity(pos));
 		for (int i = 0; i < 9; i++, i0++)
-			chest.setStack(i0, Compat.getCompat().getInventory(player).getStack(i));
-		List<ItemStack> armorInv = new ArrayList<>(Compat.getCompat().getInventory(player).armor);
+			chest.setStack(i0, CompatHolder.getCompat().getInventory(player).getStack(i));
+		List<ItemStack> armorInv = new ArrayList<>(CompatHolder.getCompat().getInventory(player).armor);
 		Collections.reverse(armorInv);
 		for (ItemStack stack : armorInv)
 			chest.setStack(i0++, stack);
-		chest.setStack(i0++, Compat.getCompat().getInventory(player).offHand.get(0));
-		if (clear) Compat.getCompat().getInventory(player).clear();
+		chest.setStack(i0++, CompatHolder.getCompat().getInventory(player).offHand.get(0));
+		if (clear) CompatHolder.getCompat().getInventory(player).clear();
 		sendMsg(ctx, "Your inventory has been transferred into a double chest placed at X: " + pos.getX() + ", Y: " + pos.getY() + ", Z: " + pos.getZ() + ".");
 		return i0;
 	}

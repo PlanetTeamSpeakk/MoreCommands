@@ -5,10 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.util.ReflectionHelper;
 import net.minecraft.server.command.ServerCommandSource;
-
-import java.lang.reflect.Field;
 
 public class GmCommand extends Command {
 	@Override

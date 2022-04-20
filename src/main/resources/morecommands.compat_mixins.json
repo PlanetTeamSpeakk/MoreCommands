@@ -8,14 +8,21 @@
     "compat16.MixinScreenHandler",
     "compat16.MixinSignEditScreen",
     "compat17plus.MixinSignEditScreen",
-    "compat17plus.MixinScreenAccessor"
+    "compat17plus.MixinScreenAccessor",
+    "compat18min.MixinTitleScreen",
+    "compat19plus.MixinTitleScreen",
+    "compat18min.MixinBackgroundRenderer",
+    "compat19plus.MixinBackgroundRenderer",
+    "compat18min.MixinClientPlayerInteractionManager",
+    "compat19plus.MixinClientPlayerInteractionManager",
+    "compat16.MixinScreen",
+    "compat17plus.MixinScreen",
+    "compat19plus.MixinLightmapTextureManager",
+    "compat18min.MixinLightmapTextureManager"
   ],
   "mixins": [
-    "MixinPlayerEntityAccessor",
     "MixinEntityAccessor",
-    "MixinScoreboardCriterionAccessor",
     "MixinFireballEntity",
-    "MixinSimpleRegistryAccessor",
     "compat16.MixinEntity",
     "compat16.MixinServerPlayNetworkHandler",
     "compat16.MixinHopperBlockEntity",
@@ -27,7 +34,12 @@
     "compat17plus.MixinHopperBlockEntityAccessor",
     "compat17plus.MixinFuzzyPositions",
     "compat17min.MixinServerWorld",
-    "compat18plus.MixinServerWorld"
+    "compat18plus.MixinServerWorld",
+    "compat19plus.MixinCommandManager",
+    "compat18min.MixinSnowBlock",
+    "compat19plus.MixinSnowBlock",
+    "compat18min.MixinEnchantmentScreenHandler",
+    "compat19plus.MixinEnchantmentScreenHandler"
   ],
   "injectors": {
 	"defaultRequire": 0

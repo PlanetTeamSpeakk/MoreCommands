@@ -22,21 +22,25 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class EmulateCommand extends ClientCommand {
 	private enum Type {
-		MOUSE("button", () -> IntegerArgumentType.integer(0, GLFW.GLFW_MOUSE_BUTTON_LAST)),
-		KEYBOARD("key", KeyArgumentType::new);
+		MOUSE("button", () -> IntegerArgumentType.integer(0, GLFW.GLFW_MOUSE_BUTTON_LAST), (ctx, argName) -> ctx.getArgument(argName, Integer.class)),
+		KEYBOARD("key", KeyArgumentType::key, KeyArgumentType::getKey);
 
 		public final String argName;
-		public final Supplier<ArgumentType<Integer>> argSupplier;
+		public final Supplier<ArgumentType<?>> argSupplier;
+        public final Function<CommandContext<?>, Integer> getter;
 		private int id = 0;
 
-		Type(String argName, Supplier<ArgumentType<Integer>> argSupplier) {
+		<T> Type(String argName, Supplier<ArgumentType<T>> argSupplier, BiFunction<CommandContext<?>, String, Integer> getter) {
 			this.argName = argName;
-			this.argSupplier = argSupplier;
+			this.argSupplier = argSupplier::get;
+            this.getter = ctx -> getter.apply(ctx, argName);
 		}
 
 		public int getNextId() {
@@ -99,31 +103,45 @@ public class EmulateCommand extends ClientCommand {
 				sendMsg("Removed " + SF + delta + DF + " task" + (delta == 1 ? "" : "s") + ".");
 				return delta;
 			})).then(cLiteral("add")
-					.then(cLiteral("interval").then(cArgument("interval", IntegerArgumentType.integer(50)).executes(ctx -> executeTasksAddInterval(type, ctx, 0, -1)).then(cArgument(type.argName, type.argSupplier.get()).executes(ctx -> executeTasksAddInterval(type, ctx, ctx.getArgument(type.argName, Integer.class), -1)).then(cArgument("count", IntegerArgumentType.integer(-1)).executes(ctx -> executeTasksAddInterval(type, ctx, ctx.getArgument(type.argName, Integer.class), ctx.getArgument("count", Integer.class)))))))
-					.then(cLiteral("hold").executes(ctx -> executeTasksAddHold(type, 0, -1)).then(cArgument(type.argName, type.argSupplier.get()).executes(ctx -> executeTasksAddHold(type, ctx.getArgument(type.argName, Integer.class), -1)).then(cArgument("holdtime", IntegerArgumentType.integer(20)).executes(ctx -> executeTasksAddHold(type, ctx.getArgument(type.argName, Integer.class), ctx.getArgument("holdtime", Integer.class)))))))
-					.then(cLiteral("remove").then(cArgument("id", IntegerArgumentType.integer(0)).executes(ctx -> {
-						int id = ctx.getArgument("id", Integer.class);
-						AtomicReference<EmulateTask> task = new AtomicReference<>();
-						synchronized (lock) {
-							boolean b = tasks.removeIf(task0 -> {
-								boolean b0 = task0.type == type && task0.id == id;
-								if (b0) task.set(task0);
-								return b0;
-							});
-							sendMsg(b ? Formatting.RED + "No task with that id could be found." : "Task " + SF + id + " (" + task.get().toString() + ") " + DF + "has been removed.");
-							return b ? 1 : 0;
-						}
-					})))
-					.then(cLiteral("list").executes(ctx -> {
-						List<EmulateTask> typeTasks = tasks.stream().filter(task -> task.type == type).collect(Collectors.toList());
-						if (typeTasks.isEmpty())
-							sendMsg("There are no tasks of type " + SF + type.name().toLowerCase() + DF + " yet.");
-						else {
-							sendMsg("The following tasks are currently running:");
-							typeTasks.forEach(task -> sendMsg("  " + task.id + ": " + task.toString()));
-						}
-						return typeTasks.size();
-					})));
+					.then(cLiteral("interval")
+                            .then(cArgument("interval", IntegerArgumentType.integer(50))
+                                    .executes(ctx -> executeTasksAddInterval(type, ctx, 0, -1))
+                                    .then(cArgument(type.argName, type.argSupplier.get())
+                                            .executes(ctx -> executeTasksAddInterval(type, ctx, ctx.getArgument(type.argName, Integer.class), -1))
+                                            .then(cArgument("count", IntegerArgumentType.integer(-1))
+                                                    .executes(ctx -> executeTasksAddInterval(type, ctx, type.getter.apply(ctx), ctx.getArgument("count", Integer.class)))))))
+					.then(cLiteral("hold")
+                            .executes(ctx -> executeTasksAddHold(type, 0, -1))
+                            .then(cArgument(type.argName, type.argSupplier.get())
+                                    .executes(ctx -> executeTasksAddHold(type, ctx.getArgument(type.argName, Integer.class), -1))
+                                    .then(cArgument("holdtime", IntegerArgumentType.integer(20))
+                                            .executes(ctx -> executeTasksAddHold(type, type.getter.apply(ctx), ctx.getArgument("holdtime", Integer.class)))))))
+					.then(cLiteral("remove")
+                            .then(cArgument("id", IntegerArgumentType.integer(0))
+                                    .executes(ctx -> {
+                                        int id = ctx.getArgument("id", Integer.class);
+                                        AtomicReference<EmulateTask> task = new AtomicReference<>();
+                                        synchronized (lock) {
+                                            boolean b = tasks.removeIf(task0 -> {
+                                                boolean b0 = task0.type == type && task0.id == id;
+                                                if (b0) task.set(task0);
+                                                return b0;
+                                            });
+                                            sendMsg(b ? Formatting.RED + "No task with that id could be found." : "Task " + SF + id + " (" + task.get().toString() + ") " + DF + "has been removed.");
+                                            return b ? 1 : 0;
+                                        }
+                                    })))
+					.then(cLiteral("list")
+                            .executes(ctx -> {
+                                List<EmulateTask> typeTasks = tasks.stream().filter(task -> task.type == type).collect(Collectors.toList());
+                                if (typeTasks.isEmpty())
+                                    sendMsg("There are no tasks of type " + SF + type.name().toLowerCase() + DF + " yet.");
+                                else {
+                                    sendMsg("The following tasks are currently running:");
+                                    typeTasks.forEach(task -> sendMsg("  " + task.id + ": " + task.toString()));
+                                }
+                                return typeTasks.size();
+                            })));
 		}
 		dispatcher.register(emulate.then(cLiteral("clear").executes(ctx -> {
 			tasks.forEach(EmulateTask::onRemove);

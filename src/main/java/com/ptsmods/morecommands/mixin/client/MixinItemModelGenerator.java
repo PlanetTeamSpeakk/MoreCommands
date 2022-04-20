@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.client.ClientCompat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinJsonUnbakedModelAccessor;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.client.render.model.json.*;
@@ -47,7 +47,7 @@ public abstract class MixinItemModelGenerator {
                 break;
             }
 
-        return !ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || ClientCompat.getCompat().getFrameCount(sprite) == 1) ?
+        return !ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || CompatHolder.getClientCompat().getFrameCount(sprite) == 1) ?
                 addSubComponents(sprite, key, layer) : addLayerElements(layer, key, sprite); // Skip front and back layer, those are created as subcomponents now too.
     }
 
@@ -57,13 +57,13 @@ public abstract class MixinItemModelGenerator {
      */
     @Inject(at = @At("HEAD"), method = "addSubComponents", cancellable = true)
     private void addSubComponents(Sprite sprite, String key, int layer, CallbackInfoReturnable<List<ModelElement>> cbi) {
-        if (!ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || ClientCompat.getCompat().getFrameCount(sprite) == 1)) {
+        if (!ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || CompatHolder.getClientCompat().getFrameCount(sprite) == 1)) {
             // Basically just does what the Vanilla Tweaks resource pack does programmatically.
             int width = sprite.getWidth();
             int height = sprite.getHeight();
             List<ModelElement> list = Lists.newArrayList();
 
-            for (int frame = 0; frame < ClientCompat.getCompat().getFrameCount(sprite); frame++) {
+            for (int frame = 0; frame < CompatHolder.getClientCompat().getFrameCount(sprite); frame++) {
                 for (int y = 0; y < height; y++)
                     for (int x = 0; x < width; x++) {
                         if (sprite.isPixelTransparent(frame, x, y)) continue;

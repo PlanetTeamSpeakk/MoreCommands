@@ -2,8 +2,9 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinJsonUnbakedModelAccessor;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
@@ -44,8 +45,8 @@ public abstract class MixinModelLoader {
         } catch (IOException e) {
             if (id.getPath().startsWith("item/"))
                 try {
-                    Map<String, Object> blockstate = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(
-                            new Identifier(id.getNamespace(), id.getPath().replace("item/", "blockstates/") + ".json")).getInputStream())), Map.class);
+                    Map<String, Object> blockstate = gson.fromJson(new BufferedReader(new InputStreamReader(CompatHolder.getClientCompat().getResourceStream(resourceManager,
+                            new Identifier(id.getNamespace(), id.getPath().replace("mcsynthetic_", "").replace("item/", "blockstates/") + ".json")))), Map.class);
                     if (!blockstate.containsKey("variants") && !blockstate.containsKey("multipart")) return (JsonUnbakedModel) unbakedModels.get(ModelLoader.MISSING_ID);
 
                     String modelId = blockstate.containsKey("variants") ? (String) ((Map<String, Map<String, Object>>) blockstate.get("variants")).values().stream()
@@ -63,8 +64,8 @@ public abstract class MixinModelLoader {
                                             .orElseThrow(() -> new AssertionError("This shouldn't happen.")))
                                     .orElseThrow(() -> new IOException("Couldn't find model for block " + id.toString().replace("item/", "blockstates/")));
 
-                    Map<String, Object> modelRaw = gson.fromJson(new BufferedReader(new InputStreamReader(resourceManager.getResource(
-                            new Identifier(id.getNamespace(), "models/block/" + new Identifier(modelId).getPath().substring(6) + ".json")).getInputStream())), Map.class);
+                    Map<String, Object> modelRaw = gson.fromJson(new BufferedReader(new InputStreamReader(CompatHolder.getClientCompat().getResourceStream(resourceManager,
+                            new Identifier(id.getNamespace(), "models/block/" + new Identifier(modelId).getPath().substring(6) + ".json")))), Map.class);
                     if (defDisplay == null) {
                         defDisplay = new ModelTransformation(
                                 new Transformation(new Vec3f(75, 45, 0), new Vec3f(0, 0.15625F, 0), new Vec3f(0.375F, 0.375F, 0.375F)),

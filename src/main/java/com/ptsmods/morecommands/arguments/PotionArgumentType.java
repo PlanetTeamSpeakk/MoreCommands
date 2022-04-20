@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.potion.Potion;
@@ -19,13 +20,25 @@ import net.minecraft.util.registry.Registry;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-public class PotionArgumentType implements ArgumentType<Potion>, ServerSideArgumentType {
+public class PotionArgumentType implements CompatArgumentType<PotionArgumentType, Identifier, ConstantSerialiser.ConstantProperties<PotionArgumentType, Identifier>> {
+    public static final ConstantSerialiser<PotionArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PotionArgumentType::new);
     private static final DynamicCommandExceptionType POTION_NOT_FOUND = new DynamicCommandExceptionType(o -> new LiteralMessage("Could not find a potion with an id of " + o + "."));
 
+    private PotionArgumentType() {}
+
+    public static PotionArgumentType potion() {
+        return new PotionArgumentType();
+    }
+
+    public static Potion getPotion(CommandContext<?> ctx, String argName) {
+        return Registry.POTION.get(ctx.getArgument(argName, Identifier.class));
+    }
+
     @Override
-    public Potion parse(StringReader reader) throws CommandSyntaxException {
+    public Identifier parse(StringReader reader) throws CommandSyntaxException {
         Identifier id = Identifier.fromCommandInput(reader);
-        return Registry.POTION.getOrEmpty(id).orElseThrow(() -> POTION_NOT_FOUND.create(id));
+        if (!Registry.POTION.containsId(id)) throw POTION_NOT_FOUND.create(id);
+        return id;
     }
 
     @Override
@@ -39,7 +52,12 @@ public class PotionArgumentType implements ArgumentType<Potion>, ServerSideArgum
     }
 
     @Override
-    public ArgumentType<?> toVanillaArgumentType() {
+    public ArgumentType<Identifier> toVanillaArgumentType() {
         return IdentifierArgumentType.identifier();
+    }
+
+    @Override
+    public ConstantSerialiser.ConstantProperties<PotionArgumentType, Identifier> getProperties() {
+        return SERIALISER.getProperties();
     }
 }

@@ -2,7 +2,6 @@ package com.ptsmods.morecommands.mixin.client.accessor;
 
 import net.minecraft.command.EntitySelector;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;

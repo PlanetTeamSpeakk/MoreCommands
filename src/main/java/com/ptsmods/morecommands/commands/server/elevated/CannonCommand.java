@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.TntEntity;
@@ -44,7 +44,7 @@ public class CannonCommand extends Command {
 
 				--this.fuseTimer;
 				if (this.fuseTimer <= 0) {
-					Compat.getCompat().setRemoved(this, 0);
+					CompatHolder.getCompat().setRemoved(this, 0);
 					if (!world.isClient)
 						world.createExplosion(this, this.getX(), this.getBodyY(0.0625D), this.getZ(), power, Explosion.DestructionType.BREAK);
 				} else {

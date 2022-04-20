@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,7 +38,7 @@ public class InvseeCommand extends Command {
 
 			@Override
 			public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-				return new InvSeeScreenHandler(syncId, inv, Compat.getCompat().getInventory(target), target);
+				return new InvSeeScreenHandler(syncId, inv, CompatHolder.getCompat().getInventory(target), target);
 			}
 		});
 	}

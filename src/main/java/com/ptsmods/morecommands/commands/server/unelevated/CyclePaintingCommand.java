@@ -18,8 +18,10 @@ import net.minecraft.util.registry.Registry;
 public class CyclePaintingCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReq("cyclepainting").executes(ctx -> execute(ctx, null))
-				.then(argument("motive", new PaintingMotiveArgumentType()).executes(ctx -> execute(ctx, ctx.getArgument("motive", PaintingMotive.class)))));
+		dispatcher.register(literalReq("cyclepainting")
+                .executes(ctx -> execute(ctx, null))
+				.then(argument("motive", PaintingMotiveArgumentType.paintingMotive())
+                        .executes(ctx -> execute(ctx, PaintingMotiveArgumentType.getPaintingMotive(ctx, "motive")))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {
@@ -27,7 +29,7 @@ public class CyclePaintingCommand extends Command {
 		if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
 			PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
 			PaintingMotive oldArt = painting.motive;
-			painting.motive = motive == null ? Registry.PAINTING_MOTIVE.get((Registry.PAINTING_MOTIVE.getRawId(oldArt)+1) % 26) : motive;
+			painting.motive = motive == null ? Registry.PAINTING_MOTIVE.get((Registry.PAINTING_MOTIVE.getRawId(oldArt)+1) % Registry.PAINTING_MOTIVE.size()) : motive;
 			BlockPos pos = painting.getBlockPos();
 			Entity painting0 = MoreCommands.cloneEntity(painting, false);
 			painting.kill();

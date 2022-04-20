@@ -8,11 +8,13 @@ import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
+import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.client.ClientCompat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
+import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -23,6 +25,7 @@ import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
@@ -39,15 +42,18 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.particle.ParticleTextureSheet;
+import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -82,7 +88,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 	private static double speed = 0d;
 	private static double avgSpeed = 0d;
 	private static final DoubleList lastSpeeds = new DoubleArrayList();
-	private static EasterEggSound easterEggSound = null;
+	private static MovingSoundInstance easterEggSound = null;
 	public static final CommandDispatcher<ClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
 	private static final Map<String, Integer> keys = new LinkedHashMap<>();
 	private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
@@ -92,6 +98,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 	private static final File wicFile = new File("config/MoreCommands/worldInitCommands.json");
 	private static final Map<String, String> nameMCFriends = new HashMap<>();
 	private static final HttpClient sslLenientHttpClient;
+    private static Class<?> copySoundClass, easterEggSoundClass;
 
 	static {
 		for (Field f : GLFW.class.getFields())
@@ -176,33 +183,40 @@ public class MoreCommandsClient implements ClientModInitializer {
 		}
 
 		HudRenderCallback.EVENT.register((stack, tickDelta) -> {
-			if (ClientOptions.Tweaks.enableInfoHud.getValue()) InfoHud.instance.render(stack, tickDelta);
+			if (ClientOptions.Tweaks.enableInfoHUD.getValue()) InfoHud.instance.render(stack, tickDelta);
 		});
 
+        Set<Entity> coolKids = new HashSet<>();
 		ClientTickEvents.START_WORLD_TICK.register(world -> {
 			if (toggleInfoHudBinding.wasPressed()) {
-				ClientOptions.Tweaks.enableInfoHud.setValue(!ClientOptions.Tweaks.enableInfoHud.getValue());
+				ClientOptions.Tweaks.enableInfoHUD.setValue(!ClientOptions.Tweaks.enableInfoHUD.getValue());
 				ClientOptions.write();
 			}
+
 			ClientPlayerEntity p = MinecraftClient.getInstance().player;
 			if (p != null) {
 				double x = p.getX() - p.prevX;
 				double y = p.getY() - p.prevY;
 				double z = p.getZ() - p.prevZ;
 				speed = Math.sqrt(x * x + y * y + z * z) * 20; // Apparently, Pythagoras' theorem does have some use. Who would've thunk?
+
 				lastSpeeds.add(speed);
 				if (lastSpeeds.size() > 20) lastSpeeds.removeDouble(0);
-				double speedSum = 0d;
-				for (double speed : lastSpeeds)
-					speedSum += speed;
-				avgSpeed = speedSum / lastSpeeds.size();
+
+				avgSpeed = CompatHolder.getCompat().doubleStream(lastSpeeds).average().orElse(0);
 			}
 
-			for (Entity entity : world.getEntities())
-				if (entity instanceof PlayerEntity && MoreCommands.isCool(entity))
+			for (Entity entity : coolKids)
+				if (entity.world == world)
 					for (int i = 0; i < 2; i++)
 						MinecraftClient.getInstance().particleManager.addParticle(new VexParticle(entity));
 		});
+
+        ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof PlayerEntity && MoreCommands.isCool(entity)) coolKids.add(entity);
+        });
+
+        ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> coolKids.remove(entity));
 
 		List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
 		ClientCommandRegistrationCallback.EVENT.register(dispatcher -> clientCommands.forEach(cmd -> {
@@ -231,10 +245,11 @@ public class MoreCommandsClient implements ClientModInitializer {
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_options"), (client, handler, buf, responseSender) -> {
-			ClientOptions.getOptions().forEach(option -> option.setDisabled(false));
+            ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
 			int length = buf.readVarInt();
 			for (int i = 0; i < length; i++)
-				Optional.ofNullable(ClientOptions.getOption(buf.readString())).ifPresent(option -> option.setDisabled(true));
+				Optional.ofNullable(ClientOption.getUnmappedOptions().get(buf.readString()))
+                        .ifPresent(option -> option.setDisabled(true));
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_commands"), (client, handler, buf, responseSender) -> {
@@ -246,7 +261,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 
 		ChatMessageSendCallback.EVENT.register(message -> {
 			if (message.startsWith("/easteregg")) {
-				if (easterEggSound == null) MinecraftClient.getInstance().getSoundManager().play(easterEggSound = new EasterEggSound());
+				if (easterEggSound == null) MinecraftClient.getInstance().getSoundManager().play(easterEggSound = (MovingSoundInstance) CompatHolder.getCompat().newInstance(easterEggSoundClass));
 				else {
 					MinecraftClient.getInstance().getSoundManager().stop(easterEggSound);
 					easterEggSound = null;
@@ -267,14 +282,23 @@ public class MoreCommandsClient implements ClientModInitializer {
 		MoreCommands.execute(() -> {
 			try {
 				@SuppressWarnings("UnstableApiUsage")
-				List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"), new TypeToken<List<Map<String, String>>>() {}.getType());
+				List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"),
+                        new TypeToken<List<Map<String, String>>>() {}.getType());
 				// SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
 				nameMCFriends.putAll(friends.stream().collect(Collectors.toMap(friend -> friend.get("uuid"), friend -> friend.get("name"))));
 			} catch (IOException e) {
 				log.error("Could not look up NameMC friends.", e);
 			}
 		});
-	}
+
+        try {
+            // Should have been defined in the EarlyRiser using ClassTinkerer.
+            copySoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.CopySound");
+            easterEggSoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.EESound");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	public static String getWorldName() {
 		// MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
@@ -339,16 +363,21 @@ public class MoreCommandsClient implements ClientModInitializer {
 		List<ButtonWidget> btns = new ArrayList<>();
 		for (int i = 0; i < formattings.length; i++) {
 			int x = i; // Has to be effectively final cuz lambda
-			btns.add(ClientCompat.getCompat().addButton(screen, Util.make(new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)), yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
-					new LiteralText(formattings[x].toString().replace('\u00A7', '&')).setStyle(Style.EMPTY.withFormatting(formattings[x])), btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
-					/*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices, new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
+			btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
+                    yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
+					new LiteralText(formattings[x].toString().replace('\u00A7', '&'))
+                            .setStyle(Style.EMPTY.withFormatting(formattings[x])),
+                    btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
+					/*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
+                    new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
 				public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 					return false;
 				}
 			}, btn -> btn.visible = initOpened0)));
 		}
-		Objects.requireNonNull(ClientCompat.getCompat().addButton(screen, new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0), 50, 20, new LiteralText("Colours").setStyle(Command.DS), btn -> {
-			boolean b = !btns.get(0).visible;
+		Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
+                50, 20, new LiteralText("Colours").setStyle(Command.DS), btn -> {
+            boolean b = !btns.get(0).visible;
 			if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
 			btns.forEach(btn0 -> btn0.visible = b);
 			if (stateListener != null) stateListener.accept(b);
@@ -398,4 +427,8 @@ public class MoreCommandsClient implements ClientModInitializer {
 	public static void updateNameMCFriend(String id, String name) {
 		nameMCFriends.put(id, name);
 	}
+
+    public static Class<?> getCopySoundClass() {
+        return copySoundClass;
+    }
 }

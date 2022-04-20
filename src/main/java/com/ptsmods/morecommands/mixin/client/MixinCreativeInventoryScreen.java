@@ -1,10 +1,10 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.client.ClientCompat;
-import com.ptsmods.morecommands.util.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinClickableWidgetAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinItemGroupButtonWidgetAccessor;
+import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
@@ -48,7 +48,7 @@ public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScre
 	@Inject(at = @At("RETURN"), method = "init")
 	private void init(CallbackInfo cbi) {
 		CreativeInventoryScreen thiz = ReflectionHelper.cast(this);
-		for (ClickableWidget button : ClientCompat.getCompat().getButtons(this)) {
+		for (ClickableWidget button : ((ScreenAddon) this).mc$getButtons()) {
 			if (button instanceof FabricCreativeGuiComponents.ItemGroupButtonWidget) {
 				FabricCreativeGuiComponents.Type type = ((MixinItemGroupButtonWidgetAccessor) button).getType();
 				if (type == FabricCreativeGuiComponents.Type.PREVIOUS) pagerPrev = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
@@ -68,10 +68,10 @@ public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScre
 		if (!searchBox.isFocused() && ClientOptions.Tweaks.creativeKeyPager.getValue()) {
 			GameOptions options = MinecraftClient.getInstance().options;
 			FabricCreativeGuiComponents.ItemGroupButtonWidget btn = null;
-			if ((options.keyLeft.matchesKey(keyCode, scanCode) || options.keyBack.matchesKey(keyCode, scanCode) ||
+			if ((options.leftKey.matchesKey(keyCode, scanCode) || options.backKey.matchesKey(keyCode, scanCode) ||
 					keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && pagerPrev != null && pagerPrev.active)
 				btn = pagerPrev;
-			else if ((options.keyRight.matchesKey(keyCode, scanCode) || options.keyForward.matchesKey(keyCode, scanCode) ||
+			else if ((options.rightKey.matchesKey(keyCode, scanCode) || options.forwardKey.matchesKey(keyCode, scanCode) ||
 					keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && pagerNext != null && pagerNext.active)
 				btn = pagerNext;
 			if (btn != null) {

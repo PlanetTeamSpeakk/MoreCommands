@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;

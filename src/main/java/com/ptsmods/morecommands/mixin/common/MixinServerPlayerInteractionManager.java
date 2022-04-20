@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
@@ -26,7 +26,7 @@ public class MixinServerPlayerInteractionManager {
 
 	@Inject(at = @At("HEAD"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
 	public void setGameModePre(GameMode gameMode, GameMode gameMode2, CallbackInfo cbi) {
-		mc_isFlying = Compat.getCompat().getAbilities(player).flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
+		mc_isFlying = ((MixinPlayerEntityAccessor) player).getAbilities_().flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
 	}
 
 	@Inject(at = @At("TAIL"), method = "setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V")
@@ -34,10 +34,12 @@ public class MixinServerPlayerInteractionManager {
 		// If MAY_FLY is false, let the gamemode decide whether the player may fly or not.
 		// If we just straight up set it to the value of MAY_FLY, the player would never be able to fly, not even in creative, when flight is disabled with the /fly command even when you switch gamemode.
 		// Spectators can always fly, they'll fall through the map otherwise.
-		if (player.getDataTracker().get(DataTrackerHelper.MAY_FLY) || gameMode == GameMode.SPECTATOR) Compat.getCompat().getAbilities(player).allowFlying = true;
-		if (Compat.getCompat().getAbilities(player).allowFlying) Compat.getCompat().getAbilities(player).flying = mc_isFlying;
-		else Compat.getCompat().getAbilities(player).flying = false;
-		if (player.getDataTracker().get(DataTrackerHelper.INVULNERABLE)) Compat.getCompat().getAbilities(player).invulnerable = true;
+        MixinPlayerEntityAccessor accessor = (MixinPlayerEntityAccessor) player;
+
+		if (player.getDataTracker().get(DataTrackerHelper.MAY_FLY) || gameMode == GameMode.SPECTATOR) accessor.getAbilities_().allowFlying = true;
+		if (accessor.getAbilities_().allowFlying) accessor.getAbilities_().flying = mc_isFlying;
+		else accessor.getAbilities_().flying = false;
+		if (player.getDataTracker().get(DataTrackerHelper.INVULNERABLE)) accessor.getAbilities_().invulnerable = true;
 		player.sendAbilitiesUpdate();
 	}
 }

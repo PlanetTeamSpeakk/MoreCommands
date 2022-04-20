@@ -1,26 +1,35 @@
 package com.ptsmods.morecommands;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.ptsmods.morecommands.api.Holder;
+import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.compat.Compat;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.callbacks.PostInitCallback;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
-import com.ptsmods.morecommands.compat.Compat;
-import com.ptsmods.morecommands.miscellaneous.*;
+import com.ptsmods.morecommands.miscellaneous.Chair;
+import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.FormattingColour;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.*;
+import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import eu.pb4.placeholders.PlaceholderAPI;
+import eu.pb4.placeholders.PlaceholderContext;
+import eu.pb4.placeholders.PlaceholderResult;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -36,9 +45,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.ArgumentTypes;
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -59,9 +65,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.text.*;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
@@ -70,12 +79,12 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -83,19 +92,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static net.minecraft.block.Blocks.*;
-
-public class MoreCommands implements ModInitializer {
-	public static final Logger LOG = LogManager.getLogger();
+public class MoreCommands implements IMoreCommands, ModInitializer {
 	public static Formatting DF = ClientOptions.Tweaks.defColour.getValue().asFormatting();
 	public static Formatting SF = ClientOptions.Tweaks.secColour.getValue().asFormatting();
 	public static Style DS = Style.EMPTY.withColor(DF);
@@ -105,7 +112,7 @@ public class MoreCommands implements ModInitializer {
 	public static final Set<Block> blockWhitelist = new HashSet<>();
 	public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
 	public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
-	public static final Item netherPortalItem = new BlockItem(NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
+	public static final Item netherPortalItem = new BlockItem(Blocks.NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
 	public static final ItemGroup unobtainableItems = FabricItemGroupBuilder.create(new Identifier("morecommands:unobtainable_items")).icon(() -> new ItemStack(lockedChestItem)).build();
 	public static MinecraftServer serverInstance = null;
 	public static final ScoreboardCriterion LATENCY;
@@ -113,9 +120,9 @@ public class MoreCommands implements ModInitializer {
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new WeakHashMap<>();
 	public static final Set<PlayerEntity> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
 	public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
+    public static boolean creatingWorld = false;
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
-	private static Field customSuggestionsField = null;
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 	static {
@@ -132,7 +139,7 @@ public class MoreCommands implements ModInitializer {
 		}
 		SERVER_ONLY = serverOnly;
 
-		if (isServerOnly()) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER && SERVER_ONLY) {
 			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 			LOG.info("-=-RUNNING IN SERVER-ONLY MODE-=-");
 			LOG.info("-=CLIENTS WILL NOT NEED THE MOD=-");
@@ -141,10 +148,14 @@ public class MoreCommands implements ModInitializer {
 
 		MoreGameRules.init();
 		DataTrackerHelper.init();
-		Compat.getCompat().putCriterion("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+        MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 	}
 
-	@Override
+    public MoreCommands() {
+        Holder.setMoreCommands(this);
+    }
+
+    @Override
 	public void onInitialize() {
 		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		File dir = new File("config/MoreCommands");
@@ -155,13 +166,16 @@ public class MoreCommands implements ModInitializer {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-			serverCommands.stream().filter(cmd -> !cmd.forDedicated() || dedicated).forEach(cmd -> {
-				try {
-					cmd.register(dispatcher, dedicated);
-				} catch (Exception e) {
-					LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-				}
-			});
+            serverCommands.stream()
+                    .filter(cmd -> !cmd.isDedicatedOnly() || dedicated)
+                    .forEach(cmd -> {
+                        try {
+                            cmd.register(dispatcher, dedicated);
+                        } catch (Exception e) {
+                            LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                        }
+                    });
+
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
 
@@ -180,7 +194,6 @@ public class MoreCommands implements ModInitializer {
 					if (!block.getDefaultState().getMaterial().blocksMovement() || !Block.isShapeFullCube(shape)) blockWhitelist.add(block); // Block does not cause suffocation.
 				} catch (Exception ignored) {} // Getting collision shape probably requires a world and position which we don't have.
 
-
 				try {
 					Method onEntityCollision = ReflectionHelper.getYarnMethod(block.getClass(), "onEntityCollision", "method_9548", BlockState.class, World.class, BlockPos.class, Entity.class);
 					if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
@@ -194,7 +207,7 @@ public class MoreCommands implements ModInitializer {
 
 		if (!isServerOnly()) {
 			Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:copy"), new SoundEvent(new Identifier("morecommands:copy")));
-			Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:easteregg"), new SoundEvent(new Identifier("morecommands:easteregg")));
+			Registry.register(Registry.SOUND_EVENT, new Identifier("morecommands:ee"), new SoundEvent(new Identifier("morecommands:ee")));
 			Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
 			Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
 			Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
@@ -204,12 +217,14 @@ public class MoreCommands implements ModInitializer {
 			S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
 				if (types.contains(new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(handler.player);
 			});
+
 			ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:sit_on_stairs"), (server, player, handler, buf, responseSender) -> {
 				BlockPos pos = buf.readBlockPos();
 				BlockState state = player.getWorld().getBlockState(pos);
-				if (Chair.isValid(state))
+				if (MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doChairsRule, player) && Chair.isValid(state))
 					Chair.createAndPlace(pos, player, player.getWorld());
 			});
+
 			ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:discord_data"), (server, player, handler, buf, responseSender) -> {
 				DiscordUser user = new DiscordUser();
 				if (buf.readBoolean()) discordTagNoPerm.add(player);
@@ -222,27 +237,40 @@ public class MoreCommands implements ModInitializer {
 			});
 
 			PostInitCallback.EVENT.register(() -> {
-				Identifier redstoneWire = new Identifier("redstone_wire"); // Completely breaks redstone dust in the creative inventory.
+                DefaultedList<ItemStack> defaultedList = DefaultedList.of();
+                for (Item item : Registry.ITEM) {
+                    item.appendStacks(ItemGroup.SEARCH, defaultedList);
+                }
+
 				Registry.BLOCK.forEach(block -> {
 					Identifier id = Registry.BLOCK.getId(block);
-					if (!Compat.getCompat().registryContainsId(Registry.ITEM, id) && !redstoneWire.equals(id)) Registry.register(Registry.ITEM, id, new BlockItem(block, new Item.Settings()));
+					if (!CompatHolder.getCompat().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM, new Identifier(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Settings()));
 				});
+
 				Registry.ITEM.forEach(item -> {
 					if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
 				});
+
+                defaultedList = DefaultedList.of();
+                for (Item item : Registry.ITEM) {
+                    item.appendStacks(ItemGroup.SEARCH, defaultedList);
+                }
 			});
 
-			ArgumentTypes.register("morecommands:enum_argument", EnumArgumentType.class, new EnumArgumentType.Serialiser());
-			ArgumentTypes.register("morecommands:cramped_string", CrampedStringArgumentType.class, new CrampedStringArgumentType.Serialiser());
-			ArgumentTypes.register("morecommands:time_argument", TimeArgumentType.class, new ConstantArgumentSerializer<>(TimeArgumentType::new));
-			ArgumentTypes.register("morecommands:hexinteger", HexIntegerArgumentType.class, new ConstantArgumentSerializer<>(HexIntegerArgumentType::new));
-			ArgumentTypes.register("morecommands:ignorant_string", IgnorantStringArgumentType.class, new IgnorantStringArgumentType.Serialiser());
-			ArgumentTypes.register("morecommands:painting_motive", PaintingMotiveArgumentType.class, new ConstantArgumentSerializer<>(PaintingMotiveArgumentType::new));
-			ArgumentTypes.register("morecommands:potion", PotionArgumentType.class, new ConstantArgumentSerializer<>(PotionArgumentType::new));
+            Compat compat = CompatHolder.getCompat();
+
+            compat.registerArgumentType("morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:painting_motive", PaintingMotiveArgumentType.class, PaintingMotiveArgumentType.SERIALISER);
+            compat.registerArgumentType("morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
 		} else {
 			UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
 				BlockState state = world.getBlockState(hit.getBlockPos());
-				if (!player.isSneaking() && BlockTags.STAIRS.contains(state.getBlock()) && Chair.isValid(state)) {
+				if (!player.isSneaking() && MoreGameRules.checkBooleanWithPerm(world.getGameRules(), MoreGameRules.doChairsRule, player) &&
+                        CompatHolder.getCompat().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
 					Chair.createAndPlace(hit.getBlockPos(), player, world);
 					return ActionResult.SUCCESS;
 				}
@@ -255,11 +283,11 @@ public class MoreCommands implements ModInitializer {
 			// This does absolutely nothing whatsoever, just pass along. :)
 			for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
 				if (p.isSneaking()) {
-					float pitch = MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(p));
-					float yaw = MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(p));
+					float pitch = MathHelper.wrapDegrees(((MixinEntityAccessor) p).getPitch_());
+					float yaw = MathHelper.wrapDegrees(((MixinEntityAccessor) p).getYaw_());
 					double moonWidth = Math.PI / 32 * -pitch;
 					long dayTime = p.getWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-					if (!howlingPlayers.contains(p) && p.getWorld().getDimension().getMoonPhase(p.getWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+					if (!howlingPlayers.contains(p) && getMoonPhase(p.getWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
 						double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
 						if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
 							p.getWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
@@ -268,6 +296,16 @@ public class MoreCommands implements ModInitializer {
 					}
 				} else howlingPlayers.remove(p);
 		});
+
+		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) {
+			// Example: %morecommands:reach/1%
+			PlaceholderAPI.register(new Identifier("morecommands:reach"), ctx -> ctx.getPlayer() == null ? PlaceholderResult.invalid("A player must be passed.") :
+					PlaceholderResult.value(new DecimalFormat("0" + ("0".equals(ctx.getArgument()) ? "" :
+							"." + multiplyString("#", isInteger(ctx.getArgument()) ? Integer.parseInt(ctx.getArgument()) : 2))).format(ReachCommand.getReach(ctx.getPlayer(), false))));
+
+			// Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
+			PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);
+		}
 	}
 
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
@@ -277,21 +315,24 @@ public class MoreCommands implements ModInitializer {
 			LOG.error("Could not find the jarfile of the mod, no commands will be registered.");
 			return classes;
 		}
+
 		try {
 			List<Path> classNames = new ArrayList<>();
 			// It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
-			if (jar.isDirectory()) classNames.addAll(java.nio.file.Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath())
-					.filter(path -> java.nio.file.Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
+			if (jar.isDirectory()) classNames.addAll(Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath())
+					.filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
 					.collect(Collectors.toList()));
 			else {
 				ZipFile zip = new ZipFile(jar);
 				Enumeration<? extends ZipEntry> entries = zip.entries();
+
 				while (entries.hasMoreElements()) {
 					ZipEntry entry = entries.nextElement();
 					if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
 						classNames.add(Paths.get(entry.getName()));
 				}
 			}
+
 			classNames.forEach(path -> {
 				String name = "com.ptsmods.morecommands.commands." + type + ("server".equals(type) ? "." + path.toFile().getParentFile().getName() : "") + "." + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.'));
 				try {
@@ -305,10 +346,11 @@ public class MoreCommands implements ModInitializer {
 		} catch (IOException e) {
 			LOG.error("Couldn't find commands for type " + type + ". This means none of said type will be loaded.", e);
 		}
+
 		return classes;
 	}
 
-	@SuppressWarnings("deprecation") // Internal stuff, not API. Required to get this mod's
+	@SuppressWarnings("deprecation") // Internal stuff, not API. Required to get this mod's location.
 	static File getJar() {
 		File jar;
 		try {
@@ -317,6 +359,7 @@ public class MoreCommands implements ModInitializer {
 			LOG.catching(e);
 			return null;
 		}
+
 		if (jar.isDirectory() && jar.getName().equals("main")) jar = new File(String.join(File.separator, jar.getParentFile().getParentFile().getAbsolutePath(), "classes", "java", "main", ""));
 		return jar;
 	}
@@ -326,6 +369,7 @@ public class MoreCommands implements ModInitializer {
 			DF = Command.DF = def;
 			DS = Command.DS = DS.withColor(DF);
 		}
+
 		if (sec != null) {
 			SF = Command.SF = sec;
 			SS = Command.SS = SS.withColor(SF);
@@ -333,7 +377,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void updateFormatting(MinecraftServer server, int id, FormattingColour value) {
-		if (isServerOnly()) return;
+		if (IMoreCommands.get().isServerOnly()) return;
 
 		switch (id) {
 			case 0:
@@ -354,7 +398,7 @@ public class MoreCommands implements ModInitializer {
 	}
 
 	public static void sendFormattingUpdates(ServerPlayerEntity p) {
-		if (isServerOnly()) return;
+		if (IMoreCommands.get().isServerOnly()) return;
 		sendFormattingUpdate(p, 0, DF);
 		sendFormattingUpdate(p, 1, SF);
 	}
@@ -385,7 +429,7 @@ public class MoreCommands implements ModInitializer {
 		}
 		instance.setActiveInstance();
 		try {
-			instance.preinit(isServerOnly());
+			instance.preinit(IMoreCommands.get().isServerOnly());
 		} catch (Exception e) {
 			LOG.error("Error invoking pre-initialisation method on class " + cmd.getName() + ".", e);
 		}
@@ -398,43 +442,54 @@ public class MoreCommands implements ModInitializer {
 
 	public static String textToString(Text text, Style parentStyle, boolean translate, boolean includeFormattings) {
 		if (parentStyle == null) parentStyle = Style.EMPTY;
+
 		StringBuilder s = new StringBuilder();
 		Style style = text.getStyle();
 		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
+
 		if (includeFormattings) {
 			TextColor c = style.getColor();
+
 			if (c != null) {
 				int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
 				Formatting f = null;
+
 				for (Formatting form : Formatting.values())
 					if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
 						f = form;
 						break;
 					}
+
 				if (f != null) s.append(f);
 				else {
 					Color colour = new Color(rgb);
 					s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
 				}
 			}
+
 			if (style.isBold()) s.append(Formatting.BOLD);
 			if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
 			if (style.isUnderlined()) s.append(Formatting.UNDERLINE);
 			if (style.isItalic()) s.append(Formatting.ITALIC);
 			if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
 		}
+
 		if (text instanceof TranslatableText && translate) {
 			TranslatableText tt = (TranslatableText) text;
 			Object[] args = new Object[tt.getArgs().length];
+
 			for (int i = 0; i < args.length; i++)
 				if (tt.getArgs()[i] instanceof Text)
 					args[i] = textToString((Text) tt.getArgs()[i], style, true, includeFormattings);
 				else args[i] = tt.getArgs()[i];
+
 			s.append(I18n.translate(tt.getKey(), args));
 		} else s.append(text.asString());
+
 		if (!text.getSiblings().isEmpty())
 			for (Text t : text.getSiblings())
 				s.append(textToString(t, style, translate, includeFormattings));
+
 		return s.toString();
 	}
 
@@ -609,7 +664,7 @@ public class MoreCommands implements ModInitializer {
 		NbtCompound nbt = new NbtCompound();
 		entity.saveSelfNbt(nbt);
 		Entity e = EntityType.loadEntityWithPassengers(nbt, entity.getEntityWorld(), e0 -> {
-			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), Compat.getCompat().getEntityYaw(entity), Compat.getCompat().getEntityPitch(entity));
+			e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), ((MixinEntityAccessor) entity).getYaw_(), ((MixinEntityAccessor) entity).getPitch_());
 			return e0;
 		});
 		if (e != null) {
@@ -657,7 +712,7 @@ public class MoreCommands implements ModInitializer {
 				target.refreshPositionAndAngles(x, y, z, f, g);
 				target.setHeadYaw(f);
 				world.onDimensionChanged(target);
-				Compat.getCompat().setRemoved(entity, 4); // CHANGED_DIMENSION
+				CompatHolder.getCompat().setRemoved(entity, 4); // CHANGED_DIMENSION
 			}
 		}
 		if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
@@ -712,36 +767,8 @@ public class MoreCommands implements ModInitializer {
 			LOG.catching(e);
 		}
 
-		// Below line is for suggestions of server-side only commands when running in server-only mode.
-		// All custom argumenttypes would have empty suggestions without it.
-		if (isServerOnly()) checkArgTypes(server.getCommandManager().getDispatcher().getRoot(), new HashSet<>());
 		MoreGameRules.checkPerms(server);
 		LOG.info("MoreCommands data path: " + getRelativePath(server));
-	}
-
-	private static <T extends CommandSource> void checkArgTypes(CommandNode<T> node, Set<CommandNode<T>> nodesToIgnore) {
-		if (nodesToIgnore.contains(node)) return;
-
-		nodesToIgnore.add(node);
-		if (node instanceof ArgumentCommandNode) {
-			ArgumentCommandNode<?, T> argumentNode = (ArgumentCommandNode<?, T>) node;
-			if (argumentNode.getType() instanceof ServerSideArgumentType && argumentNode.getCustomSuggestions() == null) {
-				if (customSuggestionsField == null)
-					try {
-						customSuggestionsField = ArgumentCommandNode.class.getDeclaredField("customSuggestions");
-						customSuggestionsField.setAccessible(true);
-					} catch (NoSuchFieldException ignored) {}
-
-				SuggestionProvider<Object> suggestionProvider = argumentNode.getType()::listSuggestions;
-				try {
-					Objects.requireNonNull(customSuggestionsField).set(argumentNode, suggestionProvider);
-				} catch (IllegalAccessException e) {
-					MoreCommands.LOG.error("Could not set custom suggestions on commandnode " + node);
-				}
-			}
-		}
-		node.getChildren().forEach(child -> checkArgTypes(child, nodesToIgnore));
-		if (node.getRedirect() != null) checkArgTypes(node.getRedirect(), nodesToIgnore);
 	}
 
 	public static boolean isAprilFirst() {
@@ -872,7 +899,7 @@ public class MoreCommands implements ModInitializer {
 
 	public static Entity summon(NbtCompound tag, ServerWorld world, Vec3d pos) {
 		return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
-			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, Compat.getCompat().getEntityYaw(entityx), Compat.getCompat().getEntityPitch(entityx));
+			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, ((MixinEntityAccessor) entityx).getYaw_(), ((MixinEntityAccessor) entityx).getPitch_());
 			return !world.tryLoadEntity(entityx) ? null : entityx;
 		});
 	}
@@ -916,7 +943,7 @@ public class MoreCommands implements ModInitializer {
 
 	// Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
 	public static int getY(BlockView blockView, double x, double z) {
-		BlockPos.Mutable mutable = new BlockPos.Mutable(x, Compat.getCompat().getWorldHeight(blockView), z);
+		BlockPos.Mutable mutable = new BlockPos.Mutable(x, CompatHolder.getCompat().getWorldHeight(blockView), z);
 		boolean bl = blockView.getBlockState(mutable).isAir();
 		mutable.move(Direction.DOWN);
 		boolean bl3;
@@ -986,7 +1013,7 @@ public class MoreCommands implements ModInitializer {
 		return s;
 	}
 
-	public static boolean isServerOnly() {
+	public boolean isServerOnly() {
 		return FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER && SERVER_ONLY;
 	}
 
@@ -1016,4 +1043,113 @@ public class MoreCommands implements ModInitializer {
 
 		return out;
 	}
+
+	public static String multiplyString(String s, int x) {
+		if (s == null || s.isEmpty()) return s;
+
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < x; i++)
+			result.append(s);
+
+		return result.toString();
+	}
+
+	public static List<Color> createGradient(int steps, Color from, Color to) {
+		if (steps == 0) return Lists.newArrayList();
+		BufferedImage img = new BufferedImage(steps, 1, BufferedImage.TYPE_INT_RGB);
+
+		Graphics2D g = img.createGraphics();
+		g.setPaint(new GradientPaint(0, 0, from, steps, 1, to));
+		g.fillRect(0, 0, steps, 1);
+		g.dispose();
+
+		List<Color> gradient = new ArrayList<>();
+		for (int i = 0; i < steps; i++)
+			gradient.add(new Color(img.getRGB(i, 0)));
+		return Collections.unmodifiableList(gradient);
+	}
+
+	public static Text parsePlaceholders(String text, MinecraftServer server) {
+		return parsePlaceholders(new LiteralText(text), server);
+	}
+
+	public static Text parsePlaceholders(Text text, MinecraftServer server) {
+		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) return PlaceholderAPI.parseText(text, server);
+		else return text;
+	}
+
+	public static Text parsePlaceholders(String text, ServerPlayerEntity player) {
+		return parsePlaceholders(new LiteralText(text), player);
+	}
+
+	public static Text parsePlaceholders(Text text, ServerPlayerEntity player) {
+		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) return PlaceholderAPI.parseText(text, player);
+		else return text;
+	}
+
+	public static Text getNickname(PlayerEntity player) {
+		 Text nickname = player.getDataTracker().get(DataTrackerHelper.NICKNAME).orElse(null);
+		 if (nickname == null) return null;
+
+		 Identifier id = new Identifier("morecommands:gradient");
+		 return FabricLoader.getInstance().isModLoaded("placeholder-api") && player instanceof ServerPlayerEntity ? PlaceholderAPI.parseTextCustom(nickname, (ServerPlayerEntity) player,
+				 ImmutableMap.of(id, Objects.requireNonNull(MoreCommands::gradientPlaceholder)), PlaceholderAPI.PLACEHOLDER_PATTERN) : nickname;
+	}
+
+    public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
+        String arg = ctx.getArgument();
+        String[] parts = arg.split(";", 2);
+
+        if (arg.isEmpty() || parts.length != 2 || !parts[0].contains("-")) return PlaceholderResult.value("Invalid format. Valid example: %morecommands:gradient/#FFAA00-#FF0000;Text here%");
+
+        String fromS = parts[0].substring(0, parts[0].indexOf('-'));
+        String toS = parts[0].substring(parts[0].indexOf('-') + 1, parts[0].contains(",") ? parts[0].indexOf(',') : parts[0].length());
+        String formatting = parts[0].contains(",") ? parts[0].substring(parts[0].indexOf(',') + 1) : "";
+
+        char[] chs = formatting.toCharArray();
+        Character[] chsI = new Character[chs.length];
+
+        for (int i = 0; i < chs.length; i++)
+            chsI[i] = chs[i];
+
+        // Turns any formatting, like lm or lo, into their actual string representation.
+        formatting = Arrays.stream(chsI)
+                .map(c -> "" + Character.toLowerCase(c))
+                .filter("klmno"::contains)
+                .map(c -> "\u00A7" + c)
+                .collect(Collectors.joining());
+
+        Function<String, Boolean> checkColour = c -> c.length() == 1 ? Character.isDigit(c.charAt(0)) || Character.toLowerCase(c.charAt(0)) >= 'a' && Character.toLowerCase(c.charAt(0)) <= 'f' :
+                c.length() == 7 && c.charAt(0) == '#' && isInteger(c.substring(1), 16);
+
+        // Checking if the colours are actual colours.
+        if (!checkColour.apply(fromS))
+            return PlaceholderResult.value("First colour must be between 0-9 or a-f or a hex colour.");
+        if (!checkColour.apply(toS))
+            return PlaceholderResult.value("Second colour must be between 0-9 or a-f or a hex colour.");
+
+        // Parse colours and create gradient.
+        Color from = new Color(fromS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(fromS.charAt(0)))).getRgb() : Integer.parseInt(fromS.substring(1), 16));
+        Color to = new Color(toS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(toS.charAt(0)))).getRgb() : Integer.parseInt(toS.substring(1), 16));
+        String content = parts[1];
+        List<Color> gradient = createGradient(content.length(), from, to);
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < content.length(); i++) {
+            Color c = gradient.get(i);
+
+            result.append("\u00a7#")
+                    .append(String.format("%02x", c.getRed()))
+                    .append(String.format("%02x", c.getGreen()))
+                    .append(String.format("%02x", c.getBlue()))
+                    .append(formatting)
+                    .append(content.charAt(i));
+        }
+
+        return PlaceholderResult.value(result.toString());
+    }
+
+    public static int getMoonPhase(long time) {
+        return (int)(time / 24000L % 8L + 8L) % 8;
+    }
 }

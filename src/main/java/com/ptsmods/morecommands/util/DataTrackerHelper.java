@@ -32,7 +32,7 @@ public class DataTrackerHelper {
     public static final TrackedData<Optional<BlockPos>> CHAIR = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS, Optional.empty(), "Chair",
             (nbt, key) -> Optional.of(new BlockPos(nbt.getIntArray(key)[0], nbt.getIntArray(key)[1], nbt.getIntArray(key)[2])),
             (nbt, key, data) -> data.ifPresent(pos -> nbt.putIntArray(key, new int[] {pos.getX(), pos.getY(), pos.getZ()})));
-    public static final TrackedData<NbtCompound> VAULTS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.TAG_COMPOUND, MoreCommands.wrapTag("Vaults", new NbtList()), "Vaults",
+    public static final TrackedData<NbtCompound> VAULTS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.NBT_COMPOUND, MoreCommands.wrapTag("Vaults", new NbtList()), "Vaults",
             (nbt, key) -> MoreCommands.wrapTag(key, nbt.getList(key, 9)), (nbt, key, data) -> nbt.put(key, data.get(key)));
     public static final TrackedData<Optional<Text>> NICKNAME = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT, Optional.empty(), "Nickname",
             (nbt, key) -> Optional.ofNullable(Text.Serializer.fromJson(nbt.getString(key))),

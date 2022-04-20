@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "morecommands-api",
+  "version": "${version}",
+
+  "name": "MoreCommands API",
+  "description": "API classes and methods provided by MoreCommands, mainly required for the Compat modules.",
+  "authors": [
+    "PlanetTeamSpeak"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/morecommands",
+    "sources": "https://github.com/PlanetTeamSpeakk/MoreCommands",
+    "issues": "https://github.com/PlanetTeamSpeakk/MoreCommands/issues",
+    "discord": "https://discord.gg/tzsmCyk"
+  },
+
+  "license": "CC0-1.0",
+
+  "environment": "*",
+  "entrypoints": {},
+  "mixins": [],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "*"
+  },
+
+  "custom": {
+    "modmenu": {
+      "parent": "morecommands",
+      "badges": ["library"]
+    }
+  }
+}

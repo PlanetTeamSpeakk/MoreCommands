@@ -1,10 +1,9 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.SpawnerBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
@@ -34,7 +33,7 @@ public class MixinBlock {
 		List<ItemStack> stacks = cbi.getReturnValue();
 		if (blockEntity instanceof MobSpawnerBlockEntity && MoreGameRules.checkBooleanWithPerm(world.getGameRules(), MoreGameRules.doSilkSpawnersRule, entity) && EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, stack) > 0) {
 			ItemStack spawner = new ItemStack(Items.SPAWNER);
-			NbtCompound tag = Compat.getCompat().writeBENBT(blockEntity);
+			NbtCompound tag = CompatHolder.getCompat().writeBENBT(blockEntity);
 			tag.remove("x");
 			tag.remove("y");
 			tag.remove("z");

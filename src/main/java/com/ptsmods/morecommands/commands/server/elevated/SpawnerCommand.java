@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -53,9 +53,9 @@ public class SpawnerCommand extends Command {
 						ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
 						NbtCompound tag = stack.getOrCreateNbt();
 						if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
-							Compat.getCompat().readSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, tag);
+							CompatHolder.getCompat().readSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, tag);
 						logic.setEntityId(type);
-						(tag = new NbtCompound()).put("BlockEntityTag", Compat.getCompat().writeSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, new NbtCompound()));
+						(tag = new NbtCompound()).put("BlockEntityTag", CompatHolder.getCompat().writeSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, new NbtCompound()));
 						((NbtCompound) tag.getCompound("BlockEntityTag").getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
 						stack.setNbt(tag);
 						sendMsg(ctx, "Poof!");
@@ -65,9 +65,9 @@ public class SpawnerCommand extends Command {
 					MobSpawnerBlockEntity be = (MobSpawnerBlockEntity) ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
 					MobSpawnerLogic logic = Objects.requireNonNull(be).getLogic();
 					logic.setEntityId(type);
-					NbtCompound tag = Compat.getCompat().writeSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, new NbtCompound());
+					NbtCompound tag = CompatHolder.getCompat().writeSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, new NbtCompound());
 					((NbtCompound) tag.getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getId(type).toString());
-					Compat.getCompat().readSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, tag);
+					CompatHolder.getCompat().readSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, tag);
 					be.markDirty();
 					ctx.getSource().getWorld().updateListeners(result.getBlockPos(), state, state, 3);
 					sendMsg(ctx, "Poof!");

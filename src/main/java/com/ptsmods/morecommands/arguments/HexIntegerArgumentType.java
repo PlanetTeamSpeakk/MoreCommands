@@ -4,24 +4,39 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import net.minecraft.text.LiteralText;
 
 import java.util.Collection;
 
-public class HexIntegerArgumentType implements ArgumentType<Integer>, ServerSideArgumentType {
-
+public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgumentType, String, ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String>> {
+    public static final ConstantSerialiser<HexIntegerArgumentType, String> SERIALISER = new ConstantSerialiser<>(HexIntegerArgumentType::new);
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(new LiteralText("The given value is not a (hexa)decimal number between #000000 and #FFFFFF"));
 
+    private HexIntegerArgumentType() {}
+
+    public static HexIntegerArgumentType hexInt() {
+        return new HexIntegerArgumentType();
+    }
+
+    public static int getHexInt(CommandContext<?> ctx, String argName) {
+        return Integer.parseInt(ctx.getArgument(argName, String.class));
+    }
+
 	@Override
-	public Integer parse(StringReader reader) throws CommandSyntaxException {
+	public String parse(StringReader reader) throws CommandSyntaxException {
 		String s = MoreCommands.readTillSpaceOrEnd(reader);
 		if (s.startsWith("#")) s = s.substring(1);
 		else if (s.toLowerCase().startsWith("0x")) s = s.substring(2);
-		if (MoreCommands.isInteger(s) && Integer.parseInt(s) >= 0 && Integer.parseInt(s) <= 0xFFFFFF) return Integer.parseInt(s);
-		else if (MoreCommands.isInteger(s, 16) && Integer.parseInt(s, 16) >= 0 && Integer.parseInt(s, 16) <= 0xFFFFFF) return Integer.parseInt(s, 16);
+
+        int i;
+		if (MoreCommands.isInteger(s) && (i = Integer.parseInt(s)) >= 0 && i <= 0xFFFFFF) return "" + i;
+		else if (MoreCommands.isInteger(s, 16) && (i = Integer.parseInt(s, 16)) >= 0 && i <= 0xFFFFFF) return "" + i;
+
 		throw exc.createWithContext(reader);
 	}
 
@@ -31,7 +46,12 @@ public class HexIntegerArgumentType implements ArgumentType<Integer>, ServerSide
 	}
 
 	@Override
-	public ArgumentType<?> toVanillaArgumentType() {
+	public ArgumentType<String> toVanillaArgumentType() {
 		return StringArgumentType.word();
 	}
+
+    @Override
+    public ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String> getProperties() {
+        return SERIALISER.getProperties();
+    }
 }

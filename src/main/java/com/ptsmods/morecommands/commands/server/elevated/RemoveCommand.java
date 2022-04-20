@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinLivingEntityAccessor;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -31,7 +31,7 @@ public class RemoveCommand extends Command {
 				.collect(Collectors.toList());
 
 		for (Entity entity : targets) {
-			Compat.getCompat().setRemoved(entity, 1);
+			CompatHolder.getCompat().setRemoved(entity, 1);
 			if (entity instanceof LivingEntity)
 				((MixinLivingEntityAccessor) entity).setDead(true);
 		}

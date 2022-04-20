@@ -8,3 +8,10 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
+
+include 'api'
+include 'compat:compat16'
+include 'compat:compat17'
+include 'compat:compat18'
+include 'compat:compat182'
+include 'compat:compat19'

@@ -53,6 +53,7 @@ public class MoreGameRules {
     public static final GameRules.Key<GameRules.BooleanRule> doPathFindingRule = createBooleanRule("doPathFinding", true, false);
     public static final GameRules.Key<GameRules.BooleanRule> doGoalsRule = createBooleanRule("doGoals", true, false);
     public static final GameRules.Key<GameRules.BooleanRule> doStacktraceRule = createBooleanRule("doStacktrace", true, false);
+    public static final GameRules.Key<GameRules.BooleanRule> doChairsRule = createBooleanRule("doChairs", true, true);
     public static final GameRules.Key<GameRules.BooleanRule> sendCommandFeedbackToOpsRule = createBooleanRule("sendCommandFeedbackToOps", true, true);
 
     private static GameRules.Key<GameRules.BooleanRule> createBooleanRule(String name, boolean defaultValue, boolean doPermCheck) {

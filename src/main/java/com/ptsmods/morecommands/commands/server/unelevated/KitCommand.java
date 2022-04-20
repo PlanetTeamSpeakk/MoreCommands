@@ -7,7 +7,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.player.PlayerEntity;
@@ -57,7 +57,7 @@ public class KitCommand extends Command {
 			String name = ctx.getArgument("name", String.class);
 			if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendError(ctx, "A kit with that name already exists.");
 			else {
-				PlayerInventory inv = Compat.getCompat().getInventory(ctx.getSource().getPlayer());
+				PlayerInventory inv = CompatHolder.getCompat().getInventory(ctx.getSource().getPlayer());
 				kits.put(name.toLowerCase(Locale.ROOT), new Kit(name, ctx.getArgument("cooldown", Integer.class), Lists.newArrayList(inv.main, inv.armor, inv.offHand).stream().flatMap(List::stream).collect(Collectors.toList())));
 				saveKits();
 				sendMsg(ctx, "Kit " + SF + name + DF + " has been made.");
@@ -79,7 +79,7 @@ public class KitCommand extends Command {
 	}
 
 	@Override
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return true;
 	}
 
@@ -162,7 +162,7 @@ public class KitCommand extends Command {
 			if (!onCooldown(player)) {
 				for (ItemStack stack : items) {
 					ItemStack stack0 = stack.copy();
-					if (!Compat.getCompat().getInventory(player).insertStack(stack0)) player.dropItem(stack0, false);
+					if (!CompatHolder.getCompat().getInventory(player).insertStack(stack0)) player.dropItem(stack0, false);
 				}
 				if (cooldown > 0) {
 					cooldowns.put(player.getUuid(), System.currentTimeMillis() + cooldown * 1000L);

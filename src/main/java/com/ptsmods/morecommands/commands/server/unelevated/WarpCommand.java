@@ -225,7 +225,7 @@ public class WarpCommand extends Command {
 	}
 
 	@Override
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return true;
 	}
 

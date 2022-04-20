@@ -8,20 +8,20 @@ import net.minecraft.text.Text;
 import java.util.function.BiConsumer;
 
 public class BooleanClientOption extends ClientOption<Boolean> {
-    BooleanClientOption(Boolean defaultValue) {
-        super(defaultValue);
+    BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue) {
+        super(category, name, defaultValue);
     }
 
-    BooleanClientOption(Boolean defaultValue, BiConsumer<Boolean, Boolean> updateConsumer) {
-        super(defaultValue, updateConsumer);
+    BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue, BiConsumer<Boolean, Boolean> updateConsumer) {
+        super(category, name, defaultValue, updateConsumer);
     }
 
-    BooleanClientOption(Boolean defaultValue, String... comments) {
-        super(defaultValue, comments);
+    BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue, String... comments) {
+        super(category, name, defaultValue, comments);
     }
 
-    BooleanClientOption(Boolean defaultValue, BiConsumer<Boolean, Boolean> updateConsumer, String... comments) {
-        super(defaultValue, updateConsumer, comments);
+    BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue, BiConsumer<Boolean, Boolean> updateConsumer, String... comments) {
+        super(category, name, defaultValue, updateConsumer, comments);
     }
 
     @Override

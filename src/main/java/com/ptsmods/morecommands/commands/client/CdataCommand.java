@@ -10,7 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.network.ClientCommandSource;
@@ -135,7 +135,7 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.entity.query", this.entity.getDisplayName(), Compat.getCompat().toText(tag));
+			return new TranslatableText("commands.data.entity.query", this.entity.getDisplayName(), CompatHolder.getCompat().toText(tag));
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
@@ -166,11 +166,11 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public NbtCompound getTag() {
-			return Compat.getCompat().writeBENBT(blockEntity);
+			return CompatHolder.getCompat().writeBENBT(blockEntity);
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), Compat.getCompat().toText(tag));
+			return new TranslatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), CompatHolder.getCompat().toText(tag));
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
@@ -204,7 +204,7 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.item.query", stack.getName(), Compat.getCompat().toText(tag));
+			return new TranslatableText("commands.data.item.query", stack.getName(), CompatHolder.getCompat().toText(tag));
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {

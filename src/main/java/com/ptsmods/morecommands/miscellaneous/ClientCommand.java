@@ -7,10 +7,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinEntitySelectorAccessor;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -74,7 +74,7 @@ public abstract class ClientCommand extends Command {
 	}
 
 	@Override
-	public final boolean forDedicated() {
+	public final boolean isDedicatedOnly() {
 		return false;
 	}
 
@@ -88,24 +88,24 @@ public abstract class ClientCommand extends Command {
 		return RequiredArgumentBuilder.argument(name, argument);
 	}
 
-	public static void sendMsg(String s) {
-		sendMsg(new LiteralText(fixResets(s)).setStyle(DS));
+	public static void sendMsg(String s, Object... formats) {
+		sendMsg(new LiteralText(fixResets(formatted(s, formats))).setStyle(DS));
 	}
 
 	public static void sendMsg(Text t) {
 		getPlayer().sendMessage(t.getStyle().isEmpty() ? t.shallowCopy().setStyle(DS) : t, false);
 	}
 
-	public static void sendAbMsg(String s) {
-		sendAbMsg(new LiteralText(fixResets(s)).setStyle(DS));
+	public static void sendAbMsg(String s, Object... formats) {
+		sendAbMsg(new LiteralText(fixResets(formatted(s, formats))).setStyle(DS));
 	}
 
 	public static void sendAbMsg(Text t) {
 		getPlayer().sendMessage(t, true);
 	}
 
-	public static void sendError(String error) {
-		sendError(new LiteralText(fixResets(error, Formatting.RED)).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+	public static void sendError(String error, Object... formats) {
+		sendError(new LiteralText(fixResets(formatted(error, formats), Formatting.RED)).setStyle(Style.EMPTY.withColor(Formatting.RED)));
 	}
 
 	public static void sendError(Text error) {
@@ -241,14 +241,10 @@ public abstract class ClientCommand extends Command {
 
 	public static BlockPos getLoadedBlockPos(CommandContext<ClientCommandSource> context, String name) throws CommandSyntaxException {
 		BlockPos blockPos = context.getArgument(name, PosArgument.class).toAbsoluteBlockPos(getServerCommandSource());
-		if (!getWorld().isChunkLoaded(blockPos)) {
-			throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
-		} else {
-			if (!Compat.getCompat().isInBuildLimit(MinecraftClient.getInstance().world, blockPos)) {
-				throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
-			} else {
-				return blockPos;
-			}
-		}
+		if (!getWorld().isChunkLoaded(blockPos))
+            throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
+		else if (!CompatHolder.getCompat().isInBuildLimit(MinecraftClient.getInstance().world, blockPos))
+            throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
+        else return blockPos;
 	}
 }

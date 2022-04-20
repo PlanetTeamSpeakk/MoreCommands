@@ -1,8 +1,6 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.miscellaneous.BetterLanguage;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
 import net.minecraft.util.Language;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -10,8 +8,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.TreeMap;
 
 @Mixin(Language.class)
 public class MixinLanguage {

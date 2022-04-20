@@ -8,7 +8,6 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 
 import java.util.Base64;
 import java.util.Map;

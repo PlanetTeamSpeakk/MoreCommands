@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.mixin.compat;
 
 import com.ptsmods.morecommands.commands.server.elevated.FireballCommand;
-import com.ptsmods.morecommands.compat.Compat;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.util.CompatHolder;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.AbstractFireballEntity;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -42,7 +42,7 @@ public class MixinFireballEntity extends AbstractFireballEntity {
             else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
             if (!this.world.isClient) {
                 this.world.createExplosion(null, this.getX(), this.getY(), this.getZ(), explosionPower, true, Explosion.DestructionType.DESTROY);
-                if (FireballCommand.fireballs.get(thiz).getMiddle().addAndGet(1) >= FireballCommand.fireballs.get(thiz).getRight()) Compat.getCompat().setRemoved(this, 1);
+                if (FireballCommand.fireballs.get(thiz).getMiddle().addAndGet(1) >= FireballCommand.fireballs.get(thiz).getRight()) CompatHolder.getCompat().setRemoved(this, 1);
             }
         }
     }

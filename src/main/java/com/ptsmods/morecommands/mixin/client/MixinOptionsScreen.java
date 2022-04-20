@@ -1,13 +1,13 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.gui.ClientOptionsScreen;
+import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,12 +30,13 @@ public class MixinOptionsScreen extends Screen {
 			x = this.width / 2 + 5; // above sounds
 			y = this.height / 6 + 24 - 6;
 		}
-		ClientCompat.getCompat().addButton(this, new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
+
+        ((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
 	}
 
 	@Unique
 	private ClickableWidget getButtonAt(int x, int y) {
-		for (ClickableWidget b : ClientCompat.getCompat().getButtons(this))
+		for (ClickableWidget b : ((ScreenAddon) this).mc$getButtons())
 			if (b.x == x && b.y == y) return b;
 		return null;
 	}

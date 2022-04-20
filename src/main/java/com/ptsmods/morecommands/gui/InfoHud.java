@@ -3,7 +3,8 @@ package com.ptsmods.morecommands.gui;
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
+import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.resource.language.I18n;
@@ -147,15 +148,16 @@ public class InfoHud extends DrawableHelper {
 					case "chunkX": {output = "" + (mc.player.getBlockPos().getX() >> 4); break;}
 					case "chunkY": {output = "" + (mc.player.getBlockPos().getY() >> 4); break;}
 					case "chunkZ": {output = "" + (mc.player.getBlockPos().getZ() >> 4); break;}
-					case "yaw": {output = "" + MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(mc.player)); break;}
-					case "pitch": {output = "" + MathHelper.wrapDegrees(Compat.getCompat().getEntityPitch(mc.player)); break;}
-					case "biome": {output = Objects.requireNonNull(Compat.getCompat().getRegistry(mc.world.getRegistryManager(), Registry.BIOME_KEY).getId(mc.world.getBiome(mc.player.getBlockPos()))).toString(); break;}
+					case "yaw": {output = "" + MathHelper.wrapDegrees(((MixinEntityAccessor) mc.player).getYaw_()); break;}
+					case "pitch": {output = "" + MathHelper.wrapDegrees(((MixinEntityAccessor) mc.player).getPitch_()); break;}
+					case "biome": {output = Objects.requireNonNull(CompatHolder.getCompat().getRegistry(mc.world.getRegistryManager(), Registry.BIOME_KEY)
+                            .getId(CompatHolder.getCompat().getBiome(mc.world, mc.player.getBlockPos()))).toString(); break;}
 					case "difficulty": {output = mc.world.getLevelProperties().getDifficulty().name(); break;}
 					case "blocksPerSec": {output = MoreCommands.formatDouble(MoreCommandsClient.getSpeed()) + " blocks/sec"; break;}
 					case "avgSpeed": {output = MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed()) + " blocks/sec"; break;}
 					case "toggleKey": {output = MoreCommands.textToString(MoreCommandsClient.toggleInfoHudBinding.getBoundKeyLocalizedText(), null, true); break;}
 					case "configFile": {output = file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"); break;}
-					case "facing": {output = MoreCommands.getLookDirection(MathHelper.wrapDegrees(Compat.getCompat().getEntityYaw(mc.player)), Compat.getCompat().getEntityPitch(mc.player)); break;}
+					case "facing": {output = MoreCommands.getLookDirection(MathHelper.wrapDegrees(((MixinEntityAccessor) mc.player).getYaw_()), ((MixinEntityAccessor) mc.player).getPitch_()); break;}
 					case "time": {output = MoreCommands.parseTime(mc.world.getTime() % 24000L, false); break;}
 					case "time12": {output = MoreCommands.parseTime(mc.world.getTime() % 24000L, true); break;}
 					case "UUID": {output = mc.player.getUuidAsString(); break;}
@@ -179,11 +181,14 @@ public class InfoHud extends DrawableHelper {
 					default: break;
 				}
 			} catch (Exception e) {
-				StackTraceElement element = e.getStackTrace()[0];
-				if (!printedExceptions.contains(element)) {
-					MoreCommands.LOG.catching(e);
-					printedExceptions.add(element);
-				}
+                if (e.getStackTrace().length != 0) {
+
+                    StackTraceElement element = e.getStackTrace()[0];
+                    if (!printedExceptions.contains(element)) {
+                        MoreCommands.LOG.catching(e);
+                        printedExceptions.add(element);
+                    }
+                }
 				output = "ERROR";
 			}
 		return output;

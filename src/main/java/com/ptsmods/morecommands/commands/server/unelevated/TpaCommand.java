@@ -4,9 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
+import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -58,7 +58,7 @@ public class TpaCommand extends Command {
 	}
 
 	@Override
-	public boolean forDedicated() {
+	public boolean isDedicatedOnly() {
 		return true;
 	}
 
@@ -81,7 +81,7 @@ public class TpaCommand extends Command {
 		private void accept() {
 			ServerPlayerEntity from = here ? this.to : this.from;
 			ServerPlayerEntity to = here ? this.from : this.to;
-			MoreCommands.teleport(from, to.getWorld(), to.getPos(), Compat.getCompat().getEntityYaw(to), Compat.getCompat().getEntityPitch(to));
+			MoreCommands.teleport(from, to.getWorld(), to.getPos(), ((MixinEntityAccessor) to).getYaw_(), ((MixinEntityAccessor) to).getPitch_());
 		}
 
 		private void deny() {

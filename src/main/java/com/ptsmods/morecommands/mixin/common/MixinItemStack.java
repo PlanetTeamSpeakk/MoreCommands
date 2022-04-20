@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;

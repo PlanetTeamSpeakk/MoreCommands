@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -36,7 +36,7 @@ public class WipeOutCommand extends Command {
                 .flatMap(world -> StreamSupport.stream(world.iterateEntities().spliterator(), false))
                 .filter(predicate)
                 .collect(Collectors.toList());
-        entities.forEach(entity -> Compat.getCompat().setRemoved(entity, 1));
+        entities.forEach(entity -> CompatHolder.getCompat().setRemoved(entity, 1));
         sendMsg(ctx, SF.toString() + entities.size() + " " + DF + "entities have been killed.");
         return entities.size();
     }

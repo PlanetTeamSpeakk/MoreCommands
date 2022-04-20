@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.compat.Compat;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.callbacks.EntityDeathCallback;
 import com.ptsmods.morecommands.callbacks.EntityTeleportCallback;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +24,7 @@ public class MixinEntity {
 	@Inject(at = @At("RETURN"), method = "tick()V")
 	public void tick(CallbackInfo cbi) {
 		Entity thiz = ReflectionHelper.cast(this);
-		boolean removed = Compat.getCompat().isRemoved(thiz);
+		boolean removed = CompatHolder.getCompat().isRemoved(thiz);
 		if (removed && !mc_lastRemoved) EntityDeathCallback.EVENT.invoker().onDeath(thiz);
 		mc_lastRemoved = removed;
 	}

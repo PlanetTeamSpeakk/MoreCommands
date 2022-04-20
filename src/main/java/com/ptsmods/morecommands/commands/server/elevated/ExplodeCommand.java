@@ -16,11 +16,19 @@ public class ExplodeCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReqOp("explode").executes(ctx -> execute(ctx, null, 4f, false, Explosion.DestructionType.BREAK, true))
-		.then(argument("pos", Vec3ArgumentType.vec3()).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), 4f, false, Explosion.DestructionType.BREAK, true))
-		.then(argument("power", FloatArgumentType.floatArg(0f)).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), false, Explosion.DestructionType.BREAK, true))
-		.then(argument("fire", BoolArgumentType.bool()).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), ctx.getArgument("fire", Boolean.class), Explosion.DestructionType.BREAK, true))
-		.then(argument("destruct", EnumArgumentType.enumType(Explosion.DestructionType.class, Explosion.DestructionType.values())).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), ctx.getArgument("fire", Boolean.class), ctx.getArgument("destruct", Explosion.DestructionType.class), true))
-		.then(argument("launch", BoolArgumentType.bool()).executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), ctx.getArgument("fire", Boolean.class), ctx.getArgument("destruct", Explosion.DestructionType.class), ctx.getArgument("launch", Boolean.class)))))))));
+		.then(argument("pos", Vec3ArgumentType.vec3())
+                .executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), 4f, false, Explosion.DestructionType.BREAK, true))
+                .then(argument("power", FloatArgumentType.floatArg(0f))
+                        .executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class), false, Explosion.DestructionType.BREAK, true))
+                        .then(argument("fire", BoolArgumentType.bool())
+                                .executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class),
+                                        ctx.getArgument("fire", Boolean.class), Explosion.DestructionType.BREAK, true))
+                                .then(argument("destruct", EnumArgumentType.enumType(Explosion.DestructionType.class, Explosion.DestructionType.values()))
+                                        .executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class),
+                                                ctx.getArgument("fire", Boolean.class), EnumArgumentType.getEnum(ctx, "destruct"), true))
+                                        .then(argument("launch", BoolArgumentType.bool())
+                                                .executes(ctx -> execute(ctx, Vec3ArgumentType.getVec3(ctx, "pos"), ctx.getArgument("power", Float.class),
+                                                        ctx.getArgument("fire", Boolean.class), EnumArgumentType.getEnum(ctx, "destruct"), ctx.getArgument("launch", Boolean.class)))))))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, Vec3d pos, float power, boolean fire, Explosion.DestructionType destruct, boolean launch) {
@@ -30,5 +38,4 @@ public class ExplodeCommand extends Command {
 		explosion.affectWorld(true);
 		return explosion.getAffectedBlocks().size();
 	}
-
 }

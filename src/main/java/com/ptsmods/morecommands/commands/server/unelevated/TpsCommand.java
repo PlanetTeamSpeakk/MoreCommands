@@ -30,7 +30,7 @@ public class TpsCommand extends Command {
     }
 
     private String formatTps(double tps) {
-        return formatFromFloat((float) tps, 20, 0.8f, 0.9f, false) + (tps > 20 ? "*" : "") + Math.min(Math.round(tps * 100.0) / 100.0, 20.0);
+        return formatFromFloat((float) tps, 20, 0.8f, 0.9f, true) + (tps > 20 ? "*" : "") + Math.min(Math.round(tps * 100.0) / 100.0, 20.0);
     }
 
     private String formatTickDuration(RollingAverage average) {
@@ -38,6 +38,6 @@ public class TpsCommand extends Command {
     }
 
     private String formatTickDuration(double duration) {
-        return formatFromFloat((float) (50 - duration), 50, 0.2f, 0, false) + String.format("%.1f", duration);
+        return formatFromFloat((float) (50 - duration), 50, 0.2f, 0, true) + String.format("%.1f", duration);
     }
 }

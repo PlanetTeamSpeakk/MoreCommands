@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.ServerNetworkIo;
 import net.minecraft.world.World;

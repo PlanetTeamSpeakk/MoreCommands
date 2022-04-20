@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.BookEditScreen;
 import net.minecraft.client.util.SelectionManager;

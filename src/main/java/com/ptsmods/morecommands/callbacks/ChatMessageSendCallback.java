@@ -13,5 +13,4 @@ public interface ChatMessageSendCallback {
 	});
 
 	String onMessageSend(String message);
-
 }

@@ -5,7 +5,7 @@ import com.ptsmods.morecommands.callbacks.PlayerConnectionCallback;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.MessageType;
 import net.minecraft.screen.AnvilScreenHandler;

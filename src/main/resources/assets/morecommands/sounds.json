@@ -6,9 +6,9 @@
 	  "morecommands:copy3"
 	]
   },
-  "easteregg": {
+  "ee": {
 	"sounds": [
-	  "morecommands:easteregg"
+	  "morecommands:ee"
 	]
   }
 }

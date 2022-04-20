@@ -1,8 +1,12 @@
 package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.ptsmods.morecommands.api.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinBlockBoxAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.CachedBlockPosition;
@@ -19,6 +23,7 @@ import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +39,21 @@ public class FillCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        try {
+            Field childrenField = CommandNode.class.getDeclaredField("children");
+            childrenField.setAccessible(true);
+            Map<String, CommandNode<ServerCommandSource>> children = (Map<String, CommandNode<ServerCommandSource>>) childrenField.get(dispatcher.getRoot());
+
+            Field literalsField = CommandNode.class.getDeclaredField("literals");
+            literalsField.setAccessible(true);
+            Map<String, LiteralCommandNode<ServerCommandSource>> literals = (Map<String, LiteralCommandNode<ServerCommandSource>>) literalsField.get(dispatcher.getRoot());
+
+            children.remove("fill");
+            literals.remove("fill");
+        } catch (Exception e) {
+            log.error("Could not unregister fill command.", e);
+        }
+
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			List<Runnable> copy = new ArrayList<>(tasks);
 			tasks.clear();
@@ -45,12 +65,14 @@ public class FillCommand extends Command {
 				}
 				else queue.put(entry.getKey(), entry.getValue() - 1);
 		});
+
+        Compat compat = CompatHolder.getCompat();
 		dispatcher.register(literalReqOp("fill")
 				.then(CommandManager.argument("from", BlockPosArgumentType.blockPos())
 						.then(CommandManager.argument("to", BlockPosArgumentType.blockPos())
-								.then(CommandManager.argument("block", BlockStateArgumentType.blockState()).executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, null))
+								.then(CommandManager.argument("block", compat.createBlockStateArgumentType()).executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, null))
 										.then(literal("replace").executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, null))
-												.then(CommandManager.argument("filter", BlockPredicateArgumentType.blockPredicate()).executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, BlockPredicateArgumentType.getBlockPredicate(commandContext, "filter")))))
+												.then(CommandManager.argument("filter", compat.createBlockStateArgumentType()).executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, BlockPredicateArgumentType.getBlockPredicate(commandContext, "filter")))))
 										.then(literal("keep").executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.REPLACE, (cachedBlockPosition) -> cachedBlockPosition.getWorld().isAir(cachedBlockPosition.getBlockPos()))))
 										.then(literal("outline").executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.OUTLINE, null)))
 										.then(literal("hollow").executes((commandContext) -> execute(commandContext.getSource(), newBlockBox(BlockPosArgumentType.getLoadedBlockPos(commandContext, "from"), BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.HOLLOW, null)))

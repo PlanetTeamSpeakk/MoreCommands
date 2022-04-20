@@ -2,9 +2,11 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.entity.attribute.*;
+import net.minecraft.entity.attribute.ClampedEntityAttribute;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,7 +24,7 @@ public class ReachCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		if (MoreCommands.isServerOnly()) dispatcher.register(literalReqOp("reach").executes(ctx -> {
+		if (IMoreCommands.get().isServerOnly()) dispatcher.register(literalReqOp("reach").executes(ctx -> {
 			sendError(ctx, "Reach cannot be used in server only mode.");
 			return 0;
 		}));

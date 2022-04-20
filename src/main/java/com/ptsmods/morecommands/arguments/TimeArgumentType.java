@@ -11,30 +11,44 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime>, ServerSideArgumentType {
-
+public class TimeArgumentType implements CompatArgumentType<TimeArgumentType, String, ConstantSerialiser.ConstantProperties<TimeArgumentType, String>> {
+    public static final ConstantSerialiser<TimeArgumentType, String> SERIALISER = new ConstantSerialiser<>(TimeArgumentType::new);
 	private static final SimpleCommandExceptionType PARSE_EXCEPTION = new SimpleCommandExceptionType(() -> "The given value could not be parsed into time");
 	private static final SimpleCommandExceptionType HOURS_EXCEPTION = new SimpleCommandExceptionType(() -> "Days only have 24 hours, silly");
 	private static final SimpleCommandExceptionType MINUTES_EXCEPTION = new SimpleCommandExceptionType(() -> "Hours only have 60 minutes, silly");
 	private static final SimpleCommandExceptionType TICKS_EXCEPTION = new SimpleCommandExceptionType(() -> "Minecraft days only have 24000 ticks, silly");
 	private static final Map<String, Integer> literals = ImmutableMap.<String, Integer>builder().put("day", 1000).put("noon", 6000).put("night", 13000).put("midnight", 18000).build();
 
+    private TimeArgumentType() {}
+
+    public static TimeArgumentType time() {
+        return new TimeArgumentType();
+    }
+
+    public static WorldTime getTime(CommandContext<?> ctx, String argName) {
+        String timeString = ctx.getArgument(argName, String.class);
+
+        boolean fixed = timeString.startsWith("@");
+        return new WorldTime(Integer.parseInt(fixed ? timeString.substring(1) : timeString), fixed);
+    }
+
 	@Override
-	public WorldTime parse(StringReader reader) throws CommandSyntaxException {
+	public String parse(StringReader reader) throws CommandSyntaxException {
 		String s = MoreCommands.readTillSpaceOrEnd(reader);
 		if (MoreCommands.isInteger(s)) {
 			int i = Integer.parseInt(s);
 			if (i >= 24000) throw TICKS_EXCEPTION.createWithContext(reader);
-			else return new WorldTime(i, false);
+			else return "" + i;
 		} else if (s.startsWith("@") && MoreCommands.isInteger(s.substring(1))) {
 			int i = Integer.parseInt(s.substring(1));
 			if (i >= 24000) throw TICKS_EXCEPTION.createWithContext(reader);
-			else return new WorldTime(i, true);
+			else return "@" + i;
 		} else if (s.contains(":")) {
 			boolean fixed = s.startsWith("@");
 			if (fixed) s = s.substring(1);
@@ -48,11 +62,11 @@ public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime
 			minutes += Integer.parseInt(s.split(":")[1]);
 			if (hours >= 24) throw HOURS_EXCEPTION.createWithContext(reader);
 			else if (minutes >= 60) throw MINUTES_EXCEPTION.createWithContext(reader);
-			return new WorldTime(timeToTicks(hours, minutes), fixed);
+			return (fixed ? "@" : "") + timeToTicks(hours, minutes);
 		} else {
 			boolean fixed = s.startsWith("@");
 			if (fixed) s = s.substring(1);
-			if (literals.containsKey(s.toLowerCase())) return new WorldTime(literals.get(s.toLowerCase()), fixed);
+			if (literals.containsKey(s.toLowerCase())) return (fixed ? "@" : "") + literals.get(s.toLowerCase());
 		}
 		throw PARSE_EXCEPTION.createWithContext(reader);
 	}
@@ -112,11 +126,16 @@ public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime
 	}
 
 	@Override
-	public ArgumentType<?> toVanillaArgumentType() {
+	public ArgumentType<String> toVanillaArgumentType() {
 		return StringArgumentType.word();
 	}
 
-	public static class WorldTime {
+    @Override
+    public ConstantSerialiser.ConstantProperties<TimeArgumentType, String> getProperties() {
+        return SERIALISER.getProperties();
+    }
+
+    public static class WorldTime {
 
 		private final int time;
 		private final boolean fixed;
@@ -133,7 +152,5 @@ public class TimeArgumentType implements ArgumentType<TimeArgumentType.WorldTime
 		public boolean isFixed() {
 			return fixed;
 		}
-
 	}
-
 }

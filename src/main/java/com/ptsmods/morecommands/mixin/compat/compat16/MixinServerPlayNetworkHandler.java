@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
-import com.ptsmods.morecommands.compat.Compat;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.util.MixinMethods;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +18,6 @@ public class MixinServerPlayNetworkHandler {
 
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "method_31286(Ljava/lang/String;)V", remap = false)
     public char method_31286_charAt(String string, int index) {
-        return Compat.getCompat().gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
+        return MixinMethods.gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
     }
 }

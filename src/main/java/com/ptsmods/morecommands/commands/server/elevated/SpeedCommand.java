@@ -7,9 +7,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerAbilitiesAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.attribute.*;
@@ -34,7 +34,7 @@ public class SpeedCommand extends Command {
 	}
 
 	private SpeedType determineSpeedType(ServerPlayerEntity player) {
-		return player.isSubmergedInWater() ? SpeedType.SWIM : Compat.getCompat().getAbilities(player).flying ? SpeedType.FLY : SpeedType.WALK;
+		return player.isSubmergedInWater() ? SpeedType.SWIM : ((MixinPlayerEntityAccessor) player).getAbilities_().flying ? SpeedType.FLY : SpeedType.WALK;
 	}
 
 	private int setSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, float speed, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
@@ -72,9 +72,9 @@ public class SpeedCommand extends Command {
 			attr.addPersistentModifier(new EntityAttributeModifier(speedModId, "MoreCommands Speed Modifier", speed - 1, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
 		}, player -> Optional.ofNullable(Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getModifier(player.getDataTracker().get(DataTrackerHelper.SPEED_MODIFIER).orElseThrow(() -> new AssertionError("This shouldn't happen.")))).map(attr -> attr.getValue() + 1).orElse(1D)),
 		FLY((player, speed) -> {
-			((MixinPlayerAbilitiesAccessor) Compat.getCompat().getAbilities(player)).setFlySpeed_((float) (speed / 20));
+			((MixinPlayerAbilitiesAccessor) ((MixinPlayerEntityAccessor) player).getAbilities_()).setFlySpeed_((float) (speed / 20));
 			player.sendAbilitiesUpdate();
-		}, player -> Compat.getCompat().getAbilities(player).getFlySpeed() * 20D),
+		}, player -> ((MixinPlayerEntityAccessor) player).getAbilities_().getFlySpeed() * 20D),
 		SWIM((player, speed) -> Objects.requireNonNull(player.getAttributeInstance(Nested.swimSpeedAttribute)).setBaseValue(speed), player -> player.getAttributeValue(Nested.swimSpeedAttribute));
 
 		public static final EntityAttribute swimSpeedAttribute = Nested.swimSpeedAttribute;

@@ -1,29 +1,38 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity {
 
-	@Inject(at = @At("HEAD"), method = "canWalkOnFluid", cancellable = true)
+    @Group(name = "canWalkOnFluid", min = 1, max = 1)
+	@Inject(at = @At("HEAD"), method = "method_26319(Lnet/minecraft/class_3611;)Z", remap = false, cancellable = true)
 	public void canWalkOnFluid(Fluid fluid, CallbackInfoReturnable<Boolean> cbi) {
-		if (ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS)) cbi.setReturnValue(true);
+        if (canWalkOnFluid()) cbi.setReturnValue(true);
 	}
+
+    @Group(name = "canWalkOnFluid", min = 1, max = 1)
+    @Inject(at = @At("HEAD"), method = "canWalkOnFluid", cancellable = true)
+    public void canWalkOnFluid(FluidState fluidState, CallbackInfoReturnable<Boolean> cbi) {
+        if (canWalkOnFluid()) cbi.setReturnValue(true);
+    }
+
+    private boolean canWalkOnFluid() {
+        return ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS);
+    }
 
 	// Data related mixins
 	@SuppressWarnings("rawtypes")

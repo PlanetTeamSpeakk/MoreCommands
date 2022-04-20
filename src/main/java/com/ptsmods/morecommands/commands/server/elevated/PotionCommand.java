@@ -45,18 +45,18 @@ public class PotionCommand extends Command {
 				return effects.size()+1;
 			}
 			return 0;
-		}))).then(literal("settype").then(argument("type", new PotionArgumentType()).executes(ctx -> {
+		}))).then(literal("settype").then(argument("type", PotionArgumentType.potion()).executes(ctx -> {
 			ItemStack stack = checkHeldItem(ctx);
 			Potion old = PotionUtil.getPotion(stack);
-			PotionUtil.setPotion(stack, ctx.getArgument("type", Potion.class));
+			PotionUtil.setPotion(stack, PotionArgumentType.getPotion(ctx, "type"));
 			sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtil.getPotion(stack)) + DF + ".");
 			return 1;
-		}))).then(literal("setcolour").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour)))
-		.then(literal("setcolor").then(argument("colour", new HexIntegerArgumentType()).executes(this::executeSetColour))));
+		}))).then(literal("setcolour").then(argument("colour", HexIntegerArgumentType.hexInt()).executes(this::executeSetColour)))
+		.then(literal("setcolor").then(argument("colour", HexIntegerArgumentType.hexInt()).executes(this::executeSetColour))));
 	}
 
 	private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		int colour = ctx.getArgument("colour", Integer.class);
+		int colour = HexIntegerArgumentType.getHexInt(ctx, "colour");
 		ItemStack stack = checkHeldItem(ctx);
 		stack.getOrCreateNbt().putInt("CustomPotionColor", colour);
 		sendMsg(ctx, new LiteralText("The potion's colour has been set to ").setStyle(DS).append(new LiteralText(String.format("#%06X", colour)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))).append(new LiteralText(".").setStyle(DS))));

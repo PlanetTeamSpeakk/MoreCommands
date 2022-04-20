@@ -1,9 +1,9 @@
 plugins {
-	id "fabric-loom" version "0.10-SNAPSHOT"
-	id "com.github.johnrengelman.shadow" version "7.0.0"
+	id "fabric-loom" version "0.11-SNAPSHOT"
 	id "maven-publish"
 }
 
+// Targeting Java 1.8 because we support Minecraft 1.16 (for now)
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -11,23 +11,19 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-shadowJar {
-	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version}.${archiveExtension.get()}"
-	from remapJar
-	configurations = [project.configurations.shadow] // Only take dependencies that are included with 'shadow' in the dependencies section.
-	exclude("/mappings/") // Included within project.configurations.implementation for some reason.
-	exclude("/com/sun/") // This dependency is shadowed within the DRPC library, but it already exists on Minecraft's classpath by default, so to save space, it is excluded.
-	exclude("/META-INF/maven/") // Unnecessary
-	exclude("/LICENSE")
+remapJar {
+    archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${project.minecraft_version_least}-${project.minecraft_version}.${archiveExtension.get()}"
 }
-
-shadowJar.dependsOn remapJar
-tasks.build.dependsOn shadowJar
 
 repositories {
 	mavenCentral()
 	maven { url "https://jitpack.io" }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+	maven { url 'https://maven.terraformersmc.com/releases/' }
+	maven { url "https://maven.nucleoid.xyz/" }
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 dependencies {
@@ -35,12 +31,22 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "io.github.prospector:modmenu:v2.0.0-beta.4"
+
+	modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
 	modImplementation "com.ptsmods:devlogin:2.0"
-	modImplementation 'me.lucko:fabric-permissions-api:0.1-SNAPSHOT'
-	shadow implementation("com.github.Chocohead:Fabric-ASM:v2.3")
-	shadow implementation("com.github.Vatuu:discord-rpc:1.6.2")
-	shadow implementation("com.esotericsoftware:reflectasm:1.11.9")
+	modImplementation "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
+	modImplementation "com.github.astei:lazydfu:0.1.2"
+
+	implementation include("com.github.Chocohead:Fabric-ASM:v2.3")
+	implementation include(name: "discord-rpc-1.6.2")
+	modImplementation include("eu.pb4:placeholder-api:0.3.0")
+
+    implementation include(project(path: 'api', configuration: 'namedElements'))
+    implementation include(project(path: 'compat:compat16', configuration: 'namedElements'))
+    implementation include(project(path: 'compat:compat17', configuration: 'namedElements'))
+    implementation include(project(path: 'compat:compat18', configuration: 'namedElements'))
+    implementation include(project(path: 'compat:compat182', configuration: 'namedElements'))
+    implementation include(project(path: 'compat:compat19', configuration: 'namedElements'))
 }
 
 processResources {

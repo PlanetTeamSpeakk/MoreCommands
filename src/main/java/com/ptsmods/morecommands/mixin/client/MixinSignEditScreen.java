@@ -2,9 +2,9 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.compat.client.ClientCompat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.util.ReflectionHelper;
+import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.SelectionManager;
@@ -13,7 +13,10 @@ import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -36,7 +39,7 @@ public class MixinSignEditScreen {
 	@Inject(at = @At("RETURN"), method = "init()V")
 	private void init(CallbackInfo cbi) {
 		SignEditScreen thiz = ReflectionHelper.cast(this);
-		ClientCompat.getCompat().addButton(thiz, mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, new LiteralText("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
+        ((ScreenAddon) thiz).mc$addButton(mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, new LiteralText("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
 			mc_translateFormattings = !mc_translateFormattings;
 			mc_updateBtn();
 		}) {

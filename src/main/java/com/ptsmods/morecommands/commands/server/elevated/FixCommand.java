@@ -5,7 +5,6 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
 
 public class FixCommand extends Command {
 	@Override

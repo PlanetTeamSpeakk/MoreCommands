@@ -3,14 +3,13 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Formatting;
 
 public class DimensionCommand extends Command {
 	@Override
@@ -22,7 +21,7 @@ public class DimensionCommand extends Command {
 
 	private int execute(CommandContext<ServerCommandSource> ctx, ServerWorld world, Entity entity) {
 		if (entity.getEntityWorld() != world) {
-			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), Compat.getCompat().getEntityYaw(entity), Compat.getCompat().getEntityPitch(entity));
+			MoreCommands.teleport(entity, world, entity.getX(), entity.getY(), entity.getZ(), ((MixinEntityAccessor) entity).getYaw_(), ((MixinEntityAccessor) entity).getPitch_());
 			return 1;
 		}
 		sendError(ctx, "The targeted entity is already in that world.");

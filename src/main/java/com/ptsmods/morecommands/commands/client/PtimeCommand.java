@@ -39,8 +39,8 @@ public class PtimeCommand extends ClientCommand {
 			serverTime = -1;
 			sendMsg("Time is now synchronised with the server time.");
 			return 1;
-		})).then(cArgument("time", new TimeArgumentType()).executes(ctx -> {
-			TimeArgumentType.WorldTime worldTime = ctx.getArgument("time", TimeArgumentType.WorldTime.class);
+		})).then(cArgument("time", TimeArgumentType.time()).executes(ctx -> {
+			TimeArgumentType.WorldTime worldTime = TimeArgumentType.getTime(ctx, "time");
 			if (time != -1) setServerTime(MinecraftClient.getInstance().world.getTimeOfDay());
 			time = worldTime.getTime();
 			fixed = worldTime.isFixed();
