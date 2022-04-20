@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(LootTable.class)
 public interface MixinLootTableAccessor {
 
-    @Accessor
-    LootPool[] getPools();
+	@Accessor
+	LootPool[] getPools();
 }

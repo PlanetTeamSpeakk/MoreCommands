@@ -34,7 +34,7 @@ public class MixinServerPlayerInteractionManager {
 		// If MAY_FLY is false, let the gamemode decide whether the player may fly or not.
 		// If we just straight up set it to the value of MAY_FLY, the player would never be able to fly, not even in creative, when flight is disabled with the /fly command even when you switch gamemode.
 		// Spectators can always fly, they'll fall through the map otherwise.
-        MixinPlayerEntityAccessor accessor = (MixinPlayerEntityAccessor) player;
+		MixinPlayerEntityAccessor accessor = (MixinPlayerEntityAccessor) player;
 
 		if (player.getDataTracker().get(DataTrackerHelper.MAY_FLY) || gameMode == GameMode.SPECTATOR) accessor.getAbilities_().allowFlying = true;
 		if (accessor.getAbilities_().allowFlying) accessor.getAbilities_().flying = mc_isFlying;

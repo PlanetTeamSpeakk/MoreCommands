@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 public abstract class ClientOption<T> {
 	private static final Map<ClientOptionCategory, Map<String, ClientOption<?>>> options = new LinkedHashMap<>();
-    private final ClientOptionCategory category;
-    private final String name;
+	private final ClientOptionCategory category;
+	private final String name;
 	private T value;
 	private final T defaultValue;
 	private final BiConsumer<T, T> updateConsumer;
@@ -25,38 +25,38 @@ public abstract class ClientOption<T> {
 		this(category, name, defaultValue, null, (String[]) null);
 	}
 
-    ClientOption(ClientOptionCategory category, String name, T defaultValue, BiConsumer<T, T> updateConsumer) {
+	ClientOption(ClientOptionCategory category, String name, T defaultValue, BiConsumer<T, T> updateConsumer) {
 		this(category, name, defaultValue, updateConsumer, (String[]) null);
 	}
 
-    ClientOption(ClientOptionCategory category, String name, T defaultValue, String... comments) {
+	ClientOption(ClientOptionCategory category, String name, T defaultValue, String... comments) {
 		this(category, name, defaultValue, null, comments);
 	}
 
-    ClientOption(ClientOptionCategory category, String name, T defaultValue, BiConsumer<T, T> updateConsumer, String... comments) {
-        this.category = category;
-        this.name = name;
+	ClientOption(ClientOptionCategory category, String name, T defaultValue, BiConsumer<T, T> updateConsumer, String... comments) {
+		this.category = category;
+		this.name = name;
 		this.value = this.defaultValue = defaultValue;
 		this.updateConsumer = updateConsumer;
 		this.comments = comments == null ? null : ImmutableList.copyOf(comments);
 
-        options.computeIfAbsent(category, t -> new LinkedHashMap<>()).put(name, this);
+		options.computeIfAbsent(category, t -> new LinkedHashMap<>()).put(name, this);
 	}
 
-    public ClientOptionCategory getCategory() {
-        return category;
-    }
+	public ClientOptionCategory getCategory() {
+		return category;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getKey() {
-        String key = name.replace(" ", "");
-        return key.substring(0, 1).toLowerCase(Locale.ROOT) + key.substring(1);
-    }
+	public String getKey() {
+		String key = name.replace(" ", "");
+		return key.substring(0, 1).toLowerCase(Locale.ROOT) + key.substring(1);
+	}
 
-    public void setDisabled(boolean b) {
+	public void setDisabled(boolean b) {
 		disabled = b;
 	}
 
@@ -102,13 +102,13 @@ public abstract class ClientOption<T> {
 		options.values().forEach(m -> m.values().forEach(ClientOption::reset));
 	}
 
-    public static Map<ClientOptionCategory, Map<String, ClientOption<?>>> getOptions() {
-        return options.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> ImmutableMap.copyOf(entry.getValue())));
-    }
+	public static Map<ClientOptionCategory, Map<String, ClientOption<?>>> getOptions() {
+		return options.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> ImmutableMap.copyOf(entry.getValue())));
+	}
 
-    public static Map<String, ClientOption<?>> getUnmappedOptions() {
-        return getOptions().values().stream()
-                .flatMap(m -> m.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
-    }
+	public static Map<String, ClientOption<?>> getUnmappedOptions() {
+		return getOptions().values().stream()
+				.flatMap(m -> m.entrySet().stream())
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
+	}
 }

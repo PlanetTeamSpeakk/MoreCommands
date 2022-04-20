@@ -17,29 +17,29 @@ import java.io.InputStream;
 
 public class ClientCompat19 extends ClientCompat17 {
 
-    @Override
-    public ChatVisibility getChatVisibility(GameOptions options) {
-        return options.getChatVisibility().getValue();
-    }
+	@Override
+	public ChatVisibility getChatVisibility(GameOptions options) {
+		return options.getChatVisibility().getValue();
+	}
 
-    @Override
-    public double getChatLineSpacing(GameOptions options) {
-        return options.getChatLineSpacing().getValue();
-    }
+	@Override
+	public double getChatLineSpacing(GameOptions options) {
+		return options.getChatLineSpacing().getValue();
+	}
 
-    @Override
-    public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
-        return interactionManager.interactBlock(player, hand, hit);
-    }
+	@Override
+	public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
+		return interactionManager.interactBlock(player, hand, hit);
+	}
 
-    @Override
-    public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
-        Resource res = manager.getResource(id).orElse(null);
-        return res == null ? null : res.getInputStream();
-    }
+	@Override
+	public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
+		Resource res = manager.getResource(id).orElse(null);
+		return res == null ? null : res.getInputStream();
+	}
 
-    @Override
-    public double getGamma(GameOptions options) {
-        return options.getGamma().getValue();
-    }
+	@Override
+	public double getGamma(GameOptions options) {
+		return options.getGamma().getValue();
+	}
 }

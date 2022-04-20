@@ -15,7 +15,7 @@ public class WhoIsCommand extends Command {
 		dispatcher.register(literalReqOp("whois").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
 			ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 			sendMsg(ctx, "Info for player " + SF + MoreCommands.textToString(player.getDisplayName(), null, true));
-            sendMsg(ctx, "UUID: " + SF + player.getUuidAsString());
+			sendMsg(ctx, "UUID: " + SF + player.getUuidAsString());
 			sendMsg(ctx, "World: " + SF + player.getWorld().getRegistryKey().getValue().toString());
 			sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
 			sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getYaw_()) + DF + ", " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getPitch_()));

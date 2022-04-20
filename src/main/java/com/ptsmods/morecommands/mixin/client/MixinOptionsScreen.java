@@ -25,13 +25,13 @@ public class MixinOptionsScreen extends Screen {
 	@Inject(at = @At("TAIL"), method = "init()V")
 	public void init(CallbackInfo cbi) {
 		int x, y;
-		//  under accessibility settings                                                     under resourcepacks
+		//  under accessibility settings													 under resourcepacks
 		if (getButtonAt(x = this.width / 2 + 5, y = this.height / 6 + 144 - 6) != null && getButtonAt(x = this.width / 2 - 155, y) != null) {
 			x = this.width / 2 + 5; // above sounds
 			y = this.height / 6 + 24 - 6;
 		}
 
-        ((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
+		((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
 	}
 
 	@Unique

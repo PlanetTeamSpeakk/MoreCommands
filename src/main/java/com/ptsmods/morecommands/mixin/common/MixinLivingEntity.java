@@ -18,21 +18,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity {
 
-    @Group(name = "canWalkOnFluid", min = 1, max = 1)
+	@Group(name = "canWalkOnFluid", min = 1, max = 1)
 	@Inject(at = @At("HEAD"), method = "method_26319(Lnet/minecraft/class_3611;)Z", remap = false, cancellable = true)
 	public void canWalkOnFluid(Fluid fluid, CallbackInfoReturnable<Boolean> cbi) {
-        if (canWalkOnFluid()) cbi.setReturnValue(true);
+		if (canWalkOnFluid()) cbi.setReturnValue(true);
 	}
 
-    @Group(name = "canWalkOnFluid", min = 1, max = 1)
-    @Inject(at = @At("HEAD"), method = "canWalkOnFluid", cancellable = true)
-    public void canWalkOnFluid(FluidState fluidState, CallbackInfoReturnable<Boolean> cbi) {
-        if (canWalkOnFluid()) cbi.setReturnValue(true);
-    }
+	@Group(name = "canWalkOnFluid", min = 1, max = 1)
+	@Inject(at = @At("HEAD"), method = "canWalkOnFluid", cancellable = true)
+	public void canWalkOnFluid(FluidState fluidState, CallbackInfoReturnable<Boolean> cbi) {
+		if (canWalkOnFluid()) cbi.setReturnValue(true);
+	}
 
-    private boolean canWalkOnFluid() {
-        return ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS);
-    }
+	private boolean canWalkOnFluid() {
+		return ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS);
+	}
 
 	// Data related mixins
 	@SuppressWarnings("rawtypes")

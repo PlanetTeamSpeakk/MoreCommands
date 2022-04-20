@@ -17,17 +17,17 @@ import net.minecraft.world.World;
 import java.util.Objects;
 
 public class SpawnCommand extends Command {
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literalReq("spawn").executes(ctx -> execute(ctx, null))
-                .then(argument("player", EntityArgumentType.player()).requires(hasPermissionOrOp("morecommands.spawn.others")).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))));
-    }
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+		dispatcher.register(literalReq("spawn").executes(ctx -> execute(ctx, null))
+				.then(argument("player", EntityArgumentType.player()).requires(hasPermissionOrOp("morecommands.spawn.others")).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))));
+	}
 
-    private int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) throws CommandSyntaxException {
-        Entity entity = player == null ? ctx.getSource().getEntityOrThrow() : player;
-        ServerWorld world = Objects.requireNonNull(ctx.getSource().getServer().getWorld(World.OVERWORLD));
-        MoreCommands.teleport(entity, world, Vec3d.ofCenter(world.getSpawnPos()), entity.getYaw(), entity.getPitch());
-        if (player != null) sendMsg(player, new LiteralText("You have been teleported to spawn by ").setStyle(DS).append(ctx.getSource().getDisplayName()).append("."));
-        return 1;
-    }
+	private int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) throws CommandSyntaxException {
+		Entity entity = player == null ? ctx.getSource().getEntityOrThrow() : player;
+		ServerWorld world = Objects.requireNonNull(ctx.getSource().getServer().getWorld(World.OVERWORLD));
+		MoreCommands.teleport(entity, world, Vec3d.ofCenter(world.getSpawnPos()), entity.getYaw(), entity.getPitch());
+		if (player != null) sendMsg(player, new LiteralText("You have been teleported to spawn by ").setStyle(DS).append(ctx.getSource().getDisplayName()).append("."));
+		return 1;
+	}
 }

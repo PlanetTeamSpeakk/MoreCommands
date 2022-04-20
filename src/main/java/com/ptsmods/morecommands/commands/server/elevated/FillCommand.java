@@ -39,20 +39,20 @@ public class FillCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        try {
-            Field childrenField = CommandNode.class.getDeclaredField("children");
-            childrenField.setAccessible(true);
-            Map<String, CommandNode<ServerCommandSource>> children = (Map<String, CommandNode<ServerCommandSource>>) childrenField.get(dispatcher.getRoot());
+		try {
+			Field childrenField = CommandNode.class.getDeclaredField("children");
+			childrenField.setAccessible(true);
+			Map<String, CommandNode<ServerCommandSource>> children = (Map<String, CommandNode<ServerCommandSource>>) childrenField.get(dispatcher.getRoot());
 
-            Field literalsField = CommandNode.class.getDeclaredField("literals");
-            literalsField.setAccessible(true);
-            Map<String, LiteralCommandNode<ServerCommandSource>> literals = (Map<String, LiteralCommandNode<ServerCommandSource>>) literalsField.get(dispatcher.getRoot());
+			Field literalsField = CommandNode.class.getDeclaredField("literals");
+			literalsField.setAccessible(true);
+			Map<String, LiteralCommandNode<ServerCommandSource>> literals = (Map<String, LiteralCommandNode<ServerCommandSource>>) literalsField.get(dispatcher.getRoot());
 
-            children.remove("fill");
-            literals.remove("fill");
-        } catch (Exception e) {
-            log.error("Could not unregister fill command.", e);
-        }
+			children.remove("fill");
+			literals.remove("fill");
+		} catch (Exception e) {
+			log.error("Could not unregister fill command.", e);
+		}
 
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			List<Runnable> copy = new ArrayList<>(tasks);
@@ -66,7 +66,7 @@ public class FillCommand extends Command {
 				else queue.put(entry.getKey(), entry.getValue() - 1);
 		});
 
-        Compat compat = CompatHolder.getCompat();
+		Compat compat = CompatHolder.getCompat();
 		dispatcher.register(literalReqOp("fill")
 				.then(CommandManager.argument("from", BlockPosArgumentType.blockPos())
 						.then(CommandManager.argument("to", BlockPosArgumentType.blockPos())

@@ -151,7 +151,7 @@ public class InfoHud extends DrawableHelper {
 					case "yaw": {output = "" + MathHelper.wrapDegrees(((MixinEntityAccessor) mc.player).getYaw_()); break;}
 					case "pitch": {output = "" + MathHelper.wrapDegrees(((MixinEntityAccessor) mc.player).getPitch_()); break;}
 					case "biome": {output = Objects.requireNonNull(CompatHolder.getCompat().getRegistry(mc.world.getRegistryManager(), Registry.BIOME_KEY)
-                            .getId(CompatHolder.getCompat().getBiome(mc.world, mc.player.getBlockPos()))).toString(); break;}
+							.getId(CompatHolder.getCompat().getBiome(mc.world, mc.player.getBlockPos()))).toString(); break;}
 					case "difficulty": {output = mc.world.getLevelProperties().getDifficulty().name(); break;}
 					case "blocksPerSec": {output = MoreCommands.formatDouble(MoreCommandsClient.getSpeed()) + " blocks/sec"; break;}
 					case "avgSpeed": {output = MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed()) + " blocks/sec"; break;}
@@ -181,14 +181,14 @@ public class InfoHud extends DrawableHelper {
 					default: break;
 				}
 			} catch (Exception e) {
-                if (e.getStackTrace().length != 0) {
+				if (e.getStackTrace().length != 0) {
 
-                    StackTraceElement element = e.getStackTrace()[0];
-                    if (!printedExceptions.contains(element)) {
-                        MoreCommands.LOG.catching(e);
-                        printedExceptions.add(element);
-                    }
-                }
+					StackTraceElement element = e.getStackTrace()[0];
+					if (!printedExceptions.contains(element)) {
+						MoreCommands.LOG.catching(e);
+						printedExceptions.add(element);
+					}
+				}
 				output = "ERROR";
 			}
 		return output;

@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
-    @Shadow @Final private String[] text;
+	@Shadow @Final private String[] text;
 
-    @Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/class_2625;)V", remap = false)
-    private void init(SignBlockEntity sbe, CallbackInfo cbi) {
-        Text[] text = ((MixinSignBlockEntityAccessor) sbe).getTexts();
-        for (int i = 0; i < text.length; i++)
-            this.text[i] = MoreCommands.textToString(text[i], null, true).replace("\u00A7", "&");
-    }
+	@Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/class_2625;)V", remap = false)
+	private void init(SignBlockEntity sbe, CallbackInfo cbi) {
+		Text[] text = ((MixinSignBlockEntityAccessor) sbe).getTexts();
+		for (int i = 0; i < text.length; i++)
+			this.text[i] = MoreCommands.textToString(text[i], null, true).replace("\u00A7", "&");
+	}
 }

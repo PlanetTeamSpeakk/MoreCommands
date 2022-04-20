@@ -16,7 +16,7 @@ import java.util.Collection;
 
 // Doesn't care what characters you put in an unquoted string.
 public class IgnorantStringArgumentType implements ArgumentType<String>, CompatArgumentType<IgnorantStringArgumentType, String, IgnorantStringArgumentType.Properties> {
-    public static final Serialiser SERIALISER = new Serialiser();
+	public static final Serialiser SERIALISER = new Serialiser();
 	private final StringArgumentType.StringType type;
 
 	private IgnorantStringArgumentType(StringArgumentType.StringType type) {
@@ -58,45 +58,45 @@ public class IgnorantStringArgumentType implements ArgumentType<String>, CompatA
 		return type == StringArgumentType.StringType.GREEDY_PHRASE ? StringArgumentType.greedyString() : type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() : StringArgumentType.string();
 	}
 
-    @Override
-    public Properties getProperties() {
-        return new Properties(type);
-    }
+	@Override
+	public Properties getProperties() {
+		return new Properties(type);
+	}
 
-    public static class Serialiser implements ArgumentTypeSerialiser<IgnorantStringArgumentType, String, Properties> {
-        private Serialiser() {}
+	public static class Serialiser implements ArgumentTypeSerialiser<IgnorantStringArgumentType, String, Properties> {
+		private Serialiser() {}
 
-        @Override
-        public IgnorantStringArgumentType fromPacket(PacketByteBuf buf) {
-            return new IgnorantStringArgumentType(buf.readEnumConstant(StringArgumentType.StringType.class));
-        }
+		@Override
+		public IgnorantStringArgumentType fromPacket(PacketByteBuf buf) {
+			return new IgnorantStringArgumentType(buf.readEnumConstant(StringArgumentType.StringType.class));
+		}
 
-        @Override
-        public void writeJson(Properties properties, JsonObject json) {
-            json.addProperty("type", properties.type.name());
-        }
-    }
+		@Override
+		public void writeJson(Properties properties, JsonObject json) {
+			json.addProperty("type", properties.type.name());
+		}
+	}
 
-    public static class Properties implements ArgumentTypeProperties<IgnorantStringArgumentType, String, Properties> {
-        public final StringArgumentType.StringType type;
+	public static class Properties implements ArgumentTypeProperties<IgnorantStringArgumentType, String, Properties> {
+		public final StringArgumentType.StringType type;
 
-        public Properties(StringArgumentType.StringType type) {
-            this.type = type;
-        }
+		public Properties(StringArgumentType.StringType type) {
+			this.type = type;
+		}
 
-        @Override
-        public IgnorantStringArgumentType createType() {
-            return new IgnorantStringArgumentType(type);
-        }
+		@Override
+		public IgnorantStringArgumentType createType() {
+			return new IgnorantStringArgumentType(type);
+		}
 
-        @Override
-        public ArgumentTypeSerialiser<IgnorantStringArgumentType, String, Properties> getSerialiser() {
-            return SERIALISER;
-        }
+		@Override
+		public ArgumentTypeSerialiser<IgnorantStringArgumentType, String, Properties> getSerialiser() {
+			return SERIALISER;
+		}
 
-        @Override
-        public void write(PacketByteBuf buf) {
-            buf.writeEnumConstant(type);
-        }
-    }
+		@Override
+		public void write(PacketByteBuf buf) {
+			buf.writeEnumConstant(type);
+		}
+	}
 }

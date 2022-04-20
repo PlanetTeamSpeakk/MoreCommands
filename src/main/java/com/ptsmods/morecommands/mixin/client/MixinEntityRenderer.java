@@ -19,18 +19,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(EntityRenderer.class)
 public class MixinEntityRenderer<T extends Entity> {
-    @Shadow @Final protected EntityRenderDispatcher dispatcher;
+	@Shadow @Final protected EntityRenderDispatcher dispatcher;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderer;renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"), method = "render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
-    public void render_renderLabelIfPresent(EntityRenderer<?> thiz, T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-        if (MoreCommands.isCute(entity)) text = text.shallowCopy().append(new LiteralText(" \u2764").setStyle(Style.EMPTY.withFormatting(Formatting.DARK_PURPLE))).append(new LiteralText(" cutie").setStyle(Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE, Formatting.BOLD)));
-        renderLabelIfPresent(entity, text, matrices, vertexConsumers, light);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderer;renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"), method = "render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
+	public void render_renderLabelIfPresent(EntityRenderer<?> thiz, T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+		if (MoreCommands.isCute(entity)) text = text.shallowCopy().append(new LiteralText(" \u2764").setStyle(Style.EMPTY.withFormatting(Formatting.DARK_PURPLE))).append(new LiteralText(" cutie").setStyle(Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE, Formatting.BOLD)));
+		renderLabelIfPresent(entity, text, matrices, vertexConsumers, light);
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isSneaky()Z"), method = "renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
-    public boolean renderLabelIfPresent_isSneaky(Entity entity) {
-        return !ClientOptions.Rendering.seeTagSneaking.getValue() && entity.isSneaky();
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isSneaky()Z"), method = "renderLabelIfPresent(Lnet/minecraft/entity/Entity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
+	public boolean renderLabelIfPresent_isSneaky(Entity entity) {
+		return !ClientOptions.Rendering.seeTagSneaking.getValue() && entity.isSneaky();
+	}
 
-    @Shadow protected void renderLabelIfPresent(T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {}
+	@Shadow protected void renderLabelIfPresent(T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {}
 }

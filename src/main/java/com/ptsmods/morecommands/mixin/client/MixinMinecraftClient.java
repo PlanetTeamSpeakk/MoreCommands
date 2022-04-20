@@ -68,10 +68,10 @@ public class MixinMinecraftClient {
 		PostInitCallback.EVENT.invoker().postInit();
 	}
 
-    @ModifyVariable(at = @At("STORE"), method = {"startIntegratedServer", "method_29610"}, require = 1, remap = false)
-    private ClientConnection startIntegratedServer_integratedServerConnectionNew(ClientConnection connection) {
-        if (MoreCommands.creatingWorld) MoreCommandsClient.scheduleWorldInitCommands = true;
-        MoreCommands.creatingWorld = false;
-        return connection;
-    }
+	@ModifyVariable(at = @At("STORE"), method = {"startIntegratedServer", "method_29610"}, require = 1, remap = false)
+	private ClientConnection startIntegratedServer_integratedServerConnectionNew(ClientConnection connection) {
+		if (MoreCommands.creatingWorld) MoreCommandsClient.scheduleWorldInitCommands = true;
+		MoreCommands.creatingWorld = false;
+		return connection;
+	}
 }

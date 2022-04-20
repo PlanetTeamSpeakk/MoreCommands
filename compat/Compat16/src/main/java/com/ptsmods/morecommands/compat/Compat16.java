@@ -45,130 +45,130 @@ import java.util.Random;
 import java.util.stream.DoubleStream;
 
 public class Compat16 implements Compat {
-    private static Map<Identifier, Object> blockTags = null;
+	private static Map<Identifier, Object> blockTags = null;
 
-    @Override
-    public boolean isRemoved(Entity entity) {
-        return entity.removed;
-    }
+	@Override
+	public boolean isRemoved(Entity entity) {
+		return entity.removed;
+	}
 
-    @Override
-    public void setRemoved(Entity entity, int reason) {
-        entity.removed = reason >= 0;
-    }
+	@Override
+	public void setRemoved(Entity entity, int reason) {
+		entity.removed = reason >= 0;
+	}
 
-    @Override
-    public PlayerInventory getInventory(PlayerEntity player) {
-        return player.inventory;
-    }
+	@Override
+	public PlayerInventory getInventory(PlayerEntity player) {
+		return player.inventory;
+	}
 
-    @Override
-    public boolean isInBuildLimit(World world, BlockPos pos) {
-        return World.isInBuildLimit(pos);
-    }
+	@Override
+	public boolean isInBuildLimit(World world, BlockPos pos) {
+		return World.isInBuildLimit(pos);
+	}
 
-    @Override
-    public Text toText(NbtElement tag) {
-        return tag.toText();
-    }
+	@Override
+	public Text toText(NbtElement tag) {
+		return tag.toText();
+	}
 
-    @Override
-    public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
-        ServerPlayerInteractionManager interactionManager = new ServerPlayerInteractionManager(world);
-        ServerPlayerEntity player = new ServerPlayerEntity(server, world, profile, interactionManager);
-        interactionManager.player = player;
-        return player;
-    }
+	@Override
+	public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
+		ServerPlayerInteractionManager interactionManager = new ServerPlayerInteractionManager(world);
+		ServerPlayerEntity player = new ServerPlayerEntity(server, world, profile, interactionManager);
+		interactionManager.player = player;
+		return player;
+	}
 
-    @Override
-    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.toTag(nbt);
-    }
+	@Override
+	public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
+		return logic.toTag(nbt);
+	}
 
-    @Override
-    public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        logic.fromTag(nbt);
-    }
+	@Override
+	public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
+		logic.fromTag(nbt);
+	}
 
-    @Override
-    public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
-        sbe.setEditor(player);
-    }
+	@Override
+	public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
+		sbe.setEditor(player);
+	}
 
-    @Override
-    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-        return manager.get(key);
-    }
+	@Override
+	public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
+		return manager.get(key);
+	}
 
-    @Override
-    public int getWorldHeight(BlockView world) {
-        return world.getHeight();
-    }
+	@Override
+	public int getWorldHeight(BlockView world) {
+		return world.getHeight();
+	}
 
-    @Override
-    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
-        FireballEntity fireball = new FireballEntity(world, owner, velocityX, velocityY, velocityZ);
-        fireball.explosionPower = explosionPower;
-        return fireball;
-    }
+	@Override
+	public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+		FireballEntity fireball = new FireballEntity(world, owner, velocityX, velocityY, velocityZ);
+		fireball.explosionPower = explosionPower;
+		return fireball;
+	}
 
-    @Override
-    public String getProcessorString() {
-        return String.valueOf(new SystemInfo().getHardware().getProcessors()[0]);
-    }
+	@Override
+	public String getProcessorString() {
+		return String.valueOf(new SystemInfo().getHardware().getProcessors()[0]);
+	}
 
-    @Override
-    public <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id) {
-        return registry.get(id) != null; // containsId is client-only
-    }
+	@Override
+	public <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id) {
+		return registry.get(id) != null; // containsId is client-only
+	}
 
-    @Override
-    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
-        player.setWorld(world);
-    }
+	@Override
+	public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
+		player.setWorld(world);
+	}
 
-    @Override
-    public NbtCompound writeBENBT(BlockEntity be) {
-        return be.writeNbt(new NbtCompound());
-    }
+	@Override
+	public NbtCompound writeBENBT(BlockEntity be) {
+		return be.writeNbt(new NbtCompound());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType(String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-        ArgumentTypes.register(identifier, clazz, (ArgumentSerializer<A>) serialiser.toLegacyVanillaSerialiser());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType(String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
+		ArgumentTypes.register(identifier, clazz, (ArgumentSerializer<A>) serialiser.toLegacyVanillaSerialiser());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public boolean tagContains(Object tag, Object obj) {
-        return ((Tag<Object>) tag).contains(obj);
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean tagContains(Object tag, Object obj) {
+		return ((Tag<Object>) tag).contains(obj);
+	}
 
-    @Override
-    public Biome getBiome(World world, BlockPos pos) {
-        return world.getBiome(pos);
-    }
+	@Override
+	public Biome getBiome(World world, BlockPos pos) {
+		return world.getBiome(pos);
+	}
 
-    @Override
-    public BlockStateArgumentType createBlockStateArgumentType() {
-        return BlockStateArgumentType.blockState();
-    }
+	@Override
+	public BlockStateArgumentType createBlockStateArgumentType() {
+		return BlockStateArgumentType.blockState();
+	}
 
-    @Override
-    public Direction randomDirection() {
-        return Direction.random(new Random());
-    }
+	@Override
+	public Direction randomDirection() {
+		return Direction.random(new Random());
+	}
 
-    @SuppressWarnings("UnstableApiUsage")
-    @Override
-    public Map<Identifier, Object> getBlockTags() {
-        return blockTags == null ? blockTags = BlockTags.getTagGroup().getTags().entrySet().stream()
-                .map(entry -> new Pair<>(entry.getKey(), (Object) entry.getValue()))
-                .collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight)) : blockTags;
-    }
+	@SuppressWarnings("UnstableApiUsage")
+	@Override
+	public Map<Identifier, Object> getBlockTags() {
+		return blockTags == null ? blockTags = BlockTags.getTagGroup().getTags().entrySet().stream()
+				.map(entry -> new Pair<>(entry.getKey(), (Object) entry.getValue()))
+				.collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight)) : blockTags;
+	}
 
-    @Override
-    public DoubleStream doubleStream(DoubleList doubles) {
-        return doubles.stream().mapToDouble(d -> d);
-    }
+	@Override
+	public DoubleStream doubleStream(DoubleList doubles) {
+		return doubles.stream().mapToDouble(d -> d);
+	}
 }

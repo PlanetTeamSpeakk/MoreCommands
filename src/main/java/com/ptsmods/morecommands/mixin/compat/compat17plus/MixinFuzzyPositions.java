@@ -17,8 +17,8 @@ import java.util.function.ToDoubleFunction;
 
 @Mixin(FuzzyPositions.class)
 public class MixinFuzzyPositions {
-    @Inject(at = @At("HEAD"), method = "guessBest", cancellable = true)
-    private static void guessBest(Supplier<BlockPos> factory, ToDoubleFunction<BlockPos> scorer, CallbackInfoReturnable<Vec3d> cbi) {
-        if (!Objects.requireNonNull(MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.doPathFindingRule)) cbi.setReturnValue(null);
-    }
+	@Inject(at = @At("HEAD"), method = "guessBest", cancellable = true)
+	private static void guessBest(Supplier<BlockPos> factory, ToDoubleFunction<BlockPos> scorer, CallbackInfoReturnable<Vec3d> cbi) {
+		if (!Objects.requireNonNull(MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.doPathFindingRule)) cbi.setReturnValue(null);
+	}
 }

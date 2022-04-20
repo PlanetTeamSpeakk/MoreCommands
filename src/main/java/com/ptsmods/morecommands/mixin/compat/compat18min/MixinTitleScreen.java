@@ -11,8 +11,8 @@ import java.util.Random;
 @Mixin(TitleScreen.class)
 public class MixinTitleScreen {
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Random; nextFloat()F", remap = false), method = "<init>(Z)V")
-    private float init_nextFloat(Random random) {
-        return ClientOptions.Tweaks.alwaysMinceraft.getValue() ? 0f : random.nextFloat();
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Random; nextFloat()F", remap = false), method = "<init>(Z)V")
+	private float init_nextFloat(Random random) {
+		return ClientOptions.Tweaks.alwaysMinceraft.getValue() ? 0f : random.nextFloat();
+	}
 }

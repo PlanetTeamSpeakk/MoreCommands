@@ -96,28 +96,28 @@ public abstract class Command {
 		return 1;
 	}
 
-    public static int sendMsg(Entity entity, String msg, Object... formats) {
-        return sendMsg(entity, new LiteralText(formatted(msg, formats)).setStyle(DS));
-    }
+	public static int sendMsg(Entity entity, String msg, Object... formats) {
+		return sendMsg(entity, new LiteralText(formatted(msg, formats)).setStyle(DS));
+	}
 
-    public static int sendMsg(Entity entity, Text msg) {
-        msg = msg.shallowCopy().setStyle(msg.getStyle().isEmpty() ? DS : msg.getStyle());
-        msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? entity instanceof ServerPlayerEntity ?
-                PlaceholderAPI.parseText(msg, (ServerPlayerEntity) entity) : PlaceholderAPI.parseText(msg, entity.getServer()) : msg;
+	public static int sendMsg(Entity entity, Text msg) {
+		msg = msg.shallowCopy().setStyle(msg.getStyle().isEmpty() ? DS : msg.getStyle());
+		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? entity instanceof ServerPlayerEntity ?
+				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) entity) : PlaceholderAPI.parseText(msg, entity.getServer()) : msg;
 
-        if (entity instanceof PlayerEntity) ((PlayerEntity) entity).sendMessage(msg, false);
-        else entity.sendSystemMessage(msg, entity.getUuid());
-        return 1;
-    }
+		if (entity instanceof PlayerEntity) ((PlayerEntity) entity).sendMessage(msg, false);
+		else entity.sendSystemMessage(msg, entity.getUuid());
+		return 1;
+	}
 
-    public static void broadcast(MinecraftServer server, String msg, Object... formats) {
-        broadcast(server, new LiteralText(formatted(msg, formats)).setStyle(DS));
-    }
+	public static void broadcast(MinecraftServer server, String msg, Object... formats) {
+		broadcast(server, new LiteralText(formatted(msg, formats)).setStyle(DS));
+	}
 
-    public static void broadcast(MinecraftServer server, Text msg) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList())
-            sendMsg(player, FabricLoader.getInstance().isModLoaded("placeholder-api") ? PlaceholderAPI.parseText(msg, player) : msg);
-    }
+	public static void broadcast(MinecraftServer server, Text msg) {
+		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList())
+			sendMsg(player, FabricLoader.getInstance().isModLoaded("placeholder-api") ? PlaceholderAPI.parseText(msg, player) : msg);
+	}
 
 	static String fixResets(String s) {
 		return fixResets(s, DF);
@@ -141,10 +141,10 @@ public abstract class Command {
 
 	public static <T> RequiredArgumentBuilder<ServerCommandSource, T> argument(String name, ArgumentType<T> type) {
 		RequiredArgumentBuilder<ServerCommandSource, T> builder = CommandManager.argument(name, type instanceof CompatArgumentType<?, ?, ?> && IMoreCommands.get().isServerOnly() ?
-                ((CompatArgumentType<?, T, ?>) type).toVanillaArgumentType() : type);
+				((CompatArgumentType<?, T, ?>) type).toVanillaArgumentType() : type);
 
-        if (IMoreCommands.get().isServerOnly()) builder.suggests(type::listSuggestions);
-        return builder;
+		if (IMoreCommands.get().isServerOnly()) builder.suggests(type::listSuggestions);
+		return builder;
 	}
 
 	public static String translateFormats(String s) {
@@ -256,15 +256,15 @@ public abstract class Command {
 		return max;
 	}
 
-    protected static String formatted(String s, Object... formats) {
-        return formats == null || formats.length == 0 ? s : String.format(s);
-    }
+	protected static String formatted(String s, Object... formats) {
+		return formats == null || formats.length == 0 ? s : String.format(s);
+	}
 
-    protected static String coloured(Object o) {
-        return coloured(o, SF);
-    }
+	protected static String coloured(Object o) {
+		return coloured(o, SF);
+	}
 
-    protected static String coloured(Object o, Formatting colour) {
-        return "" + colour + o + DF;
-    }
+	protected static String coloured(Object o, Formatting colour) {
+		return "" + colour + o + DF;
+	}
 }

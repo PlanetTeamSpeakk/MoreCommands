@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayerEntity.class)
 public class MixinServerPlayerEntity {
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/class_3222; method_5866(Lnet/minecraft/class_1937;)V", remap = false), method = "method_14251(Lnet/minecraft/class_3218;DDDFF)V", remap = false)
-    private void teleport_setWorld(ServerPlayerEntity thiz, World targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
-        thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/class_3222; method_5866(Lnet/minecraft/class_1937;)V", remap = false), method = "method_14251(Lnet/minecraft/class_3218;DDDFF)V", remap = false)
+	private void teleport_setWorld(ServerPlayerEntity thiz, World targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
+		thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
+	}
 }

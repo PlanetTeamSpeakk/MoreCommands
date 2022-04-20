@@ -18,25 +18,25 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class TimeArgumentType implements CompatArgumentType<TimeArgumentType, String, ConstantSerialiser.ConstantProperties<TimeArgumentType, String>> {
-    public static final ConstantSerialiser<TimeArgumentType, String> SERIALISER = new ConstantSerialiser<>(TimeArgumentType::new);
+	public static final ConstantSerialiser<TimeArgumentType, String> SERIALISER = new ConstantSerialiser<>(TimeArgumentType::new);
 	private static final SimpleCommandExceptionType PARSE_EXCEPTION = new SimpleCommandExceptionType(() -> "The given value could not be parsed into time");
 	private static final SimpleCommandExceptionType HOURS_EXCEPTION = new SimpleCommandExceptionType(() -> "Days only have 24 hours, silly");
 	private static final SimpleCommandExceptionType MINUTES_EXCEPTION = new SimpleCommandExceptionType(() -> "Hours only have 60 minutes, silly");
 	private static final SimpleCommandExceptionType TICKS_EXCEPTION = new SimpleCommandExceptionType(() -> "Minecraft days only have 24000 ticks, silly");
 	private static final Map<String, Integer> literals = ImmutableMap.<String, Integer>builder().put("day", 1000).put("noon", 6000).put("night", 13000).put("midnight", 18000).build();
 
-    private TimeArgumentType() {}
+	private TimeArgumentType() {}
 
-    public static TimeArgumentType time() {
-        return new TimeArgumentType();
-    }
+	public static TimeArgumentType time() {
+		return new TimeArgumentType();
+	}
 
-    public static WorldTime getTime(CommandContext<?> ctx, String argName) {
-        String timeString = ctx.getArgument(argName, String.class);
+	public static WorldTime getTime(CommandContext<?> ctx, String argName) {
+		String timeString = ctx.getArgument(argName, String.class);
 
-        boolean fixed = timeString.startsWith("@");
-        return new WorldTime(Integer.parseInt(fixed ? timeString.substring(1) : timeString), fixed);
-    }
+		boolean fixed = timeString.startsWith("@");
+		return new WorldTime(Integer.parseInt(fixed ? timeString.substring(1) : timeString), fixed);
+	}
 
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
@@ -130,12 +130,12 @@ public class TimeArgumentType implements CompatArgumentType<TimeArgumentType, St
 		return StringArgumentType.word();
 	}
 
-    @Override
-    public ConstantSerialiser.ConstantProperties<TimeArgumentType, String> getProperties() {
-        return SERIALISER.getProperties();
-    }
+	@Override
+	public ConstantSerialiser.ConstantProperties<TimeArgumentType, String> getProperties() {
+		return SERIALISER.getProperties();
+	}
 
-    public static class WorldTime {
+	public static class WorldTime {
 
 		private final int time;
 		private final boolean fixed;

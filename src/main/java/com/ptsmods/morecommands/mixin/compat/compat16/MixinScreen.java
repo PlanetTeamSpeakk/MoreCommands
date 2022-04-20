@@ -13,24 +13,24 @@ import java.util.List;
 @Pseudo
 @Mixin(targets = "net/minecraft/class_437", remap = false)
 public class MixinScreen implements ScreenAddon {
-    @Shadow protected @Final List<Element> field_22786; // children
-    @Shadow protected @Final List<ClickableWidget> field_22791; // buttons
+	@Shadow protected @Final List<Element> field_22786; // children
+	@Shadow protected @Final List<ClickableWidget> field_22791; // buttons
 
-    @Override
-    public void mc$clear() {
-        field_22786.clear();
-        field_22791.clear();
-    }
+	@Override
+	public void mc$clear() {
+		field_22786.clear();
+		field_22791.clear();
+	}
 
-    @Override
-    public List<ClickableWidget> mc$getButtons() {
-        return field_22791;
-    }
+	@Override
+	public List<ClickableWidget> mc$getButtons() {
+		return field_22791;
+	}
 
-    @Override
-    public <T extends ClickableWidget> T mc$addButton(T button) {
-        field_22791.add(button);
-        field_22786.add(button);
-        return button;
-    }
+	@Override
+	public <T extends ClickableWidget> T mc$addButton(T button) {
+		field_22791.add(button);
+		field_22786.add(button);
+		return button;
+	}
 }

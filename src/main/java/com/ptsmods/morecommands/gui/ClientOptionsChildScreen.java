@@ -26,20 +26,20 @@ public class ClientOptionsChildScreen extends Screen {
 
 	ClientOptionsChildScreen(ClientOptionsScreen parent, ClientOptionCategory category) {
 		super(new LiteralText("")
-                .append(new LiteralText("MoreCommands").setStyle(MoreCommands.DS))
-                .append(new LiteralText(" client options").setStyle(MoreCommands.SS))
-                .append(new LiteralText(" " + category.getName()).setStyle(Style.EMPTY.withFormatting(Formatting.WHITE))));
+				.append(new LiteralText("MoreCommands").setStyle(MoreCommands.DS))
+				.append(new LiteralText(" client options").setStyle(MoreCommands.SS))
+				.append(new LiteralText(" " + category.getName()).setStyle(Style.EMPTY.withFormatting(Formatting.WHITE))));
 		this.category = category;
 		this.parent = parent;
 	}
 
 	protected void init() {
 		btnFields.clear();
-        ((ScreenAddon) this).mc$clear();
+		((ScreenAddon) this).mc$clear();
 		pages.clear();
 		boolean right = false;
 		int row = 0;
-        ScreenAddon addon = (ScreenAddon) this;
+		ScreenAddon addon = (ScreenAddon) this;
 		List<Pair<ClickableWidget, ClientOption<?>>> page = new ArrayList<>();
 		for (Map.Entry<String, ClientOption<?>> option : ClientOption.getOptions().get(category).entrySet()) {
 			if (page.size() == 10) {
@@ -103,12 +103,12 @@ public class ClientOptionsChildScreen extends Screen {
 		btnFields.forEach((btn, option) -> {
 			List<String> comments = option.getComments();
 
-            if (option.isDisabled()) {
-                if (comments == null) comments = new ArrayList<>();
-                else comments.add("");
+			if (option.isDisabled()) {
+				if (comments == null) comments = new ArrayList<>();
+				else comments.add("");
 
-                comments.add(Formatting.RED + "This option has been disabled on this server!");
-            }
+				comments.add(Formatting.RED + "This option has been disabled on this server!");
+			}
 
 			if (comments != null && btn.isMouseOver(mouseX, mouseY)) {
 				List<Text> texts = new ArrayList<>();

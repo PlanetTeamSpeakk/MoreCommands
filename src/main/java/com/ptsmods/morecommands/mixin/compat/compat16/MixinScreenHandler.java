@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-    @Inject(at = @At("HEAD"), method = "method_7593", cancellable = true, remap = false)
-    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfoReturnable<ItemStack> cbi) {
-        if (ReflectionHelper.<ScreenHandler>cast(this) instanceof InvseeCommand.InvSeeScreenHandler && ReflectionHelper.<InvseeCommand.InvSeeScreenHandler>cast(this).target instanceof OtherClientPlayerEntity) cbi.setReturnValue(ItemStack.EMPTY);
-    }
+	@Inject(at = @At("HEAD"), method = "method_7593", cancellable = true, remap = false)
+	public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfoReturnable<ItemStack> cbi) {
+		if (ReflectionHelper.<ScreenHandler>cast(this) instanceof InvseeCommand.InvSeeScreenHandler && ReflectionHelper.<InvseeCommand.InvSeeScreenHandler>cast(this).target instanceof OtherClientPlayerEntity) cbi.setReturnValue(ItemStack.EMPTY);
+	}
 }

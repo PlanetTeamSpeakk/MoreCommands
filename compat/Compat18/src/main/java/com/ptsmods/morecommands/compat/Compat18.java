@@ -10,18 +10,18 @@ import net.minecraft.world.World;
 import java.util.stream.DoubleStream;
 
 public class Compat18 extends Compat17 {
-    @Override
-    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.writeNbt(nbt);
-    }
+	@Override
+	public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
+		return logic.writeNbt(nbt);
+	}
 
-    @Override
-    public NbtCompound writeBENBT(BlockEntity be) {
-        return be.createNbtWithIdentifyingData();
-    }
+	@Override
+	public NbtCompound writeBENBT(BlockEntity be) {
+		return be.createNbtWithIdentifyingData();
+	}
 
-    @Override
-    public DoubleStream doubleStream(DoubleList doubles) {
-        return doubles.doubleStream();
-    }
+	@Override
+	public DoubleStream doubleStream(DoubleList doubles) {
+		return doubles.doubleStream();
+	}
 }

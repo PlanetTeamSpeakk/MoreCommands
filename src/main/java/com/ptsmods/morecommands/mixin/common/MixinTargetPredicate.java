@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(TargetPredicate.class)
 public class MixinTargetPredicate {
-    @Inject(at = @At("HEAD"), method = "test", cancellable = true)
-    public void test(LivingEntity baseEntity, LivingEntity targetEntity, CallbackInfoReturnable<Boolean> cbi) {
-        if (targetEntity instanceof PlayerEntity && targetEntity.getDataTracker().get(DataTrackerHelper.VANISH)) cbi.setReturnValue(false);
-    }
+	@Inject(at = @At("HEAD"), method = "test", cancellable = true)
+	public void test(LivingEntity baseEntity, LivingEntity targetEntity, CallbackInfoReturnable<Boolean> cbi) {
+		if (targetEntity instanceof PlayerEntity && targetEntity.getDataTracker().get(DataTrackerHelper.VANISH)) cbi.setReturnValue(false);
+	}
 }

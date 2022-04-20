@@ -36,7 +36,7 @@ public class ConfigPlugin implements IMixinConfigPlugin {
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 		if (pehkuiLoaded && (mixinClassName.contains("Furnace") || mixinClassName.contains("BrewingStand") || mixinClassName.contains("LootableContainer") ||
-                mixinClassName.contains("ServerPlayNetworkHandler") || mixinClassName.contains("ServerPlayerInteractionManager"))) return false;
+				mixinClassName.contains("ServerPlayNetworkHandler") || mixinClassName.contains("ServerPlayerInteractionManager"))) return false;
 		if (reachAttributesLoaded && incompatibleMixins.contains(mixinClassName.substring(mixinClassName.lastIndexOf('.') + 1))) return false;
 		return reachAttributesLoaded || !mixinClassName.endsWith("MixinReachEntityAttributes");
 	}

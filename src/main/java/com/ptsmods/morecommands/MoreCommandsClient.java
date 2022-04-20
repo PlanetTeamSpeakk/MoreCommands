@@ -98,7 +98,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 	private static final File wicFile = new File("config/MoreCommands/worldInitCommands.json");
 	private static final Map<String, String> nameMCFriends = new HashMap<>();
 	private static final HttpClient sslLenientHttpClient;
-    private static Class<?> copySoundClass, easterEggSoundClass;
+	private static Class<?> copySoundClass, easterEggSoundClass;
 
 	static {
 		for (Field f : GLFW.class.getFields())
@@ -186,7 +186,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 			if (ClientOptions.Tweaks.enableInfoHUD.getValue()) InfoHud.instance.render(stack, tickDelta);
 		});
 
-        Set<Entity> coolKids = new HashSet<>();
+		Set<Entity> coolKids = new HashSet<>();
 		ClientTickEvents.START_WORLD_TICK.register(world -> {
 			if (toggleInfoHudBinding.wasPressed()) {
 				ClientOptions.Tweaks.enableInfoHUD.setValue(!ClientOptions.Tweaks.enableInfoHUD.getValue());
@@ -212,11 +212,11 @@ public class MoreCommandsClient implements ClientModInitializer {
 						MinecraftClient.getInstance().particleManager.addParticle(new VexParticle(entity));
 		});
 
-        ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof PlayerEntity && MoreCommands.isCool(entity)) coolKids.add(entity);
-        });
+		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+			if (entity instanceof PlayerEntity && MoreCommands.isCool(entity)) coolKids.add(entity);
+		});
 
-        ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> coolKids.remove(entity));
+		ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> coolKids.remove(entity));
 
 		List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
 		ClientCommandRegistrationCallback.EVENT.register(dispatcher -> clientCommands.forEach(cmd -> {
@@ -245,11 +245,11 @@ public class MoreCommandsClient implements ClientModInitializer {
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_options"), (client, handler, buf, responseSender) -> {
-            ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
+			ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
 			int length = buf.readVarInt();
 			for (int i = 0; i < length; i++)
 				Optional.ofNullable(ClientOption.getUnmappedOptions().get(buf.readString()))
-                        .ifPresent(option -> option.setDisabled(true));
+						.ifPresent(option -> option.setDisabled(true));
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:disable_client_commands"), (client, handler, buf, responseSender) -> {
@@ -283,7 +283,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 			try {
 				@SuppressWarnings("UnstableApiUsage")
 				List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"),
-                        new TypeToken<List<Map<String, String>>>() {}.getType());
+						new TypeToken<List<Map<String, String>>>() {}.getType());
 				// SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
 				nameMCFriends.putAll(friends.stream().collect(Collectors.toMap(friend -> friend.get("uuid"), friend -> friend.get("name"))));
 			} catch (IOException e) {
@@ -291,14 +291,14 @@ public class MoreCommandsClient implements ClientModInitializer {
 			}
 		});
 
-        try {
-            // Should have been defined in the EarlyRiser using ClassTinkerer.
-            copySoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.CopySound");
-            easterEggSoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.EESound");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+		try {
+			// Should have been defined in the EarlyRiser using ClassTinkerer.
+			copySoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.CopySound");
+			easterEggSoundClass = Class.forName("com.ptsmods.morecommands.miscellaneous.EESound");
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public static String getWorldName() {
 		// MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
@@ -364,20 +364,20 @@ public class MoreCommandsClient implements ClientModInitializer {
 		for (int i = 0; i < formattings.length; i++) {
 			int x = i; // Has to be effectively final cuz lambda
 			btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
-                    yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
+					yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
 					new LiteralText(formattings[x].toString().replace('\u00A7', '&'))
-                            .setStyle(Style.EMPTY.withFormatting(formattings[x])),
-                    btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
+							.setStyle(Style.EMPTY.withFormatting(formattings[x])),
+					btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
 					/*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
-                    new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
+					new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
 				public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 					return false;
 				}
 			}, btn -> btn.visible = initOpened0)));
 		}
 		Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
-                50, 20, new LiteralText("Colours").setStyle(Command.DS), btn -> {
-            boolean b = !btns.get(0).visible;
+				50, 20, new LiteralText("Colours").setStyle(Command.DS), btn -> {
+			boolean b = !btns.get(0).visible;
 			if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
 			btns.forEach(btn0 -> btn0.visible = b);
 			if (stateListener != null) stateListener.accept(b);
@@ -428,7 +428,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 		nameMCFriends.put(id, name);
 	}
 
-    public static Class<?> getCopySoundClass() {
-        return copySoundClass;
-    }
+	public static Class<?> getCopySoundClass() {
+		return copySoundClass;
+	}
 }

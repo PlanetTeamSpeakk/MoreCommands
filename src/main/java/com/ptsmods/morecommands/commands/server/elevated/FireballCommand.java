@@ -61,9 +61,9 @@ public class FireballCommand extends Command {
 		} : CompatHolder.getCompat().newFireballEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
 		fireball.setVelocity(velocity0);
 
-        MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;
-        accessor.setPitch_(ctx.getSource().getRotation().x);
-        accessor.setYaw_(ctx.getSource().getRotation().y);
+		MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;
+		accessor.setPitch_(ctx.getSource().getRotation().x);
+		accessor.setYaw_(ctx.getSource().getRotation().y);
 
 		fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeHeight(ctx.getSource().getEntity().getPose())), ctx.getSource().getPosition().z);
 		fireball.tick();

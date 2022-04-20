@@ -15,22 +15,22 @@ import java.util.Collection;
 
 public class DamageCommand extends Command {
 
-    @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        DamageSource.OUT_OF_WORLD.getName(); // Making sure the class is instantiated.
-        RequiredArgumentBuilder<ServerCommandSource, EntitySelector> entities = argument("entities", EntityArgumentType.entities());
+	@Override
+	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+		DamageSource.OUT_OF_WORLD.getName(); // Making sure the class is instantiated.
+		RequiredArgumentBuilder<ServerCommandSource, EntitySelector> entities = argument("entities", EntityArgumentType.entities());
 
-        MoreCommands.DAMAGE_SOURCES.forEach((name, source) -> entities.then(literal(name)
-                .then(argument("damage", FloatArgumentType.floatArg(1f))
-                        .executes(ctx -> {
-                            Collection<? extends Entity> entityList = EntityArgumentType.getEntities(ctx, "entities");
-                            float damage = ctx.getArgument("damage", float.class);
-                            entityList.forEach(entity -> entity.damage(source, damage));
+		MoreCommands.DAMAGE_SOURCES.forEach((name, source) -> entities.then(literal(name)
+				.then(argument("damage", FloatArgumentType.floatArg(1f))
+						.executes(ctx -> {
+							Collection<? extends Entity> entityList = EntityArgumentType.getEntities(ctx, "entities");
+							float damage = ctx.getArgument("damage", float.class);
+							entityList.forEach(entity -> entity.damage(source, damage));
 
-                            sendMsg(ctx, "Dealt " + SF + damage + DF + " damage to " + SF + entityList.size() + DF + " entities.");
-                            return (int) (entityList.size() * damage);
-                        }))));
+							sendMsg(ctx, "Dealt " + SF + damage + DF + " damage to " + SF + entityList.size() + DF + " entities.");
+							return (int) (entityList.size() * damage);
+						}))));
 
-        dispatcher.register(literalReqOp("damage").then(entities));
-    }
+		dispatcher.register(literalReqOp("damage").then(entities));
+	}
 }

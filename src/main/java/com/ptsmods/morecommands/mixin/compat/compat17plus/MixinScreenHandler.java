@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-    @Inject(at = @At("HEAD"), method = "onSlotClick", cancellable = true)
-    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo cbi) {
-        if (ReflectionHelper.<ScreenHandler>cast(this) instanceof InvseeCommand.InvSeeScreenHandler && ReflectionHelper.<InvseeCommand.InvSeeScreenHandler>cast(this).target instanceof OtherClientPlayerEntity) cbi.cancel();
-    }
+	@Inject(at = @At("HEAD"), method = "onSlotClick", cancellable = true)
+	public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo cbi) {
+		if (ReflectionHelper.<ScreenHandler>cast(this) instanceof InvseeCommand.InvSeeScreenHandler && ReflectionHelper.<InvseeCommand.InvSeeScreenHandler>cast(this).target instanceof OtherClientPlayerEntity) cbi.cancel();
+	}
 }

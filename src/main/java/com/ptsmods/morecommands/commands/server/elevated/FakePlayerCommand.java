@@ -39,29 +39,29 @@ public class FakePlayerCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReqOp("fakeplayer")
-                .then(literal("create")
-                        .then(argument("name", CrampedStringArgumentType.crampedWord(3, 16))
-                                .executes(ctx -> executeCreate(ctx, null, null))
-                                .then(argument("skinname", CrampedStringArgumentType.crampedWord(3, 16))
-                                        .executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), null))
-                                        .then(argument("userid", new UuidArgumentType())
-                                                .executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), ctx.getArgument("userid", UUID.class)))))))
-                .then(literal("kick")
-                        .then(argument("player", EntityArgumentType.player())
-                                .executes(ctx -> {
-                                    ServerPlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
-                                    if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
-                                    else {
-                                        try {
-                                            p.networkHandler.disconnect(new LiteralText("yeET"));
-                                            sendMsg(ctx, "The player has been disconnected.");
-                                        } catch (Exception e) {
-                                            log.catching(e);
-                                        }
-                                        return 1;
-                                    }
-                                    return 0;
-                                }))));
+				.then(literal("create")
+						.then(argument("name", CrampedStringArgumentType.crampedWord(3, 16))
+								.executes(ctx -> executeCreate(ctx, null, null))
+								.then(argument("skinname", CrampedStringArgumentType.crampedWord(3, 16))
+										.executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), null))
+										.then(argument("userid", new UuidArgumentType())
+												.executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), ctx.getArgument("userid", UUID.class)))))))
+				.then(literal("kick")
+						.then(argument("player", EntityArgumentType.player())
+								.executes(ctx -> {
+									ServerPlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
+									if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
+									else {
+										try {
+											p.networkHandler.disconnect(new LiteralText("yeET"));
+											sendMsg(ctx, "The player has been disconnected.");
+										} catch (Exception e) {
+											log.catching(e);
+										}
+										return 1;
+									}
+									return 0;
+								}))));
 	}
 
 	private int executeCreate(CommandContext<ServerCommandSource> ctx, String skinname, UUID userId) {
@@ -131,11 +131,11 @@ public class FakePlayerCommand extends Command {
 				// Yuck
 
 				if (ctx.getSource().getEntity() != null) {
-                    MixinEntityAccessor entityAccessor = (MixinEntityAccessor) ctx.getSource().getEntity();
-                    MixinEntityAccessor playerAccessor = (MixinEntityAccessor) player;
+					MixinEntityAccessor entityAccessor = (MixinEntityAccessor) ctx.getSource().getEntity();
+					MixinEntityAccessor playerAccessor = (MixinEntityAccessor) player;
 
 					playerAccessor.setYaw_(entityAccessor.getYaw_());
-                    playerAccessor.setPitch_(entityAccessor.getPitch_());
+					playerAccessor.setPitch_(entityAccessor.getPitch_());
 				}
 
 				player.getDataTracker().set(MixinPlayerEntityAccessor.getPlayerModelParts(), (byte) 255);

@@ -14,15 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
 public class MixinServerPlayerEntity {
-    @Inject(at = @At("HEAD"), method = "setWorld(Lnet/minecraft/server/world/ServerWorld;)V", cancellable = true)
-    public void setWorld(ServerWorld world, CallbackInfo cbi) {
-        Entity thiz = ReflectionHelper.cast(this);
-        if (EntityTeleportCallback.EVENT.invoker().onTeleport(thiz, thiz.getEntityWorld(), world, thiz.getPos(), thiz.getPos())) cbi.cancel();
-        if (thiz instanceof ServerPlayerEntity) ((MixinServerPlayerEntityAccessor) thiz).setSyncedExperience(-1); // Fix for the glitch that seemingly removes all your xp when you change worlds.
-    }
+	@Inject(at = @At("HEAD"), method = "setWorld(Lnet/minecraft/server/world/ServerWorld;)V", cancellable = true)
+	public void setWorld(ServerWorld world, CallbackInfo cbi) {
+		Entity thiz = ReflectionHelper.cast(this);
+		if (EntityTeleportCallback.EVENT.invoker().onTeleport(thiz, thiz.getEntityWorld(), world, thiz.getPos(), thiz.getPos())) cbi.cancel();
+		if (thiz instanceof ServerPlayerEntity) ((MixinServerPlayerEntityAccessor) thiz).setSyncedExperience(-1); // Fix for the glitch that seemingly removes all your xp when you change worlds.
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; setWorld(Lnet/minecraft/server/world/ServerWorld;)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
-    private void teleport_setWorld(ServerPlayerEntity thiz, ServerWorld targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
-        thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity; setWorld(Lnet/minecraft/server/world/ServerWorld;)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
+	private void teleport_setWorld(ServerPlayerEntity thiz, ServerWorld targetWorld, ServerWorld targetWorld0, double x, double y, double z, float yaw, float pitch) {
+		thiz.refreshPositionAndAngles(x, y, z, yaw, pitch);
+	}
 }

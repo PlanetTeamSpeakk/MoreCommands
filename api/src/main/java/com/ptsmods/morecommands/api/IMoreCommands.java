@@ -4,11 +4,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public interface IMoreCommands {
-    Logger LOG = LogManager.getLogger("MoreCommands");
+	Logger LOG = LogManager.getLogger("MoreCommands");
 
-    static IMoreCommands get() {
-        return Holder.getMoreCommands();
-    }
+	static IMoreCommands get() {
+		return Holder.getMoreCommands();
+	}
 
-    boolean isServerOnly();
+	boolean isServerOnly();
 }

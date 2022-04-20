@@ -19,20 +19,20 @@ import java.util.concurrent.CompletableFuture;
 
 @Environment(EnvType.CLIENT)
 public class KeyArgumentType implements CompatArgumentType<KeyArgumentType, String, ConstantSerialiser.ConstantProperties<KeyArgumentType, String>> {
-    public static final ConstantSerialiser<KeyArgumentType, String> SERIALISER = new ConstantSerialiser<>(KeyArgumentType::new);
+	public static final ConstantSerialiser<KeyArgumentType, String> SERIALISER = new ConstantSerialiser<>(KeyArgumentType::new);
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(() -> "The given value was invalid.");
 	private final StringArgumentType parent = StringArgumentType.word();
 	private final Collection<String> possibilities = MoreCommandsClient.getKeys();
 
-    private KeyArgumentType() {}
+	private KeyArgumentType() {}
 
-    public static KeyArgumentType key() {
-        return new KeyArgumentType();
-    }
+	public static KeyArgumentType key() {
+		return new KeyArgumentType();
+	}
 
-    public static int getKey(CommandContext<?> ctx, String argName) {
-        return Integer.parseInt(ctx.getArgument(argName, String.class));
-    }
+	public static int getKey(CommandContext<?> ctx, String argName) {
+		return Integer.parseInt(ctx.getArgument(argName, String.class));
+	}
 
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
@@ -60,8 +60,8 @@ public class KeyArgumentType implements CompatArgumentType<KeyArgumentType, Stri
 		return StringArgumentType.word();
 	}
 
-    @Override
-    public ConstantSerialiser.ConstantProperties<KeyArgumentType, String> getProperties() {
-        return SERIALISER.getProperties();
-    }
+	@Override
+	public ConstantSerialiser.ConstantProperties<KeyArgumentType, String> getProperties() {
+		return SERIALISER.getProperties();
+	}
 }

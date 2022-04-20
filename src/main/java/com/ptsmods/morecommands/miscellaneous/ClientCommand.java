@@ -242,9 +242,9 @@ public abstract class ClientCommand extends Command {
 	public static BlockPos getLoadedBlockPos(CommandContext<ClientCommandSource> context, String name) throws CommandSyntaxException {
 		BlockPos blockPos = context.getArgument(name, PosArgument.class).toAbsoluteBlockPos(getServerCommandSource());
 		if (!getWorld().isChunkLoaded(blockPos))
-            throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
+			throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
 		else if (!CompatHolder.getCompat().isInBuildLimit(MinecraftClient.getInstance().world, blockPos))
-            throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
-        else return blockPos;
+			throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
+		else return blockPos;
 	}
 }

@@ -52,53 +52,53 @@ public class BindCommand extends ClientCommand {
 	@Override
 	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
 		dispatcher.register(cLiteral("bind")
-                .then(cLiteral("set")
-                        .then(cArgument("key", KeyArgumentType.key())
-                                .then(cArgument("msg", StringArgumentType.greedyString())
-                                        .executes(ctx -> {
-                                            String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
-                                            if (bindings.containsKey(key)) sendMsg(Formatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, consider using macros, if not, consider removing the binding with /bind remove " + key + " first.");
-                                            else {
-                                                bindings.put(key, ctx.getArgument("msg", String.class));
-                                                if (!bindings.get(key).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
-                                                saveData();
-                                                sendMsg("A binding for key " + SF + key + DF + " has been saved.");
-                                                return 1;
-                                            }
-                                            return 0;
-                                        }))))
-                .then(cLiteral("remove")
-                        .then(cArgument("key", KeyArgumentType.key())
-                                .executes(ctx -> {
-                                    String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
-                                    if (!bindings.containsKey(key)) sendMsg(Formatting.RED + "No binding has been set for that key yet.");
-                                    else {
-                                        bindings.remove(key);
-                                        saveData();
-                                        sendMsg("The binding for key " + SF + key + DF + " has been removed.");
-                                        return 1;
-                                    }
-                                    return 0;
-                                })))
-                .then(cLiteral("list")
-                        .executes(ctx -> {
-                            if (bindings.isEmpty()) sendMsg(Formatting.RED + "You have no bindings set yet, consider setting one with /bind set <key> <msg>.");
-                            else {
-                                sendMsg("You currently have the following bindings:");
-                                bindings.forEach((key, msg) -> sendMsg("  " + key + ": " + SF + msg));
-                                return bindings.size();
-                            }
-                            return 0;
-                        }))
-                .then(cLiteral("listkeys")
-                        .executes(ctx -> {
-                            sendMsg("The following keys are at your disposal: " + joinNicely(MoreCommandsClient.getKeys()) + ".");
-                            return MoreCommandsClient.getKeys().size();
-                        }))
-                .then(cLiteral("record")
-                        .executes(ctx -> executeRecord(2))
-                        .then(cArgument("amount", IntegerArgumentType.integer(1))
-                                .executes(ctx -> executeRecord(ctx.getArgument("amount", Integer.class))))));
+				.then(cLiteral("set")
+						.then(cArgument("key", KeyArgumentType.key())
+								.then(cArgument("msg", StringArgumentType.greedyString())
+										.executes(ctx -> {
+											String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
+											if (bindings.containsKey(key)) sendMsg(Formatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, consider using macros, if not, consider removing the binding with /bind remove " + key + " first.");
+											else {
+												bindings.put(key, ctx.getArgument("msg", String.class));
+												if (!bindings.get(key).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
+												saveData();
+												sendMsg("A binding for key " + SF + key + DF + " has been saved.");
+												return 1;
+											}
+											return 0;
+										}))))
+				.then(cLiteral("remove")
+						.then(cArgument("key", KeyArgumentType.key())
+								.executes(ctx -> {
+									String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
+									if (!bindings.containsKey(key)) sendMsg(Formatting.RED + "No binding has been set for that key yet.");
+									else {
+										bindings.remove(key);
+										saveData();
+										sendMsg("The binding for key " + SF + key + DF + " has been removed.");
+										return 1;
+									}
+									return 0;
+								})))
+				.then(cLiteral("list")
+						.executes(ctx -> {
+							if (bindings.isEmpty()) sendMsg(Formatting.RED + "You have no bindings set yet, consider setting one with /bind set <key> <msg>.");
+							else {
+								sendMsg("You currently have the following bindings:");
+								bindings.forEach((key, msg) -> sendMsg("  " + key + ": " + SF + msg));
+								return bindings.size();
+							}
+							return 0;
+						}))
+				.then(cLiteral("listkeys")
+						.executes(ctx -> {
+							sendMsg("The following keys are at your disposal: " + joinNicely(MoreCommandsClient.getKeys()) + ".");
+							return MoreCommandsClient.getKeys().size();
+						}))
+				.then(cLiteral("record")
+						.executes(ctx -> executeRecord(2))
+						.then(cArgument("amount", IntegerArgumentType.integer(1))
+								.executes(ctx -> executeRecord(ctx.getArgument("amount", Integer.class))))));
 	}
 
 	private int executeRecord(int amount) {

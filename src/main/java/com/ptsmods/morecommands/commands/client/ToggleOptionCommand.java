@@ -12,7 +12,7 @@ public class ToggleOptionCommand extends ClientCommand {
 	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
 		LiteralArgumentBuilder<ClientCommandSource> toggleoption = cLiteral("toggleoption");
 
-        ClientOption.getUnmappedOptions().entrySet().stream()
+		ClientOption.getUnmappedOptions().entrySet().stream()
 				.filter(entry -> entry.getValue() instanceof BooleanClientOption)
 				.forEach(entry -> toggleoption.then(cLiteral(entry.getKey()).executes(ctx -> {
 					BooleanClientOption option = (BooleanClientOption) entry.getValue();

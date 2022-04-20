@@ -21,43 +21,43 @@ import java.io.InputStream;
 
 public class ClientCompat16 implements ClientCompat {
 
-    @Override
-    public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
-        builder.begin(drawMode, format);
-    }
+	@Override
+	public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
+		builder.begin(drawMode, format);
+	}
 
-    @Override
-    public int getFrameCount(Sprite sprite) {
-        return sprite.getFrameCount();
-    }
+	@Override
+	public int getFrameCount(Sprite sprite) {
+		return sprite.getFrameCount();
+	}
 
-    @Override
-    public void bindTexture(Identifier id) {
-        MinecraftClient.getInstance().getTextureManager().bindTexture(id);
-    }
+	@Override
+	public void bindTexture(Identifier id) {
+		MinecraftClient.getInstance().getTextureManager().bindTexture(id);
+	}
 
-    @Override
-    public ChatVisibility getChatVisibility(GameOptions options) {
-        return options.chatVisibility;
-    }
+	@Override
+	public ChatVisibility getChatVisibility(GameOptions options) {
+		return options.chatVisibility;
+	}
 
-    @Override
-    public double getChatLineSpacing(GameOptions options) {
-        return options.chatLineSpacing;
-    }
+	@Override
+	public double getChatLineSpacing(GameOptions options) {
+		return options.chatLineSpacing;
+	}
 
-    @Override
-    public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
-        return interactionManager.interactBlock(player, world, hand, hit);
-    }
+	@Override
+	public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
+		return interactionManager.interactBlock(player, world, hand, hit);
+	}
 
-    @Override
-    public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
-        return manager.getResource(id).getInputStream();
-    }
+	@Override
+	public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
+		return manager.getResource(id).getInputStream();
+	}
 
-    @Override
-    public double getGamma(GameOptions options) {
-        return options.gamma;
-    }
+	@Override
+	public double getGamma(GameOptions options) {
+		return options.gamma;
+	}
 }

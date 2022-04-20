@@ -21,7 +21,7 @@ public class Rainbow {
 			Formatting.valueOf("RAINBOW");
 		} catch (IllegalArgumentException e) {
 			LogManager.getLogger("MoreCommands-Rainbow").warn("The RAINBOW formatting could not be found which means the Formatting class was initialised too early, " +
-                    "no rainbows will be supported during this session. Are you using MultiMC perhaps?");
+					"no rainbows will be supported during this session. Are you using MultiMC perhaps?");
 			return null;
 		}
 		return instance == null ? instance = new Rainbow() : instance;

@@ -120,7 +120,7 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 	public static final Map<PlayerEntity, DiscordUser> discordTags = new WeakHashMap<>();
 	public static final Set<PlayerEntity> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
 	public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
-    public static boolean creatingWorld = false;
+	public static boolean creatingWorld = false;
 	private static final Executor executor = Executors.newCachedThreadPool();
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
@@ -148,14 +148,14 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 
 		MoreGameRules.init();
 		DataTrackerHelper.init();
-        MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+		MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 	}
 
-    public MoreCommands() {
-        Holder.setMoreCommands(this);
-    }
+	public MoreCommands() {
+		Holder.setMoreCommands(this);
+	}
 
-    @Override
+	@Override
 	public void onInitialize() {
 		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		File dir = new File("config/MoreCommands");
@@ -166,15 +166,15 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            serverCommands.stream()
-                    .filter(cmd -> !cmd.isDedicatedOnly() || dedicated)
-                    .forEach(cmd -> {
-                        try {
-                            cmd.register(dispatcher, dedicated);
-                        } catch (Exception e) {
-                            LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-                        }
-                    });
+			serverCommands.stream()
+					.filter(cmd -> !cmd.isDedicatedOnly() || dedicated)
+					.forEach(cmd -> {
+						try {
+							cmd.register(dispatcher, dedicated);
+						} catch (Exception e) {
+							LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+						}
+					});
 
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) TestCommand.register(dispatcher); // Cuz why not lol
 		});
@@ -237,10 +237,10 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 			});
 
 			PostInitCallback.EVENT.register(() -> {
-                DefaultedList<ItemStack> defaultedList = DefaultedList.of();
-                for (Item item : Registry.ITEM) {
-                    item.appendStacks(ItemGroup.SEARCH, defaultedList);
-                }
+				DefaultedList<ItemStack> defaultedList = DefaultedList.of();
+				for (Item item : Registry.ITEM) {
+					item.appendStacks(ItemGroup.SEARCH, defaultedList);
+				}
 
 				Registry.BLOCK.forEach(block -> {
 					Identifier id = Registry.BLOCK.getId(block);
@@ -251,26 +251,26 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 					if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
 				});
 
-                defaultedList = DefaultedList.of();
-                for (Item item : Registry.ITEM) {
-                    item.appendStacks(ItemGroup.SEARCH, defaultedList);
-                }
+				defaultedList = DefaultedList.of();
+				for (Item item : Registry.ITEM) {
+					item.appendStacks(ItemGroup.SEARCH, defaultedList);
+				}
 			});
 
-            Compat compat = CompatHolder.getCompat();
+			Compat compat = CompatHolder.getCompat();
 
-            compat.registerArgumentType("morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:painting_motive", PaintingMotiveArgumentType.class, PaintingMotiveArgumentType.SERIALISER);
-            compat.registerArgumentType("morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:painting_motive", PaintingMotiveArgumentType.class, PaintingMotiveArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
 		} else {
 			UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
 				BlockState state = world.getBlockState(hit.getBlockPos());
 				if (!player.isSneaking() && MoreGameRules.checkBooleanWithPerm(world.getGameRules(), MoreGameRules.doChairsRule, player) &&
-                        CompatHolder.getCompat().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
+						CompatHolder.getCompat().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
 					Chair.createAndPlace(hit.getBlockPos(), player, world);
 					return ActionResult.SUCCESS;
 				}
@@ -1096,60 +1096,60 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 				 ImmutableMap.of(id, Objects.requireNonNull(MoreCommands::gradientPlaceholder)), PlaceholderAPI.PLACEHOLDER_PATTERN) : nickname;
 	}
 
-    public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
-        String arg = ctx.getArgument();
-        String[] parts = arg.split(";", 2);
+	public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
+		String arg = ctx.getArgument();
+		String[] parts = arg.split(";", 2);
 
-        if (arg.isEmpty() || parts.length != 2 || !parts[0].contains("-")) return PlaceholderResult.value("Invalid format. Valid example: %morecommands:gradient/#FFAA00-#FF0000;Text here%");
+		if (arg.isEmpty() || parts.length != 2 || !parts[0].contains("-")) return PlaceholderResult.value("Invalid format. Valid example: %morecommands:gradient/#FFAA00-#FF0000;Text here%");
 
-        String fromS = parts[0].substring(0, parts[0].indexOf('-'));
-        String toS = parts[0].substring(parts[0].indexOf('-') + 1, parts[0].contains(",") ? parts[0].indexOf(',') : parts[0].length());
-        String formatting = parts[0].contains(",") ? parts[0].substring(parts[0].indexOf(',') + 1) : "";
+		String fromS = parts[0].substring(0, parts[0].indexOf('-'));
+		String toS = parts[0].substring(parts[0].indexOf('-') + 1, parts[0].contains(",") ? parts[0].indexOf(',') : parts[0].length());
+		String formatting = parts[0].contains(",") ? parts[0].substring(parts[0].indexOf(',') + 1) : "";
 
-        char[] chs = formatting.toCharArray();
-        Character[] chsI = new Character[chs.length];
+		char[] chs = formatting.toCharArray();
+		Character[] chsI = new Character[chs.length];
 
-        for (int i = 0; i < chs.length; i++)
-            chsI[i] = chs[i];
+		for (int i = 0; i < chs.length; i++)
+			chsI[i] = chs[i];
 
-        // Turns any formatting, like lm or lo, into their actual string representation.
-        formatting = Arrays.stream(chsI)
-                .map(c -> "" + Character.toLowerCase(c))
-                .filter("klmno"::contains)
-                .map(c -> "\u00A7" + c)
-                .collect(Collectors.joining());
+		// Turns any formatting, like lm or lo, into their actual string representation.
+		formatting = Arrays.stream(chsI)
+				.map(c -> "" + Character.toLowerCase(c))
+				.filter("klmno"::contains)
+				.map(c -> "\u00A7" + c)
+				.collect(Collectors.joining());
 
-        Function<String, Boolean> checkColour = c -> c.length() == 1 ? Character.isDigit(c.charAt(0)) || Character.toLowerCase(c.charAt(0)) >= 'a' && Character.toLowerCase(c.charAt(0)) <= 'f' :
-                c.length() == 7 && c.charAt(0) == '#' && isInteger(c.substring(1), 16);
+		Function<String, Boolean> checkColour = c -> c.length() == 1 ? Character.isDigit(c.charAt(0)) || Character.toLowerCase(c.charAt(0)) >= 'a' && Character.toLowerCase(c.charAt(0)) <= 'f' :
+				c.length() == 7 && c.charAt(0) == '#' && isInteger(c.substring(1), 16);
 
-        // Checking if the colours are actual colours.
-        if (!checkColour.apply(fromS))
-            return PlaceholderResult.value("First colour must be between 0-9 or a-f or a hex colour.");
-        if (!checkColour.apply(toS))
-            return PlaceholderResult.value("Second colour must be between 0-9 or a-f or a hex colour.");
+		// Checking if the colours are actual colours.
+		if (!checkColour.apply(fromS))
+			return PlaceholderResult.value("First colour must be between 0-9 or a-f or a hex colour.");
+		if (!checkColour.apply(toS))
+			return PlaceholderResult.value("Second colour must be between 0-9 or a-f or a hex colour.");
 
-        // Parse colours and create gradient.
-        Color from = new Color(fromS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(fromS.charAt(0)))).getRgb() : Integer.parseInt(fromS.substring(1), 16));
-        Color to = new Color(toS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(toS.charAt(0)))).getRgb() : Integer.parseInt(toS.substring(1), 16));
-        String content = parts[1];
-        List<Color> gradient = createGradient(content.length(), from, to);
+		// Parse colours and create gradient.
+		Color from = new Color(fromS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(fromS.charAt(0)))).getRgb() : Integer.parseInt(fromS.substring(1), 16));
+		Color to = new Color(toS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(toS.charAt(0)))).getRgb() : Integer.parseInt(toS.substring(1), 16));
+		String content = parts[1];
+		List<Color> gradient = createGradient(content.length(), from, to);
 
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < content.length(); i++) {
-            Color c = gradient.get(i);
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < content.length(); i++) {
+			Color c = gradient.get(i);
 
-            result.append("\u00a7#")
-                    .append(String.format("%02x", c.getRed()))
-                    .append(String.format("%02x", c.getGreen()))
-                    .append(String.format("%02x", c.getBlue()))
-                    .append(formatting)
-                    .append(content.charAt(i));
-        }
+			result.append("\u00a7#")
+					.append(String.format("%02x", c.getRed()))
+					.append(String.format("%02x", c.getGreen()))
+					.append(String.format("%02x", c.getBlue()))
+					.append(formatting)
+					.append(content.charAt(i));
+		}
 
-        return PlaceholderResult.value(result.toString());
-    }
+		return PlaceholderResult.value(result.toString());
+	}
 
-    public static int getMoonPhase(long time) {
-        return (int)(time / 24000L % 8L + 8L) % 8;
-    }
+	public static int getMoonPhase(long time) {
+		return (int)(time / 24000L % 8L + 8L) % 8;
+	}
 }

@@ -19,9 +19,9 @@ public class CyclePaintingCommand extends Command {
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReq("cyclepainting")
-                .executes(ctx -> execute(ctx, null))
+				.executes(ctx -> execute(ctx, null))
 				.then(argument("motive", PaintingMotiveArgumentType.paintingMotive())
-                        .executes(ctx -> execute(ctx, PaintingMotiveArgumentType.getPaintingMotive(ctx, "motive")))));
+						.executes(ctx -> execute(ctx, PaintingMotiveArgumentType.getPaintingMotive(ctx, "motive")))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {

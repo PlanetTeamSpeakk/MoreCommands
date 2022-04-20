@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayerInteractionManager.class)
 public class MixinClientPlayerInteractionManager {
 
-    @Inject(at = @At("RETURN"), method = "method_2896", remap = false)
-    public void interactBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cbi) {
-        MixinMethods.doMultiDoorInteract(ReflectionHelper.cast(this), player, world, hand, hit, cbi);
-    }
+	@Inject(at = @At("RETURN"), method = "method_2896", remap = false)
+	public void interactBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cbi) {
+		MixinMethods.doMultiDoorInteract(ReflectionHelper.cast(this), player, world, hand, hit, cbi);
+	}
 }

@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerWorld.class)
 public class MixinServerWorld {
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/FluidState;onScheduledTick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"), method = "tickFluid")
-    private void tickFluid(FluidState state, World world, BlockPos pos) {
-        if (ReflectionHelper.<ServerWorld>cast(this).getGameRules().getBoolean(MoreGameRules.doLiquidFlowRule)) state.onScheduledTick(world, pos);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/FluidState;onScheduledTick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"), method = "tickFluid")
+	private void tickFluid(FluidState state, World world, BlockPos pos) {
+		if (ReflectionHelper.<ServerWorld>cast(this).getGameRules().getBoolean(MoreGameRules.doLiquidFlowRule)) state.onScheduledTick(world, pos);
+	}
 }

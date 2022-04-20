@@ -15,11 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Screen.class)
 public class MixinScreen {
-    @Inject(at = @At("HEAD"), method = "renderTooltip(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/text/Text;II)V", cancellable = true)
-    public void renderTooltip(MatrixStack matrices, Text text, int x, int y, CallbackInfo cbi) {
-        if (text instanceof TranslatableText && "itemGroup.morecommands.unobtainable_items".equalsIgnoreCase(((TranslatableText) text).getKey())) {
-            cbi.cancel();
-            ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, new LiteralText("MoreCommands").setStyle(MoreCommands.DS)), x, y);
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "renderTooltip(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/text/Text;II)V", cancellable = true)
+	public void renderTooltip(MatrixStack matrices, Text text, int x, int y, CallbackInfo cbi) {
+		if (text instanceof TranslatableText && "itemGroup.morecommands.unobtainable_items".equalsIgnoreCase(((TranslatableText) text).getKey())) {
+			cbi.cancel();
+			ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, new LiteralText("MoreCommands").setStyle(MoreCommands.DS)), x, y);
+		}
+	}
 }

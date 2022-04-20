@@ -19,19 +19,19 @@ import java.io.InputStream;
 
 public interface ClientCompat {
 
-    void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format);
+	void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format);
 
-    int getFrameCount(Sprite sprite);
+	int getFrameCount(Sprite sprite);
 
-    void bindTexture(Identifier id);
+	void bindTexture(Identifier id);
 
-    ChatVisibility getChatVisibility(GameOptions options);
+	ChatVisibility getChatVisibility(GameOptions options);
 
-    double getChatLineSpacing(GameOptions options);
+	double getChatLineSpacing(GameOptions options);
 
-    ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit);
+	ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit);
 
-    InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException;
+	InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException;
 
-    double getGamma(GameOptions options);
+	double getGamma(GameOptions options);
 }

@@ -25,15 +25,15 @@ public class NicknameCommand extends Command {
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReq("nick")
 				.then(argument("nickname", IgnorantStringArgumentType.word())
-                        .executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), null))
-                        .then(argument("player", EntityArgumentType.player())
-                                .requires(IS_OP)
-                                .executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), EntityArgumentType.getPlayer(ctx, "player")))))
+						.executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), null))
+						.then(argument("player", EntityArgumentType.player())
+								.requires(IS_OP)
+								.executes(ctx -> execute(ctx, translateFormats(ctx.getArgument("nickname", String.class)), EntityArgumentType.getPlayer(ctx, "player")))))
 				.then(literal("off")
-                        .executes(ctx -> execute(ctx, null, null))
-                        .then(argument("player", EntityArgumentType.player())
-                                .requires(IS_OP)
-                                .executes(ctx -> execute(ctx, null, EntityArgumentType.getPlayer(ctx, "player"))))));
+						.executes(ctx -> execute(ctx, null, null))
+						.then(argument("player", EntityArgumentType.player())
+								.requires(IS_OP)
+								.executes(ctx -> execute(ctx, null, EntityArgumentType.getPlayer(ctx, "player"))))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {

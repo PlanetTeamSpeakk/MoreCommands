@@ -13,11 +13,11 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class MixinServerPlayNetworkHandler {
-    @Shadow @Final private MinecraftServer server;
-    @Shadow public ServerPlayerEntity player;
+	@Shadow @Final private MinecraftServer server;
+	@Shadow public ServerPlayerEntity player;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "method_31286(Ljava/lang/String;)V", remap = false)
-    public char method_31286_charAt(String string, int index) {
-        return MixinMethods.gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "method_31286(Ljava/lang/String;)V", remap = false)
+	public char method_31286_charAt(String string, int index) {
+		return MixinMethods.gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
+	}
 }

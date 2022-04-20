@@ -13,18 +13,18 @@ import java.util.Map;
 
 @Mixin(JsonUnbakedModel.class)
 public interface MixinJsonUnbakedModelAccessor {
-    @Accessor @Mutable
-    void setTransformations(ModelTransformation transformations);
+	@Accessor @Mutable
+	void setTransformations(ModelTransformation transformations);
 
-    @Accessor("transformations")
-    ModelTransformation getRawTransformations();
+	@Accessor("transformations")
+	ModelTransformation getRawTransformations();
 
-    @Accessor
-    JsonUnbakedModel getParent();
+	@Accessor
+	JsonUnbakedModel getParent();
 
-    @Accessor
-    Identifier getParentId();
+	@Accessor
+	Identifier getParentId();
 
-    @Accessor
-    Map<String, Either<SpriteIdentifier, String>> getTextureMap();
+	@Accessor
+	Map<String, Either<SpriteIdentifier, String>> getTextureMap();
 }

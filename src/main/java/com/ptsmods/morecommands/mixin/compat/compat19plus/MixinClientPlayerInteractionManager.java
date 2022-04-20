@@ -17,10 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class MixinClientPlayerInteractionManager {
-    @Shadow private @Final MinecraftClient client;
+	@Shadow private @Final MinecraftClient client;
 
-    @Inject(at = @At("TAIL"), method = "interactBlock")
-    public void interactBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cbi) {
-        MixinMethods.doMultiDoorInteract(ReflectionHelper.cast(this), player, client.world, hand, hitResult, cbi);
-    }
+	@Inject(at = @At("TAIL"), method = "interactBlock")
+	public void interactBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cbi) {
+		MixinMethods.doMultiDoorInteract(ReflectionHelper.cast(this), player, client.world, hand, hitResult, cbi);
+	}
 }

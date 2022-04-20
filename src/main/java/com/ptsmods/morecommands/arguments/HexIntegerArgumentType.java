@@ -14,18 +14,18 @@ import net.minecraft.text.LiteralText;
 import java.util.Collection;
 
 public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgumentType, String, ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String>> {
-    public static final ConstantSerialiser<HexIntegerArgumentType, String> SERIALISER = new ConstantSerialiser<>(HexIntegerArgumentType::new);
+	public static final ConstantSerialiser<HexIntegerArgumentType, String> SERIALISER = new ConstantSerialiser<>(HexIntegerArgumentType::new);
 	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(new LiteralText("The given value is not a (hexa)decimal number between #000000 and #FFFFFF"));
 
-    private HexIntegerArgumentType() {}
+	private HexIntegerArgumentType() {}
 
-    public static HexIntegerArgumentType hexInt() {
-        return new HexIntegerArgumentType();
-    }
+	public static HexIntegerArgumentType hexInt() {
+		return new HexIntegerArgumentType();
+	}
 
-    public static int getHexInt(CommandContext<?> ctx, String argName) {
-        return Integer.parseInt(ctx.getArgument(argName, String.class));
-    }
+	public static int getHexInt(CommandContext<?> ctx, String argName) {
+		return Integer.parseInt(ctx.getArgument(argName, String.class));
+	}
 
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
@@ -33,7 +33,7 @@ public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgu
 		if (s.startsWith("#")) s = s.substring(1);
 		else if (s.toLowerCase().startsWith("0x")) s = s.substring(2);
 
-        int i;
+		int i;
 		if (MoreCommands.isInteger(s) && (i = Integer.parseInt(s)) >= 0 && i <= 0xFFFFFF) return "" + i;
 		else if (MoreCommands.isInteger(s, 16) && (i = Integer.parseInt(s, 16)) >= 0 && i <= 0xFFFFFF) return "" + i;
 
@@ -50,8 +50,8 @@ public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgu
 		return StringArgumentType.word();
 	}
 
-    @Override
-    public ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String> getProperties() {
-        return SERIALISER.getProperties();
-    }
+	@Override
+	public ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String> getProperties() {
+		return SERIALISER.getProperties();
+	}
 }

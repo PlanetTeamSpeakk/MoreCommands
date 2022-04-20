@@ -19,40 +19,40 @@ public class EarlyRiser implements Runnable {
 
 	@Override
 	public void run() {
-        MappingResolver remapper = FabricLoader.getInstance().getMappingResolver();
+		MappingResolver remapper = FabricLoader.getInstance().getMappingResolver();
 
-        Logger log = LogManager.getLogger("MoreCommands-EarlyRiser");
-        String formattingClass = remapper.mapClassName("intermediary", "net.minecraft.class_124");
-        String clickEventActionClass = remapper.mapClassName("intermediary", "net.minecraft.class_2558$class_2559");
+		Logger log = LogManager.getLogger("MoreCommands-EarlyRiser");
+		String formattingClass = remapper.mapClassName("intermediary", "net.minecraft.class_124");
+		String clickEventActionClass = remapper.mapClassName("intermediary", "net.minecraft.class_2558$class_2559");
 
-        // Still using MM's ClassTinkerers class to do the actual tinkering, just using our own copy of their
-        // EnumExtender to prevent clashing with mods that still ship an old version of MM that cannot add enums
-        // on Java 15+
-        ClassTinkerers.addTransformation(formattingClass, makeEnumExtender(log, new EnumAdder(formattingClass, String.class, char.class, boolean.class)
-                .addEnum("RAINBOW", "RAINBOW", 'u', true)));
-        ClassTinkerers.addTransformation(clickEventActionClass, makeEnumExtender(log, new EnumAdder(clickEventActionClass, String.class, boolean.class)
-                .addEnum("SCROLL", "scroll", false)));
+		// Still using MM's ClassTinkerers class to do the actual tinkering, just using our own copy of their
+		// EnumExtender to prevent clashing with mods that still ship an old version of MM that cannot add enums
+		// on Java 15+
+		ClassTinkerers.addTransformation(formattingClass, makeEnumExtender(log, new EnumAdder(formattingClass, String.class, char.class, boolean.class)
+				.addEnum("RAINBOW", "RAINBOW", 'u', true)));
+		ClassTinkerers.addTransformation(clickEventActionClass, makeEnumExtender(log, new EnumAdder(clickEventActionClass, String.class, boolean.class)
+				.addEnum("SCROLL", "scroll", false)));
 
-        log.info("[MoreCommands] Queued RAINBOW Formatting and SCROLL ClickEvent$Action for registration.");
+		log.info("[MoreCommands] Queued RAINBOW Formatting and SCROLL ClickEvent$Action for registration.");
 
-        String prefix = "com.ptsmods.morecommands";
+		String prefix = "com.ptsmods.morecommands";
 
-        ClassTinkerers.define(prefix + ".miscellaneous.CopySound", CopySoundDump.dump());
-        ClassTinkerers.define(prefix + ".miscellaneous.EESound", EESoundDump.dump());
+		ClassTinkerers.define(prefix + ".miscellaneous.CopySound", CopySoundDump.dump());
+		ClassTinkerers.define(prefix + ".miscellaneous.EESound", EESoundDump.dump());
 
-        log.info("[MoreCommands] Defined CopySound and EESound using dumps.");
+		log.info("[MoreCommands] Defined CopySound and EESound using dumps.");
 	}
 
-    private Consumer<ClassNode> makeEnumExtender(Logger log, EnumAdder adder) {
-        Consumer<ClassNode> extender = EnumExtender.makeEnumExtender(adder);
-        return node -> {
-            extender.accept(node);
+	private Consumer<ClassNode> makeEnumExtender(Logger log, EnumAdder adder) {
+		Consumer<ClassNode> extender = EnumExtender.makeEnumExtender(adder);
+		return node -> {
+			extender.accept(node);
 
-            log.printf(Level.INFO, "[MoreCommands] Registered value%s %s on enum %s.", adder.getAdditions().size() == 1 ? "" : "s",
-                    adder.getAdditions().stream()
-                            .map(addition -> addition.name)
-                            .collect(Collectors.joining(", ")),
-                    adder.type);
-        };
-    }
+			log.printf(Level.INFO, "[MoreCommands] Registered value%s %s on enum %s.", adder.getAdditions().size() == 1 ? "" : "s",
+					adder.getAdditions().stream()
+							.map(addition -> addition.name)
+							.collect(Collectors.joining(", ")),
+					adder.type);
+		};
+	}
 }
