@@ -32,6 +32,8 @@ public class ClientOptions {
 		private static void updateTag(boolean oldValue, boolean newValue) {
 			MoreCommandsClient.updateTag();
 		}
+
+		static void init() {}
 	}
 
 	public static class Rendering {
@@ -51,6 +53,8 @@ public class ClientOptions {
 				"Removes transparent lines in item models", "generated from 2D textures.", "\u00A7cRequires restart");
 		public static final BooleanClientOption fixAnimItemSeams = new BooleanClientOption(RENDERING, "Fix Anim Item Seams", false,
 				"Removes transparent lines in animated item models", "generated from 2D textures.", "\u00A7cDisabled by default for performance reasons", "\u00A7cRequires restart");
+
+		static void init() {}
 	}
 
 	public static class Tweaks {
@@ -72,7 +76,6 @@ public class ClientOptions {
 				"Whether flying should be locked.", "When true, you will always be flying.", "It is recommended to bind this option to a key", "if you find yourself often needing it.");
 		public static final BooleanClientOption targetFluids = new BooleanClientOption(TWEAKS, "Target Fluids", false,
 				"Whether you can target fluids with your cursor.", "Useful for placing blocks on water.");
-		@SuppressWarnings("unused") // It is used, just not directly.
 		public static final BooleanClientOption hiddenOptions = new BooleanClientOption(TWEAKS, "Hidden Options", false,
 				"Whether hidden options should be shown.", "You're highly discouraged to enable this.");
 
@@ -97,6 +100,8 @@ public class ClientOptions {
 				"Whether you want to automatically opt your friends", "on NameMC in for join notifications.", "(Get a message when they join/leave)");
 		public static final DoubleClientOption brightnessMultiplier = new DoubleClientOption(TWEAKS, "Brightness Multiplier", 1d, 0d, 10d,
 				"Multiply the brightness to go above and beyond!", "For best effect, set brightness to max.");
+
+		static void init() {}
 	}
 
 	public static class Cheats {
@@ -106,6 +111,8 @@ public class ClientOptions {
 				"Prevents you from taking damage from cacti by making their", "collision box a little bigger than usual.");
 		public static final BooleanClientOption collideAll = new BooleanClientOption(CHEATS, "Collide All", false,
 				"Allows you to collide with (almost) every block in the game.", "Allows you to i.e. walk on cobweb, bushes, grass, etc...", "But not fluids, that's just too much.");
+
+		static void init() {}
 	}
 
 	public static class Chat {
@@ -123,11 +130,15 @@ public class ClientOptions {
 				"Use a 12 hour clock instead of a 24 hour one.", "See 'Show Msg Time'.");
 		public static final BooleanClientOption showSeconds = new BooleanClientOption(CHAT, "Show Seconds", false,
 				"Whether to also add seconds or not.", "See 'Show Msg Time'.");
+
+		static void init() {}
 	}
 
 	public static class EasterEggs {
 		public static final BooleanClientOption rainbows = new BooleanClientOption(EASTER_EGGS, "Rainbows", false,
 				"Everything is \u00A7urainbows\u00A7r.", "\u00A7lEverything", "\u00A74Not suitable for people prone to epileptic seizures!");
+
+		static void init() {}
 	}
 
 	private static final Properties props = new Properties();
@@ -145,7 +156,7 @@ public class ClientOptions {
 		}
 
 		try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
-			props.store(writer, "MoreCommand's client-only options.\nThese should not be changed manually, but rather be set via the in-game menu. (esc -> options -> MoreCommands)");
+			props.store(writer, "MoreCommands' client-only options.\nThese should not be changed manually, but rather be set via the in-game menu. (esc -> options -> MoreCommands)");
 			writer.flush();
 			return true;
 		} catch (Exception e) {
@@ -158,14 +169,26 @@ public class ClientOptions {
 		if (f.exists())
 			try (FileReader reader = new FileReader(f)) {
 				props.load(reader);
-				ClientOption.getOptions().forEach((key, value) -> value.forEach((name, option) -> {
-					if (props.containsKey(key)) option.setValueString(props.getProperty(option.getKey()));
-				}));
+				ClientOption.getUnmappedOptions().values().stream()
+						.filter(option -> props.containsKey(option.getKey()))
+						.forEach(option -> option.setValueString(props.getProperty(option.getKey())));
 				write();
 			} catch (IOException e) {
 				MoreCommands.LOG.catching(e);
 			}
 		else write();
+	}
+
+	public static void init() {
+		// Initialising all classes, so all options are registered.
+		RichPresence.init();
+		Rendering.init();
+		Tweaks.init();
+		Cheats.init();
+		Chat.init();
+		EasterEggs.init();
+
+		read();
 	}
 
 	public static void reset() {

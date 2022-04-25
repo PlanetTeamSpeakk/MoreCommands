@@ -7,16 +7,21 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.mixin.client.accessor.MixinEntitySelectorAccessor;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.mixin.client.accessor.MixinEntitySelectorAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.network.*;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.argument.BlockPosArgumentType;
@@ -26,7 +31,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -44,7 +48,7 @@ import java.util.stream.Stream;
 @Environment(EnvType.CLIENT)
 public abstract class ClientCommand extends Command {
 	private static Screen scheduledScreen = null;
-	public static final Logger log = MoreCommandsClient.log;
+	public static final Logger log = MoreCommandsClient.LOG;
 
 	static {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -89,15 +93,23 @@ public abstract class ClientCommand extends Command {
 	}
 
 	public static void sendMsg(String s, Object... formats) {
-		sendMsg(new LiteralText(fixResets(formatted(s, formats))).setStyle(DS));
+		sendMsg(LiteralTextBuilder.builder(fixResets(formatted(s, formats))).withStyle(DS).build());
 	}
 
 	public static void sendMsg(Text t) {
-		getPlayer().sendMessage(t.getStyle().isEmpty() ? t.shallowCopy().setStyle(DS) : t, false);
+		sendMsg(CompatHolder.getCompat().builderFromText(t));
+	}
+
+	public static void sendMsg(TextBuilder<?> textBuilder) {
+		getPlayer().sendMessage(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), false);
 	}
 
 	public static void sendAbMsg(String s, Object... formats) {
-		sendAbMsg(new LiteralText(fixResets(formatted(s, formats))).setStyle(DS));
+		sendAbMsg(LiteralTextBuilder.builder(fixResets(formatted(s, formats))).withStyle(DS).build());
+	}
+
+	public static void sendAbMsg(TextBuilder<?> textBuilder) {
+		sendAbMsg(textBuilder.build());
 	}
 
 	public static void sendAbMsg(Text t) {
@@ -105,11 +117,15 @@ public abstract class ClientCommand extends Command {
 	}
 
 	public static void sendError(String error, Object... formats) {
-		sendError(new LiteralText(fixResets(formatted(error, formats), Formatting.RED)).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+		sendError(LiteralTextBuilder.builder(fixResets(formatted(error, formats), Formatting.RED)).withStyle(Style.EMPTY.withColor(Formatting.RED)).build());
 	}
 
 	public static void sendError(Text error) {
-		getPlayer().sendMessage(error.getStyle().isEmpty() ? error.copy().setStyle(Style.EMPTY.withColor(Formatting.RED)) : error, false);
+		sendError(CompatHolder.getCompat().builderFromText(error));
+	}
+
+	public static void sendError(TextBuilder<?> textBuilder) {
+		getPlayer().sendMessage(textBuilder.copy().withStyle(style -> Style.EMPTY.withFormatting(Formatting.RED)).build(), false);
 	}
 
 	public static ClientPlayerEntity getPlayer() {

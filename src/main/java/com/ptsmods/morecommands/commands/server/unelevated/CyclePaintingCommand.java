@@ -4,11 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.arguments.PaintingMotiveArgumentType;
+import com.ptsmods.morecommands.arguments.PaintingVariantArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingMotive;
+import net.minecraft.entity.decoration.painting.PaintingVariant;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -20,16 +21,16 @@ public class CyclePaintingCommand extends Command {
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literalReq("cyclepainting")
 				.executes(ctx -> execute(ctx, null))
-				.then(argument("motive", PaintingMotiveArgumentType.paintingMotive())
-						.executes(ctx -> execute(ctx, PaintingMotiveArgumentType.getPaintingMotive(ctx, "motive")))));
+				.then(argument("motive", PaintingVariantArgumentType.PaintingVariant())
+						.executes(ctx -> execute(ctx, PaintingVariantArgumentType.getPaintingVariant(ctx, "motive")))));
 	}
 
-	private int execute(CommandContext<ServerCommandSource> ctx, PaintingMotive motive) throws CommandSyntaxException {
+	private int execute(CommandContext<ServerCommandSource> ctx, PaintingVariant motive) throws CommandSyntaxException {
 		HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160F, false, true);
 		if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
 			PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
-			PaintingMotive oldArt = painting.motive;
-			painting.motive = motive == null ? Registry.PAINTING_MOTIVE.get((Registry.PAINTING_MOTIVE.getRawId(oldArt)+1) % Registry.PAINTING_MOTIVE.size()) : motive;
+			PaintingVariant oldArt = (PaintingVariant) CompatHolder.getCompat().getPaintingVariant(painting);
+			CompatHolder.getCompat().setPaintingVariant(painting, motive == null ? Registry.PAINTING_VARIANT.get((Registry.PAINTING_VARIANT.getRawId(oldArt)+1) % Registry.PAINTING_VARIANT.size()) : motive);
 			BlockPos pos = painting.getBlockPos();
 			Entity painting0 = MoreCommands.cloneEntity(painting, false);
 			painting.kill();

@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.gamerule.v1.CustomGameRuleCategory;
@@ -10,7 +11,6 @@ import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameRules;
@@ -22,7 +22,11 @@ import java.util.function.BiConsumer;
 
 public class MoreGameRules {
 	public static final CustomGameRuleCategory grc = new CustomGameRuleCategory(new Identifier("morecommands:main"),
-			new LiteralText("MoreCommands").setStyle(Style.EMPTY.withFormatting(ClientOptions.Tweaks.defColour.getValue().asFormatting()).withBold(true)));
+			LiteralTextBuilder.builder("MoreCommands")
+					.withStyle(Style.EMPTY
+							.withFormatting(ClientOptions.Tweaks.defColour.getValue().asFormatting())
+							.withBold(true))
+					.build());
 
 	private static final List<GameRules.Key<?>> pendingPermChecks = new ArrayList<>();
 	public static final GameRules.Key<EnumRule<FormattingColour>> DFrule = createEnumRule("defaultFormatting", FormattingColour.GOLD, (server, value) -> MoreCommands.updateFormatting(server, 0, value.get()));
@@ -76,8 +80,8 @@ public class MoreGameRules {
 
 	public static boolean checkBooleanWithPerm(GameRules gameRules, GameRules.Key<GameRules.BooleanRule> key, Entity entity) {
 		// Returns inversed value if the player does not have the required permission.
-		return entity == null ? gameRules.getBoolean(key) : !Command.isPermissionsLoaded() ? gameRules.getBoolean(key) :
-				Permissions.check(entity, "morecommands.gamerule." + key.getName()) == gameRules.getBoolean(key);
+		// Returns set value is entity is null, LuckPerms (or compatible) isn't installed or permission isn't set for entity.
+		return entity == null || !Command.isPermissionsLoaded() ? gameRules.getBoolean(key) : Permissions.check(entity, "morecommands.gamerule." + key.getName(), true) == gameRules.getBoolean(key);
 	}
 
 	public static void checkPerms(MinecraftServer server) {

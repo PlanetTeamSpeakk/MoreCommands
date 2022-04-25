@@ -9,13 +9,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
-import net.minecraft.text.LiteralText;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 
 import java.util.Collection;
 
 public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgumentType, String, ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String>> {
 	public static final ConstantSerialiser<HexIntegerArgumentType, String> SERIALISER = new ConstantSerialiser<>(HexIntegerArgumentType::new);
-	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(new LiteralText("The given value is not a (hexa)decimal number between #000000 and #FFFFFF"));
+	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(LiteralTextBuilder.builder("The given value is not a (hexa)decimal number between #000000 and #FFFFFF").build());
 
 	private HexIntegerArgumentType() {}
 

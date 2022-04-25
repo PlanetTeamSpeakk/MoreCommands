@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.clientoption;
 
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 import java.util.function.BiConsumer;
@@ -46,6 +46,6 @@ public class BooleanClientOption extends ClientOption<Boolean> {
 
 	@Override
 	public Text createButtonText(String name) {
-		return new LiteralText(name + " : " + Command.formatFromBool(getValueRaw()) + String.valueOf(getValueRaw()).toUpperCase());
+		return LiteralTextBuilder.builder(name + " : " + Command.formatFromBool(getValueRaw()) + String.valueOf(getValueRaw()).toUpperCase()).build();
 	}
 }

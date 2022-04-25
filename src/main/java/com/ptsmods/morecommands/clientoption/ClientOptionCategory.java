@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.clientoption;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public enum ClientOptionCategory {
@@ -14,6 +15,7 @@ public enum ClientOptionCategory {
 	EASTER_EGGS("Easter Eggs", ClientOptions.Tweaks.hiddenOptions, "Don't look in here.", "Stay away.", "", "Keep \u00A7c\u00A7lOUT\u00A7r!! >:c");
 
 	private final String name;
+	@Nullable
 	private final BooleanClientOption hidden;
 	private final List<String> comments;
 
@@ -21,7 +23,7 @@ public enum ClientOptionCategory {
 		this(name, null, comments);
 	}
 
-	ClientOptionCategory(String name, BooleanClientOption hidden, String... comments) {
+	ClientOptionCategory(String name, @Nullable BooleanClientOption hidden, String... comments) {
 		this.name = name;
 		this.hidden = hidden;
 		this.comments = comments == null ? null : ImmutableList.copyOf(comments);
@@ -31,6 +33,7 @@ public enum ClientOptionCategory {
 		return name;
 	}
 
+	@Nullable
 	public BooleanClientOption getHidden() {
 		return hidden;
 	}

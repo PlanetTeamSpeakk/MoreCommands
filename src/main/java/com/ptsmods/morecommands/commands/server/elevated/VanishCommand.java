@@ -5,9 +5,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
+import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -16,7 +16,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
@@ -35,7 +34,10 @@ public class VanishCommand extends Command {
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literalReqOp("vanish").executes(ctx -> execute(ctx, null)).then(argument("players", EntityArgumentType.players()).executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
+		dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literalReqOp("vanish")
+				.executes(ctx -> execute(ctx, null))
+				.then(argument("players", EntityArgumentType.players())
+						.executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
 	}
 
 	private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
@@ -58,7 +60,9 @@ public class VanishCommand extends Command {
 		player.getDataTracker().set(DataTrackerHelper.VANISH_TOGGLED, true);
 		Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(CompatHolder.getCompat().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
 		player.getWorld().getChunkManager().unloadEntity(player);
-		if (sendmsg && MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player)) player.getServer().getPlayerManager().broadcast(new TranslatableText("multiplayer.player.left", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
+		if (sendmsg && MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player))
+			player.getServer().getPlayerManager().broadcast(translatableText("multiplayer.player.left", player.getDisplayName())
+					.withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build(), MessageType.SYSTEM, Util.NIL_UUID);
 	}
 
 	public static void unvanish(ServerPlayerEntity player) {
@@ -67,7 +71,10 @@ public class VanishCommand extends Command {
 			Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(CompatHolder.getCompat().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
 			trackers.remove(player);
 			player.getWorld().getChunkManager().loadEntity(player);
-			if (MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player)) player.getServer().getPlayerManager().broadcast(new TranslatableText("multiplayer.player.joined", player.getDisplayName()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)), MessageType.SYSTEM, Util.NIL_UUID);
+			if (MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doJoinMessageRule, player))
+				player.getServer().getPlayerManager().broadcast(translatableText("multiplayer.player.joined",
+						player.getDisplayName())
+						.withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build(), MessageType.SYSTEM, Util.NIL_UUID);
 		}
 	}
 }

@@ -6,9 +6,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.ptsmods.morecommands.arguments.HexIntegerArgumentType;
 import com.ptsmods.morecommands.arguments.PotionArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import com.ptsmods.morecommands.arguments.HexIntegerArgumentType;
 import net.minecraft.command.argument.StatusEffectArgumentType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -17,10 +17,8 @@ import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Iterator;
@@ -28,7 +26,7 @@ import java.util.List;
 
 public class PotionCommand extends Command {
 
-	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(new LiteralText("The item you're holding is not a potion or tipped arrow.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
+	private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(literalText("The item you're holding is not a potion or tipped arrow.").build());
 
 	@Override
 	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -59,7 +57,10 @@ public class PotionCommand extends Command {
 		int colour = HexIntegerArgumentType.getHexInt(ctx, "colour");
 		ItemStack stack = checkHeldItem(ctx);
 		stack.getOrCreateNbt().putInt("CustomPotionColor", colour);
-		sendMsg(ctx, new LiteralText("The potion's colour has been set to ").setStyle(DS).append(new LiteralText(String.format("#%06X", colour)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))).append(new LiteralText(".").setStyle(DS))));
+		sendMsg(ctx, literalText("The potion's colour has been set to ", DS)
+				.append(literalText(String.format("#%06X", colour))
+						.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))))
+				.append(literalText(".")));
 		return colour;
 	}
 

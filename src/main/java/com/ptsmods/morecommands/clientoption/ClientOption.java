@@ -40,7 +40,7 @@ public abstract class ClientOption<T> {
 		this.updateConsumer = updateConsumer;
 		this.comments = comments == null ? null : ImmutableList.copyOf(comments);
 
-		options.computeIfAbsent(category, t -> new LinkedHashMap<>()).put(name, this);
+		options.computeIfAbsent(category, c -> new LinkedHashMap<>()).put(name, this);
 	}
 
 	public ClientOptionCategory getCategory() {

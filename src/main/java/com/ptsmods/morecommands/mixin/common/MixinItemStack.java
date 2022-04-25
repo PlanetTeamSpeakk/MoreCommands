@@ -1,15 +1,15 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
-import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -50,7 +50,8 @@ public abstract class MixinItemStack {
 	public void getName(CallbackInfoReturnable<Text> cbi) {
 		ItemStack thiz = ReflectionHelper.cast(this);
 		NbtCompound compoundTag = thiz.getSubNbt("display");
-		if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER) cbi.setReturnValue(new TranslatableText(thiz.getTranslationKey()).setStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)));
+		if ((compoundTag == null || !compoundTag.contains("Name", 8)) && thiz.getItem() == Items.SPAWNER)
+			cbi.setReturnValue(TranslatableTextBuilder.builder(thiz.getTranslationKey(), Style.EMPTY.withFormatting(Formatting.YELLOW)).build());
 	}
 
 	@Inject(at = @At("RETURN"), method = "hasGlint()Z", cancellable = true)

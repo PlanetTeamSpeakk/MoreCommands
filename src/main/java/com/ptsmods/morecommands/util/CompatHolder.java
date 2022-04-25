@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.util;
 
+import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.Version;
 import com.ptsmods.morecommands.api.compat.Compat;
@@ -10,7 +11,7 @@ import com.ptsmods.morecommands.compat.client.ClientCompat17;
 import com.ptsmods.morecommands.compat.client.ClientCompat19;
 
 public class CompatHolder {
-	private static final Compat compat = (Compat) determineCurrentCompat(false);
+	private static final Compat compat = Holder.setCompat((Compat) determineCurrentCompat(false));
 	private static final ClientCompat clientCompat = (ClientCompat) determineCurrentCompat(true);
 
 	public static Compat getCompat() {

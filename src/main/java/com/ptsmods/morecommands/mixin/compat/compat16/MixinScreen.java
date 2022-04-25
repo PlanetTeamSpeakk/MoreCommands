@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import org.spongepowered.asm.mixin.Final;

@@ -7,7 +7,6 @@ import com.ptsmods.morecommands.util.TickStatistics;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 public class TpsCommand extends Command {
@@ -20,10 +19,13 @@ public class TpsCommand extends Command {
 				sendMsg(ctx, String.join(DF + ", ", formatTps(tickStatistics.tps5Sec()), formatTps(tickStatistics.tps10Sec()), formatTps(tickStatistics.tps1Min()), formatTps(tickStatistics.tps5Min()), formatTps(tickStatistics.tps15Min())));
 				sendMsg(ctx, "Tick durations (min/med/95%ile/max ms) from last 10s, 1m:");
 				sendMsg(ctx, formatTickDuration(tickStatistics.duration10Sec()) + DF + "; " + formatTickDuration(tickStatistics.duration1Min()));
-				sendMsg(ctx, new LiteralText("")
-						.append(new LiteralText("Also have a look at ").setStyle(DS))
-						.append(new LiteralText("Spark ").formatted(Formatting.DARK_GRAY, Formatting.UNDERLINE))
-						.append(new LiteralText("\u26A1").formatted(Formatting.YELLOW, Formatting.UNDERLINE, Formatting.BOLD)).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://spark.lucko.me"))));
+				sendMsg(ctx, literalText("")
+						.append(literalText("Also have a look at ", DS))
+						.append(literalText("Spark ")
+								.formatted(Formatting.DARK_GRAY, Formatting.UNDERLINE))
+						.append(literalText("\u26A1")
+								.formatted(Formatting.YELLOW, Formatting.UNDERLINE, Formatting.BOLD))
+						.withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://spark.lucko.me"))));
 				return 1;
 			}));
 		}

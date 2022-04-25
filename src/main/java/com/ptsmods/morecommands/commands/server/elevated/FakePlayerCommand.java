@@ -22,7 +22,6 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.world.GameMode;
 
 import java.io.IOException;
@@ -53,7 +52,7 @@ public class FakePlayerCommand extends Command {
 									if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
 									else {
 										try {
-											p.networkHandler.disconnect(new LiteralText("yeET"));
+											p.networkHandler.disconnect(literalText("yeET").build());
 											sendMsg(ctx, "The player has been disconnected.");
 										} catch (Exception e) {
 											log.catching(e);
@@ -64,6 +63,7 @@ public class FakePlayerCommand extends Command {
 								}))));
 	}
 
+	@SuppressWarnings("unchecked")
 	private int executeCreate(CommandContext<ServerCommandSource> ctx, String skinname, UUID userId) {
 		String username = ctx.getArgument("name", String.class);
 		if (skinname == null) skinname = username;
@@ -127,7 +127,7 @@ public class FakePlayerCommand extends Command {
 
 				Field f = ReflectionHelper.getYarnField(ClientConnection.class, "channel", "field_11651");
 				// I beg you, do not look at the following line. Please!
-				f.set(ccon, new AbstractChannel(null) {@Override public ChannelConfig config() {return new DefaultChannelConfig(this);} @Override public boolean isOpen() {return false;} @Override public boolean isActive() {return false;} @Override public ChannelMetadata metadata() {return new ChannelMetadata(true);} @Override protected AbstractUnsafe newUnsafe() {return null;} @Override protected boolean isCompatible(EventLoop loop) {return false;} @Override protected SocketAddress localAddress0() {return null;} @Override protected SocketAddress remoteAddress0() {return null;} @Override protected void doBind(SocketAddress localAddress) throws Exception {} @Override protected void doDisconnect() throws Exception {} @Override protected void doClose() throws Exception {} @Override protected void doBeginRead() throws Exception {} @Override protected void doWrite(ChannelOutboundBuffer in) throws Exception {}});
+				f.set(ccon, new AbstractChannel(null) {@Override public ChannelConfig config() {return new DefaultChannelConfig(this);} @Override public boolean isOpen() {return false;} @Override public boolean isActive() {return false;} @Override public ChannelMetadata metadata() {return new ChannelMetadata(true);} @Override protected AbstractUnsafe newUnsafe() {return null;} @Override protected boolean isCompatible(EventLoop loop) {return false;} @Override protected SocketAddress localAddress0() {return null;} @Override protected SocketAddress remoteAddress0() {return null;} @Override protected void doBind(SocketAddress localAddress) {} @Override protected void doDisconnect() {} @Override protected void doClose() {} @Override protected void doBeginRead() {} @Override protected void doWrite(ChannelOutboundBuffer in) {}});
 				// Yuck
 
 				if (ctx.getSource().getEntity() != null) {

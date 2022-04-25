@@ -1,16 +1,20 @@
 package com.ptsmods.morecommands.gui;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptionCategory;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
@@ -25,10 +29,11 @@ public class ClientOptionsChildScreen extends Screen {
 	private int page = 0;
 
 	ClientOptionsChildScreen(ClientOptionsScreen parent, ClientOptionCategory category) {
-		super(new LiteralText("")
-				.append(new LiteralText("MoreCommands").setStyle(MoreCommands.DS))
-				.append(new LiteralText(" client options").setStyle(MoreCommands.SS))
-				.append(new LiteralText(" " + category.getName()).setStyle(Style.EMPTY.withFormatting(Formatting.WHITE))));
+		super(LiteralTextBuilder.builder("")
+				.append(LiteralTextBuilder.builder("MoreCommands").withStyle(MoreCommands.DS))
+				.append(LiteralTextBuilder.builder(" client options").withStyle(MoreCommands.SS))
+				.append(LiteralTextBuilder.builder(" " + category.getName()).withStyle(Style.EMPTY.withFormatting(Formatting.WHITE)))
+				.build());
 		this.category = category;
 		this.parent = parent;
 	}
@@ -41,6 +46,7 @@ public class ClientOptionsChildScreen extends Screen {
 		int row = 0;
 		ScreenAddon addon = (ScreenAddon) this;
 		List<Pair<ClickableWidget, ClientOption<?>>> page = new ArrayList<>();
+
 		for (Map.Entry<String, ClientOption<?>> option : ClientOption.getOptions().get(category).entrySet()) {
 			if (page.size() == 10) {
 				pages.add(page);
@@ -67,28 +73,28 @@ public class ClientOptionsChildScreen extends Screen {
 
 		if (!page.isEmpty()) pages.add(page);
 		if (pages.size() > 1) {
-			seekLeft = addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 145, 120, 20, new LiteralText("<---"), button -> {
+			seekLeft = addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 145, 120, 20, LiteralTextBuilder.builder("<---").build(), button -> {
 				this.page -= 1;
 				updatePage();
 			}) {
 				@Override
 				protected MutableText getNarrationMessage() {
-					return new TranslatableText("gui.narrate.button", new LiteralText("previous page"));
+					return TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("previous page")).build();
 				}
 			});
-			seekRight = addon.mc$addButton(new ButtonWidget(width / 2 + 30, height / 6 + 145, 120, 20, new LiteralText("--->"), button -> {
+			seekRight = addon.mc$addButton(new ButtonWidget(width / 2 + 30, height / 6 + 145, 120, 20, LiteralTextBuilder.builder("--->").build(), button -> {
 				this.page += 1;
 				updatePage();
 			}) {
 				@Override
 				protected MutableText getNarrationMessage() {
-					return new TranslatableText("gui.narrate.button", new LiteralText("next page"));
+					return TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("next page")).build();
 				}
 			});
 		}
 		updatePage();
 
-		addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, new LiteralText("Reset"), button -> {
+		addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), button -> {
 			ClientOptions.reset();
 			init();
 		}));
@@ -113,7 +119,7 @@ public class ClientOptionsChildScreen extends Screen {
 			if (comments != null && btn.isMouseOver(mouseX, mouseY)) {
 				List<Text> texts = new ArrayList<>();
 				for (String s : comments)
-					texts.add(new LiteralText(s));
+					texts.add(LiteralTextBuilder.builder(s).build());
 				renderTooltip(matrices, texts, mouseX, mouseY);
 			}
 		});

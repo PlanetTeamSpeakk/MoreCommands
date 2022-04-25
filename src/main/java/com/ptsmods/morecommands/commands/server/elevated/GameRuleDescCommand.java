@@ -5,8 +5,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.world.GameRules;
 
 public class GameRuleDescCommand extends Command {
@@ -17,7 +15,7 @@ public class GameRuleDescCommand extends Command {
 		GameRules.accept(new GameRules.Visitor() {
 			public <T extends GameRules.Rule<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
 				gamerule.then(literal(key.getName()).then(literal("desc").executes(ctx -> {
-					sendMsg(ctx, new LiteralText("Description for gamerule " + key.getName() + ": ").append(new TranslatableText(key.getTranslationKey() + ".description")));
+					sendMsg(ctx, literalText("Description for gamerule " + key.getName() + ": ").append(translatableText(key.getTranslationKey() + ".description")));
 					return 1;
 				})));
 			}

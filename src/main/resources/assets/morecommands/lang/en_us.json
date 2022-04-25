@@ -56,14 +56,16 @@
   "gamerule.doPriorWorkPenalty.description": "Whether altering an item in an anvil should make the next alteration more expensive.",
   "gamerule.doItemsFireDamage": "Do Items Fire Damage",
   "gamerule.doItemsFireDamage.description": "Whether item entities should sustain fire damage.",
-  "gamerule.doPathfinding": "Do Pathfinding",
-  "gamerule.doPathfinding.description": "Whether mobs should walk around your world.",
+  "gamerule.doPathFinding": "Do Pathfinding",
+  "gamerule.doPathFinding.description": "Whether mobs should walk around your world.",
   "gamerule.doGoals": "Do Goals",
   "gamerule.doGoals.description": "Whether mobs should have goals. (Aka AI)",
   "gamerule.doStacktrace": "Do Stacktrace",
   "gamerule.doStacktrace.description": "Whether errors should be printed to the console when one gets thrown while running a command.",
   "gamerule.sendCommandFeedbackToOps": "Send Command Feedback To Ops",
   "gamerule.sendCommandFeedbackToOps.description": "Whether feedback from commands should be sent to other operators.",
+  "gamerule.doChairs": "Do Chairs",
+  "gamerule.doChair.description": "Whether stairs may act as chairs when right-clicked on.",
   "commands.data.item.query": "%s has the following item data: %s",
   "commands.data.item.get": "%s on item stack %s after scale factor of %s is %s"
 }

@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,6 +13,9 @@ import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.compat.Compat;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.callbacks.PostInitCallback;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
@@ -27,9 +29,6 @@ import com.ptsmods.morecommands.mixin.common.accessor.*;
 import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
 import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
-import eu.pb4.placeholders.PlaceholderAPI;
-import eu.pb4.placeholders.PlaceholderContext;
-import eu.pb4.placeholders.PlaceholderResult;
 import io.netty.buffer.Unpooled;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
@@ -65,7 +64,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.*;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -96,9 +97,9 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -146,8 +147,6 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 			LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 		}
 
-		MoreGameRules.init();
-		DataTrackerHelper.init();
 		MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 	}
 
@@ -158,8 +157,14 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 	@Override
 	public void onInitialize() {
 		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
+		// Instantiating class and thereby Compat
+		//noinspection ResultOfMethodCallIgnored
+		CompatHolder.getCompat();
+		MoreGameRules.init();
+		DataTrackerHelper.init();
+
 		File dir = new File("config/MoreCommands");
-		if (!dir.exists()) dir.mkdirs();
+		if (!dir.exists() && !dir.mkdirs()) throw new RuntimeException("Could not make config dir.");
 
 		List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
 				.map(MoreCommands::getInstance)
@@ -211,7 +216,7 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 			Registry.register(Registry.BLOCK, new Identifier("morecommands:locked_chest"), lockedChest);
 			Registry.register(Registry.ITEM, new Identifier("morecommands:locked_chest"), lockedChestItem);
 			Registry.register(Registry.ITEM, new Identifier("minecraft:nether_portal"), netherPortalItem);
-			Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.reachAttribute);
+			Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:reach"), ReachCommand.REACH_ATTRIBUTE);
 			Registry.register(Registry.ATTRIBUTE, new Identifier("morecommands:swim_speed"), SpeedCommand.SpeedType.swimSpeedAttribute);
 
 			S2CPlayChannelEvents.REGISTER.register((handler, sender, server, types) -> {
@@ -220,6 +225,9 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 
 			ServerPlayNetworking.registerGlobalReceiver(new Identifier("morecommands:sit_on_stairs"), (server, player, handler, buf, responseSender) -> {
 				BlockPos pos = buf.readBlockPos();
+				if (player.getPos().squaredDistanceTo(new Vec3d(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
+					return; // Out of reach
+
 				BlockState state = player.getWorld().getBlockState(pos);
 				if (MoreGameRules.checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.doChairsRule, player) && Chair.isValid(state))
 					Chair.createAndPlace(pos, player, player.getWorld());
@@ -264,12 +272,12 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 			compat.registerArgumentType("morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
 			compat.registerArgumentType("morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
 			compat.registerArgumentType("morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
-			compat.registerArgumentType("morecommands:painting_motive", PaintingMotiveArgumentType.class, PaintingMotiveArgumentType.SERIALISER);
+			compat.registerArgumentType("morecommands:painting_variant", PaintingVariantArgumentType.class, PaintingVariantArgumentType.SERIALISER);
 			compat.registerArgumentType("morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
 		} else {
 			UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
 				BlockState state = world.getBlockState(hit.getBlockPos());
-				if (!player.isSneaking() && MoreGameRules.checkBooleanWithPerm(world.getGameRules(), MoreGameRules.doChairsRule, player) &&
+				if (!player.isSneaking() && player.getStackInHand(hand).isEmpty() && MoreGameRules.checkBooleanWithPerm(world.getGameRules(), MoreGameRules.doChairsRule, player) &&
 						CompatHolder.getCompat().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
 					Chair.createAndPlace(hit.getBlockPos(), player, world);
 					return ActionResult.SUCCESS;
@@ -297,15 +305,15 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 				} else howlingPlayers.remove(p);
 		});
 
-		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) {
-			// Example: %morecommands:reach/1%
-			PlaceholderAPI.register(new Identifier("morecommands:reach"), ctx -> ctx.getPlayer() == null ? PlaceholderResult.invalid("A player must be passed.") :
-					PlaceholderResult.value(new DecimalFormat("0" + ("0".equals(ctx.getArgument()) ? "" :
-							"." + multiplyString("#", isInteger(ctx.getArgument()) ? Integer.parseInt(ctx.getArgument()) : 2))).format(ReachCommand.getReach(ctx.getPlayer(), false))));
-
-			// Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
-			PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);
-		}
+//		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) {
+//			// Example: %morecommands:reach/1%
+//			PlaceholderAPI.register(new Identifier("morecommands:reach"), ctx -> ctx.getPlayer() == null ? PlaceholderResult.invalid("A player must be passed.") :
+//					PlaceholderResult.value(new DecimalFormat("0" + ("0".equals(ctx.getArgument()) ? "" :
+//							"." + multiplyString("#", isInteger(ctx.getArgument()) ? Integer.parseInt(ctx.getArgument()) : 2))).format(ReachCommand.getReach(ctx.getPlayer(), false))));
+//
+//			// Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
+//			PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);
+//		}
 	}
 
 	static <T extends Command> List<Class<T>> getCommandClasses(String type, Class<T> clazz) {
@@ -319,9 +327,10 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 		try {
 			List<Path> classNames = new ArrayList<>();
 			// It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
-			if (jar.isDirectory()) classNames.addAll(Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath())
-					.filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
-					.collect(Collectors.toList()));
+			if (jar.isDirectory())
+				try (Stream<Path> files = Files.walk(new File(String.join(File.separator, jar.getAbsolutePath(), "com", "ptsmods", "morecommands", "commands", type, "")).toPath())) {
+					classNames.addAll(files.filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$")).collect(Collectors.toList()));
+				}
 			else {
 				ZipFile zip = new ZipFile(jar);
 				Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -331,6 +340,8 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 					if (entry.getName().startsWith("com/ptsmods/morecommands/commands/" + type + "/") && entry.getName().endsWith(".class") && !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
 						classNames.add(Paths.get(entry.getName()));
 				}
+
+				zip.close();
 			}
 
 			classNames.forEach(path -> {
@@ -443,6 +454,7 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 	public static String textToString(Text text, Style parentStyle, boolean translate, boolean includeFormattings) {
 		if (parentStyle == null) parentStyle = Style.EMPTY;
 
+		TextBuilder<?> builder = CompatHolder.getCompat().builderFromText(text);
 		StringBuilder s = new StringBuilder();
 		Style style = text.getStyle();
 		style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
@@ -474,17 +486,23 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 			if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
 		}
 
-		if (text instanceof TranslatableText && translate) {
-			TranslatableText tt = (TranslatableText) text;
+		if (builder instanceof TranslatableTextBuilder && translate) {
+			TranslatableTextBuilder tt = (TranslatableTextBuilder) builder; // TODO
 			Object[] args = new Object[tt.getArgs().length];
 
-			for (int i = 0; i < args.length; i++)
-				if (tt.getArgs()[i] instanceof Text)
-					args[i] = textToString((Text) tt.getArgs()[i], style, true, includeFormattings);
-				else args[i] = tt.getArgs()[i];
+			for (int i = 0; i < args.length; i++) {
+				Object arg = tt.getArgs()[i];
+				if (arg instanceof Text || arg instanceof TextBuilder)
+					args[i] = textToString(arg instanceof Text ? (Text) arg : ((TextBuilder<?>) arg).build(), style, true, includeFormattings);
+				else args[i] = arg;
+			}
 
-			s.append(I18n.translate(tt.getKey(), args));
-		} else s.append(text.asString());
+			s.append(I18n.translate(tt.getKey(), Arrays.stream(args)
+					.map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
+					.collect(Collectors.toList())));
+		} else s.append(builder instanceof LiteralTextBuilder ? ((LiteralTextBuilder) builder).getLiteral() :
+				builder instanceof TranslatableTextBuilder ? ((TranslatableTextBuilder) builder).getKey() :
+				text);
 
 		if (!text.getSiblings().isEmpty())
 			for (Text t : text.getSiblings())
@@ -543,7 +561,7 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 	 *
 	 * @param str The equation to solve.
 	 * @return The answer to the equation.
-	 * @author Boann (https://stackoverflow.com/a/26227947)
+	 * @author Boann (<a href="https://stackoverflow.com/a/26227947">https://stackoverflow.com/a/26227947</a>)
 	 */
 	public static double eval(final String str) {
 		return new Object() {
@@ -897,6 +915,7 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 		return tag;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public static Entity summon(NbtCompound tag, ServerWorld world, Vec3d pos) {
 		return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
 			entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, ((MixinEntityAccessor) entityx).getYaw_(), ((MixinEntityAccessor) entityx).getPitch_());
@@ -1069,85 +1088,66 @@ public class MoreCommands implements IMoreCommands, ModInitializer {
 		return Collections.unmodifiableList(gradient);
 	}
 
-	public static Text parsePlaceholders(String text, MinecraftServer server) {
-		return parsePlaceholders(new LiteralText(text), server);
-	}
-
-	public static Text parsePlaceholders(Text text, MinecraftServer server) {
-		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) return PlaceholderAPI.parseText(text, server);
-		else return text;
-	}
-
-	public static Text parsePlaceholders(String text, ServerPlayerEntity player) {
-		return parsePlaceholders(new LiteralText(text), player);
-	}
-
-	public static Text parsePlaceholders(Text text, ServerPlayerEntity player) {
-		if (FabricLoader.getInstance().isModLoaded("placeholder-api")) return PlaceholderAPI.parseText(text, player);
-		else return text;
-	}
-
 	public static Text getNickname(PlayerEntity player) {
 		 Text nickname = player.getDataTracker().get(DataTrackerHelper.NICKNAME).orElse(null);
 		 if (nickname == null) return null;
 
 		 Identifier id = new Identifier("morecommands:gradient");
-		 return FabricLoader.getInstance().isModLoaded("placeholder-api") && player instanceof ServerPlayerEntity ? PlaceholderAPI.parseTextCustom(nickname, (ServerPlayerEntity) player,
-				 ImmutableMap.of(id, Objects.requireNonNull(MoreCommands::gradientPlaceholder)), PlaceholderAPI.PLACEHOLDER_PATTERN) : nickname;
+		 return nickname;
 	}
 
-	public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
-		String arg = ctx.getArgument();
-		String[] parts = arg.split(";", 2);
-
-		if (arg.isEmpty() || parts.length != 2 || !parts[0].contains("-")) return PlaceholderResult.value("Invalid format. Valid example: %morecommands:gradient/#FFAA00-#FF0000;Text here%");
-
-		String fromS = parts[0].substring(0, parts[0].indexOf('-'));
-		String toS = parts[0].substring(parts[0].indexOf('-') + 1, parts[0].contains(",") ? parts[0].indexOf(',') : parts[0].length());
-		String formatting = parts[0].contains(",") ? parts[0].substring(parts[0].indexOf(',') + 1) : "";
-
-		char[] chs = formatting.toCharArray();
-		Character[] chsI = new Character[chs.length];
-
-		for (int i = 0; i < chs.length; i++)
-			chsI[i] = chs[i];
-
-		// Turns any formatting, like lm or lo, into their actual string representation.
-		formatting = Arrays.stream(chsI)
-				.map(c -> "" + Character.toLowerCase(c))
-				.filter("klmno"::contains)
-				.map(c -> "\u00A7" + c)
-				.collect(Collectors.joining());
-
-		Function<String, Boolean> checkColour = c -> c.length() == 1 ? Character.isDigit(c.charAt(0)) || Character.toLowerCase(c.charAt(0)) >= 'a' && Character.toLowerCase(c.charAt(0)) <= 'f' :
-				c.length() == 7 && c.charAt(0) == '#' && isInteger(c.substring(1), 16);
-
-		// Checking if the colours are actual colours.
-		if (!checkColour.apply(fromS))
-			return PlaceholderResult.value("First colour must be between 0-9 or a-f or a hex colour.");
-		if (!checkColour.apply(toS))
-			return PlaceholderResult.value("Second colour must be between 0-9 or a-f or a hex colour.");
-
-		// Parse colours and create gradient.
-		Color from = new Color(fromS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(fromS.charAt(0)))).getRgb() : Integer.parseInt(fromS.substring(1), 16));
-		Color to = new Color(toS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(toS.charAt(0)))).getRgb() : Integer.parseInt(toS.substring(1), 16));
-		String content = parts[1];
-		List<Color> gradient = createGradient(content.length(), from, to);
-
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < content.length(); i++) {
-			Color c = gradient.get(i);
-
-			result.append("\u00a7#")
-					.append(String.format("%02x", c.getRed()))
-					.append(String.format("%02x", c.getGreen()))
-					.append(String.format("%02x", c.getBlue()))
-					.append(formatting)
-					.append(content.charAt(i));
-		}
-
-		return PlaceholderResult.value(result.toString());
-	}
+//	public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
+//		String arg = ctx.getArgument();
+//		String[] parts = arg.split(";", 2);
+//
+//		if (arg.isEmpty() || parts.length != 2 || !parts[0].contains("-")) return PlaceholderResult.value("Invalid format. Valid example: %morecommands:gradient/#FFAA00-#FF0000;Text here%");
+//
+//		String fromS = parts[0].substring(0, parts[0].indexOf('-'));
+//		String toS = parts[0].substring(parts[0].indexOf('-') + 1, parts[0].contains(",") ? parts[0].indexOf(',') : parts[0].length());
+//		String formatting = parts[0].contains(",") ? parts[0].substring(parts[0].indexOf(',') + 1) : "";
+//
+//		char[] chs = formatting.toCharArray();
+//		Character[] chsI = new Character[chs.length];
+//
+//		for (int i = 0; i < chs.length; i++)
+//			chsI[i] = chs[i];
+//
+//		// Turns any formatting, like lm or lo, into their actual string representation.
+//		formatting = Arrays.stream(chsI)
+//				.map(c -> "" + Character.toLowerCase(c))
+//				.filter("klmno"::contains)
+//				.map(c -> "\u00A7" + c)
+//				.collect(Collectors.joining());
+//
+//		Function<String, Boolean> checkColour = c -> c.length() == 1 ? Character.isDigit(c.charAt(0)) || Character.toLowerCase(c.charAt(0)) >= 'a' && Character.toLowerCase(c.charAt(0)) <= 'f' :
+//				c.length() == 7 && c.charAt(0) == '#' && isInteger(c.substring(1), 16);
+//
+//		// Checking if the colours are actual colours.
+//		if (!checkColour.apply(fromS))
+//			return PlaceholderResult.value("First colour must be between 0-9 or a-f or a hex colour.");
+//		if (!checkColour.apply(toS))
+//			return PlaceholderResult.value("Second colour must be between 0-9 or a-f or a hex colour.");
+//
+//		// Parse colours and create gradient.
+//		Color from = new Color(fromS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(fromS.charAt(0)))).getRgb() : Integer.parseInt(fromS.substring(1), 16));
+//		Color to = new Color(toS.length() == 1 ? Objects.requireNonNull(TextColor.fromFormatting(Formatting.byCode(toS.charAt(0)))).getRgb() : Integer.parseInt(toS.substring(1), 16));
+//		String content = parts[1];
+//		List<Color> gradient = createGradient(content.length(), from, to);
+//
+//		StringBuilder result = new StringBuilder();
+//		for (int i = 0; i < content.length(); i++) {
+//			Color c = gradient.get(i);
+//
+//			result.append("\u00a7#")
+//					.append(String.format("%02x", c.getRed()))
+//					.append(String.format("%02x", c.getGreen()))
+//					.append(String.format("%02x", c.getBlue()))
+//					.append(formatting)
+//					.append(content.charAt(i));
+//		}
+//
+//		return PlaceholderResult.value(result.toString());
+//	}
 
 	public static int getMoonPhase(long time) {
 		return (int)(time / 24000L % 8L + 8L) % 8;

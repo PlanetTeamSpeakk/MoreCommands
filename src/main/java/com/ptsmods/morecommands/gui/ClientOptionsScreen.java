@@ -2,15 +2,15 @@ package com.ptsmods.morecommands.gui;
 
 import com.google.common.collect.Lists;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptionCategory;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 import java.util.*;
@@ -21,9 +21,10 @@ public class ClientOptionsScreen extends Screen {
 	private ButtonWidget wicButton;
 
 	public ClientOptionsScreen(Screen parent) {
-		super(new LiteralText("")
-				.append(new LiteralText("MoreCommands").setStyle(MoreCommands.DS))
-				.append(new LiteralText(" client options").setStyle(MoreCommands.SS)));
+		super(LiteralTextBuilder.builder("")
+				.append(LiteralTextBuilder.builder("MoreCommands").withStyle(MoreCommands.DS))
+				.append(LiteralTextBuilder.builder(" client options").withStyle(MoreCommands.SS))
+				.build());
 		this.parent = parent;
 	}
 
@@ -38,22 +39,22 @@ public class ClientOptionsScreen extends Screen {
 		ScreenAddon addon = (ScreenAddon) this;
 
 		for (ClientOptionCategory category : ClientOptionCategory.values()) {
-			if (category.getHidden().getValue()) continue;
+			if (category.getHidden() != null && category.getHidden().getValue()) continue;
 
 			int x = width / 2 + (right ? 5 : -155);
 			int y = height / 6 + 24 * (row + 1) - 6;
 
-			categoryButtons.put(addon.mc$addButton(new ButtonWidget(x, y, 150, 20, new LiteralText(category.getName()),
+			categoryButtons.put(addon.mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.builder(category.getName()).build(),
 					button -> client.setScreen(new ClientOptionsChildScreen(this, category)))), category);
 
 			if (right) row++;
 			right = !right;
 		}
 
-		wicButton = addon.mc$addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, new LiteralText("World Init Commands"),
+		wicButton = addon.mc$addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.builder("World Init Commands").build(),
 				button -> client.setScreen(new WorldInitCommandsScreen(this))));
 
-		addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, new LiteralText("Reset"), btn -> {
+		addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), btn -> {
 			ClientOptions.reset();
 			init();
 		}));
@@ -70,13 +71,13 @@ public class ClientOptionsScreen extends Screen {
 			if (btn.isMouseOver(mouseX, mouseY) && category.getComments() != null) {
 				List<Text> texts = new ArrayList<>();
 				for (String s : category.getComments())
-					texts.add(new LiteralText(s));
+					texts.add(LiteralTextBuilder.builder(s).build());
 				renderTooltip(matrices, texts, mouseX, mouseY);
 			}
 		});
 
 		if (wicButton.isMouseOver(mouseX, mouseY))
-			renderTooltip(matrices, Lists.newArrayList(new LiteralText("Commands that get ran upon creating a world.")), mouseX, mouseY);
+			renderTooltip(matrices, Lists.newArrayList(LiteralTextBuilder.builder("Commands that get ran upon creating a world.").build()), mouseX, mouseY);
 	}
 
 	@Override

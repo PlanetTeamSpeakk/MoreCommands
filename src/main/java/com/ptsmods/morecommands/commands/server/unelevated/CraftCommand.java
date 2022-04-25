@@ -8,7 +8,6 @@ import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
 
 public class CraftCommand extends Command {
 	@Override
@@ -19,7 +18,7 @@ public class CraftCommand extends Command {
 				public boolean canUse(PlayerEntity player) {
 					return true;
 				}
-			}, new TranslatableText("container.crafting")));
+			}, translatableText("container.crafting").build()));
 			return 1;
 		}));
 	}

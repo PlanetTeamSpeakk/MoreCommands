@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.clientoption;
 
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
@@ -46,10 +46,10 @@ public class IntegerClientOption extends ClientOption<Integer> {
 
 	@Override
 	public Object createButton(int x, int y, String name, Runnable init) {
-		return new SliderWidget(x, y, 150, 20, new LiteralText(name + " : " + getValueRaw()), MathHelper.clamp((double) (getValueRaw() - min) / (double) (max - min), 0.0D, 1.0D)) {
+		return new SliderWidget(x, y, 150, 20, LiteralTextBuilder.builder(name + " : " + getValueRaw()).build(), MathHelper.clamp((double) (getValueRaw() - min) / (double) (max - min), 0.0D, 1.0D)) {
 			@Override
 			protected void updateMessage() {
-				setMessage(new LiteralText(name + " : " + getValueRaw()));
+				setMessage(LiteralTextBuilder.builder(name + " : " + getValueRaw()).build());
 			}
 
 			@Override
@@ -62,6 +62,6 @@ public class IntegerClientOption extends ClientOption<Integer> {
 
 	@Override
 	public Text createButtonText(String name) {
-		return new LiteralText(name + " : " + getValueRaw());
+		return LiteralTextBuilder.builder(name + " : " + getValueRaw()).build();
 	}
 }

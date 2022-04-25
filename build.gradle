@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "0.11-SNAPSHOT"
+	id "fabric-loom" version "0.12-SNAPSHOT"
 	id "maven-publish"
 }
 
@@ -21,6 +21,12 @@ repositories {
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven { url 'https://maven.terraformersmc.com/releases/' }
 	maven { url "https://maven.nucleoid.xyz/" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
     flatDir {
         dirs 'lib'
     }
@@ -36,10 +42,10 @@ dependencies {
 	modImplementation "com.ptsmods:devlogin:2.0"
 	modImplementation "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
 	modImplementation "com.github.astei:lazydfu:0.1.2"
+    modImplementation "curse.maven:luckperms-431733:3545767"
 
 	implementation include("com.github.Chocohead:Fabric-ASM:v2.3")
 	implementation include(name: "discord-rpc-1.6.2")
-	modImplementation include("eu.pb4:placeholder-api:0.3.0")
 
     implementation include(project(path: 'api', configuration: 'namedElements'))
     implementation include(project(path: 'compat:compat16', configuration: 'namedElements'))
@@ -55,12 +61,6 @@ processResources {
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
 	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.encoding = "UTF-8"
-	if (JavaVersion.current().isJava9Compatible())
-		 it.options.release = 8
 }
 
 java {

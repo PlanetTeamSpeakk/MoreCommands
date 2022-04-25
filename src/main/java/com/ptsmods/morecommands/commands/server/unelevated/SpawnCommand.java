@@ -5,12 +5,12 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -27,7 +27,9 @@ public class SpawnCommand extends Command {
 		Entity entity = player == null ? ctx.getSource().getEntityOrThrow() : player;
 		ServerWorld world = Objects.requireNonNull(ctx.getSource().getServer().getWorld(World.OVERWORLD));
 		MoreCommands.teleport(entity, world, Vec3d.ofCenter(world.getSpawnPos()), entity.getYaw(), entity.getPitch());
-		if (player != null) sendMsg(player, new LiteralText("You have been teleported to spawn by ").setStyle(DS).append(ctx.getSource().getDisplayName()).append("."));
+		if (player != null) sendMsg(player, literalText("You have been teleported to spawn by ", DS)
+				.append(CompatHolder.getCompat().builderFromText(ctx.getSource().getDisplayName()))
+				.append("."));
 		return 1;
 	}
 }

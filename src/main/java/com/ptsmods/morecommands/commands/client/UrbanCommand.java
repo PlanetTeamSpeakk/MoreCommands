@@ -5,12 +5,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.io.IOException;
@@ -28,9 +27,12 @@ public class UrbanCommand extends ClientCommand {
 	@Override
 	public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
 		parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-		dispatcher.register(cLiteral("urban").then(cArgument("query", StringArgumentType.greedyString()).executes(ctx -> execute(ctx))));
+		dispatcher.register(cLiteral("urban")
+				.then(cArgument("query", StringArgumentType.greedyString())
+						.executes(this::execute)));
 	}
 
+	@SuppressWarnings("unchecked")
 	private int execute(CommandContext<ClientCommandSource> ctx) {
 		MoreCommands.execute(() -> {
 			int result = 0;
@@ -41,7 +43,8 @@ public class UrbanCommand extends ClientCommand {
 			}
 			List<Map<String, ?>> results;
 			try {
-				results = cache.containsKey(query.toLowerCase()) ? cache.get(query.toLowerCase()) : (List<Map<String, ?>>) new Gson().fromJson(MoreCommands.getHTML("https://api.urbandictionary.com/v0/define?term=" + query.replace(' ', '+')), Map.class).get("list");
+				results = cache.containsKey(query.toLowerCase()) ? cache.get(query.toLowerCase()) : (List<Map<String, ?>>) new Gson().fromJson(MoreCommands.getHTML("https://api.urbandictionary.com/v0/define?term=" +
+						query.replace(' ', '+')), Map.class).get("list");
 				cache.put(query.toLowerCase(), results);
 			} catch (IOException e) {
 				log.catching(e);
@@ -61,13 +64,13 @@ public class UrbanCommand extends ClientCommand {
 				sendMsg("\u00A0");
 				sendMsg(Formatting.GREEN + "Thumbs up: " + ((Double) data.get("thumbs_up")).intValue());
 				sendMsg(Formatting.RED + "Thumbs down: " + ((Double) data.get("thumbs_down")).intValue());
-				LiteralText link = new LiteralText("Click ");
-				link.setStyle(DS);
-				LiteralText linkChild = new LiteralText("here");
-				linkChild.setStyle(Style.EMPTY.withFormatting(Formatting.BLUE, Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, data.get("permalink").toString())));
+				LiteralTextBuilder link = literalText("Click ");
+				link.withStyle(DS);
+				LiteralTextBuilder linkChild = literalText("here");
+				linkChild.withStyle(Style.EMPTY.withFormatting(Formatting.BLUE, Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, data.get("permalink").toString())));
 				link.append(linkChild);
-				linkChild = new LiteralText(" to view this result in the browser.");
-				linkChild.setStyle(DS);
+				linkChild = literalText(" to view this result in the browser.");
+				linkChild.withStyle(DS);
 				link.append(linkChild);
 				sendMsg(link);
 				sendMsg("\u00A0");
@@ -78,15 +81,15 @@ public class UrbanCommand extends ClientCommand {
 					log.catching(e);
 				}
 				sendMsg("Written by " + SF + data.get("author") + DF + " on " + SF + (date == null ? "UNKNOWN" : formatDate.format(date) + DF + " at " + SF + formatTime.format(date)) + DF + ".");
-				LiteralText pager = new LiteralText("");
-				LiteralText prev = new LiteralText("[<<<]");
-				if (result > 0) prev.setStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result-1) + " " + query)));
-				else prev.setStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
+				LiteralTextBuilder pager = literalText("");
+				LiteralTextBuilder prev = literalText("[<<<]");
+				if (result > 0) prev.withStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result-1) + " " + query)));
+				else prev.withStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
 				pager.append(prev);
-				pager.append(new LiteralText("  "));
-				LiteralText next = new LiteralText("[>>>]");
-				if (result < results.size()-1) next.setStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result+1) + " " + query)));
-				else next.setStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
+				pager.append(literalText("  "));
+				LiteralTextBuilder next = literalText("[>>>]");
+				if (result < results.size()-1) next.withStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result+1) + " " + query)));
+				else next.withStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
 				pager.append(next);
 				sendMsg(pager);
 			}
@@ -100,27 +103,36 @@ public class UrbanCommand extends ClientCommand {
 		return s.trim();
 	}
 
-	private LiteralText parseText(String s) {
+	private TextBuilder<?> parseText(String s) {
 		s += "[]";
-		LiteralText text = new LiteralText("  ");
-		text.setStyle(DS);
+		LiteralTextBuilder text = literalText("  ");
+		text.withStyle(DS);
 		while (s.contains("[")) {
-			text.append(new LiteralText(s.substring(0, s.indexOf('['))));
+			text.append(literalText(s.substring(0, s.indexOf('['))));
 			String term = s.substring(s.indexOf('[')+1, s.indexOf(']'));
 			s = s.substring(s.indexOf(']')+1);
 			if (term.isEmpty()) continue;
-			LiteralText child = new LiteralText(term);
-			LiteralText hoverText = new LiteralText("Click to look up ");
-			hoverText.setStyle(DS);
-			LiteralText hoverTextChild = new LiteralText(term);
-			hoverTextChild.setStyle(SS);
+
+			LiteralTextBuilder child = literalText(term);
+
+			LiteralTextBuilder hoverText = literalText("Click to look up ");
+			hoverText.withStyle(DS);
+
+			LiteralTextBuilder hoverTextChild = literalText(term);
+			hoverTextChild.withStyle(SS);
 			hoverText.append(hoverTextChild);
-			hoverTextChild = new LiteralText(".");
-			hoverTextChild.setStyle(DS);
+
+			hoverTextChild = literalText(".");
+			hoverTextChild.withStyle(DS);
 			hoverText.append(hoverTextChild);
-			child.setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + term)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)));
+
+			child.withStyle(SS
+					.withFormatting(Formatting.UNDERLINE)
+					.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + term))
+					.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText.build())));
 			text.append(child);
 		}
+
 		return text;
 	}
 }

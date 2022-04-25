@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.arikia.dev.drpc.DiscordUser;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,7 +14,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 import java.io.File;
@@ -71,7 +71,14 @@ public class DiscordCommand extends Command {
 				return 0;
 			} else if (MoreCommands.discordTagNoPerm.contains(player)) sendDiscordTag(ctx, player);
 			else {
-				sendMsg(player, ctx.getSource().getPlayer().getDisplayName().shallowCopy().append(new LiteralText(" has requested your ").setStyle(DS).append(new LiteralText("Discord tag").setStyle(SS).append(new LiteralText(". Click ").setStyle(DS).append(new LiteralText("here").setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayer().getEntityName()))).append(new LiteralText(" to send it to them.").setStyle(DS)))))));
+				sendMsg(player, literalText("")
+						.append(CompatHolder.getCompat().builderFromText(ctx.getSource().getPlayer().getDisplayName()))
+						.append(literalText(" has requested your ", DS))
+						.append(literalText("Discord tag", SS))
+						.append(literalText(". Click ")
+								.append(literalText("here", SS.withFormatting(Formatting.UNDERLINE)
+												.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayer().getEntityName()))))
+						.append(literalText(" to send it to them.", DS))));
 				sendMsg(ctx, "A request has been sent to the player.");
 			}
 			return 1;
@@ -86,7 +93,18 @@ public class DiscordCommand extends Command {
 	private void sendDiscordTag(CommandContext<ServerCommandSource> ctx, PlayerEntity player) {
 		DiscordUser user = MoreCommands.discordTags.get(player);
 		String tag = user.username + "#" + user.discriminator;
-		sendMsg(ctx, player.getDisplayName().shallowCopy().append(new LiteralText("'s ").setStyle(SS).append(new LiteralText( "Discord tag is ").setStyle(DS).append(new LiteralText(tag).setStyle(SS.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to ").setStyle(DS).append(new LiteralText("copy").setStyle(SS).append(new LiteralText(".").setStyle(DS)))))).append(new LiteralText(".").setStyle(DS))))));
+		sendMsg(ctx, literalText("")
+				.append(CompatHolder.getCompat().builderFromText(player.getDisplayName()))
+				.append(literalText("'s ", SS))
+				.append(literalText( "Discord tag is ")
+						.withStyle(DS))
+				.append(literalText(tag)
+						.withStyle(SS
+								.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag))
+								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, literalText("Click to ", DS)
+										.append(literalText("copy", SS))
+												.append(literalText(".", DS)).build()))))
+						.append(literalText(".")));
 	}
 
 	@Override

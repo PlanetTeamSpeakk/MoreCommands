@@ -2,16 +2,15 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinLivingEntityAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -36,8 +35,8 @@ public class RemoveCommand extends Command {
 				((MixinLivingEntityAccessor) entity).setDead(true);
 		}
 
-		sendMsg(source.getEntity(), targets.size() == 1 ? new TranslatableText("commands.kill.success.single", targets.iterator().next().getDisplayName()).setStyle(DS) :
-				new TranslatableText("commands.kill.success.multiple", targets.size()).setStyle(DS));
+		sendMsg(source.getEntity(), targets.size() == 1 ? translatableText("commands.kill.success.single", targets.iterator().next().getDisplayName()).withStyle(DS) :
+				translatableText("commands.kill.success.multiple", targets.size()).withStyle(DS));
 		return targets.size();
 	}
 }

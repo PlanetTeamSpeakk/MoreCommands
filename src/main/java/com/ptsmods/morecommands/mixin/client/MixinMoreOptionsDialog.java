@@ -1,13 +1,13 @@
 package com.ptsmods.morecommands.mixin.client;
 
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.gui.WorldInitCommandsScreen;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.world.CreateWorldScreen;
 import net.minecraft.client.gui.screen.world.MoreOptionsDialog;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.LiteralText;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,7 +21,7 @@ public abstract class MixinMoreOptionsDialog {
 
 	@Inject(at = @At("TAIL"), method = "init")
 	private void init(CreateWorldScreen parent, MinecraftClient client, TextRenderer textRenderer, CallbackInfo ci) {
-		((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, new LiteralText("Initialisation Commands"),
+		((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, LiteralTextBuilder.builder("Initialisation Commands").build(),
 				btn -> MinecraftClient.getInstance().setScreen(new WorldInitCommandsScreen(parent)))).visible = false;
 	}
 

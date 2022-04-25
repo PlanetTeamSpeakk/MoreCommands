@@ -69,8 +69,7 @@ public class Compat182 extends Compat18 {
 	@Override
 	public Map<Identifier, Object> getBlockTags() {
 		return blockTags == null ? blockTags = Arrays.stream(BlockTags.class.getFields())
-				.map(f -> ReflectionHelper.getFieldValue(f, null))
-				// It won't compile TagKey::id as TagKey is a record and records don't exist on Java 1.8 (another reason to drop 1.16 support)
-				.collect(ImmutableMap.toImmutableMap(tag -> ReflectionHelper.invokeMethod(ReflectionHelper.getYarnMethod(TagKey.class, "comp_327", "id"), tag), tag -> tag)) : blockTags;
+				.map(f -> ReflectionHelper.<TagKey<?>, Object>getFieldValue(f, null))
+				.collect(ImmutableMap.toImmutableMap(TagKey::id, tag -> tag)) : blockTags;
 	}
 }

@@ -6,7 +6,6 @@ import com.ptsmods.morecommands.miscellaneous.ChatHudLineWithContent;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -39,7 +38,8 @@ public class SearchCommand extends ClientCommand {
 			else {
 				sendMsg("Found " + SF + results.size() + DF + " result" + (results.size() == 1 ? "" : "s") + " (click on one to scroll to it):");
 				AtomicInteger i = new AtomicInteger(1);
-				results.forEach(line -> sendMsg(new LiteralText("  " + i.getAndIncrement() + ". " + line.getContent()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(SCROLL_ACTION, String.valueOf(line.getId()))))));
+				results.forEach(line -> sendMsg(literalText("  " + i.getAndIncrement() + ". " + line.getContent())
+						.withStyle(Style.EMPTY.withClickEvent(new ClickEvent(SCROLL_ACTION, String.valueOf(line.getId()))))));
 			}
 			lines = linesCopy;
 			return results.size();

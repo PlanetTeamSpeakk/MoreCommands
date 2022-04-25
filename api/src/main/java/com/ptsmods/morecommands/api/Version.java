@@ -7,21 +7,26 @@ import org.jetbrains.annotations.NotNull;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 public class Version implements Comparable<Version> {
 	private static final Version current;
 
-	public static final Version V1_16 = new Version(1, 16);
-	public static final Version V1_17 = new Version(1, 17);
-	public static final Version V1_18 = new Version(1, 18);
-	public static final Version V1_18_2 = new Version(1, 18, 2);
-	public static final Version V1_19 = new Version(1, 19);
+	public static final Version V1_16 = new Version(16);
+	public static final Version V1_17 = new Version(17);
+	public static final Version V1_18 = new Version(18);
+	public static final Version V1_18_2 = new Version(18, 2);
+	public static final Version V1_19 = new Version(19);
 
 	static {
 		current = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(Version.class.getResourceAsStream("/version.json"))), JsonObject.class).get("release_target").getAsString());
 	}
 
 	public final int major, minor, revision;
+
+	public Version(int minor) {
+		this(minor, 0);
+	}
 
 	public Version(int minor, int revision) {
 		this(1, minor, revision);
@@ -47,15 +52,15 @@ public class Version implements Comparable<Version> {
 	}
 
 	public boolean isNewerThan(Version version) {
-		return major > version.major || major == version.major && (minor > version.minor || minor == version.minor && revision > version.revision);
+		return !equals(version) && isNewerThanOrEqual(version);
 	}
 
 	public boolean isNewerThanOrEqual(Version version) {
-		return equals(version) || isNewerThan(version);
+		return compareToAll(version).allMatch(i -> i >= 0);
 	}
 
 	public boolean isOlderThan(Version version) {
-		return major < version.major || major == version.major && (minor < version.minor || minor == version.minor && revision < version.revision);
+		return !equals(version) && compareToAll(version).allMatch(i -> i <= 0);
 	}
 
 	@Override
@@ -67,8 +72,7 @@ public class Version implements Comparable<Version> {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof Version)) return false;
-		Version version = (Version) o;
-		return major == version.major && minor == version.minor && revision == version.revision;
+		return compareToAll((Version) o).allMatch(i -> i == 0);
 	}
 
 	public boolean equalsExclRev(Version v) {
@@ -91,5 +95,13 @@ public class Version implements Comparable<Version> {
 	@Override
 	public int compareTo(@NotNull Version version) {
 		return isNewerThan(version) ? 1 : isOlderThan(version) ? -1 : 0;
+	}
+
+	public IntStream compareToAll(@NotNull Version version) {
+		return IntStream.builder()
+				.add(Integer.compare(version.major, major))
+				.add(Integer.compare(version.minor, minor))
+				.add(Integer.compare(version.revision, revision))
+				.build();
 	}
 }

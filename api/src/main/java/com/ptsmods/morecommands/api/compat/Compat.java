@@ -5,12 +5,16 @@ import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -20,6 +24,7 @@ import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -106,4 +111,16 @@ public interface Compat {
 	Map<Identifier, Object> getBlockTags();
 
 	DoubleStream doubleStream(DoubleList doubles);
+
+	Object getPaintingVariant(PaintingEntity painting);
+
+	void setPaintingVariant(PaintingEntity entity, Object variant);
+
+	// Text-related
+
+	MutableText buildText(LiteralTextBuilder builder);
+
+	MutableText buildText(TranslatableTextBuilder builder);
+
+	TextBuilder<?> builderFromText(Text text);
 }

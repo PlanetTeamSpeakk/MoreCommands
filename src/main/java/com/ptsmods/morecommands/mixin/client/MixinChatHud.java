@@ -1,15 +1,20 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
 import com.ptsmods.morecommands.miscellaneous.ChatHudLineWithContent;
-import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -37,17 +42,21 @@ public abstract class MixinChatHud {
 
 	@ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;addMessage(Lnet/minecraft/text/Text;I)V"), method = "addMessage(Lnet/minecraft/text/Text;)V")
 	public void addMessage_addMessage(Args args) {
-		if (args.<Text>get(0) instanceof LiteralText && "\u00A0".equals(args.<Text>get(0).asString())) args.set(0, new LiteralText(""));
+		TextBuilder<?> builder = CompatHolder.getCompat().builderFromText(args.get(0));
+		if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral())) args.set(0, LiteralTextBuilder.builder("").build());
 		args.set(1, id++);
 	}
 
 	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;addMessage(Lnet/minecraft/text/Text;IIZ)V"), method = "addMessage(Lnet/minecraft/text/Text;I)V")
 	public Text addMessage_addMessage_text(Text text) {
 		return ClientOptions.Chat.showMsgTime.getValue() && text != null ?
-				new LiteralText("[" + (
+				LiteralTextBuilder.builder("[" + (
 						ClientOptions.Chat.use12HourClock.getValue() ? ClientOptions.Chat.showSeconds.getValue() ? twelveSec : twelve : ClientOptions.Chat.showSeconds.getValue() ? twentyfourSec : twentyfour)
-						.format(LocalDateTime.now()) + "] ").setStyle(MoreCommands.SS).append(text.shallowCopy().setStyle(text.getStyle().getColor() == null ? text.getStyle().withFormatting(Formatting.WHITE) : text.getStyle())) :
-				text;
+						.format(LocalDateTime.now()) + "] ")
+						.withStyle(MoreCommands.SS)
+						.append(CompatHolder.getCompat().builderFromText(text)
+								.withStyle(style -> style.getColor() == null ? style.withFormatting(Formatting.WHITE) : style))
+						.build() : text;
 	}
 
 	@Inject(at = @At("TAIL"), method = "addMessage(Lnet/minecraft/text/Text;IIZ)V")

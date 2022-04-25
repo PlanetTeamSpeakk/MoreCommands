@@ -10,8 +10,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
@@ -22,20 +22,22 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.predicate.NbtPredicate;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 // An unbelievable amount of code was copied from DataCommand and associated classes.
 // Please don't sue me.
 public class CdataCommand extends ClientCommand {
 
-	private static final SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.data.get.multiple"));
-	private static final DynamicCommandExceptionType GET_UNKNOWN_EXCEPTION = new DynamicCommandExceptionType((object) -> new TranslatableText("commands.data.get.unknown", object));
-	private static final DynamicCommandExceptionType GET_INVALID_EXCEPTION = new DynamicCommandExceptionType((object) -> new TranslatableText("commands.data.get.invalid", object));
+	private static final SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.get.multiple").build());
+	private static final DynamicCommandExceptionType GET_UNKNOWN_EXCEPTION = new DynamicCommandExceptionType((object) -> translatableText("commands.data.get.unknown", object).build());
+	private static final DynamicCommandExceptionType GET_INVALID_EXCEPTION = new DynamicCommandExceptionType((object) -> translatableText("commands.data.get.invalid", object).build());
 	private static final List<Function<String, ClientObjectType>> OBJECT_TYPE_FACTORIES = ImmutableList.of(ClientEntityDataObject.TYPE_FACTORY, ClientBlockDataObject.TYPE_FACTORY, ClientItemDataObject.TYPE_FACTORY);
 	private static final List<ClientObjectType> TARGET_OBJECT_TYPES = OBJECT_TYPE_FACTORIES.stream().map((function) -> function.apply("target")).collect(ImmutableList.toImmutableList());
 
@@ -110,7 +112,7 @@ public class CdataCommand extends ClientCommand {
 	}
 
 	public static class ClientEntityDataObject implements ClientDataCommandObject {
-		private static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.data.entity.invalid"));
+		private static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.entity.invalid").build());
 		public static final Function<String, ClientObjectType> TYPE_FACTORY = (string) -> new ClientObjectType() {
 			public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
 				try {
@@ -135,16 +137,16 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.entity.query", this.entity.getDisplayName(), CompatHolder.getCompat().toText(tag));
+			return translatableText("commands.data.entity.query", this.entity.getDisplayName(), CompatHolder.getCompat().toText(tag)).build();
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
-			return new TranslatableText("commands.data.entity.get", nbtPath, this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", scale), result);
+			return translatableText("commands.data.entity.get", nbtPath, this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", scale), result).build();
 		}
 	}
 
 	public static class ClientBlockDataObject implements ClientDataCommandObject {
-		private static final SimpleCommandExceptionType INVALID_BLOCK_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
+		private static final SimpleCommandExceptionType INVALID_BLOCK_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.block.invalid").build());
 		public static final Function<String, ClientObjectType> TYPE_FACTORY = (string) -> new ClientObjectType() {
 			public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
 				BlockPos blockPos = getLoadedBlockPos(context, string + "Pos");
@@ -170,11 +172,11 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), CompatHolder.getCompat().toText(tag));
+			return translatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), CompatHolder.getCompat().toText(tag)).build();
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
-			return new TranslatableText("commands.data.block.get", nbtPath, this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", scale), result);
+			return translatableText("commands.data.block.get", nbtPath, this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", scale), result).build();
 		}
 	}
 
@@ -204,11 +206,11 @@ public class CdataCommand extends ClientCommand {
 		}
 
 		public Text feedbackQuery(NbtElement tag) {
-			return new TranslatableText("commands.data.item.query", stack.getName(), CompatHolder.getCompat().toText(tag));
+			return translatableText("commands.data.item.query", stack.getName(), CompatHolder.getCompat().toText(tag)).build();
 		}
 
 		public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
-			return new TranslatableText("commands.data.item.get", nbtPath, stack.getName(), String.format(Locale.ROOT, "%.2f", scale), result);
+			return translatableText("commands.data.item.get", nbtPath, stack.getName(), String.format(Locale.ROOT, "%.2f", scale), result).build();
 		}
 	}
 

@@ -2,8 +2,8 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -13,7 +13,6 @@ import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 public class InvseeCommand extends Command {
@@ -31,9 +30,10 @@ public class InvseeCommand extends Command {
 		player.openHandledScreen(new NamedScreenHandlerFactory() {
 			@Override
 			public Text getDisplayName() {
-				return new LiteralText("")
-						.append(target.getDisplayName())
-						.append(new LiteralText("'" + (MoreCommands.textToString(target.getDisplayName(), null, false).endsWith("s") ? "" : "s") + " inventory"));
+				return literalText("")
+						.append(CompatHolder.getCompat().builderFromText(target.getDisplayName()))
+						.append(literalText("'" + (MoreCommands.textToString(target.getDisplayName(), null, false).endsWith("s") ? "" : "s") + " inventory"))
+						.build();
 			}
 
 			@Override

@@ -4,16 +4,15 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import com.ptsmods.morecommands.callbacks.RenderTickCallback;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.callbacks.RenderTickCallback;
+import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinWindowAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.lwjgl.opengl.GL11;
 
@@ -24,7 +23,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ScreenshotCommand extends ClientCommand {
 	private Map<String, Object> queue = null;
@@ -72,7 +73,12 @@ public class ScreenshotCommand extends ClientCommand {
 						if (!out.getParentFile().exists()) out.getParentFile().mkdirs();
 						ImageIO.write(img, "png", out);
 						long saveTime = System.currentTimeMillis() - start;
-						sendMsg(new LiteralText("Saved screenshot as ").setStyle(DS).append(new LiteralText(fileName).setStyle(SS.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath())))).append(new LiteralText(", took " + (saveTime + takeTime) / 1000 + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).").setStyle(DS)));
+						sendMsg(literalText("Saved screenshot as ", DS)
+								.append(literalText(fileName)
+										.withStyle(SS
+												.withFormatting(Formatting.UNDERLINE)
+												.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, out.getCanonicalPath()))))
+								.append(literalText(", took " + (saveTime + takeTime) / 1000 + " seconds (" + takeTime / 1000 + " seconds to take the screenshot and " + saveTime / 1000 + " seconds to save it).", DS)));
 					} catch (IOException e) {
 						log.catching(e);
 						sendMsg(Formatting.RED + "An unknown error occurred while saving the image: " + SF + e.getMessage() + DF + ".");
@@ -94,7 +100,11 @@ public class ScreenshotCommand extends ClientCommand {
 		// y = sqrt(715,827,882 / 16 / 9) = 20066.22
 		// x = 715,827,882 / y = 35673.28
 		// Went with these values, however, as OpenGL does not support dimensions larger than 32768 as of right now.
-		dispatcher.register(cLiteral("screenshot").executes(ctx -> execute(ctx, -1, -1)).then(cArgument("width", IntegerArgumentType.integer(1, 32768)).then(cArgument("height", IntegerArgumentType.integer(1, 18432)).executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
+		dispatcher.register(cLiteral("screenshot")
+				.executes(ctx -> execute(ctx, -1, -1))
+				.then(cArgument("width", IntegerArgumentType.integer(1, 32768))
+						.then(cArgument("height", IntegerArgumentType.integer(1, 18432))
+								.executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
 	}
 
 	private int execute(CommandContext<ClientCommandSource> ctx, int width, int height) {

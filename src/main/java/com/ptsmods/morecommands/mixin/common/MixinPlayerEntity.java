@@ -2,15 +2,16 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
-import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -22,15 +23,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity {
-	@Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;")
-	private static DefaultAttributeContainer.Builder createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
-		return cbi.getReturnValue().add(ReachCommand.reachAttribute).add(SpeedCommand.SpeedType.swimSpeedAttribute);
+	@Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;", cancellable = true)
+	private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
+		cbi.setReturnValue(cbi.getReturnValue().add(Holder.REACH_ATTRIBUTE).add(SpeedCommand.SpeedType.swimSpeedAttribute));
 	}
 
 	@Inject(at = @At("RETURN"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
 	public void getName(CallbackInfoReturnable<Text> cbi) {
-		LiteralText t = (LiteralText) cbi.getReturnValue();
-		if (MoreCommands.isCute(ReflectionHelper.cast(this))) cbi.setReturnValue(t.setStyle(t.getStyle().withFormatting(Formatting.LIGHT_PURPLE)));
+		if (!MoreCommands.isCute(ReflectionHelper.cast(this))) return;
+		TextBuilder<?> builder = CompatHolder.getCompat().builderFromText(cbi.getReturnValue());
+		cbi.setReturnValue(builder.withStyle(style -> style.withFormatting(Formatting.LIGHT_PURPLE)).build());
 	}
 
 	@Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)

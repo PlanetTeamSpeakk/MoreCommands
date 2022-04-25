@@ -10,10 +10,10 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.potion.Potion;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -43,7 +43,7 @@ public class PotionArgumentType implements CompatArgumentType<PotionArgumentType
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-		return CommandSource.suggestFromIdentifier(Registry.POTION.stream(), builder, Registry.POTION::getId, potion -> new LiteralText(Registry.POTION.getId(potion).getPath()));
+		return CommandSource.suggestFromIdentifier(Registry.POTION.stream(), builder, Registry.POTION::getId, potion -> LiteralTextBuilder.builder(Registry.POTION.getId(potion).getPath()).build());
 	}
 
 	@Override

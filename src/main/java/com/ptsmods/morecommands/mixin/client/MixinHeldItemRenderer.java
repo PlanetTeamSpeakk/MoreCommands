@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinHeldItemRenderer {
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isUsingItem()Z", ordinal = 1), method = "renderFirstPersonItem")
 	private boolean renderFirstPersonItem(LivingEntity livingEntity, AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack item, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-		MoreCommandsClient.log.info("Rendering held item: " + item.getItem());
+		MoreCommandsClient.LOG.info("Rendering held item: " + item.getItem());
 		return livingEntity.isUsingItem();
 	}
 }

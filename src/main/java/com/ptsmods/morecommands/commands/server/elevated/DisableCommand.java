@@ -7,13 +7,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 
 import java.io.File;
@@ -23,7 +23,7 @@ import java.util.*;
 
 // Instead of permissions, we add the ability to disable commands entirely and, where possible, just use Minecraft's default permission level instead.
 public class DisableCommand extends Command {
-	private static final SimpleCommandExceptionType DISABLED = new SimpleCommandExceptionType(new LiteralText("This command is currently disabled."));
+	private static final SimpleCommandExceptionType DISABLED = new SimpleCommandExceptionType(literalText("This command is currently disabled.").build());
 	private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");
 	private static final List<UUID> remindedLP = new ArrayList<>();
 	private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
@@ -72,12 +72,15 @@ public class DisableCommand extends Command {
 				return 0;
 			} finally {
 				if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrThrow().getUuid())) {
-					sendMsg(ctx, new LiteralText("").styled(style -> style.withFormatting(Formatting.RED))
-							.append(new LiteralText("This command is deprecated, you should consider using "))
-							.append(new LiteralText("").styled(style -> style.withFormatting(Formatting.UNDERLINE, Formatting.BOLD).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to download"))))
-									.append(new LiteralText("Luck").styled(style -> style.withFormatting(Formatting.AQUA)))
-									.append(new LiteralText("Perms").styled(style -> style.withFormatting(Formatting.DARK_AQUA))))
-							.append(new LiteralText(" instead.")));
+					sendMsg(ctx, literalText("", Style.EMPTY.withFormatting(Formatting.RED))
+							.append(literalText("This command is deprecated, you should consider using "))
+							.append(literalText("").withStyle(style -> style
+											.withFormatting(Formatting.UNDERLINE, Formatting.BOLD)
+											.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/"))
+											.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, literalText("Click to download").build())))
+									.append(literalText("Luck", Style.EMPTY.withFormatting(Formatting.AQUA)))
+									.append(literalText("Perms", Style.EMPTY.withFormatting(Formatting.DARK_AQUA))))
+							.append(literalText(" instead.")));
 					remindedLP.add(ctx.getSource().getEntityOrThrow().getUuid());
 				}
 			}

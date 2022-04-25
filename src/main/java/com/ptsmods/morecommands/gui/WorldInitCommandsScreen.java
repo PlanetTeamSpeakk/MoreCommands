@@ -2,7 +2,8 @@ package com.ptsmods.morecommands.gui;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinCommandSuggestorAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinSuggestionWindowAccessor;
 import net.minecraft.client.MinecraftClient;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Rect2i;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
@@ -31,7 +31,13 @@ public class WorldInitCommandsScreen extends Screen {
 	private final List<Pair<TextFieldWidget, CommandSuggestor>> fields = new ArrayList<>();
 
 	public WorldInitCommandsScreen(Screen parent) {
-		super(new LiteralText("MoreCommands ").setStyle(MoreCommands.DS).append(new LiteralText("client options ").setStyle(MoreCommands.SS)).append(new LiteralText("World Init Commands").setStyle(Style.EMPTY.withColor(Formatting.WHITE))));
+		super(LiteralTextBuilder.builder("MoreCommands ")
+				.withStyle(MoreCommands.DS)
+				.append(LiteralTextBuilder.builder("client options ")
+						.withStyle(MoreCommands.SS))
+				.append(LiteralTextBuilder.builder("World Init Commands")
+						.withStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+				.build());
 		this.parent = parent;
 	}
 
@@ -42,7 +48,7 @@ public class WorldInitCommandsScreen extends Screen {
 		((ScreenAddon) this).mc$clear();
 		MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
 		addField("");
-		((ScreenAddon) this).mc$addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, new LiteralText("Reset"), (buttonWidget) -> {
+		((ScreenAddon) this).mc$addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), (buttonWidget) -> {
 			MoreCommandsClient.clearWorldInitCommands();
 			init();
 		}));
@@ -53,7 +59,7 @@ public class WorldInitCommandsScreen extends Screen {
 	private void addField(String content) {
 		AtomicReference<TextFieldWidget> atomicField = new AtomicReference<>();
 		AtomicReference<Pair<TextFieldWidget, CommandSuggestor>> atomicPair = new AtomicReference<>();
-		TextFieldWidget field = new TextFieldWidget(textRenderer, 25, fields.size() * 25 + 50, width - 50, 20, new LiteralText("Insert command here")) {
+		TextFieldWidget field = new TextFieldWidget(textRenderer, 25, fields.size() * 25 + 50, width - 50, 20, LiteralTextBuilder.builder("Insert command here").build()) {
 			@Override
 			public void write(String string) {
 				super.write(string);

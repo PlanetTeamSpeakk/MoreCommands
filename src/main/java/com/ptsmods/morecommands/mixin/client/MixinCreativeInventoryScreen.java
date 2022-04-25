@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.mixin.client;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinClickableWidgetAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinItemGroupButtonWidgetAccessor;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;
 import net.minecraft.client.MinecraftClient;

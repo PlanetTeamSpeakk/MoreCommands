@@ -6,6 +6,9 @@ import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import com.ptsmods.morecommands.api.compat.Compat;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
@@ -14,6 +17,8 @@ import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.painting.PaintingEntity;
+import net.minecraft.entity.decoration.painting.PaintingMotive;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -25,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -170,5 +176,30 @@ public class Compat16 implements Compat {
 	@Override
 	public DoubleStream doubleStream(DoubleList doubles) {
 		return doubles.stream().mapToDouble(d -> d);
+	}
+
+	@Override
+	public Object getPaintingVariant(PaintingEntity painting) {
+		return painting.motive;
+	}
+
+	@Override
+	public void setPaintingVariant(PaintingEntity entity, Object variant) {
+		entity.motive = (PaintingMotive) variant;
+	}
+
+	@Override
+	public MutableText buildText(LiteralTextBuilder builder) {
+		return PrivateCompat16.buildText(builder);
+	}
+
+	@Override
+	public MutableText buildText(TranslatableTextBuilder builder) {
+		return PrivateCompat16.buildText(builder);
+	}
+
+	@Override
+	public TextBuilder<?> builderFromText(Text text) {
+		return PrivateCompat16.builderFromText(text);
 	}
 }

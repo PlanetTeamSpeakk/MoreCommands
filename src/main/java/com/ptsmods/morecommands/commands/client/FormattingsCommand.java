@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.gui.screen.ingame.BookScreen;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.StringVisitable;
 
 public class FormattingsCommand extends ClientCommand {
@@ -20,7 +19,7 @@ public class FormattingsCommand extends ClientCommand {
 				@Override
 				public StringVisitable getPageUnchecked(int index) {
 					char ss = '\u00A7';
-					return new LiteralText(
+					return literalText(
 							ss + "00 " + ss + "11 " + ss + "22 " + ss + "33\n" +
 							ss + "44 " + ss + "55 " + ss + "66 " + ss + "77\n" +
 							ss + "88 " + ss + "99 " + ss + "aa " + ss + "bb\n" +
@@ -31,7 +30,7 @@ public class FormattingsCommand extends ClientCommand {
 							ss + "rn " + ss + "nMinecraft" + ss + "r\n" +
 							ss + "ro " + ss + "oMinecraft" + ss + "r\n" +
 							ss + "rr " + ss + "rMinecraft" + ss + "r\n" +
-							ss + "ru " + ss + "uMinecraft");
+							ss + "ru " + ss + "uMinecraft").build();
 				}
 			}));
 			return 1;

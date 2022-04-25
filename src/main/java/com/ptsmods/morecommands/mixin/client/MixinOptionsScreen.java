@@ -1,14 +1,14 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.gui.ClientOptionsScreen;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,7 +31,8 @@ public class MixinOptionsScreen extends Screen {
 			y = this.height / 6 + 24 - 6;
 		}
 
-		((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, new LiteralText("MoreCommands").setStyle(MoreCommands.DS), button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
+		((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.builder("MoreCommands", MoreCommands.DS).build(),
+				button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
 	}
 
 	@Unique

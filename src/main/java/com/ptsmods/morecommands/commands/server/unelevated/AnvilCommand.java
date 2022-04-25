@@ -8,7 +8,6 @@ import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
 
 public class AnvilCommand extends Command {
 	@Override
@@ -19,7 +18,7 @@ public class AnvilCommand extends Command {
 				public boolean canUse(PlayerEntity player) {
 					return true;
 				}
-			}, new TranslatableText("container.repair")));
+			}, translatableText("container.repair").build()));
 			return 1;
 		}));
 	}

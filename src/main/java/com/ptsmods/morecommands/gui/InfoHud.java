@@ -3,15 +3,15 @@ package com.ptsmods.morecommands.gui;
 import com.google.common.base.MoreObjects;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.util.CompatHolder;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.compat.MixinEntityAccessor;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -58,7 +58,7 @@ public class InfoHud extends DrawableHelper {
 	}
 
 	private void drawString(MatrixStack matrices, String s, int row) {
-		client.textRenderer.drawWithShadow(matrices, new LiteralText(s), xOffset, row*10 + yOffset, 0xFFFFFF);
+		client.textRenderer.drawWithShadow(matrices, LiteralTextBuilder.builder(s).build(), xOffset, row*10 + yOffset, 0xFFFFFF);
 	}
 
 	private void setupDefaultLines() {

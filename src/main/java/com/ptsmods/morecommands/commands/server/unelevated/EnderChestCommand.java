@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.util.CompatHolder;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -12,7 +13,6 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 public class EnderChestCommand extends Command {
@@ -26,10 +26,10 @@ public class EnderChestCommand extends Command {
 		ctx.getSource().getPlayer().openHandledScreen(new NamedScreenHandlerFactory() {
 			@Override
 			public Text getDisplayName() {
-				LiteralText text = new LiteralText("");
-				text.getSiblings().add(player.getDisplayName());
-				text.getSiblings().add(new LiteralText("'" + (MoreCommands.textToString(player.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " enderchest"));
-				return text;
+				return literalText("")
+						.append(CompatHolder.getCompat().builderFromText(player.getDisplayName()))
+						.append(literalText("'" + (MoreCommands.textToString(player.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " enderchest"))
+						.build();
 			}
 
 			@Override

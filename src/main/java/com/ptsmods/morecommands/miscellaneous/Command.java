@@ -9,20 +9,22 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
-import eu.pb4.placeholders.PlaceholderAPI;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.api.text.TextBuilder;
+import com.ptsmods.morecommands.api.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.util.CompatHolder;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -73,50 +75,53 @@ public abstract class Command {
 	}
 
 	public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
-		return sendMsg(ctx, new LiteralText(fixResets(formats.length == 0 ? msg : formatted(msg, formats))).setStyle(DS));
+		return sendMsg(ctx, LiteralTextBuilder.builder(fixResets(formats.length == 0 ? msg : formatted(msg, formats))).withStyle(DS).build());
 	}
 
 	public static int sendMsg(CommandContext<ServerCommandSource> ctx, Text msg) {
-		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? ctx.getSource().getEntity() instanceof ServerPlayerEntity ?
-				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) ctx.getSource().getEntity()) : PlaceholderAPI.parseText(msg, ctx.getSource().getServer()) : msg;
+		return sendMsg(ctx, CompatHolder.getCompat().builderFromText(msg));
+	}
 
-		ctx.getSource().sendFeedback(msg.shallowCopy().formatted(DF), true);
+	public static int sendMsg(CommandContext<ServerCommandSource> ctx, TextBuilder<?> textBuilder) {
+		ctx.getSource().sendFeedback(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), true);
 		return 1;
 	}
 
 	public static int sendError(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
-		return sendError(ctx, new LiteralText(fixResets(formatted(msg, formats), Formatting.RED)));
+		return sendError(ctx, LiteralTextBuilder.builder(fixResets(formatted(msg, formats), Formatting.RED)).build());
+	}
+
+	public static int sendError(CommandContext<ServerCommandSource> ctx, TextBuilder<?> textBuilder) {
+		return sendError(ctx, textBuilder.build());
 	}
 
 	public static int sendError(CommandContext<ServerCommandSource> ctx, Text msg) {
-		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? ctx.getSource().getEntity() instanceof ServerPlayerEntity ?
-				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) ctx.getSource().getEntity()) : PlaceholderAPI.parseText(msg, ctx.getSource().getServer()) : msg;
-
 		ctx.getSource().sendError(msg);
-		return 1;
+		return 0;
 	}
 
 	public static int sendMsg(Entity entity, String msg, Object... formats) {
-		return sendMsg(entity, new LiteralText(formatted(msg, formats)).setStyle(DS));
+		return sendMsg(entity, LiteralTextBuilder.builder(formatted(msg, formats)).withStyle(DS).build());
 	}
 
 	public static int sendMsg(Entity entity, Text msg) {
-		msg = msg.shallowCopy().setStyle(msg.getStyle().isEmpty() ? DS : msg.getStyle());
-		msg = FabricLoader.getInstance().isModLoaded("placeholder-api") ? entity instanceof ServerPlayerEntity ?
-				PlaceholderAPI.parseText(msg, (ServerPlayerEntity) entity) : PlaceholderAPI.parseText(msg, entity.getServer()) : msg;
+		return sendMsg(entity, CompatHolder.getCompat().builderFromText(msg));
+	}
 
-		if (entity instanceof PlayerEntity) ((PlayerEntity) entity).sendMessage(msg, false);
-		else entity.sendSystemMessage(msg, entity.getUuid());
+	public static int sendMsg(Entity entity, TextBuilder<?> textBuilder) {
+		TextBuilder<?> copy = textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style);
+
+		entity.sendSystemMessage(copy.build(), Util.NIL_UUID);
 		return 1;
 	}
 
 	public static void broadcast(MinecraftServer server, String msg, Object... formats) {
-		broadcast(server, new LiteralText(formatted(msg, formats)).setStyle(DS));
+		broadcast(server, LiteralTextBuilder.builder(formatted(msg, formats)).withStyle(DS).build());
 	}
 
 	public static void broadcast(MinecraftServer server, Text msg) {
 		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList())
-			sendMsg(player, FabricLoader.getInstance().isModLoaded("placeholder-api") ? PlaceholderAPI.parseText(msg, player) : msg);
+			sendMsg(player, msg);
 	}
 
 	static String fixResets(String s) {
@@ -257,7 +262,7 @@ public abstract class Command {
 	}
 
 	protected static String formatted(String s, Object... formats) {
-		return formats == null || formats.length == 0 ? s : String.format(s);
+		return formats == null || formats.length == 0 ? s : String.format(s, formats);
 	}
 
 	protected static String coloured(Object o) {
@@ -266,5 +271,17 @@ public abstract class Command {
 
 	protected static String coloured(Object o, Formatting colour) {
 		return "" + colour + o + DF;
+	}
+
+	protected static LiteralTextBuilder literalText(String text) {
+		return literalText(text, Style.EMPTY);
+	}
+
+	protected static LiteralTextBuilder literalText(String text, Style style) {
+		return LiteralTextBuilder.builder(text, style);
+	}
+
+	protected static TranslatableTextBuilder translatableText(String text, Object... args) {
+		return TranslatableTextBuilder.builder(text, args);
 	}
 }

@@ -4,13 +4,13 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
-import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
-import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,9 +41,9 @@ public class MixinClientPlayerEntity {
 					try {
 						MoreCommandsClient.clientCommandDispatcher.execute(reader, ReflectionHelper.<ClientPlayerEntity>cast(this).networkHandler.getCommandSource());
 					} catch (CommandSyntaxException e) {
-						ClientCommand.sendMsg(new LiteralText(e.getMessage()).setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
+						ClientCommand.sendMsg(LiteralTextBuilder.builder(e.getMessage()).withStyle(Style.EMPTY.withFormatting(Formatting.RED)));
 					} catch (Exception e) {
-						ClientCommand.sendMsg(new LiteralText("Unknown or incomplete command, see below for error.").setStyle(Style.EMPTY.withFormatting(Formatting.RED)));
+						ClientCommand.sendMsg(LiteralTextBuilder.builder("Unknown or incomplete command, see below for error.").withStyle(Style.EMPTY.withFormatting(Formatting.RED)));
 						MoreCommands.LOG.catching(e);
 					}
 				return;

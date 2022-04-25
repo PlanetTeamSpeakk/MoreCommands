@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.clientoption;
 
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.miscellaneous.FormattingColour;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -66,6 +66,6 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
 
 	@Override
 	public Text createButtonText(String name) {
-		return new LiteralText(name + " : " + (type == Formatting.class ? getValue() : type == FormattingColour.class ? ((FormattingColour) getValue()).asFormatting() : "") + getValue().name());
+		return LiteralTextBuilder.builder(name + " : " + (type == Formatting.class ? getValue() : type == FormattingColour.class ? ((FormattingColour) getValue()).asFormatting() : "") + getValue().name()).build();
 	}
 }

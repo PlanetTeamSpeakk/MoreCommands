@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.addons;
+package com.ptsmods.morecommands.api.addons;
 
 import net.minecraft.client.gui.widget.ClickableWidget;
 

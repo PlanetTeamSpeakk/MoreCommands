@@ -18,7 +18,7 @@ public class MixinTextVisitFactory {
 	 * @author PlanetTeamSpeak
 	 */
 	@Overwrite
-	public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style resetStyle, CharacterVisitor visitor) {
+	public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style rewithStyle, CharacterVisitor visitor) {
 		int i = text.length();
 		Style style = startingStyle;
 		for (int j = startIndex; j < i; ++j) {
@@ -36,7 +36,7 @@ public class MixinTextVisitFactory {
 					e = text.charAt(j + 1);
 					Formatting formatting = Formatting.byCode(e);
 					if (formatting != null) {
-						style = formatting == Formatting.RESET ? resetStyle : style.withExclusiveFormatting(formatting);
+						style = formatting == Formatting.RESET ? rewithStyle : style.withExclusiveFormatting(formatting);
 					}
 					++j;
 				}

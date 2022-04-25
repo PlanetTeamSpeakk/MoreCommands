@@ -6,15 +6,16 @@ import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
+import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.callbacks.ChatMessageSendCallback;
 import com.ptsmods.morecommands.callbacks.ClientCommandRegistrationCallback;
 import com.ptsmods.morecommands.clientoption.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.util.CompatHolder;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
-import com.ptsmods.morecommands.mixin.addons.ScreenAddon;
+import com.ptsmods.morecommands.util.CompatHolder;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -48,7 +49,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -82,7 +82,7 @@ import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient implements ClientModInitializer {
-	public static final Logger log = LogManager.getLogger();
+	public static final Logger LOG = LogManager.getLogger();
 	public static final KeyBinding toggleInfoHudBinding = new KeyBinding("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
 	public static boolean scheduleWorldInitCommands = false;
 	private static double speed = 0d;
@@ -107,7 +107,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 				try {
 					keyCode = f.getInt(null) + (f.getName().contains("MOUSE") ? GLFW.GLFW_KEY_LAST+1 : 0);
 				} catch (IllegalAccessException e) {
-					log.catching(e);
+					LOG.catching(e);
 					continue;
 				}
 				String name = f.getName().substring(f.getName().contains("MOUSE") ? 18 : 9);
@@ -140,7 +140,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ClientOptions.read();
+		ClientOptions.init();
 		MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
 		List<ParticleTextureSheet> list = new ArrayList<>(MixinParticleManagerAccessor.getParticleTextureSheets());
@@ -155,10 +155,10 @@ public class MoreCommandsClient implements ClientModInitializer {
 			DiscordRPC.discordInitialize("754048885755871272", new DiscordEventHandlers.Builder()
 					.setReadyEventHandler(user -> {
 						discordUser = user;
-						log.info("Connected to Discord RPC as " + user.username + "#" + user.discriminator + " (" + user.userId + ").");
+						LOG.info("Connected to Discord RPC as " + user.username + "#" + user.discriminator + " (" + user.userId + ").");
 					})
-					.setDisconnectedEventHandler((errorCode, message) -> log.info("Disconnected from Discord RPC with error code " + errorCode + ": " + message))
-					.setErroredEventHandler((errorCode, message) -> log.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
+					.setDisconnectedEventHandler((errorCode, message) -> LOG.info("Disconnected from Discord RPC with error code " + errorCode + ": " + message))
+					.setErroredEventHandler((errorCode, message) -> LOG.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
 		updatePresence();
 		C2SPlayChannelEvents.REGISTER.register(((handler, sender, client, channels) -> updateTag()));
 
@@ -179,7 +179,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 			List<String> wic = MoreCommands.readJson(wicFile);
 			if (wic != null) worldInitCommands.addAll(wic);
 		} catch (IOException e) {
-			log.error("Could not read World Init Commands.", e);
+			LOG.error("Could not read World Init Commands.", e);
 		}
 
 		HudRenderCallback.EVENT.register((stack, tickDelta) -> {
@@ -218,12 +218,15 @@ public class MoreCommandsClient implements ClientModInitializer {
 
 		ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> coolKids.remove(entity));
 
-		List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream().map(MoreCommands::getInstance).filter(Objects::nonNull).collect(Collectors.toList());
+		List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
+				.map(MoreCommands::getInstance)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 		ClientCommandRegistrationCallback.EVENT.register(dispatcher -> clientCommands.forEach(cmd -> {
 			try {
 				cmd.cRegister(dispatcher);
 			} catch (Exception e) {
-				log.error("Could not register command " + cmd.getClass().getName() + ".", e);
+				LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
 			}
 		}));
 
@@ -272,7 +275,8 @@ public class MoreCommandsClient implements ClientModInitializer {
 		});
 
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-			if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && ClientPlayNetworking.canSend(new Identifier("morecommands:sit_on_stairs"))) {
+			if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && player.getStackInHand(hand).isEmpty() &&
+					Chair.isValid(world.getBlockState(hitResult.getBlockPos())) && ClientPlayNetworking.canSend(new Identifier("morecommands:sit_on_stairs"))) {
 				ClientPlayNetworking.send(new Identifier("morecommands:sit_on_stairs"), new PacketByteBuf(Unpooled.buffer()).writeBlockPos(hitResult.getBlockPos()));
 				return ActionResult.CONSUME;
 			}
@@ -287,7 +291,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 				// SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
 				nameMCFriends.putAll(friends.stream().collect(Collectors.toMap(friend -> friend.get("uuid"), friend -> friend.get("name"))));
 			} catch (IOException e) {
-				log.error("Could not look up NameMC friends.", e);
+				LOG.error("Could not look up NameMC friends.", e);
 			}
 		});
 
@@ -308,7 +312,8 @@ public class MoreCommandsClient implements ClientModInitializer {
 	}
 
 	public static void updatePresence() {
-		if (ClientOptions.RichPresence.enableRPC.getValue() && !MinecraftClient.IS_SYSTEM_MAC) {
+		if (MinecraftClient.IS_SYSTEM_MAC) return;
+		if (ClientOptions.RichPresence.enableRPC.getValue()) {
 			MinecraftClient client = MinecraftClient.getInstance();
 			DiscordRichPresence.Builder builder;
 			if (client.world == null) builder = new DiscordRichPresence.Builder("On the main menu").setBigImage("minecraft_logo", null);
@@ -365,18 +370,19 @@ public class MoreCommandsClient implements ClientModInitializer {
 			int x = i; // Has to be effectively final cuz lambda
 			btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
 					yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
-					new LiteralText(formattings[x].toString().replace('\u00A7', '&'))
-							.setStyle(Style.EMPTY.withFormatting(formattings[x])),
+					LiteralTextBuilder.builder(formattings[x].toString().replace('\u00A7', '&'))
+							.withStyle(Style.EMPTY.withFormatting(formattings[x]))
+							.build(),
 					btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
 					/*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
-					new LiteralText(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
+					LiteralTextBuilder.builder(Formatting.RED + "Only works on servers with MoreCommands installed.").build(), mouseX, mouseY) : ButtonWidget.EMPTY) {
 				public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 					return false;
 				}
 			}, btn -> btn.visible = initOpened0)));
 		}
 		Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
-				50, 20, new LiteralText("Colours").setStyle(Command.DS), btn -> {
+				50, 20, LiteralTextBuilder.builder("Colours").withStyle(Command.DS).build(), btn -> {
 			boolean b = !btns.get(0).visible;
 			if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
 			btns.forEach(btn0 -> btn0.visible = b);
@@ -416,7 +422,7 @@ public class MoreCommandsClient implements ClientModInitializer {
 		try {
 			MoreCommands.saveJson(wicFile, worldInitCommands);
 		} catch (IOException e) {
-			log.error("Could not save World Init Commands.", e);
+			LOG.error("Could not save World Init Commands.", e);
 		}
 	}
 

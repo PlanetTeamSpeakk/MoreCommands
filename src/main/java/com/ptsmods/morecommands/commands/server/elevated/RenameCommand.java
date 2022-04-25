@@ -6,7 +6,6 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 public class RenameCommand extends Command {
@@ -17,7 +16,7 @@ public class RenameCommand extends Command {
 			if (stack.isEmpty()) sendError(ctx, "You are not holding an item.");
 			else {
 				String name = MoreCommands.translateFormattings(ctx.getArgument("name", String.class));
-				stack.setCustomName(new LiteralText(name));
+				stack.setCustomName(literalText(name).build());
 				sendMsg(ctx, "The item has been renamed to " + name + Formatting.RESET + ".");
 				return 1;
 			}
