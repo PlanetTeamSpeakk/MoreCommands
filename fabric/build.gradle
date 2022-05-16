@@ -1,0 +1,107 @@
+import java.util.stream.Collectors
+
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+loom {
+    accessWidenerPath = project(":common").loom.accessWidenerPath
+}
+
+configurations {
+    common
+    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+	mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_build}:v2"
+
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+	modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
+	modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
+	modImplementation "com.ptsmods:devlogin:2.0"
+
+	common(files("../lib/discord-rpc-1.6.2.jar"))
+	shadowCommon(files("../lib/discord-rpc-1.6.2.jar"))
+	common("com.ptsmods:MySQLw:1.5.1") {
+		exclude group: "com.google.guava", module: "guava"
+	}
+	shadowCommon("com.ptsmods:MySQLw:1.5.1") {
+		exclude group: "com.google.guava", module: "guava"
+	}
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:Compat:Compat16", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:Compat:Compat16", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:Compat:Compat17", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:Compat:Compat17", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:Compat:Compat18", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:Compat:Compat18", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:Compat:Compat182", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:Compat:Compat182", configuration: "transformProductionFabric")) { transitive false }
+	common(project(path: ":common:Compat:Compat19", configuration: "namedElements")) { transitive false }
+	shadowCommon(project(path: ":common:Compat:Compat19", configuration: "transformProductionFabric")) { transitive false }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+shadowJar {
+    exclude "architectury.common.json"
+
+	// Generated from dumps, leaving these in will cause the wrong classes to load.
+	exclude "com/ptsmods/morecommands/compat/**"
+	exclude "com/ptsmods/morecommands/miscellaneous/CopySound.class"
+	exclude "com/ptsmods/morecommands/miscellaneous/EESound.class"
+
+    configurations = [project.configurations.shadowCommon]
+    classifier "dev-shadow"
+}
+
+remapJar {
+    injectAccessWidener = true
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+    classifier null
+	archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FABRIC.${archiveExtension.get()}"
+}
+
+jar {
+    classifier "dev"
+}
+
+sourcesJar {
+	def sources = project(":common").subprojects.stream()
+			.map{ it.sourcesJar }
+			.collect(Collectors.toList())
+	sources.add project(":common").sourcesJar
+	dependsOn sources
+
+	sources.stream()
+			.map { it.archiveFile.map { zipTree(it) } }
+			.forEach { from it }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}

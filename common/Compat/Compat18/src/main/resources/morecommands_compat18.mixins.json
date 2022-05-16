@@ -1,0 +1,26 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.compat.compat18",
+  "plugin": "com.ptsmods.morecommands.plugin.Plugin18",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "min.MixinBackgroundRenderer",
+    "min.MixinClientPlayerInteractionManager",
+    "min.MixinLightmapTextureManager",
+    "min.MixinMinecraftClient",
+    "min.MixinTitleScreen",
+    "min.MixinWorldRenderer"
+  ],
+  "mixins": [
+    "min.MixinEnchantmentScreenHandler",
+    "min.MixinPaintingEntity",
+    "min.MixinSnowBlock",
+    "plus.MixinServerWorld",
+    "min.MixinServerPlayNetworkHandler",
+    "min.MixinBlock"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

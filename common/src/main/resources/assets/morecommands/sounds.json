@@ -1,0 +1,14 @@
+{
+  "copy": {
+	"sounds": [
+	  "morecommands:copy1",
+	  "morecommands:copy2",
+	  "morecommands:copy3"
+	]
+  },
+  "ee": {
+	"sounds": [
+	  "morecommands:ee"
+	]
+  }
+}

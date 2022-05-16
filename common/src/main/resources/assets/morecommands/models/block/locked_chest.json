@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "minecraft:this_texture_should_be_missing__ignore_the_error"
+  }
+}

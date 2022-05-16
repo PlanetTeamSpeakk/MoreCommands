@@ -1,0 +1,40 @@
+plugins {
+    id "architectury-plugin" version "3.4-SNAPSHOT"
+    id "dev.architectury.loom" version "0.11.0-SNAPSHOT" apply false
+	id "io.freefair.lombok" version "6.4.3" apply false
+}
+
+architectury {
+    minecraft = rootProject.minecraft_version
+}
+
+subprojects {
+    apply plugin: "dev.architectury.loom"
+	apply plugin: "io.freefair.lombok"
+}
+
+allprojects {
+    apply plugin: "java"
+    apply plugin: "architectury-plugin"
+    apply plugin: "maven-publish"
+
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+
+    archivesBaseName = rootProject.archives_base_name
+    version = rootProject.mod_version
+    group = rootProject.maven_group
+
+	repositories {
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+		maven { url 'https://maven.terraformersmc.com/releases/' }
+	}
+
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    java {
+        withSourcesJar()
+    }
+}

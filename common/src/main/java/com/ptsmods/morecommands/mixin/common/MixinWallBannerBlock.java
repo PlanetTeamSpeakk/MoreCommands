@@ -1,0 +1,27 @@
+package com.ptsmods.morecommands.mixin.common;
+
+import com.ptsmods.morecommands.api.ReflectionHelper;
+import net.minecraft.block.WallBannerBlock;
+import net.minecraft.block.WallSignBlock;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+
+@Mixin(WallBannerBlock.class)
+public class MixinWallBannerBlock {
+	private String mc_translationKey;
+
+	/**
+	 * @author PlanetTeamSpeak
+	 * @reason Causes StackOverflowErrors otherwise
+	 */
+	@Overwrite
+	public String getTranslationKey() {
+		if (mc_translationKey == null) {
+			Identifier id = Registry.BLOCK.getId(ReflectionHelper.<WallSignBlock>cast(this));
+			mc_translationKey = Registry.BLOCK.get(new Identifier(id.getNamespace(), id.getPath().replace("wall_", ""))).getTranslationKey();
+		}
+		return mc_translationKey;
+	}
+}

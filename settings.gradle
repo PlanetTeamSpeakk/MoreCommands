@@ -1,0 +1,33 @@
+pluginManagement {
+    repositories {
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
+        maven { url "https://maven.minecraftforge.net/" }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "MoreCommands"
+def platforms = Arrays.asList(enabled_platforms.split(","))
+
+include("common")
+if (platforms.contains("fabric"))
+	include("fabric")
+if (platforms.contains("forge"))
+	include("forge")
+include 'common:API'
+include 'common:Compat'
+include 'common:Compat:Compat16'
+include 'common:Compat:Compat17'
+include 'common:Compat:Compat18'
+include 'common:Compat:Compat182'
+include 'common:Compat:Compat19'
+
+findProject(':common:API')?.name = 'API'
+findProject(':common:Compat')?.name = 'Compat'
+findProject(':common:Compat:Compat16')?.name = 'Compat16'
+findProject(':common:Compat:Compat17')?.name = 'Compat17'
+findProject(':common:Compat:Compat18')?.name = 'Compat18'
+findProject(':common:Compat:Compat182')?.name = 'Compat182'
+findProject(':common:Compat:Compat19')?.name = 'Compat19'
+
