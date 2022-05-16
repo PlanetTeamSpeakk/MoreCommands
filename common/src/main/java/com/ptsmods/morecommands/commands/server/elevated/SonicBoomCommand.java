@@ -120,7 +120,7 @@ public class SonicBoomCommand extends Command {
 			}
 
 			serverWorld.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_WARDEN_SONIC_BOOM, SoundCategory.HOSTILE, 3.0F, 1.0F);
-			target.damage(DamageSource.method_43964(attacker), 10.0F);
+			target.damage(DamageSource.sonicBoom(attacker), 10.0F);
 
 			double kbRes = target instanceof LivingEntity ? ((LivingEntity) target).getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE) : 0f;
 			double vertical = 0.5 * (1.0 - kbRes);
