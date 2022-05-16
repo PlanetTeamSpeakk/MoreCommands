@@ -169,6 +169,7 @@ public class ReflectionHelper {
 		}
 	}
 
+	// TODO this is incredibly slow in a dev env (4.5 seconds), but finishes in at most 200 ms in a normal env.
 	@SuppressWarnings("unchecked")
 	public static <T> List<Class<? extends T>> getClasses(Class<T> superClass, String pckg) throws IOException {
 		Path jar = IMoreCommands.get().getJar();

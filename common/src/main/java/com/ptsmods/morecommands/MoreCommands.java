@@ -20,7 +20,6 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.arguments.*;
-import com.ptsmods.morecommands.dumps.ASMDump;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
@@ -28,6 +27,7 @@ import com.ptsmods.morecommands.compat.*;
 import com.ptsmods.morecommands.compat.client.ClientCompat16;
 import com.ptsmods.morecommands.compat.client.ClientCompat17;
 import com.ptsmods.morecommands.compat.client.ClientCompat19;
+import com.ptsmods.morecommands.dumps.ASMDump;
 import com.ptsmods.morecommands.miscellaneous.Chair;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
@@ -113,7 +113,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -431,13 +430,7 @@ public enum MoreCommands implements IMoreCommands {
 		}
 
 		try {
-			classes = "client".equals(type) ? ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands.client") :
-					Stream.concat(
-							ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands.server.elevated").stream(),
-							ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands.server.unelevated").stream()
-					).collect(Collectors.toList());
-
-			// TODO this is incredibly slow in a dev env (4.5 seconds), but finishes in at most 200 ms in a normal env.
+			classes = ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands." + type);
 			LOG.info("Found " + classes.size() + " commands to load for type " + type + ". Took " + (System.currentTimeMillis() - start));
 		} catch (IOException e) {
 			LOG.error("Couldn't find commands for type " + type + ". This means none of said type will be loaded.", e);
