@@ -35,9 +35,6 @@ import com.ptsmods.morecommands.mixin.common.accessor.*;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.MixinAccessWidenerImpl;
 import com.ptsmods.mysqlw.Database;
-import com.ptsmods.mysqlw.table.ColumnDefault;
-import com.ptsmods.mysqlw.table.ColumnType;
-import com.ptsmods.mysqlw.table.TablePreset;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.InteractionEvent;
@@ -110,7 +107,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -147,7 +143,7 @@ public enum MoreCommands implements IMoreCommands {
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
 	private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-	private static Database db;
+	private static Database globalDb, serverDb;
 
 	static {
 		try {
@@ -236,14 +232,7 @@ public enum MoreCommands implements IMoreCommands {
 		Database.loadConnector(Database.RDBMS.SQLite, null, sqLitePath.toFile(), true); // Method used to add to classpath doesn't work here, but it does download it.
 		MoreCommandsArch.addJarToClassPath(sqLitePath); // This does work tho. :)
 
-		db = Database.connect(getConfigDirectory().resolve("data.db").toFile());
-		db.createTableAsync(TablePreset.create("test")
-						.putColumn("time", ColumnType.TIMESTAMP.createStructure()
-								.satiateSupplier(Supplier::get)
-								.setDefault(ColumnDefault.CURRENT_TIMESTAMP))
-						.putColumn("v", ColumnType.INT.createStructure().satiateSupplier(f -> f.apply(null))))
-				.thenAcceptAsync(v -> db.insert("test", "v", 100))
-				.thenAcceptAsync(v -> LOG.info("Database test: " + db.select("test", "*")));
+//		globalDb = Database.connect(getConfigDirectory().resolve("globaldata.db").toFile()); // Not sure if this'll be necessary.
 
 		MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
 		Holder.setCompat((Compat) determineCurrentCompat(false));
@@ -595,8 +584,16 @@ public enum MoreCommands implements IMoreCommands {
 		saveString(f, gson.toJson(data));
 	}
 
+	public static void saveJson(Path p, Object data) throws IOException {
+		saveString(p, gson.toJson(data));
+	}
+
 	public static <T> T readJson(File f) throws IOException {
 		return gson.fromJson(readString(f), new TypeToken<T>(){}.getType());
+	}
+
+	public static void saveString(Path p, String s) throws IOException {
+		saveString(p.toFile(), s);
 	}
 
 	public static void saveString(File f, String s) throws IOException {
@@ -839,6 +836,7 @@ public enum MoreCommands implements IMoreCommands {
 		}
 	}
 
+	@SneakyThrows // Very unlikely connecting to an SQLite database results in an error.
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
 		Command.doInitialisations(server);
@@ -857,6 +855,7 @@ public enum MoreCommands implements IMoreCommands {
 			LOG.catching(e);
 		}
 
+		serverDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
 		MoreGameRules.get().checkPerms(server);
 		LOG.info("MoreCommands data path: " + getRelativePath(server));
 	}
@@ -1068,12 +1067,12 @@ public enum MoreCommands implements IMoreCommands {
 		return VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8 * (8-state.get(FluidBlock.LEVEL)), 1);
 	}
 
-	public static String getRelativePath() {
+	public static Path getRelativePath() {
 		return getRelativePath(serverInstance);
 	}
 
-	public static String getRelativePath(MinecraftServer server) {
-		return server.getSavePath(WorldSavePath.ROOT).toAbsolutePath() + File.separator + "MoreCommands" + File.separator;
+	public static Path getRelativePath(MinecraftServer server) {
+		return Paths.get(server.getSavePath(WorldSavePath.ROOT).toAbsolutePath() + "MoreCommands");
 	}
 
 	public static void tryMove(String from, String to) {

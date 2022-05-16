@@ -29,8 +29,8 @@ public class DiscordCommand extends Command {
 
 	@Override
 	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
-		if (MoreCommandsArch.getConfigDirectory().resolve("discordUrl.url").toFile().exists()) MoreCommands.tryMove("config/MoreCommands/discordUrl.url", MoreCommands.getRelativePath() + "discordUrl.url");
-		dataFile = new File(MoreCommands.getRelativePath() + "discordUrl.url");
+		if (MoreCommandsArch.getConfigDirectory().resolve("discordUrl.url").toFile().exists()) MoreCommands.tryMove("config/MoreCommands/discordUrl.url", MoreCommands.getRelativePath().resolve("discordUrl.url").toString());
+		dataFile = MoreCommands.getRelativePath().resolve("discordUrl.url").toFile();
 		try {
 			discordUrl = MoreCommands.readString(dataFile);
 			if (discordUrl.isEmpty()) discordUrl = null;

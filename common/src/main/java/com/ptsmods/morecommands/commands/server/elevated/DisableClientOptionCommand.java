@@ -18,7 +18,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ public class DisableClientOptionCommand extends Command {
 
 	@Override
 	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
-		disabled.addAll(MoreCommands.readJson(new File(MoreCommands.getRelativePath(server) + "disabledClientOptions.json")).or(new ArrayList<String>()));
+		disabled.addAll(MoreCommands.readJson(MoreCommands.getRelativePath(server).resolve("disabledClientOptions.json").toFile()).or(new ArrayList<String>()));
 		PlayerEvent.PLAYER_JOIN.register(player -> {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
 			disabled.forEach(buf::writeString);
@@ -48,7 +47,7 @@ public class DisableClientOptionCommand extends Command {
 					if (disabled.contains(option)) disabled.remove(option);
 					else disabled.add(option);
 					try {
-						MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "disabledClientOptions.json"), disabled);
+						MoreCommands.saveJson(MoreCommands.getRelativePath().resolve("disabledClientOptions.json"), disabled);
 					} catch (IOException e) {
 						sendError(ctx, "The data file could not be saved.");
 						log.error("Could not save the disabled client options data file.", e);

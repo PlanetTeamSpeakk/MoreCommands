@@ -3,8 +3,8 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.Util;
+import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
@@ -16,7 +16,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class DisableClientCommandCommand extends Command {
 
 	@Override
 	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
-		disabled.addAll(MoreCommands.readJson(new File(MoreCommands.getRelativePath(server) + "disabledClientCommands.json")).or(new ArrayList<String>()));
+		disabled.addAll(MoreCommands.readJson(MoreCommands.getRelativePath(server).resolve("disabledClientCommands.json").toFile()).or(new ArrayList<String>()));
 		PlayerEvent.PLAYER_JOIN.register(player -> {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
 			disabled.forEach(buf::writeString);
@@ -42,7 +41,7 @@ public class DisableClientCommandCommand extends Command {
 			if (disabled.contains(command)) disabled.remove(command);
 			else disabled.add(command);
 			try {
-				MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "disabledClientCommands.json"), disabled);
+				MoreCommands.saveJson(MoreCommands.getRelativePath().resolve("disabledClientCommands.json"), disabled);
 			} catch (IOException e) {
 				sendError(ctx, "The data file could not be saved.");
 				log.error("Could not save the disabled client commands data file.", e);

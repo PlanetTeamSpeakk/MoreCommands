@@ -30,8 +30,8 @@ public class HomeCommand extends Command {
 	private final Map<UUID, List<Home>> homes = new HashMap<>();
 
 	public void init(boolean serverOnly, MinecraftServer server) {
-		if (MoreCommandsArch.getConfigDirectory().resolve("homes.json").toFile().exists()) MoreCommands.tryMove("config/MoreCommands/homes.json", MoreCommands.getRelativePath() + "homes.json");
-		dataFile = new File(MoreCommands.getRelativePath() + "homes.json");
+		if (MoreCommandsArch.getConfigDirectory().resolve("homes.json").toFile().exists()) MoreCommands.tryMove("config/MoreCommands/homes.json", MoreCommands.getRelativePath().resolve("homes.json").toString());
+		dataFile = MoreCommands.getRelativePath().resolve("homes.json").toFile();
 		Map<String, Map<String, Map<String, Object>>> data = null;
 		try {
 			data = MoreCommands.readJson(dataFile);

@@ -39,7 +39,7 @@ public class KitCommand extends Command {
 	@Override
 	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
 		instance = this;
-		kits.putAll(MoreCommands.<Map<String, Map<String, Object>>>readJson(new File(MoreCommands.getRelativePath(server) + "kits.json"))
+		kits.putAll(MoreCommands.<Map<String, Map<String, Object>>>readJson(MoreCommands.getRelativePath(server).resolve("kits.json").toFile())
 				.or(new HashMap<String, Map<String, Object>>()).entrySet().stream()
 				.map(entry -> new Pair<>(entry.getKey(), Kit.deserialise(entry.getValue())))
 				.collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
@@ -140,7 +140,7 @@ public class KitCommand extends Command {
 
 	private static void saveKits() {
 		try {
-			MoreCommands.saveJson(new File(MoreCommands.getRelativePath() + "kits.json"), instance.kits.entrySet().stream()
+			MoreCommands.saveJson(MoreCommands.getRelativePath().resolve("kits.json"), instance.kits.entrySet().stream()
 					.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().serialise())));
 		} catch (IOException e) {
 			log.error("Couldn't save kits file.", e);
