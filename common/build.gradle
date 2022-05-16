@@ -58,11 +58,11 @@ task genCompatDumps(dependsOn: "classes") {
 
                 args = [
                         "--cache=\"" + cache + '"',
-                        "--package=com.ptsmods.morecommands.asm.compat",
+                        "--package=com.ptsmods.morecommands.dumps.compat",
                         "--input=\"" + input.toAbsolutePath() + '"',
                         "--output=\"" + output.toAbsolutePath() + '"',
                         "--mappings=\"" + mappings + '"',
-                        "--maputil=com.ptsmods.morecommands.asm.ASMDump"
+                        "--maputil=com.ptsmods.morecommands.dumps.ASMDump"
                 ]
             }
         }
