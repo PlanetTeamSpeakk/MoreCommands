@@ -178,8 +178,10 @@ public enum MoreCommands implements IMoreCommands {
 			out.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
 			out.write("Manifest-Version: 1.0".getBytes());
 
+			final String comment = "This JAR file was generated using dumps created by ASMRemapper.\nhttps://github.com/PlanetTeamSpeakk/ASMRemapper";
 			out.putNextEntry(new ZipEntry("README.txt"));
-			out.write("This JAR file was generated using dumps created by ASMRemapper.".getBytes());
+			out.write(comment.getBytes());
+			out.setComment(comment);
 
 			out.flush();
 			out.close();
