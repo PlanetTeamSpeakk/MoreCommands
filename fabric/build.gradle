@@ -34,12 +34,12 @@ dependencies {
 
 	common(files("../lib/discord-rpc-1.6.2.jar"))
 	shadowCommon(files("../lib/discord-rpc-1.6.2.jar"))
-	common("com.ptsmods:MySQLw:1.5.1") {
-		exclude group: "com.google.guava", module: "guava"
-	}
-	shadowCommon("com.ptsmods:MySQLw:1.5.1") {
-		exclude group: "com.google.guava", module: "guava"
-	}
+	common("com.ptsmods:mysqlw:1.6") {
+        exclude group: "com.google.guava", module: "guava"
+    }
+	shadowCommon("com.ptsmods:mysqlw:1.6") {
+        exclude group: "com.google.guava", module: "guava"
+    }
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 	common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
