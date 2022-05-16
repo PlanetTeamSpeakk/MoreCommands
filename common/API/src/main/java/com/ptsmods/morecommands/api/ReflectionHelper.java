@@ -177,7 +177,7 @@ public class ReflectionHelper {
 		List<String> classNames = new ArrayList<>();
 		// It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
 		if (Files.isDirectory(jar))
-			try (Stream<Path> files = Files.walk(new File(jar.toAbsolutePath().toString() + File.separatorChar + String.join(File.separator, pckg.split("\\.")) + File.separatorChar).toPath())) {
+			try (Stream<Path> files = Files.walk(jar.toAbsolutePath().resolve(String.join(File.separator, pckg.split("\\."))))) {
 				classNames.addAll(files
 						.filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
 						.map(path -> path.toAbsolutePath().toString().substring(jar.toAbsolutePath().toString().length() + 1, path.toAbsolutePath().toString().lastIndexOf('.')).replace(File.separatorChar, '.'))

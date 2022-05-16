@@ -148,7 +148,7 @@ public enum MoreCommands implements IMoreCommands {
 	static {
 		try {
 			Map<String, byte[]> dumpClasses = new HashMap<>();
-			List<Class<? extends ASMDump>> dumps = ReflectionHelper.getClasses(ASMDump.class, "com.ptsmods.morecommands.asm");
+			List<Class<? extends ASMDump>> dumps = ReflectionHelper.getClasses(ASMDump.class, "com.ptsmods.morecommands.dumps");
 			for (Class<? extends ASMDump> dumpClass : dumps) {
 				try {
 					byte[] dump = (byte[]) dumpClass.getMethod("dump").invoke(null);
