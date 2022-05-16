@@ -17,7 +17,7 @@ dependencies {
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
     implementation files("../lib/discord-rpc-1.6.2.jar")
-    implementation "com.ptsmods:asmremapper:1.0"
+    implementation "com.ptsmods:asmremapper:1.0.1"
     implementation("com.ptsmods:mysqlw:1.6") {
         exclude group: "com.google.guava", module: "guava"
     }
@@ -32,13 +32,13 @@ dependencies {
 
 project(":common:Compat").subprojects {
     dependencies {
-        implementation "com.ptsmods:asmremapper:1.0"
+        implementation "com.ptsmods:asmremapper:1.0.1"
     }
 }
 
 task genCompatDumps(dependsOn: "classes") {
     doLast { // Run after all dependencies have been resolved.
-        def output = sourceSets.main.allJava.srcDirs.iterator().next().toPath().resolve("com/ptsmods/morecommands/asm/compat")
+        def output = sourceSets.main.allJava.srcDirs.iterator().next().toPath().resolve("com/ptsmods/morecommands/dumps/compat")
         def cache = Paths.get(System.getProperty("user.dir"), ".gradle").toAbsolutePath().toString()
 
         project(":common:Compat").subprojects {
