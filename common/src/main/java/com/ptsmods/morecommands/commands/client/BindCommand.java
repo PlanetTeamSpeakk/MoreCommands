@@ -8,6 +8,7 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.callbacks.KeyEvent;
 import com.ptsmods.morecommands.api.callbacks.MouseEvent;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.arguments.KeyArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import net.minecraft.client.MinecraftClient;
@@ -41,11 +42,13 @@ public class BindCommand extends ClientCommand {
     }
 
     private boolean checkBind(int keyCode, int action) {
-        if (action == 1 && record > 0 && record-- >= 0) sendMsg("You just pressed the " + SF + MoreCommandsClient.getKeyForKeyCode(keyCode) + DF + " key.");
-        else if (action > 0 && MinecraftClient.getInstance().currentScreen == null) { // Either press or hold, but not release.
+        if (action == 1 && record > 0) {
+            record--;
+            sendMsg("You just pressed the " + SF + MoreCommandsClient.getKeyForKeyCode(keyCode) + DF + " key.");
+        } else if (action > 0 && MinecraftClient.getInstance().currentScreen == null) { // Either press or hold, but not release.
             String key = MoreCommandsClient.getKeyForKeyCode(keyCode);
             if (key != null && bindings.containsKey(key)) {
-                MinecraftClient.getInstance().player.sendChatMessage(bindings.get(key));
+                ClientCompat.get().sendMessageOrCommand(bindings.get(key));
                 return true;
             }
         }
