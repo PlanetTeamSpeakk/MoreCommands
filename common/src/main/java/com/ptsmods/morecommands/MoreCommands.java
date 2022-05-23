@@ -156,7 +156,9 @@ public enum MoreCommands implements IMoreCommands {
                     ClassReader reader = new ClassReader(dump);
 
                     dumpClasses.put(reader.getClassName(), dump);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                } catch (NoSuchMethodException ignored) {
+                    // Probably not a dump
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     LOG.error("Could not dump class " + dumpClass.getName() + ".", e);
                 }
             }
