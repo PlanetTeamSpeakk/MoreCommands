@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(InventoryScreen.class)
 public class MixinInventoryScreen {
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen; drawEntity(IIIFFLnet/minecraft/entity/LivingEntity;)V"), method = "drawBackground(Lnet/minecraft/client/util/math/MatrixStack;FII)V")
-	public void drawBackground_drawEntity(int x, int y, int size, float mouseX, float mouseY, LivingEntity entity) {
-		InventoryScreen.drawEntity(x, y, (int) (size * (ClientOptions.Rendering.renderOwnTag.getValue() ? 0.95f : 1f)), mouseX, mouseY, entity);
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen; drawEntity(IIIFFLnet/minecraft/entity/LivingEntity;)V"), method = "drawBackground(Lnet/minecraft/client/util/math/MatrixStack;FII)V")
+    public void drawBackground_drawEntity(int x, int y, int size, float mouseX, float mouseY, LivingEntity entity) {
+        InventoryScreen.drawEntity(x, y, (int) (size * (ClientOptions.Rendering.renderOwnTag.getValue() ? 0.95f : 1f)), mouseX, mouseY, entity);
+    }
 
 }

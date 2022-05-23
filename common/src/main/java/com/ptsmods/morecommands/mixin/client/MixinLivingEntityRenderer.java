@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntityRenderer.class)
 public class MixinLivingEntityRenderer<T extends LivingEntity, M extends EntityModel<T>> {
 
-	@Inject(at = @At("RETURN"), method = "hasLabel(Lnet/minecraft/entity/LivingEntity;)Z", cancellable = true)
-	public void hasLabel(T livingEntity, CallbackInfoReturnable<Boolean> cbi) {
-		if (ClientOptions.Rendering.renderOwnTag.getValue() && livingEntity == MinecraftClient.getInstance().player)
-			cbi.setReturnValue(true);
-	}
+    @Inject(at = @At("RETURN"), method = "hasLabel(Lnet/minecraft/entity/LivingEntity;)Z", cancellable = true)
+    public void hasLabel(T livingEntity, CallbackInfoReturnable<Boolean> cbi) {
+        if (ClientOptions.Rendering.renderOwnTag.getValue() && livingEntity == MinecraftClient.getInstance().player)
+            cbi.setReturnValue(true);
+    }
 }

@@ -25,25 +25,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @ExtensionMethod(ObjectExtensions.class)
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity {
-	@Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;", cancellable = true)
-	private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
-		cbi.setReturnValue(cbi.getReturnValue().add(Holder.REACH_ATTRIBUTE).add(SpeedCommand.SpeedType.swimSpeedAttribute));
-	}
+    @Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;", cancellable = true)
+    private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
+        cbi.setReturnValue(cbi.getReturnValue().add(Holder.REACH_ATTRIBUTE).add(SpeedCommand.SpeedType.swimSpeedAttribute));
+    }
 
-	@Inject(at = @At("RETURN"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
-	public void getName(CallbackInfoReturnable<Text> cbi) {
-		if (!MoreCommands.isCute(ReflectionHelper.cast(this))) return;
-		TextBuilder<?> builder = Compat.get().builderFromText(cbi.getReturnValue());
-		cbi.setReturnValue(builder.withStyle(style -> style.withFormatting(Formatting.LIGHT_PURPLE)).build());
-	}
+    @Inject(at = @At("RETURN"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
+    public void getName(CallbackInfoReturnable<Text> cbi) {
+        if (!MoreCommands.isCute(ReflectionHelper.cast(this))) return;
+        TextBuilder<?> builder = Compat.get().builderFromText(cbi.getReturnValue());
+        cbi.setReturnValue(builder.withStyle(style -> style.withFormatting(Formatting.LIGHT_PURPLE)).build());
+    }
 
-	@Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)
-	public void checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {
-		if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra.getValue()) cbi.setReturnValue(false);
-	}
+    @Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)
+    public void checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {
+        if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra.getValue()) cbi.setReturnValue(false);
+    }
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; decorateName(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
-	public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
-		return Team.decorateName(team, MoreCommands.getNickname(ReflectionHelper.cast(this)).or(name));
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; decorateName(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
+    public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
+        return Team.decorateName(team, MoreCommands.getNickname(ReflectionHelper.cast(this)).or(name));
+    }
 }

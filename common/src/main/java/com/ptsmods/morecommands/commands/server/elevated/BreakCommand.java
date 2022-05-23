@@ -10,18 +10,18 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 
 public class BreakCommand extends Command {
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReqOp("break").executes(ctx -> {
-			BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true)).getBlockPos();
-			PlayerEntity player = ctx.getSource().getPlayer();
-			if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
-			else {
-				player.getEntityWorld().breakBlock(block, false);
-				sendMsg(ctx, "The block at " + SF + "X: " + block.getX() + DF + ", " + SF + "Y: " + block.getY() + DF + ", " + SF + "Z: " + block.getZ() + DF + " has been broken.");
-				return 1;
-			}
-			return 0;
-		}));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(literalReqOp("break").executes(ctx -> {
+            BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true)).getBlockPos();
+            PlayerEntity player = ctx.getSource().getPlayer();
+            if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
+            else {
+                player.getEntityWorld().breakBlock(block, false);
+                sendMsg(ctx, "The block at " + SF + "X: " + block.getX() + DF + ", " + SF + "Y: " + block.getY() + DF + ", " + SF + "Z: " + block.getZ() + DF + " has been broken.");
+                return 1;
+            }
+            return 0;
+        }));
+    }
 }

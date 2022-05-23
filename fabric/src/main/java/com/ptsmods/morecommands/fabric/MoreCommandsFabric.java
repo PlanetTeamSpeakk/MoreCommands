@@ -11,8 +11,8 @@ public class MoreCommandsFabric implements ModInitializer, ClientModInitializer 
         MoreCommands.init();
     }
 
-	@Override
-	public void onInitializeClient() {
-		MoreCommandsClient.init();
-	}
+    @Override
+    public void onInitializeClient() {
+        MoreCommandsClient.init();
+    }
 }

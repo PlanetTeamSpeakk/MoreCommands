@@ -34,89 +34,89 @@ import java.util.stream.Collectors;
 
 public class Compat19 extends Compat182 {
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
-			(DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-		ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>> serializer = (ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>>) serialiser.toVanillaSerialiser();
-		((DeferredRegister<ArgumentSerializer<?, ?>>) registry).register(new Identifier(identifier), () -> serializer);
-		((Map<Class<?>, ArgumentSerializer<?, ?>>) MixinAccessWidener.get().argumentTypes$getClassMap()).put(clazz, serializer);
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
+            (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
+        ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>> serializer = (ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>>) serialiser.toVanillaSerialiser();
+        ((DeferredRegister<ArgumentSerializer<?, ?>>) registry).register(new Identifier(identifier), () -> serializer);
+        ((Map<Class<?>, ArgumentSerializer<?, ?>>) MixinAccessWidener.get().argumentTypes$getClassMap()).put(clazz, serializer);
+    }
 
-	@Override
-	public BlockStateArgumentType createBlockStateArgumentType() {
-		return BlockStateArgumentType.blockState((CommandRegistryAccess) CommandRegistryAccessHolder.commandRegistryAccess);
-	}
+    @Override
+    public BlockStateArgumentType createBlockStateArgumentType() {
+        return BlockStateArgumentType.blockState((CommandRegistryAccess) CommandRegistryAccessHolder.commandRegistryAccess);
+    }
 
-	@Override
-	public Direction randomDirection() {
-		return Direction.random(Random.create());
-	}
+    @Override
+    public Direction randomDirection() {
+        return Direction.random(Random.create());
+    }
 
-	@Override
-	public Object getPaintingVariant(PaintingEntity painting) {
-		return painting.getVariant().value();
-	}
+    @Override
+    public Object getPaintingVariant(PaintingEntity painting) {
+        return painting.getVariant().value();
+    }
 
-	@Override
-	public void setPaintingVariant(PaintingEntity entity, Object variant) {
-		((PaintingEntityAddon) entity).mc$setVariant(variant);
-	}
+    @Override
+    public void setPaintingVariant(PaintingEntity entity, Object variant) {
+        ((PaintingEntityAddon) entity).mc$setVariant(variant);
+    }
 
-	@Override
-	public MutableText buildText(LiteralTextBuilder builder) {
-		return buildText(new LiteralTextContent(builder.getLiteral()), builder);
-	}
+    @Override
+    public MutableText buildText(LiteralTextBuilder builder) {
+        return buildText(new LiteralTextContent(builder.getLiteral()), builder);
+    }
 
-	@Override
-	public MutableText buildText(TranslatableTextBuilder builder) {
-		return buildText(builder.getArgs().length == 0 ? new TranslatableTextContent(builder.getKey()) : new TranslatableTextContent(builder.getKey(), Arrays.stream(builder.getArgs())
-				.map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
-				.toArray(Object[]::new)), builder);
-	}
+    @Override
+    public MutableText buildText(TranslatableTextBuilder builder) {
+        return buildText(builder.getArgs().length == 0 ? new TranslatableTextContent(builder.getKey()) : new TranslatableTextContent(builder.getKey(), Arrays.stream(builder.getArgs())
+                .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
+                .toArray(Object[]::new)), builder);
+    }
 
-	private MutableText buildText(TextContent content, TextBuilder<?> builder) {
-		MutableText text = MutableText.of(content).setStyle(builder.getStyle());
-		builder.getChildren().forEach(child -> text.append(child.build()));
-		return text;
-	}
+    private MutableText buildText(TextContent content, TextBuilder<?> builder) {
+        MutableText text = MutableText.of(content).setStyle(builder.getStyle());
+        builder.getChildren().forEach(child -> text.append(child.build()));
+        return text;
+    }
 
-	@Override
-	public TextBuilder<?> builderFromText(Text text) {
-		TextContent content = text.getContent();
-		TextBuilder<?> builder;
-		if (content instanceof LiteralTextContent)
-			builder = LiteralTextBuilder.builder(((LiteralTextContent) content).string());
-		else if (content instanceof TranslatableTextContent)
-			builder = TranslatableTextBuilder.builder(((TranslatableTextContent) content).getKey(), Arrays.stream(((TranslatableTextContent) content).getArgs())
-					.map(o -> o instanceof Text ? builderFromText((Text) o) : o)
-					.toArray(Object[]::new));
-		else if (content instanceof KeybindTextContent)
-			builder = builderFromText(MixinKeybindTranslationsAccessor.getFactory().apply(((KeybindTextContent) content).getKey()).get());
-		else if (content instanceof ScoreTextContent || content instanceof NbtTextContent || content instanceof SelectorTextContent)
-			builder = LiteralTextBuilder.builder(content.toString()); // Not sure how to handle this.
-		else if (content == TextContent.EMPTY) builder = EmptyTextBuilder.builder();
-		else throw new IllegalArgumentException("Given text is not supported.");
+    @Override
+    public TextBuilder<?> builderFromText(Text text) {
+        TextContent content = text.getContent();
+        TextBuilder<?> builder;
+        if (content instanceof LiteralTextContent)
+            builder = LiteralTextBuilder.builder(((LiteralTextContent) content).string());
+        else if (content instanceof TranslatableTextContent)
+            builder = TranslatableTextBuilder.builder(((TranslatableTextContent) content).getKey(), Arrays.stream(((TranslatableTextContent) content).getArgs())
+                    .map(o -> o instanceof Text ? builderFromText((Text) o) : o)
+                    .toArray(Object[]::new));
+        else if (content instanceof KeybindTextContent)
+            builder = builderFromText(MixinKeybindTranslationsAccessor.getFactory().apply(((KeybindTextContent) content).getKey()).get());
+        else if (content instanceof ScoreTextContent || content instanceof NbtTextContent || content instanceof SelectorTextContent)
+            builder = LiteralTextBuilder.builder(content.toString()); // Not sure how to handle this.
+        else if (content == TextContent.EMPTY) builder = EmptyTextBuilder.builder();
+        else throw new IllegalArgumentException("Given text is not supported.");
 
-		return builder
-				.withStyle(style -> style.isEmpty() ? text.getStyle() : style) // Empty check only required in the case of Keybind content.
-				.withChildren(text.getSiblings().stream()
-						.map(this::builderFromText)
-						.collect(Collectors.toList()));
-	}
+        return builder
+                .withStyle(style -> style.isEmpty() ? text.getStyle() : style) // Empty check only required in the case of Keybind content.
+                .withChildren(text.getSiblings().stream()
+                        .map(this::builderFromText)
+                        .collect(Collectors.toList()));
+    }
 
-	@Override
-	public void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message) {
-		playerManager.broadcast(message, RegistryKey.of(Registry.MESSAGE_TYPE_KEY, type.getRight()));
-	}
+    @Override
+    public void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message) {
+        playerManager.broadcast(message, RegistryKey.of(Registry.MESSAGE_TYPE_KEY, type.getRight()));
+    }
 
-	@Override
-	public void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b) {
-		state.onStacksDropped(world, pos, stack, b);
-	}
+    @Override
+    public void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b) {
+        state.onStacksDropped(world, pos, stack, b);
+    }
 
-	@Override
-	public BlockPos getWorldSpawnPos(ServerWorld world) {
-		return world.getSpawnPos();
-	}
+    @Override
+    public BlockPos getWorldSpawnPos(ServerWorld world) {
+        return world.getSpawnPos();
+    }
 }

@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Registry.class)
 public interface MixinRegistryAccessor {
-	@Accessor("ROOT")
-	static MutableRegistry<MutableRegistry<?>> getRoot() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("ROOT")
+    static MutableRegistry<MutableRegistry<?>> getRoot() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

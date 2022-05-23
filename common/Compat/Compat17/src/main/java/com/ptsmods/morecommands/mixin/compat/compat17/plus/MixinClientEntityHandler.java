@@ -15,15 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Environment(EnvType.CLIENT)
 @Mixin(targets = "net/minecraft/client/world/ClientWorld$ClientEntityHandler")
 public class MixinClientEntityHandler {
-	@Shadow @Final ClientWorld field_27735;
+    @Shadow @Final ClientWorld field_27735;
 
-	@Inject(method = "startTracking(Lnet/minecraft/entity/Entity;)V", at = @At("TAIL"))
-	private void invokeLoadEntity(Entity entity, CallbackInfo ci) {
-		ClientEntityEvent.ENTITY_LOAD.invoker().onEntity(field_27735, entity);
-	}
+    @Inject(method = "startTracking(Lnet/minecraft/entity/Entity;)V", at = @At("TAIL"))
+    private void invokeLoadEntity(Entity entity, CallbackInfo ci) {
+        ClientEntityEvent.ENTITY_LOAD.invoker().onEntity(field_27735, entity);
+    }
 
-	@Inject(method = "stopTracking(Lnet/minecraft/entity/Entity;)V", at = @At("HEAD"))
-	private void invokeUnloadEntity(Entity entity, CallbackInfo ci) {
-		ClientEntityEvent.ENTITY_UNLOAD.invoker().onEntity(field_27735, entity);
-	}
+    @Inject(method = "stopTracking(Lnet/minecraft/entity/Entity;)V", at = @At("HEAD"))
+    private void invokeUnloadEntity(Entity entity, CallbackInfo ci) {
+        ClientEntityEvent.ENTITY_UNLOAD.invoker().onEntity(field_27735, entity);
+    }
 }

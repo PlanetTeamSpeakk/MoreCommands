@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.api.addons;
 
 public interface PaintingEntityAddon {
-	Object mc$getVariant();
+    Object mc$getVariant();
 
-	void mc$setVariant(Object variant);
+    void mc$setVariant(Object variant);
 }

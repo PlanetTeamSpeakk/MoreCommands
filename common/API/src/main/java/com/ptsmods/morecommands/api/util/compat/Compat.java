@@ -50,89 +50,89 @@ import java.util.stream.DoubleStream;
 
 public interface Compat {
 
-	@SuppressWarnings("deprecation") // Not API
-	static Compat get() {
-		return Holder.getCompat();
-	}
+    @SuppressWarnings("deprecation") // Not API
+    static Compat get() {
+        return Holder.getCompat();
+    }
 
-	boolean isRemoved(Entity entity);
+    boolean isRemoved(Entity entity);
 
-	void setRemoved(Entity entity, int reason);
+    void setRemoved(Entity entity, int reason);
 
-	PlayerInventory getInventory(PlayerEntity player);
+    PlayerInventory getInventory(PlayerEntity player);
 
-	boolean isInBuildLimit(World world, BlockPos pos);
+    boolean isInBuildLimit(World world, BlockPos pos);
 
-	Text toText(NbtElement tag);
+    Text toText(NbtElement tag);
 
-	ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile);
+    ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile);
 
-	NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
+    NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
 
-	void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
+    void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
 
-	void setSignEditor(SignBlockEntity sbe, PlayerEntity player);
+    void setSignEditor(SignBlockEntity sbe, PlayerEntity player);
 
-	<E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key);
+    <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key);
 
-	int getWorldHeight(BlockView world);
+    int getWorldHeight(BlockView world);
 
-	FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
+    FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
 
-	String getProcessorString();
+    String getProcessorString();
 
-	<T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id);
+    <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id);
 
-	void playerSetWorld(ServerPlayerEntity player, ServerWorld world);
+    void playerSetWorld(ServerPlayerEntity player, ServerWorld world);
 
-	PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players);
+    PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players);
 
-	NbtCompound writeBENBT(BlockEntity be);
+    NbtCompound writeBENBT(BlockEntity be);
 
-	<A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
-			(DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser);
+    <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
+            (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser);
 
-	boolean tagContains(Object tag, Object obj);
+    boolean tagContains(Object tag, Object obj);
 
-	default boolean tagContains(Identifier identifier, Object obj) {
-		return tagContains(getBlockTags().get(identifier), obj);
-	}
+    default boolean tagContains(Identifier identifier, Object obj) {
+        return tagContains(getBlockTags().get(identifier), obj);
+    }
 
-	Biome getBiome(World world, BlockPos pos);
+    Biome getBiome(World world, BlockPos pos);
 
-	BlockStateArgumentType createBlockStateArgumentType();
+    BlockStateArgumentType createBlockStateArgumentType();
 
-	Direction randomDirection();
+    Direction randomDirection();
 
-	default <T> T newInstance(Class<T> clazz) {
-		try {
-			return clazz.getConstructor().newInstance();
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    default <T> T newInstance(Class<T> clazz) {
+        try {
+            return clazz.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	Map<Identifier, Object> getBlockTags();
+    Map<Identifier, Object> getBlockTags();
 
-	DoubleStream doubleStream(DoubleList doubles);
+    DoubleStream doubleStream(DoubleList doubles);
 
-	Object getPaintingVariant(PaintingEntity painting);
+    Object getPaintingVariant(PaintingEntity painting);
 
-	void setPaintingVariant(PaintingEntity entity, Object variant);
+    void setPaintingVariant(PaintingEntity entity, Object variant);
 
-	// Text-related
+    // Text-related
 
-	MutableText buildText(LiteralTextBuilder builder);
+    MutableText buildText(LiteralTextBuilder builder);
 
-	MutableText buildText(TranslatableTextBuilder builder);
+    MutableText buildText(TranslatableTextBuilder builder);
 
-	MutableText buildText(EmptyTextBuilder builder);
+    MutableText buildText(EmptyTextBuilder builder);
 
-	TextBuilder<?> builderFromText(Text text);
+    TextBuilder<?> builderFromText(Text text);
 
-	void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message);
+    void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message);
 
-	void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b);
+    void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b);
 
-	BlockPos getWorldSpawnPos(ServerWorld world);
+    BlockPos getWorldSpawnPos(ServerWorld world);
 }

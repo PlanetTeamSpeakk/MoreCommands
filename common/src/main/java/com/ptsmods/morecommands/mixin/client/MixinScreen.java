@@ -17,12 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Screen.class)
 public class MixinScreen {
-	@Inject(at = @At("HEAD"), method = "renderTooltip(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/text/Text;II)V", cancellable = true)
-	public void renderTooltip(MatrixStack matrices, Text text, int x, int y, CallbackInfo cbi) {
-		TextBuilder<?> builder = Compat.get().builderFromText(text);
-		if (builder instanceof TranslatableTextBuilder && "itemGroup.morecommands.unobtainable_items".equalsIgnoreCase(((TranslatableTextBuilder) builder).getKey())) {
-			cbi.cancel();
-			ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, LiteralTextBuilder.builder("MoreCommands", MoreCommands.DS).build()), x, y);
-		}
-	}
+    @Inject(at = @At("HEAD"), method = "renderTooltip(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/text/Text;II)V", cancellable = true)
+    public void renderTooltip(MatrixStack matrices, Text text, int x, int y, CallbackInfo cbi) {
+        TextBuilder<?> builder = Compat.get().builderFromText(text);
+        if (builder instanceof TranslatableTextBuilder && "itemGroup.morecommands.unobtainable_items".equalsIgnoreCase(((TranslatableTextBuilder) builder).getKey())) {
+            cbi.cancel();
+            ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, LiteralTextBuilder.builder("MoreCommands", MoreCommands.DS).build()), x, y);
+        }
+    }
 }

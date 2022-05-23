@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilScreen.class)
 public class MixinAnvilScreen {
-	@Unique private static boolean colourPickerOpen = false;
-	@Shadow private TextFieldWidget nameField;
+    @Unique private static boolean colourPickerOpen = false;
+    @Shadow private TextFieldWidget nameField;
 
-	@Inject(at = @At("TAIL"), method = "setup()V")
-	protected void setup(CallbackInfo cbi) {
-		Screen thiz = ReflectionHelper.cast(this);
-		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, nameField::write, b -> colourPickerOpen = b);
-	}
+    @Inject(at = @At("TAIL"), method = "setup()V")
+    protected void setup(CallbackInfo cbi) {
+        Screen thiz = ReflectionHelper.cast(this);
+        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, nameField::write, b -> colourPickerOpen = b);
+    }
 }

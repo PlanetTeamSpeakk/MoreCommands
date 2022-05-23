@@ -26,56 +26,56 @@ import java.util.Map;
 import java.util.Objects;
 
 public class VanishCommand extends Command {
-	public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
+    public static final Map<ServerPlayerEntity, EntityTrackerEntry> trackers = new HashMap<>();
 
-	public void preinit(boolean serverOnly) {
-		// Gotta tick them manually since they don't get ticked when they're not tracked which breaks stuff like altering attributes (and thus altering reach).
-		TickEvent.SERVER_PRE.register(server -> trackers.values().forEach(EntityTrackerEntry::tick));
-	}
+    public void preinit(boolean serverOnly) {
+        // Gotta tick them manually since they don't get ticked when they're not tracked which breaks stuff like altering attributes (and thus altering reach).
+        TickEvent.SERVER_PRE.register(server -> trackers.values().forEach(EntityTrackerEntry::tick));
+    }
 
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literalReqOp("vanish")
-				.executes(ctx -> execute(ctx, null))
-				.then(argument("players", EntityArgumentType.players())
-						.executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literalReqOp("vanish")
+                .executes(ctx -> execute(ctx, null))
+                .then(argument("players", EntityArgumentType.players())
+                        .executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
+    }
 
-	private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
-		if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
-		else if (!isOp(ctx)) {
-			sendError(ctx, "You must be op to toggle vanish for others.");
-			return 0;
-		}
-		for (ServerPlayerEntity player : p) {
-			boolean b = !player.getDataTracker().get(DataTrackerHelper.VANISH);
-			if (b) vanish(player, true);
-			else unvanish(player);
-			sendMsg(player, "You are " + Util.formatFromBool(b, "now", "no longer") + DF + " vanished.");
-		}
-		return p.size();
-	}
+    private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
+        if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
+        else if (!isOp(ctx)) {
+            sendError(ctx, "You must be op to toggle vanish for others.");
+            return 0;
+        }
+        for (ServerPlayerEntity player : p) {
+            boolean b = !player.getDataTracker().get(DataTrackerHelper.VANISH);
+            if (b) vanish(player, true);
+            else unvanish(player);
+            sendMsg(player, "You are " + Util.formatFromBool(b, "now", "no longer") + DF + " vanished.");
+        }
+        return p.size();
+    }
 
-	public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
-		player.getDataTracker().set(DataTrackerHelper.VANISH, true);
-		player.getDataTracker().set(DataTrackerHelper.VANISH_TOGGLED, true);
-		Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
-		player.getWorld().getChunkManager().unloadEntity(player);
-		if (sendmsg && MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
-			Compat.get().broadcast(player.getServer().getPlayerManager(), new Pair<>(1, new Identifier("system")), translatableText("multiplayer.player.left", player.getDisplayName())
-					.withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build());
-	}
+    public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
+        player.getDataTracker().set(DataTrackerHelper.VANISH, true);
+        player.getDataTracker().set(DataTrackerHelper.VANISH_TOGGLED, true);
+        Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
+        player.getWorld().getChunkManager().unloadEntity(player);
+        if (sendmsg && MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+            Compat.get().broadcast(player.getServer().getPlayerManager(), new Pair<>(1, new Identifier("system")), translatableText("multiplayer.player.left", player.getDisplayName())
+                    .withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build());
+    }
 
-	public static void unvanish(ServerPlayerEntity player) {
-		if (player.getDataTracker().get(DataTrackerHelper.VANISH)) {
-			player.getDataTracker().set(DataTrackerHelper.VANISH, false);
-			Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
-			trackers.remove(player);
-			player.getWorld().getChunkManager().loadEntity(player);
-			if (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
-				Compat.get().broadcast(player.getServer().getPlayerManager(), new Pair<>(1, new Identifier("system")), translatableText("multiplayer.player.joined",
-						player.getDisplayName())
-						.withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build());
-		}
-	}
+    public static void unvanish(ServerPlayerEntity player) {
+        if (player.getDataTracker().get(DataTrackerHelper.VANISH)) {
+            player.getDataTracker().set(DataTrackerHelper.VANISH, false);
+            Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
+            trackers.remove(player);
+            player.getWorld().getChunkManager().loadEntity(player);
+            if (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+                Compat.get().broadcast(player.getServer().getPlayerManager(), new Pair<>(1, new Identifier("system")), translatableText("multiplayer.player.joined",
+                        player.getDisplayName())
+                        .withStyle(Style.EMPTY.withFormatting(Formatting.YELLOW)).build());
+        }
+    }
 }

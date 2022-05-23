@@ -10,25 +10,25 @@ import org.apache.logging.log4j.Logger;
 import java.nio.file.Path;
 
 public interface IMoreCommands {
-	Logger LOG = LogManager.getLogger("MoreCommands");
+    Logger LOG = LogManager.getLogger("MoreCommands");
 
-	static IMoreCommands get() {
-		return Holder.getMoreCommands();
-	}
+    static IMoreCommands get() {
+        return Holder.getMoreCommands();
+    }
 
-	Formatting getDefaultFormatting();
+    Formatting getDefaultFormatting();
 
-	Formatting getSecondaryFormatting();
+    Formatting getSecondaryFormatting();
 
-	boolean isServerOnly();
+    boolean isServerOnly();
 
-	MinecraftServer getServer();
+    MinecraftServer getServer();
 
-	Path getConfigDirectory();
+    Path getConfigDirectory();
 
-	String textToString(Text text, Style parentStyle, boolean includeFormattings);
+    String textToString(Text text, Style parentStyle, boolean includeFormattings);
 
-	void setCreatingWorld(boolean creatingWorld);
+    void setCreatingWorld(boolean creatingWorld);
 
-	Path getJar();
+    Path getJar();
 }

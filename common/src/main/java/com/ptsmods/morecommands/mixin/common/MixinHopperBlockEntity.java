@@ -18,11 +18,11 @@ import java.util.Objects;
 
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity {
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;removeStack(II)Lnet/minecraft/item/ItemStack;"), method = "extract(Lnet/minecraft/block/entity/Hopper;Lnet/minecraft/inventory/Inventory;ILnet/minecraft/util/math/Direction;)Z")
-	private static ItemStack extract_removeStack(Inventory inventory, int slot, int amount, Hopper hopper, Inventory inventory0, int slot0, Direction side) {
-		return inventory.removeStack(slot, Objects.requireNonNull(
-				hopper instanceof BlockEntity ? ((BlockEntity) hopper).getWorld() :
-				hopper instanceof Entity ? ((Entity) hopper).getEntityWorld() :
-				MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getInt(MoreGameRules.get().hopperTransferRateRule()));
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;removeStack(II)Lnet/minecraft/item/ItemStack;"), method = "extract(Lnet/minecraft/block/entity/Hopper;Lnet/minecraft/inventory/Inventory;ILnet/minecraft/util/math/Direction;)Z")
+    private static ItemStack extract_removeStack(Inventory inventory, int slot, int amount, Hopper hopper, Inventory inventory0, int slot0, Direction side) {
+        return inventory.removeStack(slot, Objects.requireNonNull(
+                hopper instanceof BlockEntity ? ((BlockEntity) hopper).getWorld() :
+                hopper instanceof Entity ? ((Entity) hopper).getEntityWorld() :
+                MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getInt(MoreGameRules.get().hopperTransferRateRule()));
+    }
 }

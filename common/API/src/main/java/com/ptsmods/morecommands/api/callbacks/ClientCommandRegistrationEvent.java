@@ -9,7 +9,7 @@ import net.minecraft.client.network.ClientCommandSource;
 
 @Environment(EnvType.CLIENT)
 public interface ClientCommandRegistrationEvent {
-	Event<ClientCommandRegistrationEvent> EVENT = EventFactory.createLoop();
+    Event<ClientCommandRegistrationEvent> EVENT = EventFactory.createLoop();
 
-	void register(CommandDispatcher<ClientCommandSource> dispatcher);
+    void register(CommandDispatcher<ClientCommandSource> dispatcher);
 }

@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerInventory.class)
 public class MixinPlayerInventory {
 
-	@Inject(at = @At("RETURN"), method = "getBlockBreakingSpeed(Lnet/minecraft/block/BlockState;)F", cancellable = true)
-	public void getBlockBreakingSpeed(BlockState block, CallbackInfoReturnable<Float> cbi) {
-		PlayerInventory thiz = ReflectionHelper.cast(this);
-		if (thiz.main.get(thiz.selectedSlot).getItem() instanceof PickaxeItem && thiz.player.getDataTracker().get(DataTrackerHelper.SUPERPICKAXE)) cbi.setReturnValue(Float.MAX_VALUE);
-	}
+    @Inject(at = @At("RETURN"), method = "getBlockBreakingSpeed(Lnet/minecraft/block/BlockState;)F", cancellable = true)
+    public void getBlockBreakingSpeed(BlockState block, CallbackInfoReturnable<Float> cbi) {
+        PlayerInventory thiz = ReflectionHelper.cast(this);
+        if (thiz.main.get(thiz.selectedSlot).getItem() instanceof PickaxeItem && thiz.player.getDataTracker().get(DataTrackerHelper.SUPERPICKAXE)) cbi.setReturnValue(Float.MAX_VALUE);
+    }
 }

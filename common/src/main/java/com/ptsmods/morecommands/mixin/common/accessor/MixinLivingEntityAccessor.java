@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(LivingEntity.class)
 public interface MixinLivingEntityAccessor {
-	@Accessor
-	void setDead(boolean dead);
+    @Accessor
+    void setDead(boolean dead);
 }

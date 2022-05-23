@@ -13,8 +13,8 @@ import java.util.Objects;
 
 @Mixin(GoalSelector.class)
 public class MixinGoalSelector {
-	@Inject(at = @At("HEAD"), method = "tick", cancellable = true)
-	public void tick(CallbackInfo cbi) {
-		if (!Objects.requireNonNull(MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.get().doGoalsRule())) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "tick", cancellable = true)
+    public void tick(CallbackInfo cbi) {
+        if (!Objects.requireNonNull(MoreCommands.serverInstance.getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.get().doGoalsRule())) cbi.cancel();
+    }
 }

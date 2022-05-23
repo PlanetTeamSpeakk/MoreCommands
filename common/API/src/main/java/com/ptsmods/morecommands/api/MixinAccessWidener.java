@@ -18,17 +18,17 @@ import java.util.Map;
 // Utility class so Compat subprojects may use certain mixins from the main project.
 public interface MixinAccessWidener {
 
-	static MixinAccessWidener get() {
-		return Holder.getMixinAccessWidener();
-	}
+    static MixinAccessWidener get() {
+        return Holder.getMixinAccessWidener();
+    }
 
-	Map<Class<?>, ?> argumentTypes$getClassMap();
+    Map<Class<?>, ?> argumentTypes$getClassMap();
 
-	void serverPlayerEntity$setSyncedExperience(ServerPlayerEntity player, int experience);
+    void serverPlayerEntity$setSyncedExperience(ServerPlayerEntity player, int experience);
 
-	char serverPlayNetworkHandler$gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server);
+    char serverPlayNetworkHandler$gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server);
 
-	Text[] signBlockEntity$getTexts(SignBlockEntity sbe);
+    Text[] signBlockEntity$getTexts(SignBlockEntity sbe);
 
-	void doMultiDoorInteract(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cbi);
+    void doMultiDoorInteract(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cbi);
 }

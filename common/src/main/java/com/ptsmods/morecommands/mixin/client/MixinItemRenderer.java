@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemRenderer.class)
 public class MixinItemRenderer {
-	@Inject(at = @At("HEAD"), method = "renderGuiItemOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", cancellable = true)
-	public void renderGuiItemOverlay(TextRenderer renderer, ItemStack stack, int x, int y, String countLabel, CallbackInfo cbi) {
-		if (UnlimitedCommand.isUnlimited(stack) && (countLabel == null || !countLabel.endsWith("111"))) {
-			if (countLabel != null) countLabel = countLabel.replace("" + stack.getCount(), "111");
-			else countLabel = "111";
-			cbi.cancel();
-			ReflectionHelper.<ItemRenderer>cast(this).renderGuiItemOverlay(renderer, stack, x, y, countLabel);
-		}
-	}
+    @Inject(at = @At("HEAD"), method = "renderGuiItemOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", cancellable = true)
+    public void renderGuiItemOverlay(TextRenderer renderer, ItemStack stack, int x, int y, String countLabel, CallbackInfo cbi) {
+        if (UnlimitedCommand.isUnlimited(stack) && (countLabel == null || !countLabel.endsWith("111"))) {
+            if (countLabel != null) countLabel = countLabel.replace("" + stack.getCount(), "111");
+            else countLabel = "111";
+            cbi.cancel();
+            ReflectionHelper.<ItemRenderer>cast(this).renderGuiItemOverlay(renderer, stack, x, y, countLabel);
+        }
+    }
 }

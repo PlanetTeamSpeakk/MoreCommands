@@ -21,50 +21,50 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
 public class MixinServerPlayerEntity {
-	@Unique private int lastPing = -1;
+    @Unique private int lastPing = -1;
 
-	/**
-	 * @author PlanetTeamSpeak
-	 * @reason To account for nicknames.
-	 */
-	@Nullable
-	@Overwrite
-	public Text getPlayerListName() {
-		return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
-	}
+    /**
+     * @author PlanetTeamSpeak
+     * @reason To account for nicknames.
+     */
+    @Nullable
+    @Overwrite
+    public Text getPlayerListName() {
+        return ReflectionHelper.<ServerPlayerEntity>cast(this).getDisplayName();
+    }
 
-	@Inject(at = @At("HEAD"), method = "playerTick()V")
-	public void playerTick(CallbackInfo cbi) {
-		ServerPlayerEntity thiz = ReflectionHelper.cast(this);
-		if (thiz.pingMilliseconds != lastPing) {
-			lastPing = thiz.pingMilliseconds;
-			updateScores(MoreCommands.LATENCY, lastPing);
-		}
-	}
+    @Inject(at = @At("HEAD"), method = "playerTick()V")
+    public void playerTick(CallbackInfo cbi) {
+        ServerPlayerEntity thiz = ReflectionHelper.cast(this);
+        if (thiz.pingMilliseconds != lastPing) {
+            lastPing = thiz.pingMilliseconds;
+            updateScores(MoreCommands.LATENCY, lastPing);
+        }
+    }
 
-	@Shadow private void updateScores(ScoreboardCriterion criterion, int score) {
-		throw new AssertionError("This should not happen.");
-	}
+    @Shadow private void updateScores(ScoreboardCriterion criterion, int score) {
+        throw new AssertionError("This should not happen.");
+    }
 
-	// First changing world, then teleporting to different position seeing as that's how it's done naturally when going through a portal.
-	// Normal behaviour breaks the back command when using it twice in a row after going through a portal.
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;refreshPositionAndAngles(DDDFF)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
-	private void teleport_refreshPositionAndAngles(ServerPlayerEntity thiz, double x, double y, double z, float yaw, float pitch, ServerWorld targetWorld, double x0, double y0, double z0, float yaw0, float pitch0) {
-		Compat.get().playerSetWorld(thiz, targetWorld);
-	}
+    // First changing world, then teleporting to different position seeing as that's how it's done naturally when going through a portal.
+    // Normal behaviour breaks the back command when using it twice in a row after going through a portal.
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;refreshPositionAndAngles(DDDFF)V"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V")
+    private void teleport_refreshPositionAndAngles(ServerPlayerEntity thiz, double x, double y, double z, float yaw, float pitch, ServerWorld targetWorld, double x0, double y0, double z0, float yaw0, float pitch0) {
+        Compat.get().playerSetWorld(thiz, targetWorld);
+    }
 
-	@Inject(at = @At("RETURN"), method = "copyFrom")
-	private void copyFrom(ServerPlayerEntity player, boolean alive, CallbackInfo cbi) {
-		DataTracker dataTrackerNew = ReflectionHelper.<ServerPlayerEntity>cast(this).getDataTracker();
-		DataTracker dataTrackerOld = player.getDataTracker();
+    @Inject(at = @At("RETURN"), method = "copyFrom")
+    private void copyFrom(ServerPlayerEntity player, boolean alive, CallbackInfo cbi) {
+        DataTracker dataTrackerNew = ReflectionHelper.<ServerPlayerEntity>cast(this).getDataTracker();
+        DataTracker dataTrackerOld = player.getDataTracker();
 
-		dataTrackerNew.set(DataTrackerHelper.MAY_FLY, dataTrackerOld.get(DataTrackerHelper.MAY_FLY));
-		dataTrackerNew.set(DataTrackerHelper.INVULNERABLE, dataTrackerOld.get(DataTrackerHelper.INVULNERABLE));
-		dataTrackerNew.set(DataTrackerHelper.SUPERPICKAXE, dataTrackerOld.get(DataTrackerHelper.SUPERPICKAXE));
-		dataTrackerNew.set(DataTrackerHelper.VANISH, dataTrackerOld.get(DataTrackerHelper.VANISH));
-		dataTrackerNew.set(DataTrackerHelper.VAULTS, dataTrackerOld.get(DataTrackerHelper.VAULTS));
-		dataTrackerNew.set(DataTrackerHelper.NICKNAME, dataTrackerOld.get(DataTrackerHelper.NICKNAME));
-		dataTrackerNew.set(DataTrackerHelper.SPEED_MODIFIER, dataTrackerOld.get(DataTrackerHelper.SPEED_MODIFIER));
-	}
+        dataTrackerNew.set(DataTrackerHelper.MAY_FLY, dataTrackerOld.get(DataTrackerHelper.MAY_FLY));
+        dataTrackerNew.set(DataTrackerHelper.INVULNERABLE, dataTrackerOld.get(DataTrackerHelper.INVULNERABLE));
+        dataTrackerNew.set(DataTrackerHelper.SUPERPICKAXE, dataTrackerOld.get(DataTrackerHelper.SUPERPICKAXE));
+        dataTrackerNew.set(DataTrackerHelper.VANISH, dataTrackerOld.get(DataTrackerHelper.VANISH));
+        dataTrackerNew.set(DataTrackerHelper.VAULTS, dataTrackerOld.get(DataTrackerHelper.VAULTS));
+        dataTrackerNew.set(DataTrackerHelper.NICKNAME, dataTrackerOld.get(DataTrackerHelper.NICKNAME));
+        dataTrackerNew.set(DataTrackerHelper.SPEED_MODIFIER, dataTrackerOld.get(DataTrackerHelper.SPEED_MODIFIER));
+    }
 
 }

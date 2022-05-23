@@ -23,39 +23,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = CreativeInventoryScreen.class, priority = 1100) // Higher priority so it gets injected after the Fabric API does.
 public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScreen<CreativeInventoryScreen.CreativeScreenHandler> {
-	@Shadow private TextFieldWidget searchBox;
+    @Shadow private TextFieldWidget searchBox;
 
-	public MixinCreativeInventoryScreen(CreativeInventoryScreen.CreativeScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
-		super(screenHandler, playerInventory, text);
-	}
+    public MixinCreativeInventoryScreen(CreativeInventoryScreen.CreativeScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
+        super(screenHandler, playerInventory, text);
+    }
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen;drawEntity(IIIFFLnet/minecraft/entity/LivingEntity;)V"), method = "drawBackground(Lnet/minecraft/client/util/math/MatrixStack;FII)V")
-	public void drawBackground_drawEntity(int x, int y, int size, float mouseX, float mouseY, LivingEntity entity) {
-		InventoryScreen.drawEntity(x, y, (int) (size * (ClientOptions.Rendering.renderOwnTag.getValue() ? 0.85f : 1f)), mouseX, mouseY, entity);
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen;drawEntity(IIIFFLnet/minecraft/entity/LivingEntity;)V"), method = "drawBackground(Lnet/minecraft/client/util/math/MatrixStack;FII)V")
+    public void drawBackground_drawEntity(int x, int y, int size, float mouseX, float mouseY, LivingEntity entity) {
+        InventoryScreen.drawEntity(x, y, (int) (size * (ClientOptions.Rendering.renderOwnTag.getValue() ? 0.85f : 1f)), mouseX, mouseY, entity);
+    }
 
-	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/CreativeInventoryScreen;isPointWithinBounds(IIIIDD)Z"), method = "renderTabTooltipIfHovered", index = 1)
-	private int renderTabTooltipIfHovered_isPointWithinBounds_yPosition(int y) {
-		return y + 2;
-	}
+    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/CreativeInventoryScreen;isPointWithinBounds(IIIIDD)Z"), method = "renderTabTooltipIfHovered", index = 1)
+    private int renderTabTooltipIfHovered_isPointWithinBounds_yPosition(int y) {
+        return y + 2;
+    }
 
-	@Inject(at = @At("HEAD"), method = "keyPressed", cancellable = true)
-	private void keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cbi) {
-		if (!searchBox.isFocused() && ClientOptions.Tweaks.creativeKeyPager.getValue()) {
-			CreativeInventoryScreenAddon addon = (CreativeInventoryScreenAddon) this;
-			GameOptions options = MinecraftClient.getInstance().options;
-			ButtonWidget btn = null;
-			if ((options.leftKey.matchesKey(keyCode, scanCode) || options.backKey.matchesKey(keyCode, scanCode) ||
-					keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && addon.mc$getPagerPrev() != null && addon.mc$getPagerPrev().active)
-				btn = addon.mc$getPagerPrev();
-			else if ((options.rightKey.matchesKey(keyCode, scanCode) || options.forwardKey.matchesKey(keyCode, scanCode) ||
-					keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && addon.mc$getPagerNext() != null && addon.mc$getPagerNext().active)
-				btn = addon.mc$getPagerNext();
-			if (btn != null) {
-				btn.onPress();
-				btn.playDownSound(MinecraftClient.getInstance().getSoundManager());
-				cbi.setReturnValue(true);
-			}
-		}
-	}
+    @Inject(at = @At("HEAD"), method = "keyPressed", cancellable = true)
+    private void keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cbi) {
+        if (!searchBox.isFocused() && ClientOptions.Tweaks.creativeKeyPager.getValue()) {
+            CreativeInventoryScreenAddon addon = (CreativeInventoryScreenAddon) this;
+            GameOptions options = MinecraftClient.getInstance().options;
+            ButtonWidget btn = null;
+            if ((options.leftKey.matchesKey(keyCode, scanCode) || options.backKey.matchesKey(keyCode, scanCode) ||
+                    keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && addon.mc$getPagerPrev() != null && addon.mc$getPagerPrev().active)
+                btn = addon.mc$getPagerPrev();
+            else if ((options.rightKey.matchesKey(keyCode, scanCode) || options.forwardKey.matchesKey(keyCode, scanCode) ||
+                    keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && addon.mc$getPagerNext() != null && addon.mc$getPagerNext().active)
+                btn = addon.mc$getPagerNext();
+            if (btn != null) {
+                btn.onPress();
+                btn.playDownSound(MinecraftClient.getInstance().getSoundManager());
+                cbi.setReturnValue(true);
+            }
+        }
+    }
 }

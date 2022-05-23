@@ -31,61 +31,61 @@ import java.util.function.Function;
 
 public class ClientCompat16 implements ClientCompat {
 
-	@Override
-	public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
-		builder.begin(drawMode, format);
-	}
+    @Override
+    public void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format) {
+        builder.begin(drawMode, format);
+    }
 
-	@Override
-	public int getFrameCount(Sprite sprite) {
-		return sprite.getFrameCount();
-	}
+    @Override
+    public int getFrameCount(Sprite sprite) {
+        return sprite.getFrameCount();
+    }
 
-	@Override
-	public void bindTexture(Identifier id) {
-		MinecraftClient.getInstance().getTextureManager().bindTexture(id);
-	}
+    @Override
+    public void bindTexture(Identifier id) {
+        MinecraftClient.getInstance().getTextureManager().bindTexture(id);
+    }
 
-	@Override
-	public ChatVisibility getChatVisibility(GameOptions options) {
-		return options.chatVisibility;
-	}
+    @Override
+    public ChatVisibility getChatVisibility(GameOptions options) {
+        return options.chatVisibility;
+    }
 
-	@Override
-	public double getChatLineSpacing(GameOptions options) {
-		return options.chatLineSpacing;
-	}
+    @Override
+    public double getChatLineSpacing(GameOptions options) {
+        return options.chatLineSpacing;
+    }
 
-	@Override
-	public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
-		return interactionManager.interactBlock(player, world, hand, hit);
-	}
+    @Override
+    public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
+        return interactionManager.interactBlock(player, world, hand, hit);
+    }
 
-	@Override
-	public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
-		return manager.getResource(id).getInputStream();
-	}
+    @Override
+    public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
+        return manager.getResource(id).getInputStream();
+    }
 
-	@Override
-	public double getGamma(GameOptions options) {
-		return options.gamma;
-	}
+    @Override
+    public double getGamma(GameOptions options) {
+        return options.gamma;
+    }
 
-	@Override
-	public Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat) {
-		return new ChatMessageC2SPacket(message);
-	}
+    @Override
+    public Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat) {
+        return new ChatMessageC2SPacket(message);
+    }
 
-	@Override
-	public void registerChatProcessListener(Function<Text, Text> listener) {
-		ClientChatEvent.PROCESS.register(message -> {
-			Text input = LiteralTextBuilder.builder(message).build();
-			Text output = listener.apply(input);
+    @Override
+    public void registerChatProcessListener(Function<Text, Text> listener) {
+        ClientChatEvent.PROCESS.register(message -> {
+            Text input = LiteralTextBuilder.builder(message).build();
+            Text output = listener.apply(input);
 
-			return output == null || output.equals(input) ? CompoundEventResult.pass() :
-					CompoundEventResult.interruptTrue(IMoreCommands.get().textToString(output, null, true));
-		});
-	}
+            return output == null || output.equals(input) ? CompoundEventResult.pass() :
+                    CompoundEventResult.interruptTrue(IMoreCommands.get().textToString(output, null, true));
+        });
+    }
 
     @Override
     public void sendMessageOrCommand(String msg) {

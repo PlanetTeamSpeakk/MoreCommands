@@ -17,27 +17,27 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class RemoveCommand extends Command {
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literalReqOp("remove")
-				.executes(ctx -> execute(ctx.getSource(), ImmutableList.of((ctx.getSource()).getEntityOrThrow())))
-				.then(CommandManager.argument("targets", EntityArgumentType.entities())
-						.executes(ctx -> execute(ctx.getSource(), EntityArgumentType.getEntities(ctx, "targets")))));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+        dispatcher.register(literalReqOp("remove")
+                .executes(ctx -> execute(ctx.getSource(), ImmutableList.of((ctx.getSource()).getEntityOrThrow())))
+                .then(CommandManager.argument("targets", EntityArgumentType.entities())
+                        .executes(ctx -> execute(ctx.getSource(), EntityArgumentType.getEntities(ctx, "targets")))));
+    }
 
-	private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) throws CommandSyntaxException {
-		targets = targets.stream()
-				.filter(e -> !(e instanceof PlayerEntity)) // Don't remove players
-				.collect(Collectors.toList());
+    private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) throws CommandSyntaxException {
+        targets = targets.stream()
+                .filter(e -> !(e instanceof PlayerEntity)) // Don't remove players
+                .collect(Collectors.toList());
 
-		for (Entity entity : targets) {
-			Compat.get().setRemoved(entity, 1);
-			if (entity instanceof LivingEntity)
-				((MixinLivingEntityAccessor) entity).setDead(true);
-		}
+        for (Entity entity : targets) {
+            Compat.get().setRemoved(entity, 1);
+            if (entity instanceof LivingEntity)
+                ((MixinLivingEntityAccessor) entity).setDead(true);
+        }
 
-		sendMsg(source.getEntityOrThrow(), targets.size() == 1 ? translatableText("commands.kill.success.single", targets.iterator().next().getDisplayName()).withStyle(DS) :
-				translatableText("commands.kill.success.multiple", targets.size()).withStyle(DS));
-		return targets.size();
-	}
+        sendMsg(source.getEntityOrThrow(), targets.size() == 1 ? translatableText("commands.kill.success.single", targets.iterator().next().getDisplayName()).withStyle(DS) :
+                translatableText("commands.kill.success.multiple", targets.size()).withStyle(DS));
+        return targets.size();
+    }
 }

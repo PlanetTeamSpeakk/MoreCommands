@@ -17,28 +17,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExtinguishCommand extends Command {
 
-	private static final Random rand = new Random();
+    private static final Random rand = new Random();
 
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(
-				literalReqOp("extinguish")
-						.executes(ctx -> execute(ctx, null))
-						.then(argument("targets", EntityArgumentType.entities())
-								.executes(ctx -> execute(ctx, EntityArgumentType.getEntities(ctx, "targets")))));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(
+                literalReqOp("extinguish")
+                        .executes(ctx -> execute(ctx, null))
+                        .then(argument("targets", EntityArgumentType.entities())
+                                .executes(ctx -> execute(ctx, EntityArgumentType.getEntities(ctx, "targets")))));
+    }
 
-	private int execute(CommandContext<ServerCommandSource> ctx, Collection<? extends Entity> entities) throws CommandSyntaxException {
-		if (entities == null) entities = Collections.singletonList(ctx.getSource().getEntityOrThrow());
-		AtomicInteger success = new AtomicInteger();
-		for (Entity entity : entities)
-			if (entity.isOnFire()) {
-				entity.extinguish();
-				entity.getEntityWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ENTITY_GENERIC_EXTINGUISH_FIRE, SoundCategory.PLAYERS, 0.7F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-				success.incrementAndGet();
-			} else if (entities.size() == 1) sendMsg(ctx, "Confused tsss");
-		sendMsg(ctx, success.get() > 0 ? "Tsss" : "Confused tss");
-		return success.get();
-	}
+    private int execute(CommandContext<ServerCommandSource> ctx, Collection<? extends Entity> entities) throws CommandSyntaxException {
+        if (entities == null) entities = Collections.singletonList(ctx.getSource().getEntityOrThrow());
+        AtomicInteger success = new AtomicInteger();
+        for (Entity entity : entities)
+            if (entity.isOnFire()) {
+                entity.extinguish();
+                entity.getEntityWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ENTITY_GENERIC_EXTINGUISH_FIRE, SoundCategory.PLAYERS, 0.7F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                success.incrementAndGet();
+            } else if (entities.size() == 1) sendMsg(ctx, "Confused tsss");
+        sendMsg(ctx, success.get() > 0 ? "Tsss" : "Confused tss");
+        return success.get();
+    }
 
 }

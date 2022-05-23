@@ -10,18 +10,18 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(WallSkullBlock.class)
 public class MixinWallSkullBlock {
-	private String mc_translationKey;
+    private String mc_translationKey;
 
-	/**
-	 * @author PlanetTeamSpeak
-	 * @reason Causes StackOverflowErrors otherwise
-	 */
-	@Overwrite
-	public String getTranslationKey() {
-		if (mc_translationKey == null) {
-			Identifier id = Registry.BLOCK.getId(ReflectionHelper.<WallSignBlock>cast(this));
-			mc_translationKey = Registry.BLOCK.get(new Identifier(id.getNamespace(), id.getPath().replace("wall_", ""))).getTranslationKey();
-		}
-		return mc_translationKey;
-	}
+    /**
+     * @author PlanetTeamSpeak
+     * @reason Causes StackOverflowErrors otherwise
+     */
+    @Overwrite
+    public String getTranslationKey() {
+        if (mc_translationKey == null) {
+            Identifier id = Registry.BLOCK.getId(ReflectionHelper.<WallSignBlock>cast(this));
+            mc_translationKey = Registry.BLOCK.get(new Identifier(id.getNamespace(), id.getPath().replace("wall_", ""))).getTranslationKey();
+        }
+        return mc_translationKey;
+    }
 }

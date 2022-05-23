@@ -13,16 +13,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Explosion.class)
 public class MixinExplosion {
 
-	@Shadow @Final private World world;
+    @Shadow @Final private World world;
 
-	@Inject(at = @At("HEAD"), method = "collectBlocksAndDamageEntities()V", cancellable = true)
-	public void collectBlocksAndDamageEntities(CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreGameRules.get().doExplosionsRule())) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "collectBlocksAndDamageEntities()V", cancellable = true)
+    public void collectBlocksAndDamageEntities(CallbackInfo cbi) {
+        if (!world.getGameRules().getBoolean(MoreGameRules.get().doExplosionsRule())) cbi.cancel();
+    }
 
-	@Inject(at = @At("HEAD"), method = "affectWorld(Z)V", cancellable = true)
-	public void affectWorld(boolean bl, CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreGameRules.get().doExplosionsRule())) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "affectWorld(Z)V", cancellable = true)
+    public void affectWorld(boolean bl, CallbackInfo cbi) {
+        if (!world.getGameRules().getBoolean(MoreGameRules.get().doExplosionsRule())) cbi.cancel();
+    }
 
 }

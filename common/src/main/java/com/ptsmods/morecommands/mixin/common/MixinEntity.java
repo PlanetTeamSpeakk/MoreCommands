@@ -13,20 +13,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Entity.class)
 public class MixinEntity {
-	private boolean mc_lastRemoved = false;
+    private boolean mc_lastRemoved = false;
 
-	@Inject(at = @At("HEAD"), method = "setPos(DDD)V", cancellable = true)
-	public void teleport(double x, double y, double z, CallbackInfo cbi) {
-		Entity thiz = ReflectionHelper.cast(this);
-		if (thiz.squaredDistanceTo(x, y, z) >= 16 && EntityTeleportEvent.EVENT.invoker().onTeleport(thiz, thiz.getEntityWorld(), thiz.getEntityWorld(), thiz.getPos(), new Vec3d(x, y, z))) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "setPos(DDD)V", cancellable = true)
+    public void teleport(double x, double y, double z, CallbackInfo cbi) {
+        Entity thiz = ReflectionHelper.cast(this);
+        if (thiz.squaredDistanceTo(x, y, z) >= 16 && EntityTeleportEvent.EVENT.invoker().onTeleport(thiz, thiz.getEntityWorld(), thiz.getEntityWorld(), thiz.getPos(), new Vec3d(x, y, z))) cbi.cancel();
+    }
 
-	@Inject(at = @At("RETURN"), method = "tick()V")
-	public void tick(CallbackInfo cbi) {
-		Entity thiz = ReflectionHelper.cast(this);
-		boolean removed = Compat.get().isRemoved(thiz);
-		if (removed && !mc_lastRemoved) EntityDeathEvent.EVENT.invoker().onDeath(thiz);
-		mc_lastRemoved = removed;
-	}
+    @Inject(at = @At("RETURN"), method = "tick()V")
+    public void tick(CallbackInfo cbi) {
+        Entity thiz = ReflectionHelper.cast(this);
+        boolean removed = Compat.get().isRemoved(thiz);
+        if (removed && !mc_lastRemoved) EntityDeathEvent.EVENT.invoker().onDeath(thiz);
+        mc_lastRemoved = removed;
+    }
 
 }

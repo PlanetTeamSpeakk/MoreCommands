@@ -7,9 +7,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(CommandSuggestor.SuggestionWindow.class)
 public interface MixinSuggestionWindowAccessor {
-	@Accessor
-	Rect2i getArea();
+    @Accessor
+    Rect2i getArea();
 
-	@Accessor
-	void setArea(Rect2i area);
+    @Accessor
+    void setArea(Rect2i area);
 }

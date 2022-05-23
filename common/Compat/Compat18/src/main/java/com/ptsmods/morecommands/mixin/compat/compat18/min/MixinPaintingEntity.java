@@ -9,15 +9,15 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(PaintingEntity.class)
 public class MixinPaintingEntity implements PaintingEntityAddon {
 
-	@Shadow public PaintingMotive motive;
+    @Shadow public PaintingMotive motive;
 
-	@Override
-	public Object mc$getVariant() {
-		return motive;
-	}
+    @Override
+    public Object mc$getVariant() {
+        return motive;
+    }
 
-	@Override
-	public void mc$setVariant(Object variant) {
-		motive = (PaintingMotive) variant;
-	}
+    @Override
+    public void mc$setVariant(Object variant) {
+        motive = (PaintingMotive) variant;
+    }
 }

@@ -19,13 +19,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(Block.class)
 public class MixinBlock {
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onStacksDropped(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V"),
-			method = "dropStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;" +
-					"Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)V")
-	private static void dropStacks_onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, BlockState state0, World world0, BlockPos pos0,
-												   @Nullable BlockEntity blockEntity, Entity entity, ItemStack stack2) {
-		// Don't drop XP if the spawner itself was dropped.
-		if (state.getBlock() instanceof SpawnerBlock && !IMoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), IMoreGameRules.get().doSilkSpawnersRule(), entity) || !(state.getBlock() instanceof SpawnerBlock))
-			Compat.get().onStacksDropped(state, world, pos, stack, false);
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onStacksDropped(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V"),
+            method = "dropStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;" +
+                    "Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)V")
+    private static void dropStacks_onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, BlockState state0, World world0, BlockPos pos0,
+                                                   @Nullable BlockEntity blockEntity, Entity entity, ItemStack stack2) {
+        // Don't drop XP if the spawner itself was dropped.
+        if (state.getBlock() instanceof SpawnerBlock && !IMoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), IMoreGameRules.get().doSilkSpawnersRule(), entity) || !(state.getBlock() instanceof SpawnerBlock))
+            Compat.get().onStacksDropped(state, world, pos, stack, false);
+    }
 }

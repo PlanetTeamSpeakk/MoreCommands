@@ -1,5 +1,5 @@
 package com.ptsmods.morecommands.util.tuples;
 
 public interface TriConsumer<T, U, V> {
-	void accept(T t, U u, V v);
+    void accept(T t, U u, V v);
 }

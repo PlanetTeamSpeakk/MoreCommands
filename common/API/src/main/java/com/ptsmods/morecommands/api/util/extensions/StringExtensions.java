@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 
 public class StringExtensions {
 
-	public static Stream<Character> charStream(String self) {
-		return self.chars().mapToObj(i -> (char) i);
-	}
+    public static Stream<Character> charStream(String self) {
+        return self.chars().mapToObj(i -> (char) i);
+    }
 }

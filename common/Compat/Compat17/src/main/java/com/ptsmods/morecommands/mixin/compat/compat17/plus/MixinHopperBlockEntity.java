@@ -17,20 +17,20 @@ import java.util.Objects;
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity {
 
-	@Group(name = "insertAndExtract_setCooldown", min = 1, max = 1)
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity; setCooldown(I)V"), method = "insertAndExtract")
-	private static void insertAndExtract_setCooldown(HopperBlockEntity hopper, int cooldown) {
-		((MixinHopperBlockEntityAccessor) hopper).setTransferCooldown(Objects.requireNonNull(hopper.getWorld()).getGameRules().getInt(IMoreGameRules.get().hopperTransferCooldownRule()));
-	}
+    @Group(name = "insertAndExtract_setCooldown", min = 1, max = 1)
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity; setCooldown(I)V"), method = "insertAndExtract")
+    private static void insertAndExtract_setCooldown(HopperBlockEntity hopper, int cooldown) {
+        ((MixinHopperBlockEntityAccessor) hopper).setTransferCooldown(Objects.requireNonNull(hopper.getWorld()).getGameRules().getInt(IMoreGameRules.get().hopperTransferCooldownRule()));
+    }
 
-	@Group(name = "insertAndExtract_setCooldown", min = 1, max = 1)
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;setTransferCooldown(I)V", remap = false), method = "insertAndExtract")
-	private static void insertAndExtract_setCooldown_devEnv(HopperBlockEntity hopper, int cooldown) { // It has been remapped nowadays
-		((MixinHopperBlockEntityAccessor) hopper).setTransferCooldown(Objects.requireNonNull(hopper.getWorld()).getGameRules().getInt(IMoreGameRules.get().hopperTransferCooldownRule()));
-	}
+    @Group(name = "insertAndExtract_setCooldown", min = 1, max = 1)
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;setTransferCooldown(I)V", remap = false), method = "insertAndExtract")
+    private static void insertAndExtract_setCooldown_devEnv(HopperBlockEntity hopper, int cooldown) { // It has been remapped nowadays
+        ((MixinHopperBlockEntityAccessor) hopper).setTransferCooldown(Objects.requireNonNull(hopper.getWorld()).getGameRules().getInt(IMoreGameRules.get().hopperTransferCooldownRule()));
+    }
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory; removeStack(II)Lnet/minecraft/item/ItemStack;"), method = "insert")
-	private static ItemStack insert_removeStack(Inventory inventory, int slot, int amount, World world, BlockPos blockPos, BlockState blockState, Inventory inventory0) {
-		return inventory.removeStack(slot, world.getGameRules().getInt(IMoreGameRules.get().hopperTransferRateRule()));
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory; removeStack(II)Lnet/minecraft/item/ItemStack;"), method = "insert")
+    private static ItemStack insert_removeStack(Inventory inventory, int slot, int amount, World world, BlockPos blockPos, BlockState blockState, Inventory inventory0) {
+        return inventory.removeStack(slot, world.getGameRules().getInt(IMoreGameRules.get().hopperTransferRateRule()));
+    }
 }

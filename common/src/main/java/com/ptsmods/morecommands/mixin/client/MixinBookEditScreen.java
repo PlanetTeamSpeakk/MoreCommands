@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BookEditScreen.class)
 public class MixinBookEditScreen {
-	private static boolean mc_colourPickerOpen = false;
-	@Shadow @Final private SelectionManager currentPageSelectionManager;
-	@Shadow @Final private SelectionManager bookTitleSelectionManager;
-	@Shadow private boolean signing;
+    private static boolean mc_colourPickerOpen = false;
+    @Shadow @Final private SelectionManager currentPageSelectionManager;
+    @Shadow @Final private SelectionManager bookTitleSelectionManager;
+    @Shadow private boolean signing;
 
-	@Inject(at = @At("TAIL"), method = "init()V")
-	private void init(CallbackInfo cbi) {
-		Screen thiz = ReflectionHelper.cast(this);
-		MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, mc_colourPickerOpen, s -> (signing ? bookTitleSelectionManager : currentPageSelectionManager).insert(s), b -> mc_colourPickerOpen = b);
-	}
+    @Inject(at = @At("TAIL"), method = "init()V")
+    private void init(CallbackInfo cbi) {
+        Screen thiz = ReflectionHelper.cast(this);
+        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, mc_colourPickerOpen, s -> (signing ? bookTitleSelectionManager : currentPageSelectionManager).insert(s), b -> mc_colourPickerOpen = b);
+    }
 }

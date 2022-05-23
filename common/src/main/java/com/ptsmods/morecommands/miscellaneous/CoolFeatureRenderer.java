@@ -16,29 +16,29 @@ import net.minecraft.util.Identifier;
 
 public class CoolFeatureRenderer extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
 
-	public CoolFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context) {
-		super(context);
-	}
+    public CoolFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context) {
+        super(context);
+    }
 
-	@Override
-	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity entity,
-					   float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
-		if (!MoreCommands.isCool(entity)) return;
+    @Override
+    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity entity,
+                       float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
+        if (!MoreCommands.isCool(entity)) return;
 
-		VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(new Identifier("morecommands:textures/crown.png")));
-		int overlay = LivingEntityRenderer.getOverlay(entity, 0);
+        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(new Identifier("morecommands:textures/crown.png")));
+        int overlay = LivingEntityRenderer.getOverlay(entity, 0);
 
-		ModelPart crown = ((PlayerEntityModelAddon) getContextModel()).getCrown();
-		if (crown != null) {
-			matrices.push();
+        ModelPart crown = ((PlayerEntityModelAddon) getContextModel()).getCrown();
+        if (crown != null) {
+            matrices.push();
 
-			float scale = 0.6075f;
-			matrices.scale(scale, scale, scale);
+            float scale = 0.6075f;
+            matrices.scale(scale, scale, scale);
 
-			crown.copyTransform(getContextModel().head);
-			crown.render(matrices, vertexConsumer, light, overlay);
+            crown.copyTransform(getContextModel().head);
+            crown.render(matrices, vertexConsumer, light, overlay);
 
-			matrices.pop();
-		}
-	}
+            matrices.pop();
+        }
+    }
 }

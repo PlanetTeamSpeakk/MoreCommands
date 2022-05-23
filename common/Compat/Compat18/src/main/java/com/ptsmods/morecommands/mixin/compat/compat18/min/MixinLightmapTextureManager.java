@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(LightmapTextureManager.class)
 public class MixinLightmapTextureManager {
 
-	@Redirect(at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/client/option/GameOptions;gamma:D"), method = "update")
-	private double update_gamma(GameOptions gameOptions) {
-		return ((DoubleClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Brightness Multiplier")).getValue() * ClientCompat.get().getGamma(gameOptions);
-	}
+    @Redirect(at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/client/option/GameOptions;gamma:D"), method = "update")
+    private double update_gamma(GameOptions gameOptions) {
+        return ((DoubleClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Brightness Multiplier")).getValue() * ClientCompat.get().getGamma(gameOptions);
+    }
 }

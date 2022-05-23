@@ -21,38 +21,38 @@ import java.util.function.Predicate;
 
 @ExtensionMethod(URLExtensions.class)
 public class MoreCommandsArchImpl {
-	@Getter(lazy = true, onMethod_ = @SneakyThrows)
-	private static final Path jar = Optional.of(new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer(MoreCommands.MOD_ID)
-					.orElseThrow(NullPointerException::new)).getOriginUrl().toURISneaky().getPath()).toPath())
-			.map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
-					Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
-							.toAbsolutePath().toString(), "common", "build", "classes", "java", "main", "")) : jar)
-			.orElseThrow(NullPointerException::new);
+    @Getter(lazy = true, onMethod_ = @SneakyThrows)
+    private static final Path jar = Optional.of(new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer(MoreCommands.MOD_ID)
+                    .orElseThrow(NullPointerException::new)).getOriginUrl().toURISneaky().getPath()).toPath())
+            .map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
+                    Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
+                            .toAbsolutePath().toString(), "common", "build", "classes", "java", "main", "")) : jar)
+            .orElseThrow(NullPointerException::new);
 
-	public static Path getConfigDirectory() {
-		return FabricLoader.getInstance().getConfigDir().resolve("MoreCommands");
-	}
+    public static Path getConfigDirectory() {
+        return FabricLoader.getInstance().getConfigDir().resolve("MoreCommands");
+    }
 
-	public static boolean isFabricModLoaded(String id) {
-		return FabricLoader.getInstance().isModLoaded(id);
-	}
+    public static boolean isFabricModLoaded(String id) {
+        return FabricLoader.getInstance().isModLoaded(id);
+    }
 
-	public static boolean checkPermission(CommandSource source, String permission) {
-		return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission);
-	}
+    public static boolean checkPermission(CommandSource source, String permission) {
+        return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission);
+    }
 
-	public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
-		return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission, fallback);
-	}
+    public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
+        return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission, fallback);
+    }
 
-	public static void doMLSpecificClientInit() {
-	}
+    public static void doMLSpecificClientInit() {
+    }
 
-	public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
-		return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
-	}
+    public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
+        return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
+    }
 
-	public static void addJarToClassPath(Path jar) {
-		FabricLauncherBase.getLauncher().addToClassPath(jar);
-	}
+    public static void addJarToClassPath(Path jar) {
+        FabricLauncherBase.getLauncher().addToClassPath(jar);
+    }
 }

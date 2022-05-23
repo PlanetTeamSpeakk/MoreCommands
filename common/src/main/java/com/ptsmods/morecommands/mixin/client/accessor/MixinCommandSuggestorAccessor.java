@@ -10,16 +10,16 @@ import java.util.List;
 
 @Mixin(CommandSuggestor.class)
 public interface MixinCommandSuggestorAccessor {
-	@Accessor
-	CommandSuggestor.SuggestionWindow getWindow();
+    @Accessor
+    CommandSuggestor.SuggestionWindow getWindow();
 
-	@Accessor
-	List<OrderedText> getMessages();
+    @Accessor
+    List<OrderedText> getMessages();
 
-	@Accessor("x")
-	int getX();
+    @Accessor("x")
+    int getX();
 
-	@Accessor
-	int getWidth();
+    @Accessor
+    int getWidth();
 
 }

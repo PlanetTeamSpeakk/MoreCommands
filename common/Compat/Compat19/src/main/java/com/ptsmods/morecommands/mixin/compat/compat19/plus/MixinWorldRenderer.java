@@ -18,17 +18,17 @@ import java.awt.*;
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;drawCuboidShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFF)V"), method = "drawBlockOutline")
-	private void drawBlockOutline_drawShapeOutline(MatrixStack stack, VertexConsumer vertexConsumer, VoxelShape shape, double x, double y, double z, float r, float g, float b, float a) {
-		if (((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.EASTER_EGGS).get("Rainbows")).getValue() && IRainbow.get() != null) {
-			Color c = new Color(IRainbow.get().getRainbowColour(false));
-			r = c.getRed() / 255f;
-			g = c.getGreen() / 255f;
-			b = c.getBlue() / 255f;
-		}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;drawCuboidShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFF)V"), method = "drawBlockOutline")
+    private void drawBlockOutline_drawShapeOutline(MatrixStack stack, VertexConsumer vertexConsumer, VoxelShape shape, double x, double y, double z, float r, float g, float b, float a) {
+        if (((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.EASTER_EGGS).get("Rainbows")).getValue() && IRainbow.get() != null) {
+            Color c = new Color(IRainbow.get().getRainbowColour(false));
+            r = c.getRed() / 255f;
+            g = c.getGreen() / 255f;
+            b = c.getBlue() / 255f;
+        }
 
-		drawCuboidShapeOutline(stack, vertexConsumer, shape, x, y, z, r, g, b, a);
-	}
+        drawCuboidShapeOutline(stack, vertexConsumer, shape, x, y, z, r, g, b, a);
+    }
 
-	@Shadow private static void drawCuboidShapeOutline(MatrixStack matrixStack, VertexConsumer vertexConsumer, VoxelShape voxelShape, double d, double e, double f, float g, float h, float i, float j) {}
+    @Shadow private static void drawCuboidShapeOutline(MatrixStack matrixStack, VertexConsumer vertexConsumer, VoxelShape voxelShape, double d, double e, double f, float g, float h, float i, float j) {}
 }

@@ -15,8 +15,8 @@ import javax.annotation.Nullable;
 @Mixin(ClientPlayerEntity.class)
 public interface MixinClientPlayerEntityAccessor {
 
-	@Invoker
-	ChatMessageSignature callSignChatMessage(ChatMessageSigner signer, Text message);
-	@Invoker
+    @Invoker
+    ChatMessageSignature callSignChatMessage(ChatMessageSigner signer, Text message);
+    @Invoker
     ArgumentSignatureDataMap callSignArguments(ChatMessageSigner signer, ParseResults<CommandSource> parseResults, @Nullable Text preview);
 }

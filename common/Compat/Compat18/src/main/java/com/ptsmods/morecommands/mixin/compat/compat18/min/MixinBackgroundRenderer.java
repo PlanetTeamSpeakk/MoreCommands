@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BackgroundRenderer.class)
 public class MixinBackgroundRenderer {
 
-	@Inject(at = @At("HEAD"), method = "applyFog", cancellable = true)
-	private static void applyFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, CallbackInfo cbi) {
-		if (!((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.RENDERING).get("Render Fog")).getValue()) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "applyFog", cancellable = true)
+    private static void applyFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, CallbackInfo cbi) {
+        if (!((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.RENDERING).get("Render Fog")).getValue()) cbi.cancel();
+    }
 }

@@ -20,37 +20,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CreativeInventoryScreen.class)
 public abstract class MixinCreativeInventoryScreen extends AbstractInventoryScreen<CreativeInventoryScreen.CreativeScreenHandler> implements CreativeInventoryScreenAddon {
-	private @Unique ButtonWidget pagerPrev, pagerNext;
+    private @Unique ButtonWidget pagerPrev, pagerNext;
 
-	public MixinCreativeInventoryScreen(CreativeInventoryScreen.CreativeScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
-		super(screenHandler, playerInventory, text);
-	}
+    public MixinCreativeInventoryScreen(CreativeInventoryScreen.CreativeScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
+        super(screenHandler, playerInventory, text);
+    }
 
-	@Override
-	public ButtonWidget mc$getPagerPrev() {
-		return pagerPrev;
-	}
+    @Override
+    public ButtonWidget mc$getPagerPrev() {
+        return pagerPrev;
+    }
 
-	@Override
-	public ButtonWidget mc$getPagerNext() {
-		return pagerNext;
-	}
+    @Override
+    public ButtonWidget mc$getPagerNext() {
+        return pagerNext;
+    }
 
-	@Inject(at = @At("RETURN"), method = "init")
-	private void init(CallbackInfo cbi) {
-		CreativeInventoryScreen thiz = ReflectionHelper.cast(this);
-		for (ClickableWidget button : ((ScreenAddon) this).mc$getButtons()) {
-			if (!(button instanceof FabricCreativeGuiComponents.ItemGroupButtonWidget)) continue;
+    @Inject(at = @At("RETURN"), method = "init")
+    private void init(CallbackInfo cbi) {
+        CreativeInventoryScreen thiz = ReflectionHelper.cast(this);
+        for (ClickableWidget button : ((ScreenAddon) this).mc$getButtons()) {
+            if (!(button instanceof FabricCreativeGuiComponents.ItemGroupButtonWidget)) continue;
 
-			FabricCreativeGuiComponents.Type type = ((MixinItemGroupButtonWidgetAccessor) button).getType();
-			if (type == FabricCreativeGuiComponents.Type.PREVIOUS) pagerPrev = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
-			else pagerNext = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
+            FabricCreativeGuiComponents.Type type = ((MixinItemGroupButtonWidgetAccessor) button).getType();
+            if (type == FabricCreativeGuiComponents.Type.PREVIOUS) pagerPrev = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
+            else pagerNext = (FabricCreativeGuiComponents.ItemGroupButtonWidget) button;
 
-			if (!ClientOptions.Rendering.bigTabPager.getValue()) continue;
-			((MixinClickableWidgetAccessor) button).setHeight(22);
-			button.setWidth(22);
-			button.x = thiz.width / 2 - (type == FabricCreativeGuiComponents.Type.PREVIOUS ? button.getWidth() : 0);
-			button.y = y - 50;
-		}
-	}
+            if (!ClientOptions.Rendering.bigTabPager.getValue()) continue;
+            ((MixinClickableWidgetAccessor) button).setHeight(22);
+            button.setWidth(22);
+            button.x = thiz.width / 2 - (type == FabricCreativeGuiComponents.Type.PREVIOUS ? button.getWidth() : 0);
+            button.y = y - 50;
+        }
+    }
 }

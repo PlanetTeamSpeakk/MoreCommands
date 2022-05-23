@@ -7,12 +7,12 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(WallRedstoneTorchBlock.class)
 public class MixinWallRedstoneTorchBlock {
-	/**
-	 * @author PlanetTeamSpeak
-	 * @reason Causes StackOverflowErrors otherwise
-	 */
-	@Overwrite
-	public String getTranslationKey() {
-		return Blocks.REDSTONE_TORCH.getTranslationKey();
-	}
+    /**
+     * @author PlanetTeamSpeak
+     * @reason Causes StackOverflowErrors otherwise
+     */
+    @Overwrite
+    public String getTranslationKey() {
+        return Blocks.REDSTONE_TORCH.getTranslationKey();
+    }
 }

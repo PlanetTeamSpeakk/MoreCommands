@@ -17,16 +17,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class MixinServerPlayNetworkHandler {
 
-	@Shadow public ServerPlayerEntity player;
-	@Shadow private @Final MinecraftServer server;
+    @Shadow public ServerPlayerEntity player;
+    @Shadow private @Final MinecraftServer server;
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/StringUtils; normalizeSpace(Ljava/lang/String;)Ljava/lang/String;", remap = false), method = "onChatMessage(Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;)V")
-	public String onChatMessage_normalizeSpace(String str) {
-		String s = StringUtils.normalizeSpace(str);
-		if (!s.startsWith("/") && (IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
-				|| player.hasPermissionLevel(server.getOpPermissionLevel()))) s = Util.translateFormats(s);
-		return s;
-	}
+    public String onChatMessage_normalizeSpace(String str) {
+        String s = StringUtils.normalizeSpace(str);
+        if (!s.startsWith("/") && (IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
+                || player.hasPermissionLevel(server.getOpPermissionLevel()))) s = Util.translateFormats(s);
+        return s;
+    }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/filter/TextStream$Message;getRaw()Ljava/lang/String;"), method = "handleMessage")
     public String handleMessage_getRaw(TextStream.Message message) {

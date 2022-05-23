@@ -16,9 +16,9 @@ import java.util.Objects;
 
 @Mixin(ServerNetworkIo.class)
 public class MixinServerNetworkIo {
-	@Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", remap = false), method = "tick")
-	private Iterator<ClientConnection> tick_newArrayList(List<ClientConnection> connections) {
-		if (Objects.requireNonNull(ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.get().randomOrderPlayerTickRule())) Collections.shuffle(connections);
-		return connections.iterator();
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", remap = false), method = "tick")
+    private Iterator<ClientConnection> tick_newArrayList(List<ClientConnection> connections) {
+        if (Objects.requireNonNull(ReflectionHelper.<ServerNetworkIo>cast(this).getServer().getWorld(World.OVERWORLD)).getGameRules().getBoolean(MoreGameRules.get().randomOrderPlayerTickRule())) Collections.shuffle(connections);
+        return connections.iterator();
+    }
 }

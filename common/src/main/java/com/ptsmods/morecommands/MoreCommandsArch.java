@@ -14,38 +14,38 @@ public class MoreCommandsArch {
         throw new AssertionError("This shouldn't happen.");
     }
 
-	@ExpectPlatform
-	public static void doMLSpecificClientInit() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static void doMLSpecificClientInit() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static boolean isFabricModLoaded(String id) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static boolean isFabricModLoaded(String id) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static boolean checkPermission(CommandSource source, String permission) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static boolean checkPermission(CommandSource source, String permission) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static Path getJar() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static Path getJar() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@ExpectPlatform
-	public static void addJarToClassPath(Path jar) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @ExpectPlatform
+    public static void addJarToClassPath(Path jar) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

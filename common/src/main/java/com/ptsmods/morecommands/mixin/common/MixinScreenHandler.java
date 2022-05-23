@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(ScreenHandler.class)
 public class MixinScreenHandler {
-	@ModifyConstant(method = "method_17696", constant = @Constant(doubleValue = 64.0D))
-	private static double method_17696_maxReach(double maxReach, Block block, PlayerEntity player, World world, BlockPos pos) {
-		return ReachCommand.getReach(player, true);
-	}
+    @ModifyConstant(method = "method_17696", constant = @Constant(doubleValue = 64.0D))
+    private static double method_17696_maxReach(double maxReach, Block block, PlayerEntity player, World world, BlockPos pos) {
+        return ReachCommand.getReach(player, true);
+    }
 }

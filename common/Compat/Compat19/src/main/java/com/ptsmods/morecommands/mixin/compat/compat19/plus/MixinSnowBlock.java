@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SnowBlock.class)
 public class MixinSnowBlock {
 
-	@Inject(at = @At("HEAD"), method = "randomTick", cancellable = true)
-	public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(IMoreGameRules.get().doMeltRule())) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "randomTick", cancellable = true)
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo cbi) {
+        if (!world.getGameRules().getBoolean(IMoreGameRules.get().doMeltRule())) cbi.cancel();
+    }
 }

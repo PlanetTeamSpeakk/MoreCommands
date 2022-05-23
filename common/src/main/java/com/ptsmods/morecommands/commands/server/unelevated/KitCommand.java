@@ -40,8 +40,8 @@ import java.util.stream.Collectors;
 public class KitCommand extends Command {
     private final Map<String, Kit> kits = new LinkedHashMap<>();
 
-	@Override
-	public void init(boolean serverOnly, MinecraftServer server) throws Exception {
+    @Override
+    public void init(boolean serverOnly, MinecraftServer server) throws Exception {
         Database db = getLocalDb();
 
         CompletableFuture.allOf(
@@ -71,16 +71,16 @@ public class KitCommand extends Command {
                 });
 
 
-		kits.putAll(MoreCommands.<Map<String, Map<String, Object>>>readJson(MoreCommands.getRelativePath(server).resolve("kits.json").toFile())
-				.or(new HashMap<String, Map<String, Object>>()).entrySet().stream()
-				.map(entry -> new Pair<>(entry.getKey(), Kit.deserialise(entry.getValue())))
-				.collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
+        kits.putAll(MoreCommands.<Map<String, Map<String, Object>>>readJson(MoreCommands.getRelativePath(server).resolve("kits.json").toFile())
+                .or(new HashMap<String, Map<String, Object>>()).entrySet().stream()
+                .map(entry -> new Pair<>(entry.getKey(), Kit.deserialise(entry.getValue())))
+                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
         Files.deleteIfExists(MoreCommands.getRelativePath(server).resolve("kits.json"));
-	}
+    }
 
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-		dispatcher.register(literalReq("kit")
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+        dispatcher.register(literalReq("kit")
                 .then(argument("kit", StringArgumentType.word())
                         .executes(ctx -> {
                             String kit = ctx.getArgument("kit", String.class).toLowerCase(Locale.ROOT);
@@ -96,7 +96,7 @@ public class KitCommand extends Command {
                             return 0;
                         })));
 
-		dispatcher.register(literalReqOp("createkit")
+        dispatcher.register(literalReqOp("createkit")
                 .then(argument("name", StringArgumentType.word())
                         .then(argument("cooldown", IntegerArgumentType.integer(0))
                                 .executes(ctx -> {
@@ -120,7 +120,7 @@ public class KitCommand extends Command {
                                     return 0;
                                 }))));
 
-		dispatcher.register(literalReqOp("delkit")
+        dispatcher.register(literalReqOp("delkit")
                 .then(argument("kit", StringArgumentType.word())
                         .executes(ctx -> {
                             String kit = ctx.getArgument("kit", String.class);
@@ -133,19 +133,19 @@ public class KitCommand extends Command {
                             }
                             return 0;
                         })));
-	}
+    }
 
-	@Override
-	public boolean isDedicatedOnly() {
-		return true;
-	}
+    @Override
+    public boolean isDedicatedOnly() {
+        return true;
+    }
 
-	@Override
-	public Map<String, Boolean> getExtraPermissions() {
-		return kits.keySet().stream()
-				.map(kit -> "morecommands.kit." + kit)
-				.collect(Collectors.toMap(s -> s, s -> true));
-	}
+    @Override
+    public Map<String, Boolean> getExtraPermissions() {
+        return kits.keySet().stream()
+                .map(kit -> "morecommands.kit." + kit)
+                .collect(Collectors.toMap(s -> s, s -> true));
+    }
 
     private static NbtCompound serialiseStackToNBT(ItemStack stack) {
         NbtCompound compound = new NbtCompound();
@@ -155,11 +155,11 @@ public class KitCommand extends Command {
         return compound;
     }
 
-	private static ItemStack deserialiseStack(Map<String, Object> data) {
-		ItemStack stack = new ItemStack(Registry.ITEM.get(new Identifier((String) data.get("item"))), ((Double) data.get("count")).intValue());
-		stack.setNbt(MoreCommands.nbtFromByteString((String) data.get("tag")));
-		return stack;
-	}
+    private static ItemStack deserialiseStack(Map<String, Object> data) {
+        ItemStack stack = new ItemStack(Registry.ITEM.get(new Identifier((String) data.get("item"))), ((Double) data.get("count")).intValue());
+        stack.setNbt(MoreCommands.nbtFromByteString((String) data.get("tag")));
+        return stack;
+    }
 
     private static ItemStack deserialiseStack(NbtCompound compound) {
         Identifier item = new Identifier(compound.getString("item"));
@@ -171,26 +171,26 @@ public class KitCommand extends Command {
         return stack;
     }
 
-	@ExtensionMethod(CollectionExtensions.class)
-	private static class Kit {
-		@Getter
-		private final String name;
-		@Getter
-		private final int cooldown;
-		private final Map<UUID, Long> cooldowns = new HashMap<>();
-		private final List<ItemStack> items = new ArrayList<>();
+    @ExtensionMethod(CollectionExtensions.class)
+    private static class Kit {
+        @Getter
+        private final String name;
+        @Getter
+        private final int cooldown;
+        private final Map<UUID, Long> cooldowns = new HashMap<>();
+        private final List<ItemStack> items = new ArrayList<>();
 
-		public Kit(String name, int cooldown, List<ItemStack> items) {
-			this.name = name;
-			this.cooldown = cooldown;
-			this.items.addAll(items);
-		}
+        public Kit(String name, int cooldown, List<ItemStack> items) {
+            this.name = name;
+            this.cooldown = cooldown;
+            this.items.addAll(items);
+        }
 
-		public List<ItemStack> getItems() {
-			return items.immutable();
-		}
+        public List<ItemStack> getItems() {
+            return items.immutable();
+        }
 
-		public void give(PlayerEntity player) {
+        public void give(PlayerEntity player) {
             if (onCooldown(player)) return;
 
             for (ItemStack stack : items) {
@@ -205,27 +205,27 @@ public class KitCommand extends Command {
                     .executeAsync();
         }
 
-		public boolean onCooldown(PlayerEntity player) {
-			return getRemainingCooldown(player) > 0;
-		}
+        public boolean onCooldown(PlayerEntity player) {
+            return getRemainingCooldown(player) > 0;
+        }
 
-		public long getRemainingCooldown(PlayerEntity player) {
-			return cooldowns.containsKey(player.getUuid()) ? cooldowns.get(player.getUuid()) - System.currentTimeMillis() : 0;
-		}
+        public long getRemainingCooldown(PlayerEntity player) {
+            return cooldowns.containsKey(player.getUuid()) ? cooldowns.get(player.getUuid()) - System.currentTimeMillis() : 0;
+        }
 
-		public static Kit deserialise(Map<String, Object> data) {
-			String name = (String) data.get("name");
-			int cooldown = ((Double) data.get("cooldown")).intValue();
-			Map<UUID, Long> cooldowns = ((Map<String, Long>) data.get("cooldowns")).entrySet().stream()
+        public static Kit deserialise(Map<String, Object> data) {
+            String name = (String) data.get("name");
+            int cooldown = ((Double) data.get("cooldown")).intValue();
+            Map<UUID, Long> cooldowns = ((Map<String, Long>) data.get("cooldowns")).entrySet().stream()
                     .map(entry -> new Pair<>(UUID.fromString(entry.getKey()), entry.getValue()))
                     .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
-			List<ItemStack> items = ((List<Map<String, Object>>) data.get("items")).stream()
+            List<ItemStack> items = ((List<Map<String, Object>>) data.get("items")).stream()
                     .map(KitCommand::deserialiseStack)
                     .collect(Collectors.toList());
-			Kit kit = new Kit(name, cooldown, items);
-			kit.cooldowns.putAll(cooldowns);
-			return kit;
-		}
+            Kit kit = new Kit(name, cooldown, items);
+            kit.cooldowns.putAll(cooldowns);
+            return kit;
+        }
 
         public static Kit deserialiseDb(SelectResults.SelectResultRow row, List<SelectResults.SelectResultRow> cooldownRows) {
             String name = row.getString("name");
@@ -236,5 +236,5 @@ public class KitCommand extends Command {
             kit.cooldowns.putAll(cooldownRows.stream().collect(Collectors.toMap(cdRow -> cdRow.get("player", UUID.class), cdRow -> cdRow.getTimestamp("epoch").getTime())));
             return kit;
         }
-	}
+    }
 }

@@ -12,9 +12,9 @@ def platforms = Arrays.asList(enabled_platforms.split(","))
 
 include("common")
 if (platforms.contains("fabric"))
-	include("fabric")
+    include("fabric")
 if (platforms.contains("forge"))
-	include("forge")
+    include("forge")
 include 'common:API'
 include 'common:Compat'
 include 'common:Compat:Compat16'

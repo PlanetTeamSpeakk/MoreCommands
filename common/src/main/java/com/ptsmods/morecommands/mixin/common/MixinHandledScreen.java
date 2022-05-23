@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(HandledScreen.class)
 public class MixinHandledScreen {
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemRenderer; renderGuiItemOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V"), method = "drawSlot(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/screen/slot/Slot;)V")
-	private void drawSlot_renderGuiItemOverlay(ItemRenderer itemRenderer, TextRenderer textRenderer, ItemStack stack, int x, int y, String countLabel, MatrixStack matrices, Slot slot) {
-		itemRenderer.renderGuiItemOverlay(textRenderer, stack, x, y, stack.hasNbt() && stack.getNbt().contains("Unlimited") ? "111" : countLabel);
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemRenderer; renderGuiItemOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V"), method = "drawSlot(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/screen/slot/Slot;)V")
+    private void drawSlot_renderGuiItemOverlay(ItemRenderer itemRenderer, TextRenderer textRenderer, ItemStack stack, int x, int y, String countLabel, MatrixStack matrices, Slot slot) {
+        itemRenderer.renderGuiItemOverlay(textRenderer, stack, x, y, stack.hasNbt() && stack.getNbt().contains("Unlimited") ? "111" : countLabel);
+    }
 }

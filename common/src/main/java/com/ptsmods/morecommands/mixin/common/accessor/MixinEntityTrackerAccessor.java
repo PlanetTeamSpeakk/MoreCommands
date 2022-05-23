@@ -7,9 +7,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(targets = "net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker")
 public interface MixinEntityTrackerAccessor {
-	@Invoker
-	void callStopTracking();
+    @Invoker
+    void callStopTracking();
 
-	@Accessor
-	EntityTrackerEntry getEntry();
+    @Accessor
+    EntityTrackerEntry getEntry();
 }

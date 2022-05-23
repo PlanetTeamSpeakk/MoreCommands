@@ -17,31 +17,31 @@ import java.util.stream.Collectors;
 @Mixin(Screen.class)
 public abstract class MixinScreen extends AbstractParentElement implements ScreenAddon {
 
-	@Shadow @Final private List<Selectable> selectables;
-	@Shadow @Final private List<Element> children;
-	@Shadow @Final private List<Drawable> drawables;
+    @Shadow @Final private List<Selectable> selectables;
+    @Shadow @Final private List<Element> children;
+    @Shadow @Final private List<Drawable> drawables;
 
-	@Override
-	public void mc$clear() {
-		clearChildren();
-	}
+    @Override
+    public void mc$clear() {
+        clearChildren();
+    }
 
-	@Override
-	public List<ClickableWidget> mc$getButtons() {
-		return drawables.stream()
-				.filter(drawable -> drawable instanceof ClickableWidget)
-				.map(drawable -> (ClickableWidget) drawable)
-				.collect(Collectors.toList());
-	}
+    @Override
+    public List<ClickableWidget> mc$getButtons() {
+        return drawables.stream()
+                .filter(drawable -> drawable instanceof ClickableWidget)
+                .map(drawable -> (ClickableWidget) drawable)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public <T extends ClickableWidget> T mc$addButton(T button) {
-		// Does exactly what #addDrawableChild(Element) does, but addDrawableChild cannot be remapped (likely because of its weird generic type).
-		drawables.add(button);
-		children.add(button);
-		selectables.add(button);
-		return button;
-	}
+    @Override
+    public <T extends ClickableWidget> T mc$addButton(T button) {
+        // Does exactly what #addDrawableChild(Element) does, but addDrawableChild cannot be remapped (likely because of its weird generic type).
+        drawables.add(button);
+        children.add(button);
+        selectables.add(button);
+        return button;
+    }
 
-	@Shadow protected abstract void clearChildren();
+    @Shadow protected abstract void clearChildren();
 }

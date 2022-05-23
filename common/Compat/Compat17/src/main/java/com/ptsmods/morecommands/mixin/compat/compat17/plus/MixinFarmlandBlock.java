@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FarmlandBlock.class)
 public class MixinFarmlandBlock {
 
-	@Inject(at = @At("HEAD"), method = "onLandedUpon")
-	private void onLandedUpon_setToDirt(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo cbi) {
-		if (world.getGameRules().getBoolean(IMoreGameRules.get().doFarmlandTrampleRule())) FarmlandBlock.setToDirt(state, world, pos);
-	}
+    @Inject(at = @At("HEAD"), method = "onLandedUpon")
+    private void onLandedUpon_setToDirt(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo cbi) {
+        if (world.getGameRules().getBoolean(IMoreGameRules.get().doFarmlandTrampleRule())) FarmlandBlock.setToDirt(state, world, pos);
+    }
 }

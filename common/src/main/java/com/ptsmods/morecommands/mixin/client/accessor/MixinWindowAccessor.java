@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(Window.class)
 public interface MixinWindowAccessor {
-	@Invoker
-	void callOnFramebufferSizeChanged(long window, int width, int height);
+    @Invoker
+    void callOnFramebufferSizeChanged(long window, int width, int height);
 }

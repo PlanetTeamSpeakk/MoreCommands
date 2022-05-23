@@ -5,7 +5,7 @@ import dev.architectury.event.EventFactory;
 import net.minecraft.server.MinecraftServer;
 
 public interface CreateWorldEvent {
-	Event<CreateWorldEvent> EVENT = EventFactory.createLoop();
+    Event<CreateWorldEvent> EVENT = EventFactory.createLoop();
 
-	void createWorlds(MinecraftServer server);
+    void createWorlds(MinecraftServer server);
 }

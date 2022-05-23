@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Entity.class)
 public interface MixinEntityAccessor {
 
-	@Accessor("yaw")
-	float getYaw_();
+    @Accessor("yaw")
+    float getYaw_();
 
-	@Accessor("pitch")
-	float getPitch_();
+    @Accessor("pitch")
+    float getPitch_();
 
-	@Accessor("yaw")
-	void setYaw_(float yaw);
+    @Accessor("yaw")
+    void setYaw_(float yaw);
 
-	@Accessor("pitch")
-	void setPitch_(float pitch);
+    @Accessor("pitch")
+    void setPitch_(float pitch);
 }

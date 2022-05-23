@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(DynamicEntry.class)
 public interface MixinDynamicEntryAccessor {
 
-	@Accessor
-	Identifier getName();
+    @Accessor
+    Identifier getName();
 }

@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(BrewingStandBlockEntity.class)
 public class MixinBrewingStandBlockEntity {
-	@ModifyConstant(method = "canPlayerUse(Lnet/minecraft/entity/player/PlayerEntity;)Z", constant = @Constant(doubleValue = 64.0D))
-	public double canPlayerUse_maxReach(double d, PlayerEntity player) {
-		return ReachCommand.getReach(player, true);
-	}
+    @ModifyConstant(method = "canPlayerUse(Lnet/minecraft/entity/player/PlayerEntity;)Z", constant = @Constant(doubleValue = 64.0D))
+    public double canPlayerUse_maxReach(double d, PlayerEntity player) {
+        return ReachCommand.getReach(player, true);
+    }
 }

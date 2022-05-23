@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(AbstractClientPlayerEntity.class)
 public class MixinAbstractClientPlayerEntity {
 
-	@Inject(at = @At("RETURN"), method = "getCapeTexture", cancellable = true)
-	private void getCapeTexture(CallbackInfoReturnable<Identifier> cbi) {
-		if (MoreCommands.isCool(ReflectionHelper.cast(this)))
-			cbi.setReturnValue(new Identifier("morecommands:textures/cape.png"));
-	}
+    @Inject(at = @At("RETURN"), method = "getCapeTexture", cancellable = true)
+    private void getCapeTexture(CallbackInfoReturnable<Identifier> cbi) {
+        if (MoreCommands.isCool(ReflectionHelper.cast(this)))
+            cbi.setReturnValue(new Identifier("morecommands:textures/cape.png"));
+    }
 }

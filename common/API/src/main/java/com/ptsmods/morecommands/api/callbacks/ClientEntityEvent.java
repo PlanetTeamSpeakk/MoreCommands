@@ -6,8 +6,8 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 
 public interface ClientEntityEvent {
-	Event<ClientEntityEvent> ENTITY_LOAD = EventFactory.createLoop();
-	Event<ClientEntityEvent> ENTITY_UNLOAD = EventFactory.createLoop();
+    Event<ClientEntityEvent> ENTITY_LOAD = EventFactory.createLoop();
+    Event<ClientEntityEvent> ENTITY_UNLOAD = EventFactory.createLoop();
 
-	void onEntity(ClientWorld world, Entity entity);
+    void onEntity(ClientWorld world, Entity entity);
 }

@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Item.class)
 public class MixinItem {
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d; add(DDD)Lnet/minecraft/util/math/Vec3d;"), method = "raycast(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/RaycastContext$FluidHandling;)Lnet/minecraft/util/hit/BlockHitResult;")
-	private static Vec3d raycast_add(Vec3d parent, double x, double y, double z, World world, PlayerEntity player, RaycastContext.FluidHandling fluidHandling) {
-		double reach = ReachCommand.getReach(player, false);
-		return parent.add(x/5 * reach, y/5 * reach, z/5 * reach);
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d; add(DDD)Lnet/minecraft/util/math/Vec3d;"), method = "raycast(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/RaycastContext$FluidHandling;)Lnet/minecraft/util/hit/BlockHitResult;")
+    private static Vec3d raycast_add(Vec3d parent, double x, double y, double z, World world, PlayerEntity player, RaycastContext.FluidHandling fluidHandling) {
+        double reach = ReachCommand.getReach(player, false);
+        return parent.add(x/5 * reach, y/5 * reach, z/5 * reach);
+    }
 }

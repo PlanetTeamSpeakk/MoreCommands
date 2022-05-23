@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(LootPool.class)
 public interface MixinLootPoolAccessor {
 
-	@Accessor
-	LootPoolEntry[] getEntries();
+    @Accessor
+    LootPoolEntry[] getEntries();
 
-	@Accessor
-	LootCondition[] getConditions();
+    @Accessor
+    LootCondition[] getConditions();
 }

@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CommandManager.class)
 public class MixinCommandManagerCarpetCompat {
-	private @Unique ServerCommandSource lastCommandSource = null;
+    private @Unique ServerCommandSource lastCommandSource = null;
 
-	@Inject(at = @At("HEAD"), method = "execute")
-	private void onExecute(ServerCommandSource commandSource, String command, CallbackInfoReturnable<Integer> cbi) {
-		lastCommandSource = commandSource;
-	}
+    @Inject(at = @At("HEAD"), method = "execute")
+    private void onExecute(ServerCommandSource commandSource, String command, CallbackInfoReturnable<Integer> cbi) {
+        lastCommandSource = commandSource;
+    }
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z", remap = false), method = "execute", require = 0)
-	private boolean execute_isDebugEnabled(Logger logger) {
-		return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z", remap = false), method = "execute", require = 0)
+    private boolean execute_isDebugEnabled(Logger logger) {
+        return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
+    }
 }

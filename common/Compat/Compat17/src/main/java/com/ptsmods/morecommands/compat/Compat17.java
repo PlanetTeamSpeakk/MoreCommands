@@ -26,78 +26,78 @@ import oshi.SystemInfo;
 
 public class Compat17 extends Compat16 {
 
-	@Override
-	public boolean isRemoved(Entity entity) {
-		return entity.isRemoved();
-	}
+    @Override
+    public boolean isRemoved(Entity entity) {
+        return entity.isRemoved();
+    }
 
-	@Override
-	public void setRemoved(Entity entity, int reason) {
-		entity.setRemoved(reason < 0 ? null : Entity.RemovalReason.values()[reason]);
-	}
+    @Override
+    public void setRemoved(Entity entity, int reason) {
+        entity.setRemoved(reason < 0 ? null : Entity.RemovalReason.values()[reason]);
+    }
 
-	@Override
-	public PlayerInventory getInventory(PlayerEntity player) {
-		return player.getInventory();
-	}
+    @Override
+    public PlayerInventory getInventory(PlayerEntity player) {
+        return player.getInventory();
+    }
 
-	@Override
-	public boolean isInBuildLimit(World world, BlockPos pos) {
-		return world.isInBuildLimit(pos);
-	}
+    @Override
+    public boolean isInBuildLimit(World world, BlockPos pos) {
+        return world.isInBuildLimit(pos);
+    }
 
-	@Override
-	public Text toText(NbtElement tag) {
-		return NbtHelper.toPrettyPrintedText(tag);
-	}
+    @Override
+    public Text toText(NbtElement tag) {
+        return NbtHelper.toPrettyPrintedText(tag);
+    }
 
-	@Override
-	public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
-		return new ServerPlayerEntity(server, world, profile);
-	}
+    @Override
+    public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
+        return new ServerPlayerEntity(server, world, profile);
+    }
 
-	@Override
-	public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-		return logic.writeNbt(world, pos, nbt);
-	}
+    @Override
+    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
+        return logic.writeNbt(world, pos, nbt);
+    }
 
-	@Override
-	public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-		logic.readNbt(world, pos, nbt);
-	}
+    @Override
+    public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
+        logic.readNbt(world, pos, nbt);
+    }
 
-	@Override
-	public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
-		sbe.setEditor(player.getUuid());
-	}
+    @Override
+    public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
+        sbe.setEditor(player.getUuid());
+    }
 
-	@Override
-	public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-		return manager.get(key); // Signature changed, method now returns a Registry rather than a MutableRegistry.
-	}
+    @Override
+    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
+        return manager.get(key); // Signature changed, method now returns a Registry rather than a MutableRegistry.
+    }
 
-	@Override
-	public int getWorldHeight(BlockView world) {
-		return world.getHeight();
-	}
+    @Override
+    public int getWorldHeight(BlockView world) {
+        return world.getHeight();
+    }
 
-	@Override
-	public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
-		return new FireballEntity(world, owner, velocityX, velocityY, velocityZ, explosionPower);
-	}
+    @Override
+    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+        return new FireballEntity(world, owner, velocityX, velocityY, velocityZ, explosionPower);
+    }
 
-	@Override
-	public String getProcessorString() {
-		return String.valueOf(new SystemInfo().getHardware().getProcessor());
-	}
+    @Override
+    public String getProcessorString() {
+        return String.valueOf(new SystemInfo().getHardware().getProcessor());
+    }
 
-	@Override
-	public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
-		player.setWorld(world);
-	}
+    @Override
+    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
+        player.setWorld(world);
+    }
 
-	@Override
-	public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
-		return new PlayerListS2CPacket(PlayerListS2CPacket.Action.values()[action], players);
-	}
+    @Override
+    public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
+        return new PlayerListS2CPacket(PlayerListS2CPacket.Action.values()[action], players);
+    }
 }

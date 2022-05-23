@@ -12,19 +12,19 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 
 public class SignCommand extends Command {
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReq("sign").executes(ctx -> {
-			BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true);
-			BlockEntity be = ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
-			if (Compat.get().tagContains(new Identifier("minecraft:signs"), ctx.getSource().getWorld().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
-				SignBlockEntity sbe = (SignBlockEntity) be;
-				((MixinSignBlockEntityAccessor) sbe).setEditable(true);
-				Compat.get().setSignEditor(sbe, ctx.getSource().getPlayer());
-				ctx.getSource().getPlayer().openEditSignScreen(sbe); // Copying content onto edit screen is handled in MixinSignEditScreen.
-				return 1;
-			}
-			return 0;
-		}));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(literalReq("sign").executes(ctx -> {
+            BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayer(), ctx.getSource().getWorld(), 160, true, true);
+            BlockEntity be = ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
+            if (Compat.get().tagContains(new Identifier("minecraft:signs"), ctx.getSource().getWorld().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
+                SignBlockEntity sbe = (SignBlockEntity) be;
+                ((MixinSignBlockEntityAccessor) sbe).setEditable(true);
+                Compat.get().setSignEditor(sbe, ctx.getSource().getPlayer());
+                ctx.getSource().getPlayer().openEditSignScreen(sbe); // Copying content onto edit screen is handled in MixinSignEditScreen.
+                return 1;
+            }
+            return 0;
+        }));
+    }
 }

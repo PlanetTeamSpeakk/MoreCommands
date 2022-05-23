@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TitleScreen.class)
 public class MixinTitleScreen {
-	@Shadow private String splashText;
+    @Shadow private String splashText;
 
-	@Inject(at = @At("HEAD"), method = "init()V")
-	private void init(CallbackInfo cbi) { // Couldn't get it to work with ModifyVariable for whatever reason.
-		if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
-		if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
-	}
+    @Inject(at = @At("HEAD"), method = "init()V")
+    private void init(CallbackInfo cbi) { // Couldn't get it to work with ModifyVariable for whatever reason.
+        if (splashText == null) splashText = MinecraftClient.getInstance().getSplashTextLoader().get();
+        if (splashText != null) splashText = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splashText : splashText;
+    }
 }

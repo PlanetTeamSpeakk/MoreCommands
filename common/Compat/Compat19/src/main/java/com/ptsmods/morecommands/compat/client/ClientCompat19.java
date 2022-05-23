@@ -33,54 +33,54 @@ import java.util.function.Function;
 
 public class ClientCompat19 extends ClientCompat17 {
 
-	@Override
-	public ChatVisibility getChatVisibility(GameOptions options) {
-		return options.getChatVisibility().getValue();
-	}
+    @Override
+    public ChatVisibility getChatVisibility(GameOptions options) {
+        return options.getChatVisibility().getValue();
+    }
 
-	@Override
-	public double getChatLineSpacing(GameOptions options) {
-		return options.getChatLineSpacing().getValue();
-	}
+    @Override
+    public double getChatLineSpacing(GameOptions options) {
+        return options.getChatLineSpacing().getValue();
+    }
 
-	@Override
-	public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
-		return interactionManager.interactBlock(player, hand, hit);
-	}
+    @Override
+    public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
+        return interactionManager.interactBlock(player, hand, hit);
+    }
 
-	@Override
-	public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
-		Resource res = manager.getResource(id).orElse(null);
-		return res == null ? null : res.getInputStream();
-	}
+    @Override
+    public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
+        Resource res = manager.getResource(id).orElse(null);
+        return res == null ? null : res.getInputStream();
+    }
 
-	@Override
-	public double getGamma(GameOptions options) {
-		return options.getGamma().getValue();
-	}
+    @Override
+    public double getGamma(GameOptions options) {
+        return options.getGamma().getValue();
+    }
 
-	@Override
-	public Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat) {
-		ChatMessageSigner signer = ChatMessageSigner.create(player.getUuid());
-		MixinClientPlayerEntityAccessor accessor = (MixinClientPlayerEntityAccessor) player;
+    @Override
+    public Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat) {
+        ChatMessageSigner signer = ChatMessageSigner.create(player.getUuid());
+        MixinClientPlayerEntityAccessor accessor = (MixinClientPlayerEntityAccessor) player;
 
-		if (!message.startsWith("/")) return new ChatMessageC2SPacket(message, accessor.callSignChatMessage(signer, LiteralTextBuilder.builder(message).build()), false);
-		else {
-			message = message.substring(1);
-			ParseResults<CommandSource> parseResults = player.networkHandler.getCommandDispatcher().parse(message, player.networkHandler.getCommandSource());
+        if (!message.startsWith("/")) return new ChatMessageC2SPacket(message, accessor.callSignChatMessage(signer, LiteralTextBuilder.builder(message).build()), false);
+        else {
+            message = message.substring(1);
+            ParseResults<CommandSource> parseResults = player.networkHandler.getCommandDispatcher().parse(message, player.networkHandler.getCommandSource());
             ArgumentSignatureDataMap argumentSignatures = accessor.callSignArguments(signer, parseResults, null);
-			return new CommandExecutionC2SPacket(message, signer.timeStamp(), argumentSignatures, false);
-		}
-	}
+            return new CommandExecutionC2SPacket(message, signer.timeStamp(), argumentSignatures, false);
+        }
+    }
 
-	@Override
-	public void registerChatProcessListener(Function<Text, Text> listener) {
-		ClientChatEvent.PROCESS.register((chatType, message, sender) -> {
-			Text output = listener.apply(message);
+    @Override
+    public void registerChatProcessListener(Function<Text, Text> listener) {
+        ClientChatEvent.PROCESS.register((chatType, message, sender) -> {
+            Text output = listener.apply(message);
 
-			return output == null || output.equals(message) ? CompoundEventResult.pass() : CompoundEventResult.interruptTrue(output);
-		});
-	}
+            return output == null || output.equals(message) ? CompoundEventResult.pass() : CompoundEventResult.interruptTrue(output);
+        });
+    }
 
     @Override
     public void sendMessageOrCommand(String msg) {

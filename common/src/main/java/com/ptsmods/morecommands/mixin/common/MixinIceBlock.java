@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(IceBlock.class)
 public class MixinIceBlock {
-	@Inject(at = @At("HEAD"), method = "melt(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V", cancellable = true)
-	protected void melt(BlockState state, World world, BlockPos pos, CallbackInfo cbi) {
-		if (!world.getGameRules().getBoolean(MoreGameRules.get().doMeltRule())) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "melt(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V", cancellable = true)
+    protected void melt(BlockState state, World world, BlockPos pos, CallbackInfo cbi) {
+        if (!world.getGameRules().getBoolean(MoreGameRules.get().doMeltRule())) cbi.cancel();
+    }
 }

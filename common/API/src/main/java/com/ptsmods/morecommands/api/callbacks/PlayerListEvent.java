@@ -5,8 +5,8 @@ import dev.architectury.event.EventFactory;
 import net.minecraft.client.network.PlayerListEntry;
 
 public interface PlayerListEvent {
-	Event<PlayerListEvent> ADD = EventFactory.createLoop();
-	Event<PlayerListEvent> REMOVE = EventFactory.createLoop();
+    Event<PlayerListEvent> ADD = EventFactory.createLoop();
+    Event<PlayerListEvent> REMOVE = EventFactory.createLoop();
 
-	void call(PlayerListEntry entry);
+    void call(PlayerListEntry entry);
 }

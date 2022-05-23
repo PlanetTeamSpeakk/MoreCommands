@@ -7,8 +7,8 @@ import java.net.URL;
 
 public class URLExtensions {
 
-	@SneakyThrows
-	public static URI toURISneaky(URL self) {
-		return self.toURI();
-	}
+    @SneakyThrows
+    public static URI toURISneaky(URL self) {
+        return self.toURI();
+    }
 }

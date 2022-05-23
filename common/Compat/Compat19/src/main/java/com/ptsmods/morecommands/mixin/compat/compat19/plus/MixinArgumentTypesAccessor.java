@@ -10,8 +10,8 @@ import java.util.Map;
 @Mixin(ArgumentTypes.class)
 public interface MixinArgumentTypesAccessor {
 
-	@Accessor("CLASS_MAP")
-	static Map<Class<?>, ArgumentSerializer<?, ?>> getClassMap() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("CLASS_MAP")
+    static Map<Class<?>, ArgumentSerializer<?, ?>> getClassMap() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

@@ -11,13 +11,13 @@ import java.util.List;
 @Mixin(ParticleManager.class)
 public interface MixinParticleManagerAccessor {
 
-	@Accessor("PARTICLE_TEXTURE_SHEETS")
-	static List<ParticleTextureSheet> getParticleTextureSheets() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("PARTICLE_TEXTURE_SHEETS")
+    static List<ParticleTextureSheet> getParticleTextureSheets() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@Accessor("PARTICLE_TEXTURE_SHEETS") @Mutable
-	static void setParticleTextureSheets(List<ParticleTextureSheet> particleTextureSheets) {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("PARTICLE_TEXTURE_SHEETS") @Mutable
+    static void setParticleTextureSheets(List<ParticleTextureSheet> particleTextureSheets) {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

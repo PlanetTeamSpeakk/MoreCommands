@@ -10,14 +10,14 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(PlayerEntity.class)
 public interface MixinPlayerEntityAccessor {
 
-	@Accessor("PLAYER_MODEL_PARTS")
-	static TrackedData<Byte> getPlayerModelParts() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("PLAYER_MODEL_PARTS")
+    static TrackedData<Byte> getPlayerModelParts() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 
-	@Accessor("inventory")
-	PlayerInventory getInventory_();
+    @Accessor("inventory")
+    PlayerInventory getInventory_();
 
-	@Accessor("abilities")
-	PlayerAbilities getAbilities_();
+    @Accessor("abilities")
+    PlayerAbilities getAbilities_();
 }

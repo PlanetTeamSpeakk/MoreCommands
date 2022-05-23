@@ -11,19 +11,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Language.class)
 public class MixinLanguage {
-	@Shadow private static volatile Language instance;
+    @Shadow private static volatile Language instance;
 
-	@Inject(at = @At("RETURN"), method = "create", cancellable = true)
-	private static void create(CallbackInfoReturnable<Language> cbi) {
-		cbi.setReturnValue(new BetterLanguage(cbi.getReturnValue()));
-	}
+    @Inject(at = @At("RETURN"), method = "create", cancellable = true)
+    private static void create(CallbackInfoReturnable<Language> cbi) {
+        cbi.setReturnValue(new BetterLanguage(cbi.getReturnValue()));
+    }
 
-	/**
-	 * @author PlanetTeamSpeak
-	 * @reason Make it better :)
-	 */
-	@Overwrite
-	public static void setInstance(Language language) {
-		instance = new BetterLanguage(language);
-	}
+    /**
+     * @author PlanetTeamSpeak
+     * @reason Make it better :)
+     */
+    @Overwrite
+    public static void setInstance(Language language) {
+        instance = new BetterLanguage(language);
+    }
 }

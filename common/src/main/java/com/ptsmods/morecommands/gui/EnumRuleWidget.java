@@ -17,31 +17,31 @@ import java.util.Locale;
 
 @Environment(EnvType.CLIENT)
 public final class EnumRuleWidget<E extends Enum<E>> extends EditGameRulesScreen.NamedRuleWidget {
-	private final ButtonWidget buttonWidget;
-	private final String rootTranslationKey;
+    private final ButtonWidget buttonWidget;
+    private final String rootTranslationKey;
 
-	public EnumRuleWidget(EditGameRulesScreen gameRuleScreen, Text name, List<OrderedText> description, final String ruleName, EnumRule<E> rule, String translationKey) {
-		gameRuleScreen.super(description, name);
+    public EnumRuleWidget(EditGameRulesScreen gameRuleScreen, Text name, List<OrderedText> description, final String ruleName, EnumRule<E> rule, String translationKey) {
+        gameRuleScreen.super(description, name);
 
-		this.rootTranslationKey = translationKey;
-		this.buttonWidget = new ButtonWidget(10, 5, 88, 20, this.getValueText(rule.get()), (buttonWidget) -> {
-			rule.cycle();
-			buttonWidget.setMessage(this.getValueText(rule.get()));
-		});
+        this.rootTranslationKey = translationKey;
+        this.buttonWidget = new ButtonWidget(10, 5, 88, 20, this.getValueText(rule.get()), (buttonWidget) -> {
+            rule.cycle();
+            buttonWidget.setMessage(this.getValueText(rule.get()));
+        });
 
-		this.children.add(this.buttonWidget);
-	}
+        this.children.add(this.buttonWidget);
+    }
 
-	public Text getValueText(E value) {
-		String key = this.rootTranslationKey + "." + value.name().toLowerCase(Locale.ROOT);
-		return (I18n.hasTranslation(key) ? TranslatableTextBuilder.builder(key) : LiteralTextBuilder.builder(value.toString())).build();
-	}
+    public Text getValueText(E value) {
+        String key = this.rootTranslationKey + "." + value.name().toLowerCase(Locale.ROOT);
+        return (I18n.hasTranslation(key) ? TranslatableTextBuilder.builder(key) : LiteralTextBuilder.builder(value.toString())).build();
+    }
 
-	public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-		this.drawName(matrices, y, x);
+    public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        this.drawName(matrices, y, x);
 
-		this.buttonWidget.x = x + entryWidth - 89;
-		this.buttonWidget.y = y;
-		this.buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
-	}
+        this.buttonWidget.x = x + entryWidth - 89;
+        this.buttonWidget.y = y;
+        this.buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
+    }
 }

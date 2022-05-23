@@ -11,11 +11,11 @@ import java.util.stream.Stream;
 
 public class CollectionExtensions {
 
-	public static <E> List<E> immutable(Collection<E> self) {
-		return ImmutableList.copyOf(self);
-	}
+    public static <E> List<E> immutable(Collection<E> self) {
+        return ImmutableList.copyOf(self);
+    }
 
-	public static <E> List<E> merge(@NonNull Collection<E> collection, Collection<E> others) {
-		return others == null ? new ArrayList<>(collection) : Stream.concat(collection.stream(), others.stream()).collect(Collectors.toList());
-	}
+    public static <E> List<E> merge(@NonNull Collection<E> collection, Collection<E> others) {
+        return others == null ? new ArrayList<>(collection) : Stream.concat(collection.stream(), others.stream()).collect(Collectors.toList());
+    }
 }

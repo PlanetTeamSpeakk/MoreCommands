@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(LightmapTextureManager.class)
 public class MixinLightmapTextureManager {
 
-	@ModifyVariable(at = @At("STORE"), ordinal = 8, method = "update")
-	public float storeGamma(float gamma) {
-		return (float) (((DoubleClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Brightness Multiplier")).getValue() * gamma);
-	}
+    @ModifyVariable(at = @At("STORE"), ordinal = 8, method = "update")
+    public float storeGamma(float gamma) {
+        return (float) (((DoubleClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Brightness Multiplier")).getValue() * gamma);
+    }
 }

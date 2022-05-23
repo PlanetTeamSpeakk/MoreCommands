@@ -22,37 +22,37 @@ import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(staticName = "paintingVariant")
 public class PaintingVariantArgumentType implements CompatArgumentType<PaintingVariantArgumentType, Identifier, ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier>> {
-	public static final ConstantSerialiser<PaintingVariantArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PaintingVariantArgumentType::new);
-	private static final DynamicCommandExceptionType MOTIVE_NOT_FOUND = new DynamicCommandExceptionType(o -> LiteralTextBuilder.builder("Could not find a painting motive with an id of " + o + ".").build());
+    public static final ConstantSerialiser<PaintingVariantArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PaintingVariantArgumentType::new);
+    private static final DynamicCommandExceptionType MOTIVE_NOT_FOUND = new DynamicCommandExceptionType(o -> LiteralTextBuilder.builder("Could not find a painting motive with an id of " + o + ".").build());
 
-	public static PaintingVariant getPaintingVariant(CommandContext<?> ctx, String argName) {
-		return Registry.PAINTING_VARIANT.get(ctx.getArgument(argName, Identifier.class));
-	}
+    public static PaintingVariant getPaintingVariant(CommandContext<?> ctx, String argName) {
+        return Registry.PAINTING_VARIANT.get(ctx.getArgument(argName, Identifier.class));
+    }
 
-	@Override
-	public Identifier parse(StringReader reader) throws CommandSyntaxException {
-		Identifier id = Identifier.fromCommandInput(reader);
-		if (!Registry.PAINTING_VARIANT.containsId(id)) throw MOTIVE_NOT_FOUND.create(id);
-		return id;
-	}
+    @Override
+    public Identifier parse(StringReader reader) throws CommandSyntaxException {
+        Identifier id = Identifier.fromCommandInput(reader);
+        if (!Registry.PAINTING_VARIANT.containsId(id)) throw MOTIVE_NOT_FOUND.create(id);
+        return id;
+    }
 
-	@Override
-	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-		return CommandSource.suggestFromIdentifier(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getId, variant -> LiteralTextBuilder.builder(Registry.PAINTING_VARIANT.getId(variant).getPath()).build());
-	}
+    @Override
+    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+        return CommandSource.suggestFromIdentifier(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getId, variant -> LiteralTextBuilder.builder(Registry.PAINTING_VARIANT.getId(variant).getPath()).build());
+    }
 
-	@Override
-	public Collection<String> getExamples() {
-		return Lists.newArrayList("aztec", "fighters");
-	}
+    @Override
+    public Collection<String> getExamples() {
+        return Lists.newArrayList("aztec", "fighters");
+    }
 
-	@Override
-	public ArgumentType<Identifier> toVanillaArgumentType() {
-		return IdentifierArgumentType.identifier();
-	}
+    @Override
+    public ArgumentType<Identifier> toVanillaArgumentType() {
+        return IdentifierArgumentType.identifier();
+    }
 
-	@Override
-	public ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier> getProperties() {
-		return SERIALISER.getProperties();
-	}
+    @Override
+    public ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier> getProperties() {
+        return SERIALISER.getProperties();
+    }
 }

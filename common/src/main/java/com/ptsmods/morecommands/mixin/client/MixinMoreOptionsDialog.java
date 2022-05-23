@@ -17,18 +17,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MoreOptionsDialog.class)
 public abstract class MixinMoreOptionsDialog {
-	@Unique private ButtonWidget wicBtn;
+    @Unique private ButtonWidget wicBtn;
 
-	@Inject(at = @At("TAIL"), method = "init")
-	private void init(CreateWorldScreen parent, MinecraftClient client, TextRenderer textRenderer, CallbackInfo ci) {
-		((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, LiteralTextBuilder.builder("Initialisation Commands").build(),
-				btn -> MinecraftClient.getInstance().setScreen(new WorldInitCommandsScreen(parent)))).visible = false;
-	}
+    @Inject(at = @At("TAIL"), method = "init")
+    private void init(CreateWorldScreen parent, MinecraftClient client, TextRenderer textRenderer, CallbackInfo ci) {
+        ((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, LiteralTextBuilder.builder("Initialisation Commands").build(),
+                btn -> MinecraftClient.getInstance().setScreen(new WorldInitCommandsScreen(parent)))).visible = false;
+    }
 
-	@Inject(at = @At("TAIL"), method = "setVisible")
-	public void setVisible(boolean visible, CallbackInfo ci) {
-		wicBtn.visible = isDebugWorld() && visible;
-	}
+    @Inject(at = @At("TAIL"), method = "setVisible")
+    public void setVisible(boolean visible, CallbackInfo ci) {
+        wicBtn.visible = isDebugWorld() && visible;
+    }
 
-	@Shadow public abstract boolean isDebugWorld();
+    @Shadow public abstract boolean isDebugWorld();
 }

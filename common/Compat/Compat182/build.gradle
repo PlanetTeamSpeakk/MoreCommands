@@ -1,26 +1,26 @@
 architectury {
-	common(rootProject.enabled_platforms.split(","))
+    common(rootProject.enabled_platforms.split(","))
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:1.18.2"
-	mappings "net.fabricmc:yarn:1.18.2+build.3:mergedv2"
+    minecraft "com.mojang:minecraft:1.18.2"
+    mappings "net.fabricmc:yarn:1.18.2+build.3:mergedv2"
 
-	// We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-	modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-	modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
-	implementation project(path: ":common:API", configuration: "namedElements")
-	implementation project(path: ":common:Compat:Compat16", configuration: "namedElements")
-	implementation project(path: ":common:Compat:Compat17", configuration: "namedElements")
-	implementation project(path: ":common:Compat:Compat18", configuration: "namedElements")
+    implementation project(path: ":common:API", configuration: "namedElements")
+    implementation project(path: ":common:Compat:Compat16", configuration: "namedElements")
+    implementation project(path: ":common:Compat:Compat17", configuration: "namedElements")
+    implementation project(path: ":common:Compat:Compat18", configuration: "namedElements")
 }
 
 publishing {
-	publications {
-		mavenCommon(MavenPublication) {
-			artifactId = rootProject.archives_base_name
-			from components.java
-		}
-	}
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
 }

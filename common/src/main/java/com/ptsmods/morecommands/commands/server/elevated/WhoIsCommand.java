@@ -12,22 +12,22 @@ import net.minecraft.util.math.MathHelper;
 import java.text.DecimalFormat;
 
 public class WhoIsCommand extends Command {
-	private static final DecimalFormat decimalFormat = new DecimalFormat("0.0#");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("0.0#");
 
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReqOp("whois").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
-			ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-			sendMsg(ctx, "Info for player " + SF + IMoreCommands.get().textToString(player.getDisplayName(), null, true));
-			sendMsg(ctx, "UUID: " + SF + player.getUuidAsString());
-			sendMsg(ctx, "World: " + SF + player.getWorld().getRegistryKey().getValue().toString());
-			sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
-			sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getYaw_()) + DF + ", " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getPitch_()));
-			sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f, false));
-			sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f, false));
-			sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());
-			sendMsg(ctx, "IP: " + SF + player.getIp());
-			return 1;
-		})));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(literalReqOp("whois").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
+            ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+            sendMsg(ctx, "Info for player " + SF + IMoreCommands.get().textToString(player.getDisplayName(), null, true));
+            sendMsg(ctx, "UUID: " + SF + player.getUuidAsString());
+            sendMsg(ctx, "World: " + SF + player.getWorld().getRegistryKey().getValue().toString());
+            sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
+            sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getYaw_()) + DF + ", " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getPitch_()));
+            sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f, false));
+            sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f, false));
+            sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());
+            sendMsg(ctx, "IP: " + SF + player.getIp());
+            return 1;
+        })));
+    }
 }

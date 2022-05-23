@@ -12,8 +12,8 @@ import java.util.List;
 
 @Mixin(ChatHud.class)
 public interface MixinChatHudAccessor {
-	@Accessor List<ChatHudLine<Text>> getMessages();
-	@Accessor List<ChatHudLine<OrderedText>> getVisibleMessages();
-	@Accessor int getScrolledLines();
-	@Invoker void callRemoveMessage(int id);
+    @Accessor List<ChatHudLine<Text>> getMessages();
+    @Accessor List<ChatHudLine<OrderedText>> getVisibleMessages();
+    @Accessor int getScrolledLines();
+    @Invoker void callRemoveMessage(int id);
 }

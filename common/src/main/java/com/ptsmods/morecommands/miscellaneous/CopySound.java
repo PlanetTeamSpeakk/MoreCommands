@@ -12,25 +12,25 @@ import java.util.Objects;
 
 // This class is replaced with a dump in a normal environment.
 public class CopySound extends MovingSoundInstance {
-	public CopySound() {
-		super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:copy"))), SoundCategory.MASTER, Random.create());
-		this.volume = 0.25F;
-		this.repeat = false;
-		this.tick();
-	}
+    public CopySound() {
+        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:copy"))), SoundCategory.MASTER, Random.create());
+        this.volume = 0.25F;
+        this.repeat = false;
+        this.tick();
+    }
 
-	public boolean shouldAlwaysPlay() {
-		return true;
-	}
+    public boolean shouldAlwaysPlay() {
+        return true;
+    }
 
-	public boolean canPlay() {
-		return true;
-	}
+    public boolean canPlay() {
+        return true;
+    }
 
-	public void tick() {
-		Vec3d pos = MinecraftClient.getInstance().player.getPos();
-		this.x = pos.x;
-		this.y = pos.y;
-		this.z = pos.z;
-	}
+    public void tick() {
+        Vec3d pos = MinecraftClient.getInstance().player.getPos();
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
+    }
 }

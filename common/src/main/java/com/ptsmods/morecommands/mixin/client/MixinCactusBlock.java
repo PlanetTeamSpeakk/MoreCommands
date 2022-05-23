@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CactusBlock.class)
 public class MixinCactusBlock {
-	@Unique private static final VoxelShape OUTLINE_SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
+    @Unique private static final VoxelShape OUTLINE_SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
 
-	@Inject(at = @At("RETURN"), method = "getCollisionShape(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
-	public void getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cbi) {
-		// When String representation of the world is 'INSTANCE', the game is still initialising, so we pass the original shape.
-		cbi.setReturnValue(ClientOptions.Cheats.avoidCactusDmg.getValue() && MoreCommands.isSingleplayer() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ? OUTLINE_SHAPE : cbi.getReturnValue());
-	}
+    @Inject(at = @At("RETURN"), method = "getCollisionShape(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
+    public void getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cbi) {
+        // When String representation of the world is 'INSTANCE', the game is still initialising, so we pass the original shape.
+        cbi.setReturnValue(ClientOptions.Cheats.avoidCactusDmg.getValue() && MoreCommands.isSingleplayer() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ? OUTLINE_SHAPE : cbi.getReturnValue());
+    }
 }

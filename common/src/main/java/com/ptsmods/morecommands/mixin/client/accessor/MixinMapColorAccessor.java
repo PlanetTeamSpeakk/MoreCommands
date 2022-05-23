@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MapColor.class)
 public interface MixinMapColorAccessor {
 
-	@Accessor("COLORS")
-	static MapColor[] getColors() {
-		throw new AssertionError("This shouldn't happen!");
-	}
+    @Accessor("COLORS")
+    static MapColor[] getColors() {
+        throw new AssertionError("This shouldn't happen!");
+    }
 }

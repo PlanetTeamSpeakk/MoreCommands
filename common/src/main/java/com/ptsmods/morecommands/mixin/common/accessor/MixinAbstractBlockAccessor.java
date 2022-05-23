@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(AbstractBlock.class)
 public interface MixinAbstractBlockAccessor {
 
-	@Accessor
-	boolean isCollidable();
+    @Accessor
+    boolean isCollidable();
 }

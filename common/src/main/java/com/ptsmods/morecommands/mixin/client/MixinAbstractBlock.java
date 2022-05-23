@@ -16,9 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(AbstractBlock.class)
 public class MixinAbstractBlock {
 
-	@Inject(at = @At("RETURN"), method = "getCollisionShape(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
-	public void getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cbi) {
-		cbi.setReturnValue(ClientOptions.Cheats.collideAll.getValue() && MoreCommands.isSingleplayer() && cbi.getReturnValue().isEmpty() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ?
-				state.getOutlineShape(world, pos, context) : cbi.getReturnValue());
-	}
+    @Inject(at = @At("RETURN"), method = "getCollisionShape(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
+    public void getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cbi) {
+        cbi.setReturnValue(ClientOptions.Cheats.collideAll.getValue() && MoreCommands.isSingleplayer() && cbi.getReturnValue().isEmpty() && !"INSTANCE".equalsIgnoreCase(String.valueOf(world)) ?
+                state.getOutlineShape(world, pos, context) : cbi.getReturnValue());
+    }
 }

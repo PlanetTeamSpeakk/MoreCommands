@@ -18,11 +18,11 @@ import java.util.function.Consumer;
 @Mixin(EntityTrackerEntry.class)
 public class MixinEntityTrackerEntry {
 
-	@Shadow @Final private Entity entity;
+    @Shadow @Final private Entity entity;
 
-	@Inject(at = @At("HEAD"), method = "sendPackets(Ljava/util/function/Consumer;)V", cancellable = true)
-	public void sendPackets(Consumer<Packet<?>> sender, CallbackInfo cbi) {
-		if (entity instanceof PlayerEntity && entity.getDataTracker().get(DataTrackerHelper.VANISH)) cbi.cancel();
-	}
+    @Inject(at = @At("HEAD"), method = "sendPackets(Ljava/util/function/Consumer;)V", cancellable = true)
+    public void sendPackets(Consumer<Packet<?>> sender, CallbackInfo cbi) {
+        if (entity instanceof PlayerEntity && entity.getDataTracker().get(DataTrackerHelper.VANISH)) cbi.cancel();
+    }
 
 }

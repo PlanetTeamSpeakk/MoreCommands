@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 @Mixin(KeybindTranslations.class)
 public interface MixinKeybindTranslationsAccessor {
 
-	@Accessor("FACTORY")
-	static Function<String, Supplier<Text>> getFactory() {
-		throw new AssertionError("This shouldn't happen.");
-	}
+    @Accessor("FACTORY")
+    static Function<String, Supplier<Text>> getFactory() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

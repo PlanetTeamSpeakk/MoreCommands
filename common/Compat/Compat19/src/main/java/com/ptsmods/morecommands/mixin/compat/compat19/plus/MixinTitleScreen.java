@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(TitleScreen.class)
 public class MixinTitleScreen {
 
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/random/Random;nextFloat()F"), method = "<init>(Z)V")
-	private float init_nextFloat(Random random) {
-		return ((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Always Minceraft")).getValue() ? 0f : random.nextFloat();
-	}
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/random/Random;nextFloat()F"), method = "<init>(Z)V")
+    private float init_nextFloat(Random random) {
+        return ((BooleanClientOption) ClientOption.getOptions().get(ClientOptionCategory.TWEAKS).get("Always Minceraft")).getValue() ? 0f : random.nextFloat();
+    }
 }

@@ -12,24 +12,24 @@ import java.util.List;
 
 @Mixin(Screen.class)
 public class MixinScreen implements ScreenAddon {
-	@Shadow protected @Final List<Element> children;
-	@Shadow protected @Final List<ClickableWidget> buttons;
+    @Shadow protected @Final List<Element> children;
+    @Shadow protected @Final List<ClickableWidget> buttons;
 
-	@Override
-	public void mc$clear() {
-		children.clear();
-		buttons.clear();
-	}
+    @Override
+    public void mc$clear() {
+        children.clear();
+        buttons.clear();
+    }
 
-	@Override
-	public List<ClickableWidget> mc$getButtons() {
-		return buttons;
-	}
+    @Override
+    public List<ClickableWidget> mc$getButtons() {
+        return buttons;
+    }
 
-	@Override
-	public <T extends ClickableWidget> T mc$addButton(T button) {
-		children.add(button);
-		buttons.add(button);
-		return button;
-	}
+    @Override
+    public <T extends ClickableWidget> T mc$addButton(T button) {
+        children.add(button);
+        buttons.add(button);
+        return button;
+    }
 }

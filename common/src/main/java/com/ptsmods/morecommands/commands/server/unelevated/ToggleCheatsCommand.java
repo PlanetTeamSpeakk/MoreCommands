@@ -7,16 +7,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 
 public class ToggleCheatsCommand extends Command {
-	@Override
-	public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literalReq("togglecheats").executes(ctx -> {
-			MinecraftServer server = ctx.getSource().getServer();
-			if (server.isSingleplayer()) {
-				server.getPlayerManager().setCheatsAllowed(!server.getPlayerManager().areCheatsAllowed());
-				sendMsg(ctx, "Cheats are now " + Util.formatFromBool(server.getPlayerManager().areCheatsAllowed(), "allowed", "disallowed") + DF + ".");
-				return 1;
-			} else sendError(ctx, "This command can only be used on singleplayer.");
-			return 0;
-		}));
-	}
+    @Override
+    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(literalReq("togglecheats").executes(ctx -> {
+            MinecraftServer server = ctx.getSource().getServer();
+            if (server.isSingleplayer()) {
+                server.getPlayerManager().setCheatsAllowed(!server.getPlayerManager().areCheatsAllowed());
+                sendMsg(ctx, "Cheats are now " + Util.formatFromBool(server.getPlayerManager().areCheatsAllowed(), "allowed", "disallowed") + DF + ".");
+                return 1;
+            } else sendError(ctx, "This command can only be used on singleplayer.");
+            return 0;
+        }));
+    }
 }

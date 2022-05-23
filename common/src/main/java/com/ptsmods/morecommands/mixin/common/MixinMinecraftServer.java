@@ -15,13 +15,13 @@ import java.util.function.Function;
 
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
-	@Inject(at = @At("RETURN"), method = {"startServer", "method_29740"}, require = 1)
-	private static <S extends MinecraftServer> void startServer(Function<Thread, S> serverFactory, CallbackInfoReturnable<S> cbi) {
-		MoreCommands.setServerInstance(cbi.getReturnValue());
-	}
+    @Inject(at = @At("RETURN"), method = {"startServer", "method_29740"}, require = 1)
+    private static <S extends MinecraftServer> void startServer(Function<Thread, S> serverFactory, CallbackInfoReturnable<S> cbi) {
+        MoreCommands.setServerInstance(cbi.getReturnValue());
+    }
 
-	@Inject(at = @At("RETURN"), method = "createWorlds")
-	private void onCreateWorlds(WorldGenerationProgressListener progressListener, CallbackInfo ci) {
-		CreateWorldEvent.EVENT.invoker().createWorlds(ReflectionHelper.cast(this));
-	}
+    @Inject(at = @At("RETURN"), method = "createWorlds")
+    private void onCreateWorlds(WorldGenerationProgressListener progressListener, CallbackInfo ci) {
+        CreateWorldEvent.EVENT.invoker().createWorlds(ReflectionHelper.cast(this));
+    }
 }

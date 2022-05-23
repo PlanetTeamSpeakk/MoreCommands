@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(FabricCreativeGuiComponents.ItemGroupButtonWidget.class)
 public interface MixinItemGroupButtonWidgetAccessor {
-	@Accessor(remap = false)
-	FabricCreativeGuiComponents.Type getType();
+    @Accessor(remap = false)
+    FabricCreativeGuiComponents.Type getType();
 }

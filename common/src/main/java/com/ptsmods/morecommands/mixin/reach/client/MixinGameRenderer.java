@@ -13,10 +13,10 @@ import java.util.Objects;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
-	@Shadow @Final private MinecraftClient client;
+    @Shadow @Final private MinecraftClient client;
 
-	@ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
-	public double updateTargetedEntity_maxReach(double maxReach) {
-		return ReachCommand.getReach(Objects.requireNonNull(client.player), false);
-	}
+    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
+    public double updateTargetedEntity_maxReach(double maxReach) {
+        return ReachCommand.getReach(Objects.requireNonNull(client.player), false);
+    }
 }

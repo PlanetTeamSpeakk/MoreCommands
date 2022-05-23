@@ -24,18 +24,18 @@ import java.util.List;
 @Mixin(Block.class)
 public class MixinBlock {
 
-	@Inject(at = @At("RETURN"), method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)Ljava/util/List;")
-	private static void getDroppedStacks(BlockState state, ServerWorld world, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> cbi) {
-		List<ItemStack> stacks = cbi.getReturnValue();
-		if (blockEntity instanceof MobSpawnerBlockEntity && MoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), MoreGameRules.get().doSilkSpawnersRule(), entity) &&
-				EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, stack) > 0) {
-			ItemStack spawner = new ItemStack(Items.SPAWNER);
-			NbtCompound tag = Compat.get().writeBENBT(blockEntity);
-			tag.remove("x");
-			tag.remove("y");
-			tag.remove("z");
-			spawner.getOrCreateNbt().put("BlockEntityTag", tag);
-			stacks.add(spawner);
-		}
-	}
+    @Inject(at = @At("RETURN"), method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)Ljava/util/List;")
+    private static void getDroppedStacks(BlockState state, ServerWorld world, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> cbi) {
+        List<ItemStack> stacks = cbi.getReturnValue();
+        if (blockEntity instanceof MobSpawnerBlockEntity && MoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), MoreGameRules.get().doSilkSpawnersRule(), entity) &&
+                EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, stack) > 0) {
+            ItemStack spawner = new ItemStack(Items.SPAWNER);
+            NbtCompound tag = Compat.get().writeBENBT(blockEntity);
+            tag.remove("x");
+            tag.remove("y");
+            tag.remove("z");
+            spawner.getOrCreateNbt().put("BlockEntityTag", tag);
+            stacks.add(spawner);
+        }
+    }
 }
