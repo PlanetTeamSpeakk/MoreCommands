@@ -44,6 +44,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @ExtensionMethod(ObjectExtensions.class)
@@ -64,9 +65,16 @@ public class PowerToolCommand extends Command {
                 doCycleCommand(context.getPlayer(), Hand.values()[buf.readByte()], buf.readByte()));
         KeyMappingRegistry.register(cycleKeyBinding);
 
+        AtomicBoolean pressed = new AtomicBoolean();
         ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-            if (cycleKeyBinding.wasPressed())
-                cycleCommand();
+            if (cycleKeyBinding.wasPressed()) {
+                //noinspection StatementWithEmptyBody
+                while (cycleKeyBinding.wasPressed()); // Clearing pressed counter
+                if (!pressed.get()) {
+                    cycleCommand();
+                    pressed.set(true);
+                }
+            } else pressed.set(false);
         });
 
         ClientGuiEvent.RENDER_HUD.register(PowerToolSelectionHud::render);
