@@ -48,4 +48,6 @@ public interface ClientCompat {
 	Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat);
 
 	void registerChatProcessListener(Function<Text, Text> listener);
+
+    void sendMessageOrCommand(String msg);
 }

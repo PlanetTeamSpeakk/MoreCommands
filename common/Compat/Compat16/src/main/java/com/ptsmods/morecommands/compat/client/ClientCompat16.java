@@ -26,6 +26,7 @@ import net.minecraft.util.hit.BlockHitResult;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ClientCompat16 implements ClientCompat {
@@ -85,4 +86,9 @@ public class ClientCompat16 implements ClientCompat {
 					CompoundEventResult.interruptTrue(IMoreCommands.get().textToString(output, null, true));
 		});
 	}
+
+    @Override
+    public void sendMessageOrCommand(String msg) {
+        Objects.requireNonNull(MinecraftClient.getInstance().player).sendChatMessage(msg);
+    }
 }

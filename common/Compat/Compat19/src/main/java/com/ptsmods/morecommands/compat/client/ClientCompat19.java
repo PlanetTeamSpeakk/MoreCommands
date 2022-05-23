@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinClientPlayerEntityAccessor;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.ChatVisibility;
@@ -12,7 +13,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.CommandSource;
 import net.minecraft.network.Packet;
-import net.minecraft.network.encryption.ArgumentSignatures;
+import net.minecraft.network.encryption.ArgumentSignatureDataMap;
 import net.minecraft.network.encryption.ChatMessageSigner;
 import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
@@ -27,6 +28,7 @@ import net.minecraft.util.hit.BlockHitResult;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ClientCompat19 extends ClientCompat17 {
@@ -66,8 +68,8 @@ public class ClientCompat19 extends ClientCompat17 {
 		else {
 			message = message.substring(1);
 			ParseResults<CommandSource> parseResults = player.networkHandler.getCommandDispatcher().parse(message, player.networkHandler.getCommandSource());
-			ArgumentSignatures argumentSignatures = accessor.callSignArguments(signer, parseResults);
-			return new CommandExecutionC2SPacket(message, signer.timeStamp(), argumentSignatures);
+            ArgumentSignatureDataMap argumentSignatures = accessor.callSignArguments(signer, parseResults, null);
+			return new CommandExecutionC2SPacket(message, signer.timeStamp(), argumentSignatures, false);
 		}
 	}
 
@@ -79,4 +81,11 @@ public class ClientCompat19 extends ClientCompat17 {
 			return output == null || output.equals(message) ? CompoundEventResult.pass() : CompoundEventResult.interruptTrue(output);
 		});
 	}
+
+    @Override
+    public void sendMessageOrCommand(String msg) {
+        ClientPlayerEntity player = Objects.requireNonNull(MinecraftClient.getInstance().player);
+        if (msg.startsWith("/")) player.sendCommand(msg.substring(1));
+        else player.sendChatMessage(msg);
+    }
 }
