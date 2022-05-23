@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.callbacks.MouseEvent;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
@@ -40,7 +41,7 @@ public class PowerToolCommand extends Command {
         if (player != null && action == 1 && MinecraftClient.getInstance().currentScreen == null) {
             String cmd = Optional.ofNullable(getPowerTool(player, Hand.MAIN_HAND)).orElse(getPowerTool(player, Hand.OFF_HAND));
             if (cmd != null) {
-                MinecraftClient.getInstance().player.sendChatMessage("/" + cmd);
+                ClientCompat.get().sendMessageOrCommand("/" + cmd);
                 return true;
             }
         }
