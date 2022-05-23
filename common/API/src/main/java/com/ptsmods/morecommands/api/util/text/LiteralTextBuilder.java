@@ -21,6 +21,10 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
         return new LiteralTextBuilderImpl(literal, style);
     }
 
+    static MutableText literal(String literal) {
+        return builder(literal).build();
+    }
+
     @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
     class LiteralTextBuilderImpl extends TextBuilderImpl<LiteralTextBuilder> implements LiteralTextBuilder {
         private @NonNull String literal;

@@ -32,6 +32,22 @@ public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBui
         return new TranslatableTextBuilderImpl(key, style, args);
     }
 
+    static MutableText translatable(String key) {
+        return builder(key).build();
+    }
+
+    static MutableText translatable(String key, Object... args) {
+        return builder(key, args).build();
+    }
+
+    static MutableText translatable(String key, Style style) {
+        return builder(key, style).build();
+    }
+
+    static MutableText translatable(String key, Style style, Object... args) {
+        return builder(key, style, args).build();
+    }
+
     class TranslatableTextBuilderImpl extends TextBuilder.TextBuilderImpl<TranslatableTextBuilder> implements TranslatableTextBuilder {
         private static final Object[] EMPTY_ARGS = new Object[0];
         private String key;
