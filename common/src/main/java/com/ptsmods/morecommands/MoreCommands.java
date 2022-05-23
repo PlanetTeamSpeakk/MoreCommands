@@ -49,7 +49,6 @@ import lombok.SneakyThrows;
 import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
 import net.minecraft.block.*;
-import net.minecraft.class_7492;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.command.argument.serialize.ArgumentSerializer;
@@ -64,6 +63,8 @@ import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.network.ChatDecorator;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
@@ -105,6 +106,7 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -143,7 +145,7 @@ public enum MoreCommands implements IMoreCommands {
 	private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
 	private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
 	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-	private static Database globalDb, serverDb;
+	private static Database globalDb, localDb;
 
 	static {
 		try {
@@ -214,8 +216,10 @@ public enum MoreCommands implements IMoreCommands {
 		} else argumentTypeRegistry = null;
 
 		Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
+        MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 
-		MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+        Database.registerTypeConverter(UUID.class, UUID::toString, UUID::fromString);
+        Database.registerTypeConverter(NbtCompound.class, MoreCommands::nbtToByteString, MoreCommands::nbtFromByteString);
 	}
 
 	MoreCommands() {
@@ -226,7 +230,7 @@ public enum MoreCommands implements IMoreCommands {
 		INSTANCE.doInit();
 	}
 
-	@SneakyThrows
+    @SneakyThrows
 	private void doInit() {
 		Path sqLitePath = getConfigDirectory().resolve("jars/sqlite.jar");
 		Database.loadConnector(Database.RDBMS.SQLite, null, sqLitePath.toFile(), true); // Method used to add to classpath doesn't work here, but it does download it.
@@ -384,15 +388,16 @@ public enum MoreCommands implements IMoreCommands {
 				} else howlingPlayers.remove(p);
 		});
 
-		if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19))
-			ReflectionHelper.setFieldValue(Arrays.stream(class_7492.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
-							new NoSuchElementException("Could not find default decorator field of ChatDecorator class.")),
-					null, (class_7492) (player, text) -> {
-								TextBuilder<?> builder = Compat.get().builderFromText(text);
-								return (IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
-										|| player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel())) && builder instanceof LiteralTextBuilder ?
-										LiteralTextBuilder.builder(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())).build() : text;
-							});
+		if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
+            ReflectionHelper.setFieldValue(Arrays.stream(ChatDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
+                            new NoSuchElementException("Could not find default decorator field of ChatDecorator class.")),
+                    null, (ChatDecorator) (player, text) -> {
+                        TextBuilder<?> builder = Compat.get().builderFromText(text);
+                        return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
+                                || player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel())) && builder instanceof LiteralTextBuilder ?
+                                LiteralTextBuilder.builder(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())).build() : text);
+                    });
+        }
 
 //		if (MoreCommandsArch.isFabricModLoaded("placeholder-api")) {
 //			// Example: %morecommands:reach/1%
@@ -855,7 +860,7 @@ public enum MoreCommands implements IMoreCommands {
 			LOG.catching(e);
 		}
 
-		serverDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
+		localDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
 		MoreGameRules.get().checkPerms(server);
 		LOG.info("MoreCommands data path: " + getRelativePath(server));
 	}
@@ -1281,4 +1286,36 @@ public enum MoreCommands implements IMoreCommands {
 				return new ClientCompat19();
 		}
 	}
+
+	public static Database getGlobalDb() {
+		return globalDb;
+	}
+
+	public static Database getLocalDb() {
+		return localDb;
+	}
+
+    @SneakyThrows // Shouldn't be possible as this is a memory output stream, it's not outputting to a file or whatever.
+    public static String nbtToByteString(NbtCompound tag) {
+        ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
+        NbtIo.writeCompressed(tag, bytestream);
+        return encodeHex(bytestream.toByteArray());
+    }
+
+    public static NbtCompound nbtFromByteString(String byteString) {
+        if (byteString == null) return null;
+        byte[] bytes;
+        try {
+            bytes = decodeHex(byteString);
+        } catch (Exception e) {
+            Command.log.error("Could not decode byte string " + byteString, e);
+            return null;
+        }
+        try {
+            return NbtIo.readCompressed(new ByteArrayInputStream(bytes));
+        } catch (IOException e) {
+            Command.log.error("Error reading decoded bytes.", e);
+            return null;
+        }
+    }
 }
