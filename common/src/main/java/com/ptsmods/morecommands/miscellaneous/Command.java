@@ -13,6 +13,8 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import com.ptsmods.mysqlw.Database;
+import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -21,12 +23,15 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class Command {
@@ -37,6 +42,22 @@ public abstract class Command {
 	public static final Logger log = MoreCommands.LOG;
 	public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getServer().getOpPermissionLevel());
 	private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
+    private static final List<Pair<Consumer<MinecraftServer>, AtomicInteger>> scheduledTasks = new ArrayList<>();
+
+    static {
+        List<Pair<Consumer<MinecraftServer>, AtomicInteger>> finishedTasks = new ArrayList<>();
+        TickEvent.SERVER_POST.register(server -> {
+            scheduledTasks.forEach(pair -> {
+                if (pair.getRight().getAndDecrement() > 0) return;
+
+                pair.getLeft().accept(server);
+                finishedTasks.add(pair);
+            });
+
+            scheduledTasks.removeAll(finishedTasks);
+            finishedTasks.clear();
+        });
+    }
 
 	/**
 	 * Gets called once when the command is initialised.
@@ -82,6 +103,14 @@ public abstract class Command {
 	public Map<String, Boolean> getExtraPermissions() {
 		return Collections.emptyMap();
 	}
+
+    public static Database getLocalDb() {
+        return MoreCommands.getLocalDb();
+    }
+
+    public static Database getGlobalDb() {
+        return MoreCommands.getGlobalDb();
+    }
 
 	public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
 		return sendMsg(ctx, LiteralTextBuilder.builder(fixResets(formats.length == 0 ? msg : formatted(msg, formats))).withStyle(DS).build());
@@ -254,4 +283,22 @@ public abstract class Command {
 	protected static TranslatableTextBuilder translatableText(String text, Object... args) {
 		return TranslatableTextBuilder.builder(text, args);
 	}
+
+    public static void scheduleTask(Runnable task) {
+        scheduleTask(task, 0);
+    }
+
+    public static void scheduleTask(Runnable task, int delay) {
+        scheduleTask(s -> task.run(), delay);
+    }
+
+    public static void scheduleTask(Consumer<MinecraftServer> task) {
+        scheduleTask(task, 0);
+    }
+
+    public static void scheduleTask(Consumer<MinecraftServer> task, int delay) {
+        if (delay < 0) throw new IllegalArgumentException("Delay must be at least 0.");
+        AtomicInteger atomicDelay = new AtomicInteger(delay);
+        scheduledTasks.add(new Pair<>(task, atomicDelay));
+    }
 }

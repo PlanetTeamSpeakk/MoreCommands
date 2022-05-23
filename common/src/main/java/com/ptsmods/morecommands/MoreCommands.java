@@ -844,6 +844,7 @@ public enum MoreCommands implements IMoreCommands {
 	@SneakyThrows // Very unlikely connecting to an SQLite database results in an error.
 	public static void setServerInstance(MinecraftServer server) {
 		serverInstance = server;
+        localDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
 		Command.doInitialisations(server);
 
 		File file = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
@@ -860,7 +861,6 @@ public enum MoreCommands implements IMoreCommands {
 			LOG.catching(e);
 		}
 
-		localDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
 		MoreGameRules.get().checkPerms(server);
 		LOG.info("MoreCommands data path: " + getRelativePath(server));
 	}

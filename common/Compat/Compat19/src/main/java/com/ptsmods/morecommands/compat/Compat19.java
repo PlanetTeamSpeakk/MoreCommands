@@ -24,7 +24,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.AbstractRandom;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 
@@ -50,7 +50,7 @@ public class Compat19 extends Compat182 {
 
 	@Override
 	public Direction randomDirection() {
-		return Direction.random(AbstractRandom.create());
+		return Direction.random(Random.create());
 	}
 
 	@Override
