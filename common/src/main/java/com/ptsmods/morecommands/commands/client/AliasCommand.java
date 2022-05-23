@@ -38,8 +38,8 @@ public class AliasCommand extends ClientCommand {
 			TextBuilder<?> builder = Compat.get().builderFromText(message);
 			if (!(builder instanceof LiteralTextBuilder)) return message;
 
-			String replacement = aliases.getOrDefault(((LiteralTextBuilder) message).getLiteral().substring(1).split(" ")[0], null);
-			return LiteralTextBuilder.builder(replacement).build();
+			String replacement = aliases.getOrDefault(((LiteralTextBuilder) builder).getLiteral().substring(1).split(" ")[0], null);
+			return replacement == null ? message : LiteralTextBuilder.builder(replacement).build();
 		});
 	}
 
