@@ -75,6 +75,11 @@ public class Compat19 extends Compat182 {
                 .toArray(Object[]::new)), builder);
     }
 
+    @Override
+    public MutableText buildText(EmptyTextBuilder builder) {
+        return buildText(TextContent.EMPTY, builder);
+    }
+
     private MutableText buildText(TextContent content, TextBuilder<?> builder) {
         MutableText text = MutableText.of(content).setStyle(builder.getStyle());
         builder.getChildren().forEach(child -> text.append(child.build()));
