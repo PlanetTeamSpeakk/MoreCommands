@@ -50,7 +50,7 @@ public abstract class MixinClientPlayerEntity {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "sendCommand(Lnet/minecraft/network/encryption/ChatMessageSigner;Ljava/lang/String;Lnet/minecraft/text/Text;)V", require = 0)
+    @Inject(at = @At("HEAD"), method = "sendCommand(Lnet/minecraft/network/encryption/ChatMessageSigner;Ljava/lang/String;Lnet/minecraft/text/Text;)V", require = 0, cancellable = true)
     public void sendCommand(ChatMessageSigner signer, String command, Text text, CallbackInfo cbi) {
         handleCommand(command, cbi);
     }
