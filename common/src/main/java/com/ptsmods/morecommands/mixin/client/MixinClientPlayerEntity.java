@@ -50,15 +50,15 @@ public abstract class MixinClientPlayerEntity {
 		}
 	}
 
-	@Inject(at = @At("HEAD"), method = "sendCommand", require = 0)
+	@Inject(at = @At("HEAD"), method = "sendCommand(Lnet/minecraft/network/encryption/ChatMessageSigner;Ljava/lang/String;Lnet/minecraft/text/Text;)V", require = 0)
 	public void sendCommand(ChatMessageSigner signer, String command, Text text, CallbackInfo cbi) {
 		handleCommand(command, cbi);
 	}
 
 	private @Unique void handleCommand(String message, CallbackInfo cbi) {
-		StringReader reader = new StringReader(message);
-		reader.skip();
-		if (MoreCommandsClient.clientCommandDispatcher.getRoot().getChild(message.substring(1).split(" ")[0]) != null) {
+		StringReader reader = new StringReader(message.startsWith("/") ? message.substring(1) : message);
+
+		if (MoreCommandsClient.clientCommandDispatcher.getRoot().getChild(reader.getString().split(" ")[0]) != null) {
 			cbi.cancel();
 			if (MoreCommandsClient.isCommandDisabled(message)) {
 				ClientCommand.sendError(Formatting.RED + "That client command is disabled on this server.");
