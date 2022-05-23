@@ -45,7 +45,7 @@ public class SkullCommand extends Command {
         } catch (IllegalArgumentException ignored) {} // Given playername is not a UUID.
         tag.putString("SkullOwner", playername);
         stack.setNbt(tag);
-        if (ctx.getSource().getEntity() instanceof PlayerEntity) Compat.get().getInventory(ctx.getSource().getPlayer()).insertStack(stack);
+        if (ctx.getSource().getEntity() instanceof PlayerEntity) Compat.get().getInventory(ctx.getSource().getPlayerOrThrow()).insertStack(stack);
         else ctx.getSource().getEntityOrThrow().dropStack(stack, ctx.getSource().getEntityOrThrow().getEyeHeight(ctx.getSource().getEntityOrThrow().getPose()));
         ctx.getSource().getWorld().playSound(null, ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, ((ctx.getSource().getWorld().random.nextFloat() - ctx.getSource().getWorld().random.nextFloat()) * 0.7F + 1.0F) * 2.0F, 1F);
         sendMsg(ctx, "Your skull" + (stack.getCount() == 1 ? "" : "s") + " ha" + (stack.getCount() == 1 ? "s" : "ve") + " arrived.");

@@ -33,7 +33,7 @@ public class SpawnerCommand extends Command {
                 EntityType<?> type = Registry.ENTITY_TYPE.get(ctx.getArgument("type", Identifier.class));
                 BlockPos pos = new BlockPos(ctx.getSource().getPosition());
                 if (!state.isOf(Blocks.SPAWNER)) {
-                    if (ctx.getSource().getPlayer().getMainHandStack().getItem() == Items.SPAWNER) {
+                    if (ctx.getSource().getPlayerOrThrow().getMainHandStack().getItem() == Items.SPAWNER) {
                         MobSpawnerLogic logic = new MobSpawnerLogic() {
                             @Override
                             public void sendStatus(World world, BlockPos pos, int i) {
@@ -50,7 +50,7 @@ public class SpawnerCommand extends Command {
                                 return pos;
                             }
                         }; // Keeping the old methods in there even though they don't override anything in 1.17 for compatibility with 1.16
-                        ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
+                        ItemStack stack = ctx.getSource().getPlayerOrThrow().getMainHandStack();
                         NbtCompound tag = stack.getOrCreateNbt();
                         if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
                             Compat.get().readSpawnerLogicNbt(logic, ctx.getSource().getWorld(), pos, tag);

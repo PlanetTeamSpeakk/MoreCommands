@@ -18,8 +18,8 @@ public class InvseeCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("invsee").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
             PlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
-            if (p == ctx.getSource().getPlayer()) sendMsg(ctx, "You can just press E, you know?");
-            else openInventory(ctx.getSource().getPlayer(), p);
+            if (p == ctx.getSource().getPlayerOrThrow()) sendMsg(ctx, "You can just press E, you know?");
+            else openInventory(ctx.getSource().getPlayerOrThrow(), p);
             return 1;
         })));
     }

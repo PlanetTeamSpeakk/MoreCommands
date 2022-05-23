@@ -13,8 +13,8 @@ public class AnvilCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReq("anvil").executes(ctx -> {
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new AnvilScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
+            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+            ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new AnvilScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
                 public boolean canUse(PlayerEntity player) {
                     return true;
                 }

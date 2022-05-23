@@ -31,7 +31,7 @@ public class DropstoreCommand extends Command {
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, BlockPos pos, boolean clear) throws CommandSyntaxException {
-        PlayerEntity player = ctx.getSource().getPlayer();
+        PlayerEntity player = ctx.getSource().getPlayerOrThrow();
         if (pos == null) pos = player.getBlockPos();
         player.getEntityWorld().setBlockState(pos, Blocks.CHEST.getDefaultState().with(ChestBlock.CHEST_TYPE, ChestType.LEFT));
         player.getEntityWorld().setBlockState(pos.add(1, 0, 0), Blocks.CHEST.getDefaultState().with(ChestBlock.CHEST_TYPE, ChestType.RIGHT));

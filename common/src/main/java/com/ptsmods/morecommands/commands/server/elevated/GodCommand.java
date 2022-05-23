@@ -13,7 +13,7 @@ public class GodCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("god").executes(ctx -> {
-            PlayerEntity player = ctx.getSource().getPlayer();
+            PlayerEntity player = ctx.getSource().getPlayerOrThrow();
             PlayerAbilities abilities = ((MixinPlayerEntityAccessor) player).getAbilities_();
             abilities.invulnerable = !abilities.invulnerable;
             player.sendAbilitiesUpdate();

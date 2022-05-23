@@ -29,14 +29,14 @@ public class ReachCommand extends Command {
             return 0;
         }));
         else dispatcher.register(literalReqOp("reach").executes(ctx -> {
-            double reach = ctx.getSource().getPlayer().getAttributeValue(REACH_ATTRIBUTE);
-            double base = ctx.getSource().getPlayer().getAttributeBaseValue(REACH_ATTRIBUTE);
+            double reach = ctx.getSource().getPlayerOrThrow().getAttributeValue(REACH_ATTRIBUTE);
+            double base = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
             sendMsg(ctx, "Your reach is currently " + SF + reach + DF + (base != reach ? " (" + SF + base + " base" + DF + ")" : "") + ".");
             return (int) reach;
         }).then(argument("reach", DoubleArgumentType.doubleArg(1d, 160d)).executes(ctx -> {
-            double oldReach = ctx.getSource().getPlayer().getAttributeBaseValue(REACH_ATTRIBUTE);
+            double oldReach = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
             double reach = ctx.getArgument("reach", Double.class);
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
             Objects.requireNonNull(player.getAttributeInstance(REACH_ATTRIBUTE)).setBaseValue(reach);
             addModifier("pehkui:reach", player, reach);
             addModifier("reach-entity-attributes:reach", player, reach);

@@ -39,7 +39,7 @@ public class TpaCommand extends Command {
     }
 
     private int executeResp(CommandContext<ServerCommandSource> ctx, boolean accept) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
         for (int i = requests.size()-1; i >= 0; i--)
             if (requests.get(i).to == player) {
                 if (accept) requests.get(i).accept();
@@ -51,7 +51,7 @@ public class TpaCommand extends Command {
     }
 
     private int executeTpa(CommandContext<ServerCommandSource> ctx, boolean here) throws CommandSyntaxException {
-        TpaRequest request = new TpaRequest(ctx.getSource().getPlayer(), EntityArgumentType.getPlayer(ctx, "player"), here);
+        TpaRequest request = new TpaRequest(ctx.getSource().getPlayerOrThrow(), EntityArgumentType.getPlayer(ctx, "player"), here);
         request.informOther();
         requests.add(request);
         sendMsg(ctx, "A teleportation request has been sent.");

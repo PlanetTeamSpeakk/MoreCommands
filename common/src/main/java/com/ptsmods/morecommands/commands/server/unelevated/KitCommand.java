@@ -85,11 +85,11 @@ public class KitCommand extends Command {
                         .executes(ctx -> {
                             String kit = ctx.getArgument("kit", String.class).toLowerCase(Locale.ROOT);
                             if (!kits.containsKey(kit)) sendError(ctx, "A kit by that name does not exist.");
-                            else if (kits.get(kit).onCooldown(ctx.getSource().getPlayer())) sendError(ctx, "You're still on cooldown! Please wait " +
-                                    MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayer()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
+                            else if (kits.get(kit).onCooldown(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You're still on cooldown! Please wait " +
+                                    MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayerOrThrow()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
                             else if (!MoreCommandsArch.checkPermission(ctx.getSource(), "morecommands.kit." + kit, true)) sendError(ctx, "You do not have permission to use that kit.");
                             else {
-                                kits.get(kit).give(ctx.getSource().getPlayer());
+                                kits.get(kit).give(ctx.getSource().getPlayerOrThrow());
                                 sendMsg(ctx, "You have been given the " + SF + kits.get(kit).getName() + DF + " kit.");
                                 return 1;
                             }
@@ -103,7 +103,7 @@ public class KitCommand extends Command {
                                     String name = ctx.getArgument("name", String.class);
                                     if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendError(ctx, "A kit with that name already exists.");
                                     else {
-                                        PlayerInventory inv = Compat.get().getInventory(ctx.getSource().getPlayer());
+                                        PlayerInventory inv = Compat.get().getInventory(ctx.getSource().getPlayerOrThrow());
                                         Kit kit = new Kit(name, ctx.getArgument("cooldown", Integer.class), Lists.newArrayList(inv.main, inv.armor, inv.offHand).stream()
                                                 .flatMap(List::stream)
                                                 .collect(Collectors.toList()));

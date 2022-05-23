@@ -12,7 +12,7 @@ import java.util.Collection;
 public class HealCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("feed", dispatcher.register(literalReqOp("heal").executes(ctx -> execute(ctx.getSource().getPlayer())).then(argument("players", EntityArgumentType.players()).executes(ctx -> {
+        dispatcher.getRoot().addChild(MoreCommands.createAlias("feed", dispatcher.register(literalReqOp("heal").executes(ctx -> execute(ctx.getSource().getPlayerOrThrow())).then(argument("players", EntityArgumentType.players()).executes(ctx -> {
             Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(ctx, "players");
             players.forEach(this::execute);
             sendMsg(ctx, "Healed " + SF + players.size() + DF + " players.");

@@ -30,7 +30,7 @@ public class SpeedCommand extends Command {
         LiteralArgumentBuilder<ServerCommandSource> builder = literalReqOp("speed");
         for (SpeedType type : SpeedType.values())
             builder.then(literal(type.name().toLowerCase()).executes(ctx -> getSpeed(ctx, type, null)).then(argument("target", EntityArgumentType.player()).executes(ctx -> getSpeed(ctx, type, EntityArgumentType.getPlayer(ctx, "target")))).then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null)).then(argument("targets", EntityArgumentType.players()).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
-        dispatcher.register(builder.then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayer()), ctx.getArgument("speed", Float.class), null))));
+        dispatcher.register(builder.then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrThrow()), ctx.getArgument("speed", Float.class), null))));
     }
 
     private SpeedType determineSpeedType(ServerPlayerEntity player) {
@@ -38,7 +38,7 @@ public class SpeedCommand extends Command {
     }
 
     private int setSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, float speed, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
-        if (players == null) players = Lists.newArrayList(ctx.getSource().getPlayer());
+        if (players == null) players = Lists.newArrayList(ctx.getSource().getPlayerOrThrow());
         else if (!isOp(ctx)) {
             sendError(ctx, "You must be op to set other's speed.");
             return 0;
@@ -57,7 +57,7 @@ public class SpeedCommand extends Command {
 
     private int getSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, ServerPlayerEntity player) throws CommandSyntaxException {
         boolean notYou = player != null;
-        if (!notYou) player = ctx.getSource().getPlayer();
+        if (!notYou) player = ctx.getSource().getPlayerOrThrow();
         double speed = type.getSpeed(player);
         String s = IMoreCommands.get().textToString(player.getDisplayName(), SS, true);
         sendMsg(ctx, (notYou ? s + SF + "'" + (Objects.requireNonNull(Formatting.strip(s)).endsWith("s") ? "" : "s") : "Your") + " " + SF + type.name().toLowerCase() + " speed " + DF + "is currently " + SF + speed + DF + ".");

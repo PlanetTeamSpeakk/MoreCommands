@@ -63,7 +63,7 @@ public class PowerToolCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.getRoot().addChild(MoreCommands.createAlias("pt", dispatcher.register(literalReq("powertool").executes(ctx -> {
-            PlayerEntity player = ctx.getSource().getPlayer();
+            PlayerEntity player = ctx.getSource().getPlayerOrThrow();
             ItemStack stack = getPowerToolStack(player);
             if (stack == null) sendError(ctx, "The item you're holding is not a powertool.");
             else if (!getPowerToolOwner(stack).equals(player.getUuid())) sendError(ctx, "This is not your powertool.");
@@ -74,7 +74,7 @@ public class PowerToolCommand extends Command {
             }
             return 0;
         }).then(argument("cmd", StringArgumentType.greedyString()).executes(ctx -> {
-            PlayerEntity player = ctx.getSource().getPlayer();
+            PlayerEntity player = ctx.getSource().getPlayerOrThrow();
             ItemStack stack = player.getMainHandStack();
             if (isPowerTool(stack) && !getPowerToolOwner(stack).equals(player.getUuid())) sendError(ctx, "This is not your powertool.");
             else {

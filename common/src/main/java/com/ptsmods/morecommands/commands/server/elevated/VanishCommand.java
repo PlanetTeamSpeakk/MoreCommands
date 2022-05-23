@@ -42,7 +42,7 @@ public class VanishCommand extends Command {
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
-        if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayer());
+        if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayerOrThrow());
         else if (!isOp(ctx)) {
             sendError(ctx, "You must be op to toggle vanish for others.");
             return 0;

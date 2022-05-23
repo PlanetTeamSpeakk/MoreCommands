@@ -36,7 +36,7 @@ public class VaultCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReq("vault")
                 .then(argument("vault", IntegerArgumentType.integer(1))
-                        .executes(ctx -> execute(ctx, ctx.getSource().getPlayer()))
+                        .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow()))
                         .then(argument("player", EntityArgumentType.player())
                                 .requires(IS_OP)
                                 .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"))))));
@@ -46,11 +46,11 @@ public class VaultCommand extends Command {
         int vault = ctx.getArgument("vault", Integer.class);
         int maxVaults = getCountFromPerms(ctx.getSource(), "morecommands.vault.max.", ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.get().vaultsRule()));
         if (maxVaults == 0) sendError(ctx, "Vaults are disabled on this server.");
-        else if (vault > maxVaults) sendError(ctx, (owner == ctx.getSource().getPlayer() ? "You" : IMoreCommands.get().textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) +
+        else if (vault > maxVaults) sendError(ctx, (owner == ctx.getSource().getPlayerOrThrow() ? "You" : IMoreCommands.get().textToString(owner.getDisplayName(), Style.EMPTY.withColor(Formatting.RED), true)) +
                 " may only have " + Formatting.DARK_RED + ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.get().vaultsRule()) + Formatting.RED + " vaults.");
         else {
             int rows = getCountFromPerms(ctx.getSource(), "morecommands.vault.rows.", ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.get().vaultRowsRule()));
-            ctx.getSource().getPlayer().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, player) -> new GenericContainerScreenHandler(types.get(rows - 1), syncId, inv,
+            ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, player) -> new GenericContainerScreenHandler(types.get(rows - 1), syncId, inv,
                     Objects.requireNonNull(getVault(vault, owner)), rows), literalText("" + DF + Formatting.BOLD + "Vault " + SF + Formatting.BOLD + vault).build()));
             return 1;
         }

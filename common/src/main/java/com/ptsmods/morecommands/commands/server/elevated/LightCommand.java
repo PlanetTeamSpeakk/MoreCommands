@@ -36,7 +36,7 @@ public class LightCommand extends Command {
         stack.setSubNbt("BlockStateTag", nbt);
 
         ServerCommandSource source = ctx.getSource();
-        source.getPlayer().getInventory().insertStack(stack);
+        source.getPlayerOrThrow().getInventory().insertStack(stack);
         Random random = new Random();
         source.getWorld().playSound(null, source.getPosition().getX(), source.getPosition().getY(), source.getPosition().getZ(),
                 SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f, ((random.nextFloat() - random.nextFloat()) * 0.7f + 1.0f) * 2.0f);

@@ -7,6 +7,6 @@ import net.minecraft.server.command.ServerCommandSource;
 public class PingCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("ping").executes(ctx -> sendMsg(ctx, "Pong! " + ctx.getSource().getPlayer().pingMilliseconds + " ms latency")));
+        dispatcher.register(literalReq("ping").executes(ctx -> sendMsg(ctx, "Pong! " + ctx.getSource().getPlayerOrThrow().pingMilliseconds + " ms latency")));
     }
 }

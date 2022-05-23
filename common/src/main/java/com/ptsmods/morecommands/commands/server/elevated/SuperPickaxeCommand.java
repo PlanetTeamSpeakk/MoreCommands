@@ -12,7 +12,7 @@ public class SuperPickaxeCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.getRoot().addChild(MoreCommands.createAlias("/", dispatcher.register(literalReqOp("superpickaxe").executes(ctx -> {
-            PlayerEntity p = ctx.getSource().getPlayer();
+            PlayerEntity p = ctx.getSource().getPlayerOrThrow();
             p.getDataTracker().set(DataTrackerHelper.SUPERPICKAXE, !p.getDataTracker().get(DataTrackerHelper.SUPERPICKAXE));
             sendMsg(ctx, "Superpickaxe has been " + Util.formatFromBool(p.getDataTracker().get(DataTrackerHelper.SUPERPICKAXE), "enabled", "disabled") + DF + ".");
             return p.getDataTracker().get(DataTrackerHelper.SUPERPICKAXE) ? 2 : 1;

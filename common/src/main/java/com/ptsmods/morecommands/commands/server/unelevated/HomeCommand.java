@@ -50,10 +50,10 @@ public class HomeCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReq("home").executes(ctx -> executeHome(ctx, null)).then(argument("home", StringArgumentType.word()).executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
-        dispatcher.register(literalReq("homes").executes(ctx -> sendHomes(ctx.getSource().getPlayer())));
+        dispatcher.register(literalReq("homes").executes(ctx -> sendHomes(ctx.getSource().getPlayerOrThrow())));
         dispatcher.register(literalReq("sethome").executes(ctx -> executeSetHome(ctx, "home")).then(argument("name", StringArgumentType.word()).executes(ctx -> executeSetHome(ctx, ctx.getArgument("name", String.class)))));
         dispatcher.register(literalReq("delhome").then(argument("home", StringArgumentType.word()).executes(ctx -> {
-            PlayerEntity p = ctx.getSource().getPlayer();
+            PlayerEntity p = ctx.getSource().getPlayerOrThrow();
             Home home = getHome(p, ctx.getArgument("home", String.class));
             if (!homes.containsKey(p.getUuid())) sendHomes(p); // Will send error msg.
             else if (home == null) sendError(ctx, "Could not find a home by that name.");
@@ -69,7 +69,7 @@ public class HomeCommand extends Command {
     }
 
     private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
-        PlayerEntity p = ctx.getSource().getPlayer();
+        PlayerEntity p = ctx.getSource().getPlayerOrThrow();
         int globalMax = p.getEntityWorld().getGameRules().getInt(MoreGameRules.get().maxHomesRule());
         int max = getCountFromPerms(ctx.getSource(), "morecommands.sethome.", globalMax);
         if (max < 0) max = Integer.MAX_VALUE;
@@ -86,7 +86,7 @@ public class HomeCommand extends Command {
     }
 
     private int executeHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
-        PlayerEntity player = ctx.getSource().getPlayer();
+        PlayerEntity player = ctx.getSource().getPlayerOrThrow();
         if (getHomes(player).isEmpty() || name == null && getHomes(player).size() > 1) sendHomes(player);
         else {
             // Get home named 'home' if no home was given or, if that does not exist, get the first set home.

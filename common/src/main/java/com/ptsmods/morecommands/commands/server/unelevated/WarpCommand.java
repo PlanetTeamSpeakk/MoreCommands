@@ -165,9 +165,9 @@ public class WarpCommand extends Command {
             if (MoreCommands.isInteger(name) && Integer.parseInt(name) > 0) return executeList(ctx, Integer.parseInt(name));
             Warp warp = getWarp(ctx.getArgument("name", String.class));
             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-            else if (!warp.mayTeleport(ctx.getSource().getPlayer())) sendError(ctx, "You may not go there, sorry!");
+            else if (!warp.mayTeleport(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You may not go there, sorry!");
             else {
-                warp.teleport(ctx.getSource().getPlayer());
+                warp.teleport(ctx.getSource().getPlayerOrThrow());
                 return 1;
             }
             return 0;
@@ -176,7 +176,7 @@ public class WarpCommand extends Command {
             String name = ctx.getArgument("name", String.class);
             if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
             else {
-                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
+                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
                 sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF + "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF + "/limitwarp " + warp.getName() + DF + "." : ""));
                 return 1;
             }
@@ -185,7 +185,7 @@ public class WarpCommand extends Command {
         dispatcher.register(literalReq("delwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
             String name = ctx.getArgument("name", String.class);
             Warp warp = getWarp(name);
-            UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayer().getUuid() : getServerUuid(ctx.getSource().getServer());
+            UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer());
             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
             else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendError(ctx, "You have no control over that warp.");
             else {
@@ -236,7 +236,7 @@ public class WarpCommand extends Command {
     }
 
     private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {
-        List<String> warps = getWarpNamesFor(ctx.getSource().getPlayer());
+        List<String> warps = getWarpNamesFor(ctx.getSource().getPlayerOrThrow());
         if (warps.isEmpty()) sendError(ctx, "There are no warps set as of right now.");
         else {
             int pages = warps.size() / 15 + 1;

@@ -406,9 +406,9 @@ public enum MoreCommands implements IMoreCommands {
 
 //        if (MoreCommandsArch.isFabricModLoaded("placeholder-api")) {
 //            // Example: %morecommands:reach/1%
-//            PlaceholderAPI.register(new Identifier("morecommands:reach"), ctx -> ctx.getPlayer() == null ? PlaceholderResult.invalid("A player must be passed.") :
+//            PlaceholderAPI.register(new Identifier("morecommands:reach"), ctx -> ctx.getPlayerOrThrow() == null ? PlaceholderResult.invalid("A player must be passed.") :
 //                    PlaceholderResult.value(new DecimalFormat("0" + ("0".equals(ctx.getArgument()) ? "" :
-//                            "." + multiplyString("#", isInteger(ctx.getArgument()) ? Integer.parseInt(ctx.getArgument()) : 2))).format(ReachCommand.getReach(ctx.getPlayer(), false))));
+//                            "." + multiplyString("#", isInteger(ctx.getArgument()) ? Integer.parseInt(ctx.getArgument()) : 2))).format(ReachCommand.getReach(ctx.getPlayerOrThrow(), false))));
 //
 //            // Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
 //            PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);

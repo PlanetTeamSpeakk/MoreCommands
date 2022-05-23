@@ -74,12 +74,12 @@ public class DiscordCommand extends Command {
             } else if (MoreCommands.discordTagNoPerm.contains(player)) sendDiscordTag(ctx, player);
             else {
                 sendMsg(player, literalText("")
-                        .append(Compat.get().builderFromText(ctx.getSource().getPlayer().getDisplayName()))
+                        .append(Compat.get().builderFromText(ctx.getSource().getPlayerOrThrow().getDisplayName()))
                         .append(literalText(" has requested your ", DS))
                         .append(literalText("Discord tag", SS))
                         .append(literalText(". Click ")
                                 .append(literalText("here", SS.withFormatting(Formatting.UNDERLINE)
-                                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayer().getEntityName()))))
+                                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayerOrThrow().getEntityName()))))
                         .append(literalText(" to send it to them.", DS))));
                 sendMsg(ctx, "A request has been sent to the player.");
             }

@@ -22,9 +22,9 @@ public class BarrierCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("barrier")
-                .executes(ctx -> execute(ctx, ctx.getSource().getPlayer(), 1))
+                .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow(), 1))
                 .then(argument("amount", IntegerArgumentType.integer(0))
-                        .executes(ctx -> execute(ctx, ctx.getSource().getPlayer(), ctx.getArgument("count", Integer.class)))
+                        .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow(), ctx.getArgument("count", Integer.class)))
                 .then(argument("player", EntityArgumentType.player())
                         .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
     }

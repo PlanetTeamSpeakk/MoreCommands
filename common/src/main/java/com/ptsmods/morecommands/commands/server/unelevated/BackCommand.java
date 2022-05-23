@@ -38,10 +38,10 @@ public class BackCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
         dispatcher.register(literalReq("back").executes(ctx -> {
-            if (!lastLocations.containsKey(ctx.getSource().getPlayer().getUuid())) sendError(ctx, "No last location has been saved for you.");
+            if (!lastLocations.containsKey(ctx.getSource().getPlayerOrThrow().getUuid())) sendError(ctx, "No last location has been saved for you.");
             else {
-                Location<ServerWorld> loc = lastLocations.get(ctx.getSource().getPlayer().getUuid()).getLeft();
-                ctx.getSource().getPlayer().teleport(loc.getWorld(), loc.getPos().getX(), loc.getPos().getY(), loc.getPos().getZ(), loc.getRot().y, loc.getRot().x);
+                Location<ServerWorld> loc = lastLocations.get(ctx.getSource().getPlayerOrThrow().getUuid()).getLeft();
+                ctx.getSource().getPlayerOrThrow().teleport(loc.getWorld(), loc.getPos().getX(), loc.getPos().getY(), loc.getPos().getZ(), loc.getRot().y, loc.getRot().x);
                 return 1;
             }
             return 0;

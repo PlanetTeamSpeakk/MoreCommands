@@ -23,8 +23,8 @@ public class EnderChestCommand extends Command {
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
-        PlayerEntity player = p == null ? ctx.getSource().getPlayer() : p;
-        ctx.getSource().getPlayer().openHandledScreen(new NamedScreenHandlerFactory() {
+        PlayerEntity player = p == null ? ctx.getSource().getPlayerOrThrow() : p;
+        ctx.getSource().getPlayerOrThrow().openHandledScreen(new NamedScreenHandlerFactory() {
             @Override
             public Text getDisplayName() {
                 return literalText("")

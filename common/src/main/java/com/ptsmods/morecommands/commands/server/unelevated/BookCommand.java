@@ -17,7 +17,7 @@ public class BookCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReq("book").executes(ctx -> {
-            ItemStack stack = ctx.getSource().getPlayer().getMainHandStack();
+            ItemStack stack = ctx.getSource().getPlayerOrThrow().getMainHandStack();
             NbtCompound tag = stack.getNbt();
             if (stack.getItem() == Items.WRITTEN_BOOK) {
                 stack = new ItemStack(Items.WRITABLE_BOOK, stack.getCount());
@@ -29,7 +29,7 @@ public class BookCommand extends Command {
                     tag.put("pages", pages0);
                 }
                 stack.setNbt(tag);
-                ctx.getSource().getPlayer().setStackInHand(Hand.MAIN_HAND, stack);
+                ctx.getSource().getPlayerOrThrow().setStackInHand(Hand.MAIN_HAND, stack);
                 return 1;
             } else sendError(ctx, "You're not holding a written book.");
             return 0;
