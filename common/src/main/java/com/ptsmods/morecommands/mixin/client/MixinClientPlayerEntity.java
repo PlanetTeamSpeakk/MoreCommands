@@ -60,7 +60,7 @@ public abstract class MixinClientPlayerEntity {
 
 		if (MoreCommandsClient.clientCommandDispatcher.getRoot().getChild(reader.getString().split(" ")[0]) != null) {
 			cbi.cancel();
-			if (MoreCommandsClient.isCommandDisabled(message)) {
+			if (MoreCommandsClient.isCommandDisabled(reader.getString())) {
 				ClientCommand.sendError(Formatting.RED + "That client command is disabled on this server.");
 				return;
 			}
