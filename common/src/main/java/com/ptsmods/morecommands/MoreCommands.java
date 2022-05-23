@@ -27,7 +27,6 @@ import com.ptsmods.morecommands.compat.*;
 import com.ptsmods.morecommands.compat.client.ClientCompat16;
 import com.ptsmods.morecommands.compat.client.ClientCompat17;
 import com.ptsmods.morecommands.compat.client.ClientCompat19;
-import com.ptsmods.morecommands.dumps.ASMDump;
 import com.ptsmods.morecommands.miscellaneous.Chair;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
@@ -150,8 +149,8 @@ public enum MoreCommands implements IMoreCommands {
     static {
         try {
             Map<String, byte[]> dumpClasses = new HashMap<>();
-            List<Class<? extends ASMDump>> dumps = ReflectionHelper.getClasses(ASMDump.class, "com.ptsmods.morecommands.dumps");
-            for (Class<? extends ASMDump> dumpClass : dumps) {
+            List<Class<?>> dumps = ReflectionHelper.getClasses(Object.class, "com.ptsmods.morecommands.dumps");
+            for (Class<?> dumpClass : dumps) {
                 try {
                     byte[] dump = (byte[]) dumpClass.getMethod("dump").invoke(null);
                     ClassReader reader = new ClassReader(dump);
@@ -161,6 +160,10 @@ public enum MoreCommands implements IMoreCommands {
                     LOG.error("Could not dump class " + dumpClass.getName() + ".", e);
                 }
             }
+
+            LOG.info("Loading dump classes: " + Command.joinNicely(dumpClasses.keySet().stream()
+                    .map(s -> s.substring(s.lastIndexOf('/') + 1))
+                    .collect(Collectors.toList()), null, null));
 
             Path dumpsJar = MoreCommandsArch.getConfigDirectory().resolve("jars/dumps.jar");
             Files.createDirectories(dumpsJar.getParent());
