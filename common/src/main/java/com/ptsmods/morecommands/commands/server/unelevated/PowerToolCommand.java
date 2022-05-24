@@ -9,8 +9,11 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.callbacks.MouseEvent;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
+import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.gui.PowerToolSelectionHud;
+import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
@@ -26,9 +29,11 @@ import lombok.experimental.ExtensionMethod;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -45,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @ExtensionMethod(ObjectExtensions.class)
@@ -66,6 +72,7 @@ public class PowerToolCommand extends Command {
         KeyMappingRegistry.register(cycleKeyBinding);
 
         AtomicBoolean pressed = new AtomicBoolean();
+        AtomicInteger lastSelected = new AtomicInteger();
         ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
             if (cycleKeyBinding.wasPressed()) {
                 //noinspection StatementWithEmptyBody
@@ -75,6 +82,13 @@ public class PowerToolCommand extends Command {
                     pressed.set(true);
                 }
             } else pressed.set(false);
+
+            PlayerInventory inventory = Objects.requireNonNull(MinecraftClient.getInstance().player).getInventory();
+            if (inventory.selectedSlot != lastSelected.get()) {
+                ItemStack stack = inventory.getStack(inventory.selectedSlot);
+                if (isPowerTool(stack)) displaySelection(stack);
+                lastSelected.set(inventory.selectedSlot);
+            }
         });
 
         ClientGuiEvent.RENDER_HUD.register(PowerToolSelectionHud::render);
@@ -155,7 +169,7 @@ public class PowerToolCommand extends Command {
                                 return 0;
                             }
 
-                            NbtCompound powertool = Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool");
+                            NbtCompound powertool = Objects.requireNonNull(stack.getSubNbt("PowerTool"));
                             NbtList commands = powertool.getList("Commands", NbtElement.STRING_TYPE);
                             int selected = powertool.getByte("Selected");
 
@@ -171,7 +185,7 @@ public class PowerToolCommand extends Command {
         reformPowerTool(stack);
         if (!isPowerTool(stack)) return null;
 
-        NbtCompound powertool = Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool");
+        NbtCompound powertool = Objects.requireNonNull(stack.getSubNbt("PowerTool"));
         int pow = (int) Math.pow(2, button);
 
         return button == -1 || (powertool.getByte("Buttons") & pow) == pow ? powertool.getList("Commands", NbtElement.STRING_TYPE).getString(powertool.getByte("Selected")) : null;
@@ -195,10 +209,9 @@ public class PowerToolCommand extends Command {
     public static String removePowerTool(ItemStack stack, int index) {
         reformPowerTool(stack);
 
-        NbtCompound tag = stack.getNbt();
-        if (tag == null || !tag.contains("PowerTool", NbtElement.COMPOUND_TYPE) || getCommands(stack).size() <= index) return null;
+        NbtCompound powertool = stack.getSubNbt("PowerTool");
+        if (powertool == null || getCommands(stack).size() <= index) return null;
 
-        NbtCompound powertool = tag.getCompound("PowerTool");
         NbtList commands = powertool.getList("Commands", NbtElement.STRING_TYPE);
         NbtString s = (NbtString) commands.remove(index);
         powertool.putByte("Selected", (byte) Math.max(powertool.getByte("Selected"), commands.size() - 1));
@@ -215,7 +228,7 @@ public class PowerToolCommand extends Command {
     public static List<String> getCommands(ItemStack stack) {
         if (!isPowerTool(stack)) return Collections.emptyList();
 
-        return Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool").getList("Commands", NbtElement.STRING_TYPE).stream()
+        return Objects.requireNonNull(stack.getSubNbt("PowerTool")).getList("Commands", NbtElement.STRING_TYPE).stream()
                 .map(NbtElement::asString)
                 .collect(Collectors.toList());
     }
@@ -245,25 +258,50 @@ public class PowerToolCommand extends Command {
         buf.writeByte(index);
 
         NetworkManager.sendToServer(new Identifier("morecommands:powertool_cycle"), buf);
-        PowerToolSelectionHud.currentSelection = new Pair<>(System.currentTimeMillis(), new Pair<>(index + 1, Objects.requireNonNull(player.getStackInHand(hand).getNbt())
-                .getCompound("PowerTool").getList("Commands", NbtElement.STRING_TYPE).getString(index)));
+        displaySelection(player.getStackInHand(hand));
     }
 
     public static int doCycleCommand(PlayerEntity player, Hand hand, int index) {
         ItemStack stack = player.getStackInHand(hand);
         reformPowerTool(stack);
 
-        NbtCompound powertool = Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool");
+        NbtCompound powertool = Objects.requireNonNull(stack.getSubNbt("PowerTool"));
         if (index < 0) index = (powertool.getByte("Selected") + 1) % powertool.getList("Commands", NbtElement.STRING_TYPE).size();
         powertool.putByte("Selected", (byte) index);
 
         return index;
     }
 
+    public static void displaySelection(ItemStack stack) {
+        PowertoolSelectionMode mode = ClientOptions.Tweaks.powertoolSelection.getValue();
+        if (mode == PowertoolSelectionMode.NONE || !isPowerTool(stack)) return;
+
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        int index = Objects.requireNonNull(stack.getSubNbt("PowerTool")).getByte("Selected");
+        String command = Objects.requireNonNull(stack.getSubNbt("PowerTool")).getList("Commands", NbtElement.STRING_TYPE).getString(index);
+        String trimmedCommand = textRenderer.getWidth(command) > PowerToolSelectionHud.MAX_BOX_WIDTH ?
+                PowerToolSelectionHud.trimToLength(command, textRenderer) + "..." : command;
+
+        EmptyTextBuilder text = EmptyTextBuilder.builder()
+                .append(LiteralTextBuilder.builder("Selected (%d): ", DS, index + 1));
+
+        switch (mode) {
+            case HUD:
+                PowerToolSelectionHud.currentSelection = new Pair<>(System.currentTimeMillis(), new Pair<>(index + 1, command));
+                break;
+            case CHAT:
+                ClientCommand.sendMsg(text.append(LiteralTextBuilder.builder(command, SS)));
+                break;
+            case ACTION_BAR:
+                ClientCommand.sendAbMsg(text.append(LiteralTextBuilder.builder(trimmedCommand, SS)));
+                break;
+        }
+    }
+
     private static void reformPowerTool(ItemStack stack) {
         if (!isPowerTool(stack)) return;
 
-        NbtCompound powertool = Objects.requireNonNull(stack.getNbt()).getCompound("PowerTool");
+        NbtCompound powertool = Objects.requireNonNull(stack.getSubNbt("PowerTool"));
         if (powertool.contains("Command", NbtElement.STRING_TYPE)) {
             String command = powertool.getString("Command");
 
@@ -281,5 +319,9 @@ public class PowerToolCommand extends Command {
 
     public static boolean isPowerTool(ItemStack stack) {
         return stack != null && stack.hasNbt() && Objects.requireNonNull(stack.getNbt()).contains("PowerTool", NbtElement.COMPOUND_TYPE);
+    }
+
+    public enum PowertoolSelectionMode {
+        NONE, HUD, ACTION_BAR, CHAT
     }
 }

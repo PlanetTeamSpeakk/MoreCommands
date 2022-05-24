@@ -68,7 +68,7 @@ public class MixinMinecraftClient {
         PostInitEvent.EVENT.invoker().postInit();
     }
 
-    @ModifyVariable(at = @At("STORE"), method = {"startIntegratedServer", "method_29610"}, require = 1, remap = false)
+    @ModifyVariable(at = @At("STORE"), method = {"startIntegratedServer", "method_29610", "doWorldLoad"}, require = 1, remap = false)
     private ClientConnection startIntegratedServer_integratedServerConnectionNew(ClientConnection connection) {
         if (MoreCommands.creatingWorld) MoreCommandsClient.scheduleWorldInitCommands = true;
         MoreCommands.creatingWorld = false;

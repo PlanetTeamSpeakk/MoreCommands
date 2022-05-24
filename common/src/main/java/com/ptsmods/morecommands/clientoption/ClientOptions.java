@@ -8,6 +8,7 @@ import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.clientoptions.DoubleClientOption;
 import com.ptsmods.morecommands.api.clientoptions.EnumClientOption;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
+import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import dev.architectury.platform.Platform;
 
 import java.io.File;
@@ -106,6 +107,9 @@ public class ClientOptions {
                 "Whether you want to automatically opt your friends", "on NameMC in for join notifications.", "(Get a message when they join/leave)");
         public static final DoubleClientOption brightnessMultiplier = new DoubleClientOption(TWEAKS, "Brightness Multiplier", 1d, 0d, 10d,
                 "Multiply the brightness to go above and beyond!", "For best effect, set brightness to max.");
+
+        public static final EnumClientOption<PowerToolCommand.PowertoolSelectionMode> powertoolSelection = new EnumClientOption<>(TWEAKS, "Powertool Selection", PowerToolCommand.PowertoolSelectionMode.class,
+                PowerToolCommand.PowertoolSelectionMode.HUD, "The mode to use to display the currently selected powertool command.");
 
         static void init() {}
     }
