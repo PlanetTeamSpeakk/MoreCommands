@@ -58,18 +58,6 @@ public class MacroCommand extends ClientCommand {
                                         .then(cArgument("msg", StringArgumentType.greedyString())
                                                 .executes(ctx -> executeAdd(ctx, ctx.getArgument("index", Integer.class)))))))
                 .then(cLiteral("remove")
-                        .then(cArgument("macro", StringArgumentType.greedyString())
-                                .executes(ctx -> {
-                                    String macro = ctx.getArgument("macro", String.class);
-                                    if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
-                                    else {
-                                        macros.remove(macro);
-                                        saveData();
-                                        sendMsg("The macro has been removed.");
-                                        return 1;
-                                    }
-                                    return 0;
-                                }))
                         .then(cArgument("macro", StringArgumentType.string())
                                 .then(cArgument("index", IntegerArgumentType.integer(1))
                                         .executes(ctx -> {
@@ -84,7 +72,19 @@ public class MacroCommand extends ClientCommand {
                                                 return macros.get(macro).size() + 1;
                                             }
                                             return 0;
-                                        }))))
+                                        })))
+                        .then(cArgument("macro", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    String macro = ctx.getArgument("macro", String.class);
+                                    if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
+                                    else {
+                                        macros.remove(macro);
+                                        saveData();
+                                        sendMsg("The macro has been removed.");
+                                        return 1;
+                                    }
+                                    return 0;
+                                })))
                 .then(cLiteral("view")
                         .then(cArgument("macro", StringArgumentType.greedyString())
                                 .executes(ctx -> {
