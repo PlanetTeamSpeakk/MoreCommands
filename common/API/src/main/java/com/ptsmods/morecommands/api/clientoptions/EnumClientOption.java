@@ -66,6 +66,7 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
 
     @Override
     public Text createButtonText(String name) {
-        return LiteralTextBuilder.builder(name + " : " + (type == Formatting.class ? getValue() : type == FormattingColour.class ? ((FormattingColour) getValue()).asFormatting() : "") + getValue().name()).build();
+        return LiteralTextBuilder.builder(name + " : " + (type == Formatting.class ? getValue() : type == FormattingColour.class ?
+                ((FormattingColour) getValue()).asFormatting() : "") + getValue().name()).build();
     }
 }
