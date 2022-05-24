@@ -11,22 +11,43 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
 
     String getLiteral();
 
-    void setLiteral(String literal);
+    LiteralTextBuilder setLiteral(String literal);
+
+    default LiteralTextBuilder format(Object... formattings) {
+        setLiteral(String.format(getLiteral(), formattings));
+        return upcast();
+    }
 
     static LiteralTextBuilder builder(@NonNull String literal) {
         return new LiteralTextBuilderImpl(literal);
+    }
+
+    static LiteralTextBuilder builder(@NonNull String literal, Object... formattings) {
+        return builder(literal).format(formattings);
     }
 
     static LiteralTextBuilder builder(@NonNull String literal, Style style) {
         return new LiteralTextBuilderImpl(literal, style);
     }
 
+    static LiteralTextBuilder builder(@NonNull String literal, Style style, Object... formattings) {
+        return builder(literal, style).format(formattings);
+    }
+
     static MutableText literal(String literal) {
         return builder(literal).build();
     }
 
+    static MutableText literal(String literal, Object... formattings) {
+        return builder(literal, formattings).build();
+    }
+
     static MutableText literal(String literal, Style style) {
         return builder(literal, style).build();
+    }
+
+    static MutableText literal(String literal, Style style, Object... formattings) {
+        return builder(literal, style, formattings).build();
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -62,8 +83,9 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
         }
 
         @Override
-        public void setLiteral(@NonNull String literal) {
+        public LiteralTextBuilder setLiteral(@NonNull String literal) {
             this.literal = literal;
+            return upcast();
         }
     }
 }
