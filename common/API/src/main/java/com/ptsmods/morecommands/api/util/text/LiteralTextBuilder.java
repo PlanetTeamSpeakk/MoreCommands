@@ -55,13 +55,14 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
             return this;
         }
 
+        @NonNull
         @Override
         public String getLiteral() {
             return literal;
         }
 
         @Override
-        public void setLiteral(String literal) {
+        public void setLiteral(@NonNull String literal) {
             this.literal = literal;
         }
     }
