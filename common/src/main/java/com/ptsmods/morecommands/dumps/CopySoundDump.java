@@ -1,8 +1,9 @@
 package com.ptsmods.morecommands.dumps;
 
+import com.ptsmods.morecommands.api.Version;
 import org.objectweb.asm.*;
 public class CopySoundDump extends ASMDump implements Opcodes {
-// TODO
+
 public static byte[] dump () throws Exception {
 
 ClassWriter classWriter = new ClassWriter(0);
@@ -32,7 +33,11 @@ methodVisitor.visitTypeInsn(CHECKCAST, map("net/minecraft/class_3414", "net/mine
 methodVisitor.visitMethodInsn(INVOKESTATIC, "java/util/Objects", "requireNonNull", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
 methodVisitor.visitTypeInsn(CHECKCAST, map("net/minecraft/class_3414", "net/minecraft/sound/SoundEvent", "net/minecraft/sounds/SoundEvent"));
 methodVisitor.visitFieldInsn(GETSTATIC, map("net/minecraft/class_3419", "net/minecraft/sound/SoundCategory", "net/minecraft/sounds/SoundSource"), map("field_15250", "MASTER", "MASTER"), map("Lnet/minecraft/class_3419;", "Lnet/minecraft/sound/SoundCategory;", "Lnet/minecraft/sounds/SoundSource;"));
-methodVisitor.visitMethodInsn(INVOKESPECIAL, map("net/minecraft/class_1101", "net/minecraft/client/sound/MovingSoundInstance", "net/minecraft/client/resources/sounds/AbstractTickableSoundInstance"), "<init>", "(" + map("Lnet/minecraft/class_3414;", "Lnet/minecraft/sound/SoundEvent;", "Lnet/minecraft/sounds/SoundEvent;") + map("Lnet/minecraft/class_3419;", "Lnet/minecraft/sound/SoundCategory;", "Lnet/minecraft/sounds/SoundSource;") + ")V", false);
+if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
+    methodVisitor.visitMethodInsn(INVOKESTATIC, map("net/minecraft/class_5819", "net/minecraft/util/math/random/Random", "net/minecraft/util/RandomSource"), map("method_43053", "create", "createNewThreadLocalInstance"), "()L" + map("net/minecraft/class_5819", "net/minecraft/util/math/random/AbstractRandom", "net/minecraft/util/RandomSource") + ";", true);
+    methodVisitor.visitMethodInsn(INVOKESPECIAL, map("net/minecraft/class_1101", "net/minecraft/client/sound/MovingSoundInstance", "net/minecraft/client/resources/sounds/AbstractTickableSoundInstance"), "<init>", "(" + map("Lnet/minecraft/class_3414;", "Lnet/minecraft/sound/SoundEvent;", "Lnet/minecraft/sounds/SoundEvent;") + map("Lnet/minecraft/class_3419;", "Lnet/minecraft/sound/SoundCategory;", "Lnet/minecraft/sounds/SoundSource;") + map("Lnet/minecraft/class_5819;", "Lnet/minecraft/util/math/random/Random;", "Lnet/minecraft/util/RandomSource;") + ")V", false);
+} else
+    methodVisitor.visitMethodInsn(INVOKESPECIAL, map("net/minecraft/class_1101", "net/minecraft/client/sound/MovingSoundInstance", "net/minecraft/client/resources/sounds/AbstractTickableSoundInstance"), "<init>", "(" + map("Lnet/minecraft/class_3414;", "Lnet/minecraft/sound/SoundEvent;", "Lnet/minecraft/sounds/SoundEvent;") + map("Lnet/minecraft/class_3419;", "Lnet/minecraft/sound/SoundCategory;", "Lnet/minecraft/sounds/SoundSource;") + ")V", false);
 Label label1 = new Label();
 methodVisitor.visitLabel(label1);
 methodVisitor.visitLineNumber(16, label1);
