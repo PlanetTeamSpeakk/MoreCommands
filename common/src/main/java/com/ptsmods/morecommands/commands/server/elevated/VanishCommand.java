@@ -5,11 +5,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import com.ptsmods.morecommands.util.DataTrackerHelper;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -48,7 +48,7 @@ public class VanishCommand extends Command {
             return 0;
         }
         for (ServerPlayerEntity player : p) {
-            boolean b = !player.getDataTracker().get(DataTrackerHelper.VANISH);
+            boolean b = !player.getDataTracker().get(IDataTrackerHelper.get().vanish());
             if (b) vanish(player, true);
             else unvanish(player);
             sendMsg(player, "You are " + Util.formatFromBool(b, "now", "no longer") + DF + " vanished.");
@@ -57,8 +57,8 @@ public class VanishCommand extends Command {
     }
 
     public static void vanish(ServerPlayerEntity player, boolean sendmsg) {
-        player.getDataTracker().set(DataTrackerHelper.VANISH, true);
-        player.getDataTracker().set(DataTrackerHelper.VANISH_TOGGLED, true);
+        player.getDataTracker().set(IDataTrackerHelper.get().vanish(), true);
+        player.getDataTracker().set(IDataTrackerHelper.get().vanishToggled(), true);
         Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
         player.getWorld().getChunkManager().unloadEntity(player);
         if (sendmsg && MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
@@ -67,8 +67,8 @@ public class VanishCommand extends Command {
     }
 
     public static void unvanish(ServerPlayerEntity player) {
-        if (player.getDataTracker().get(DataTrackerHelper.VANISH)) {
-            player.getDataTracker().set(DataTrackerHelper.VANISH, false);
+        if (player.getDataTracker().get(IDataTrackerHelper.get().vanish())) {
+            player.getDataTracker().set(IDataTrackerHelper.get().vanish(), false);
             Objects.requireNonNull(player.getServer()).getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
             trackers.remove(player);
             player.getWorld().getChunkManager().loadEntity(player);

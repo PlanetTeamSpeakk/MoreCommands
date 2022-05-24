@@ -4,13 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.arguments.IgnorantStringArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -45,7 +45,7 @@ public class NicknameCommand extends Command {
             sendError(ctx, "The maximum length of a nickname excluding formats is " + ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.get().nicknameLimitRule()) +
                     " characters which is exceeded by the length of the given nickname (" + stripped.length() + ").");
         else {
-            player.getDataTracker().set(DataTrackerHelper.NICKNAME, nickname == null ? Optional.empty() : Optional.of(literalText(nickname).build()));
+            player.getDataTracker().set(IDataTrackerHelper.get().nickname(), nickname == null ? Optional.empty() : Optional.of(literalText(nickname).build()));
             ctx.getSource().getServer().getPlayerManager().sendToAll(Compat.get().newPlayerListS2CPacket(3, player)); // UPDATE_DISPLAY_NAME
             sendMsg(ctx, (self ? "Your" : IMoreCommands.get().textToString(player.getName(), SS, true) + "'s") + (nickname == null ? " nickname has been " + Formatting.RED + "disabled" + DF + "." :
                     " nickname has been set to " + SF + IMoreCommands.get().textToString(MoreCommands.getNickname(player), null, true) + DF + "."));

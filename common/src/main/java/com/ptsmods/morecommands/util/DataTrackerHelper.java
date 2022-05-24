@@ -1,6 +1,8 @@
 package com.ptsmods.morecommands.util;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.Holder;
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.util.tuples.TriConsumer;
 import com.ptsmods.morecommands.util.tuples.TriFunction;
 import net.minecraft.entity.LivingEntity;
@@ -22,29 +24,31 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-public class DataTrackerHelper {
+public enum DataTrackerHelper implements IDataTrackerHelper {
+    INSTANCE;
+
     private static final Map<Class<? extends LivingEntity>, List<DataTrackerEntry<?>>> dataEntries = new HashMap<>();
-    public static final TrackedData<Boolean> MAY_FLY = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "MayFly", NbtCompound::getBoolean, NbtCompound::putBoolean);
-    public static final TrackedData<Boolean> INVULNERABLE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Invulnerable", NbtCompound::getBoolean, NbtCompound::putBoolean);
-    public static final TrackedData<Boolean> SUPERPICKAXE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "SuperPickaxe", NbtCompound::getBoolean, NbtCompound::putBoolean);
-    public static final TrackedData<Boolean> VANISH = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Vanish", NbtCompound::getBoolean, NbtCompound::putBoolean);
-    public static final TrackedData<Boolean> VANISH_TOGGLED = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, null, (BiFunction<NbtCompound, String, Boolean>) null, null);
-    public static final TrackedData<Optional<BlockPos>> CHAIR = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS, Optional.empty(), "Chair",
+    private final TrackedData<Boolean> MAY_FLY = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "MayFly", NbtCompound::getBoolean, NbtCompound::putBoolean);
+    private final TrackedData<Boolean> INVULNERABLE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Invulnerable", NbtCompound::getBoolean, NbtCompound::putBoolean);
+    private final TrackedData<Boolean> SUPERPICKAXE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "SuperPickaxe", NbtCompound::getBoolean, NbtCompound::putBoolean);
+    private final TrackedData<Boolean> VANISH = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Vanish", NbtCompound::getBoolean, NbtCompound::putBoolean);
+    private final TrackedData<Boolean> VANISH_TOGGLED = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, null, (BiFunction<NbtCompound, String, Boolean>) null, null);
+    private final TrackedData<Optional<BlockPos>> CHAIR = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS, Optional.empty(), "Chair",
             (nbt, key) -> Optional.of(new BlockPos(nbt.getIntArray(key)[0], nbt.getIntArray(key)[1], nbt.getIntArray(key)[2])),
             (nbt, key, data) -> data.ifPresent(pos -> nbt.putIntArray(key, new int[] {pos.getX(), pos.getY(), pos.getZ()})));
-    public static final TrackedData<NbtCompound> VAULTS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.NBT_COMPOUND, MoreCommands.wrapTag("Vaults", new NbtList()), "Vaults",
+    private final TrackedData<NbtCompound> VAULTS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.NBT_COMPOUND, MoreCommands.wrapTag("Vaults", new NbtList()), "Vaults",
             (nbt, key) -> MoreCommands.wrapTag(key, nbt.getList(key, 9)), (nbt, key, data) -> nbt.put(key, data.get(key)));
-    public static final TrackedData<Optional<Text>> NICKNAME = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT, Optional.empty(), "Nickname",
+    private final TrackedData<Optional<Text>> NICKNAME = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_TEXT_COMPONENT, Optional.empty(), "Nickname",
             (nbt, key) -> Optional.ofNullable(Text.Serializer.fromJson(nbt.getString(key))),
             (nbt, key, data) -> data.ifPresent(nickname -> nbt.putString(key, Text.Serializer.toJson(nickname))));
-    public static final TrackedData<Optional<UUID>> SPEED_MODIFIER = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID, Optional.of(UUID.randomUUID()), "SpeedModifier", (nbt, key, entity) -> {
+    private final TrackedData<Optional<UUID>> SPEED_MODIFIER = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID, Optional.of(UUID.randomUUID()), "SpeedModifier", (nbt, key, entity) -> {
                 UUID id = nbt.getUuid(key);
                 EntityAttributeInstance movementSpeedInstance = Objects.requireNonNull(entity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED));
                 if (movementSpeedInstance.getModifier(id) == null)
                     movementSpeedInstance.addPersistentModifier(new EntityAttributeModifier(id, "MoreCommands Speed Modifier", 0, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
                 return Optional.of(id);
             }, (nbt, key, data) -> nbt.putUuid(key, data.orElse(UUID.randomUUID())));
-    public static final TrackedData<Boolean> JESUS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Jesus", NbtCompound::getBoolean, NbtCompound::putBoolean);
+    private final TrackedData<Boolean> JESUS = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Jesus", NbtCompound::getBoolean, NbtCompound::putBoolean);
 
     public static <T> TrackedData<T> registerData(Class<? extends LivingEntity> entityClass, TrackedDataHandler<T> dataHandler, T defaultValue, @Nullable String tagKey,
                                                   @Nullable BiFunction<NbtCompound, String, T> reader, @Nullable TriConsumer<NbtCompound, String, T> writer) {
@@ -67,7 +71,59 @@ public class DataTrackerHelper {
                 .collect(Collectors.toList());
     }
 
-    public static void init() {} // Initialise the class
+    public static void init() {
+        Holder.setDataTrackerHelper(INSTANCE);
+    }
+
+    @Override
+    public TrackedData<Boolean> mayFly() {
+        return MAY_FLY;
+    }
+
+    @Override
+    public TrackedData<Boolean> invulnerable() {
+        return INVULNERABLE;
+    }
+
+    @Override
+    public TrackedData<Boolean> superpickaxe() {
+        return SUPERPICKAXE;
+    }
+
+    @Override
+    public TrackedData<Boolean> vanish() {
+        return VANISH;
+    }
+
+    @Override
+    public TrackedData<Boolean> vanishToggled() {
+        return VANISH_TOGGLED;
+    }
+
+    @Override
+    public TrackedData<Optional<BlockPos>> chair() {
+        return CHAIR;
+    }
+
+    @Override
+    public TrackedData<NbtCompound> vaults() {
+        return VAULTS;
+    }
+
+    @Override
+    public TrackedData<Optional<Text>> nickname() {
+        return NICKNAME;
+    }
+
+    @Override
+    public TrackedData<Optional<UUID>> speedModifier() {
+        return SPEED_MODIFIER;
+    }
+
+    @Override
+    public TrackedData<Boolean> jesus() {
+        return JESUS;
+    }
 
     public static class DataTrackerEntry<T> {
         private final TrackedData<T> data;

@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
-import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -36,10 +36,10 @@ public class MixinServerPlayerInteractionManager {
         // Spectators can always fly, they'll fall through the map otherwise.
         MixinPlayerEntityAccessor accessor = (MixinPlayerEntityAccessor) player;
 
-        if (player.getDataTracker().get(DataTrackerHelper.MAY_FLY) || gameMode == GameMode.SPECTATOR) accessor.getAbilities_().allowFlying = true;
+        if (player.getDataTracker().get(IDataTrackerHelper.get().mayFly()) || gameMode == GameMode.SPECTATOR) accessor.getAbilities_().allowFlying = true;
         if (accessor.getAbilities_().allowFlying) accessor.getAbilities_().flying = mc_isFlying;
         else accessor.getAbilities_().flying = false;
-        if (player.getDataTracker().get(DataTrackerHelper.INVULNERABLE)) accessor.getAbilities_().invulnerable = true;
+        if (player.getDataTracker().get(IDataTrackerHelper.get().invulnerable())) accessor.getAbilities_().invulnerable = true;
         player.sendAbilitiesUpdate();
     }
 }

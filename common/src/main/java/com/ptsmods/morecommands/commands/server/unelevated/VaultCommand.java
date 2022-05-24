@@ -6,10 +6,10 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -61,7 +61,7 @@ public class VaultCommand extends Command {
         int maxVaults = player.getEntityWorld().getGameRules().getInt(MoreGameRules.get().vaultsRule());
         if (id > maxVaults) return null;
         int rows = player.getEntityWorld().getGameRules().getInt(MoreGameRules.get().vaultRowsRule());
-        NbtList list = player.getDataTracker().get(DataTrackerHelper.VAULTS).getList("Vaults", 9);
+        NbtList list = player.getDataTracker().get(IDataTrackerHelper.get().vaults()).getList("Vaults", 9);
         if (list.size() < maxVaults)
             for (int i = 0; i < maxVaults - list.size() + 1; i++)
                 list.add(new NbtList());
@@ -75,7 +75,7 @@ public class VaultCommand extends Command {
             for (int i = 0; i < inv.size(); i++)
                 stacks.add(inv.getStack(i).writeNbt(new NbtCompound()));
             list.add(id-1, stacks);
-            player.getDataTracker().set(DataTrackerHelper.VAULTS, MoreCommands.wrapTag("Vaults", list));
+            player.getDataTracker().set(IDataTrackerHelper.get().vaults(), MoreCommands.wrapTag("Vaults", list));
         });
         return inv;
     }

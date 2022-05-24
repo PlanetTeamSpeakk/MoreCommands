@@ -19,7 +19,8 @@
     "plus.MixinServerWorld",
     "min.MixinServerPlayNetworkHandler",
     "min.MixinBlock",
-    "min.MixinServerPlayNetworkHandler"
+    "min.MixinServerPlayNetworkHandler",
+    "min.MixinPlayerManager"
   ],
   "injectors": {
     "defaultRequire": 1

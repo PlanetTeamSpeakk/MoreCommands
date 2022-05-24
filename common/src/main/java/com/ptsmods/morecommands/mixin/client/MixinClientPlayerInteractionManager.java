@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.item.PickaxeItem;
@@ -34,7 +34,7 @@ public class MixinClientPlayerInteractionManager {
 
     @Unique
     private boolean updateAndReturn(CallbackInfoReturnable<Boolean> cbi) {
-        if (gameMode.isCreative() && Objects.requireNonNull(MinecraftClient.getInstance().player).getDataTracker().get(DataTrackerHelper.SUPERPICKAXE) &&
+        if (gameMode.isCreative() && Objects.requireNonNull(MinecraftClient.getInstance().player).getDataTracker().get(IDataTrackerHelper.get().superpickaxe()) &&
                 MinecraftClient.getInstance().player.getMainHandStack().getItem() instanceof PickaxeItem) blockBreakingCooldown = 0;
         return cbi.getReturnValue();
     }

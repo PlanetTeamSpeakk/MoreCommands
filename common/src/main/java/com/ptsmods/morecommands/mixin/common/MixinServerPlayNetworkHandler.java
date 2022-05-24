@@ -25,12 +25,6 @@ public abstract class MixinServerPlayNetworkHandler {
     @Shadow @Final private MinecraftServer server;
     @Shadow public ServerPlayerEntity player;
 
-//    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"), method = "onDisconnected(Lnet/minecraft/text/Text;)V")
-//    public void onDisconnected_broadcastChatMessage(PlayerManager playerManager, Text msg, MessageType type, UUID id) {
-//        if (MoreGameRules.get().checkBooleanWithPerm(Objects.requireNonNull(playerManager.getServer().getWorld(World.OVERWORLD)).getGameRules(), MoreGameRules.get().doJoinMessageRule(), player)
-//                && !player.getDataTracker().get(DataTrackerHelper.VANISH)) Compat.get().broadcast(playerManager, type, msg); // TODO
-//    }
-
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream; map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"), method = "onUpdateSign(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
     public Stream<String> onSignUpdate_map(Stream<String> stream, Function<String, String> func) {
         return stream.map(s -> {

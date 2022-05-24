@@ -1190,7 +1190,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static Text getNickname(PlayerEntity player) {
-        return player.getDataTracker().get(DataTrackerHelper.NICKNAME).orElse(null);
+        return player.getDataTracker().get(IDataTrackerHelper.get().nickname()).orElse(null);
     }
 
 //    public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {

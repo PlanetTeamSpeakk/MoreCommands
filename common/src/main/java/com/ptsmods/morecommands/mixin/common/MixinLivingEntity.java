@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
+import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.entity.LivingEntity;
@@ -19,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinLivingEntity {
 
     @Group(name = "canWalkOnFluid", min = 1, max = 1)
-    @Inject(at = @At("HEAD"), method = "method_26319(Lnet/minecraft/class_3611;)Z", remap = false, cancellable = true)
+    @Inject(at = @At("HEAD"), method = "method_26319(Lnet/minecraft/class_3611;)Z", remap = false, cancellable = true) // TODO
     public void canWalkOnFluid(Fluid fluid, CallbackInfoReturnable<Boolean> cbi) {
         if (canWalkOnFluid()) cbi.setReturnValue(true);
     }
@@ -31,7 +32,7 @@ public abstract class MixinLivingEntity {
     }
 
     private boolean canWalkOnFluid() {
-        return ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(DataTrackerHelper.JESUS);
+        return ReflectionHelper.<LivingEntity>cast(this) instanceof PlayerEntity && ReflectionHelper.<LivingEntity>cast(this).getDataTracker().get(IDataTrackerHelper.get().jesus());
     }
 
     // Data related mixins

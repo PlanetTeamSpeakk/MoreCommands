@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -53,18 +54,15 @@ public class MixinServerPlayerEntity {
         Compat.get().playerSetWorld(thiz, targetWorld);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"}) // It is necessary in this case.
     @Inject(at = @At("RETURN"), method = "copyFrom")
     private void copyFrom(ServerPlayerEntity player, boolean alive, CallbackInfo cbi) {
         DataTracker dataTrackerNew = ReflectionHelper.<ServerPlayerEntity>cast(this).getDataTracker();
         DataTracker dataTrackerOld = player.getDataTracker();
 
-        dataTrackerNew.set(DataTrackerHelper.MAY_FLY, dataTrackerOld.get(DataTrackerHelper.MAY_FLY));
-        dataTrackerNew.set(DataTrackerHelper.INVULNERABLE, dataTrackerOld.get(DataTrackerHelper.INVULNERABLE));
-        dataTrackerNew.set(DataTrackerHelper.SUPERPICKAXE, dataTrackerOld.get(DataTrackerHelper.SUPERPICKAXE));
-        dataTrackerNew.set(DataTrackerHelper.VANISH, dataTrackerOld.get(DataTrackerHelper.VANISH));
-        dataTrackerNew.set(DataTrackerHelper.VAULTS, dataTrackerOld.get(DataTrackerHelper.VAULTS));
-        dataTrackerNew.set(DataTrackerHelper.NICKNAME, dataTrackerOld.get(DataTrackerHelper.NICKNAME));
-        dataTrackerNew.set(DataTrackerHelper.SPEED_MODIFIER, dataTrackerOld.get(DataTrackerHelper.SPEED_MODIFIER));
+        for (DataTrackerHelper.DataTrackerEntry<?> dataEntry : DataTrackerHelper.getDataEntries(ReflectionHelper.<ServerPlayerEntity>cast(this).getClass())) {
+            TrackedData dataRaw = dataEntry.getData();
+            dataTrackerNew.set(dataRaw, dataTrackerOld.get(dataRaw));
+        }
     }
-
 }

@@ -21,10 +21,12 @@ public class Holder {
     private static Compat compat;
     @Getter(onMethod_ = @Deprecated) // Not API, use ClientCompat#get() instead.
     private static ClientCompat clientCompat;
-    @Getter(AccessLevel.PACKAGE)
+    @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated)
     private static MixinAccessWidener mixinAccessWidener;
-    @Getter(onMethod_ = @Deprecated) // Not API, use IRainbow#get() instead.
+    @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IRainbow#get() instead.
     private static IRainbow rainbow;
+    @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IDataTrackerHelper#get() instead.
+    private static IDataTrackerHelper dataTrackerHelper;
 
     public static void setMoreCommands(IMoreCommands moreCommands) {
         if (Holder.moreCommands != null) throw new IllegalStateException("MoreCommands instance already set.");
@@ -54,6 +56,11 @@ public class Holder {
     public static void setRainbow(IRainbow rainbow) {
         if (Holder.rainbow != null) throw new IllegalStateException("Rainbow instance already set.");
         Holder.rainbow = rainbow;
+    }
+
+    public static void setDataTrackerHelper(IDataTrackerHelper dataTrackerHelper) {
+        if (Holder.dataTrackerHelper != null) throw new IllegalStateException("DataTrackerHelper instance already set.");
+        Holder.dataTrackerHelper = dataTrackerHelper;
     }
 
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
