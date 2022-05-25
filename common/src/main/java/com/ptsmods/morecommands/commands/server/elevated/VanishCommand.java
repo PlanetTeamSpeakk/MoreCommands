@@ -38,6 +38,7 @@ public class VanishCommand extends Command {
         dispatcher.getRoot().addChild(MoreCommands.createAlias("v", dispatcher.register(literalReqOp("vanish")
                 .executes(ctx -> execute(ctx, null))
                 .then(argument("players", EntityArgumentType.players())
+                        .requires(hasPermissionOrOp("morecommands.vanish.others"))
                         .executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
     }
 
