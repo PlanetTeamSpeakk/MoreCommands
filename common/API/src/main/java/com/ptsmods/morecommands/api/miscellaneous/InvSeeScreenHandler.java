@@ -14,4 +14,9 @@ public class InvSeeScreenHandler extends GenericContainerScreenHandler {
         super(ScreenHandlerType.GENERIC_9X4, syncId, playerInventory, inventory, 4);
         this.target = target;
     }
+
+    @Override
+    public boolean canUse(PlayerEntity player) {
+        return true;
+    }
 }
