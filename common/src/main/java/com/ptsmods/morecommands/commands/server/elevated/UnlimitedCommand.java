@@ -13,19 +13,20 @@ import java.util.Objects;
 public class UnlimitedCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("unlimited").executes(ctx -> {
-            ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
-            if (stack != null && stack.getItem() != Items.AIR) {
-                NbtCompound tag = stack.getOrCreateNbt();
-                if (tag.contains("Unlimited")) tag.remove("Unlimited");
-                else tag.putByte("Unlimited", (byte) 1);
-                stack.setCount(1);
-                sendMsg(ctx, "Your itemstack will now " + Util.formatFromBool(tag.contains("Unlimited"), "never run out", "run out again") + DF + ".");
-                return tag.contains("Unlimited") ? 2 : 1;
-            }
-            sendMsg(ctx, "You must be holding an item.");
-            return 0;
-        }));
+        dispatcher.register(literalReqOp("unlimited")
+                .executes(ctx -> {
+                    ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
+                    if (stack != null && stack.getItem() != Items.AIR) {
+                        NbtCompound tag = stack.getOrCreateNbt();
+                        if (tag.contains("Unlimited")) tag.remove("Unlimited");
+                        else tag.putByte("Unlimited", (byte) 1);
+                        stack.setCount(1);
+                        sendMsg(ctx, "Your itemstack will now " + Util.formatFromBool(tag.contains("Unlimited"), "never run out", "run out again") + DF + ".");
+                        return tag.contains("Unlimited") ? 2 : 1;
+                    }
+                    sendMsg(ctx, "You must be holding an item.");
+                    return 0;
+                }));
     }
 
     public static boolean isUnlimited(ItemStack stack) {

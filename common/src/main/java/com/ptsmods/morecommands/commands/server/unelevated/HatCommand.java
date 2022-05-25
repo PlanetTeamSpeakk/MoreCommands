@@ -12,12 +12,13 @@ import net.minecraft.server.command.ServerCommandSource;
 public class HatCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("hat").executes(ctx -> {
-            PlayerEntity player = ctx.getSource().getPlayerOrThrow();
-            ItemStack stack = player.getEquippedStack(EquipmentSlot.HEAD);
-            Compat.get().getInventory(player).armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());
-            if (PlayerInventory.isValidHotbarIndex(Compat.get().getInventory(player).selectedSlot)) Compat.get().getInventory(player).main.set(Compat.get().getInventory(player).selectedSlot, stack);
-            return 1;
-        }));
+        dispatcher.register(literalReq("hat")
+                .executes(ctx -> {
+                    PlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                    ItemStack stack = player.getEquippedStack(EquipmentSlot.HEAD);
+                    Compat.get().getInventory(player).armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());
+                    if (PlayerInventory.isValidHotbarIndex(Compat.get().getInventory(player).selectedSlot)) Compat.get().getInventory(player).main.set(Compat.get().getInventory(player).selectedSlot, stack);
+                    return 1;
+                }));
     }
 }

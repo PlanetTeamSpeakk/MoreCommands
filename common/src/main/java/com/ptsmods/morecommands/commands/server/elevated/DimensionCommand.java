@@ -15,8 +15,10 @@ public class DimensionCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("dimension")
-                .then(argument("dimension", DimensionArgumentType.dimension()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), ctx.getSource().getEntityOrThrow()))
-                        .then(argument("player", EntityArgumentType.player()).executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), EntityArgumentType.getPlayer(ctx, "player"))))));
+                .then(argument("dimension", DimensionArgumentType.dimension())
+                        .executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), ctx.getSource().getEntityOrThrow()))
+                        .then(argument("player", EntityArgumentType.player())
+                                .executes(ctx -> execute(ctx, DimensionArgumentType.getDimensionArgument(ctx, "dimension"), EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, ServerWorld world, Entity entity) {

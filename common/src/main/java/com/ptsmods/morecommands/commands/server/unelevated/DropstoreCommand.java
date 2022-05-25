@@ -24,10 +24,14 @@ import java.util.Objects;
 public class DropstoreCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("dropstore").executes(ctx -> execute(ctx, null, true))
-                .then(argument("pos", BlockPosArgumentType.blockPos()).executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), true))
-                .then(argument("clear", BoolArgumentType.bool()).executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), ctx.getArgument("clear", Boolean.class)))))
-        .then(argument("clear", BoolArgumentType.bool()).executes(ctx -> execute(ctx, null, ctx.getArgument("clear", Boolean.class)))));
+        dispatcher.register(literalReq("dropstore")
+                .executes(ctx -> execute(ctx, null, true))
+                .then(argument("pos", BlockPosArgumentType.blockPos())
+                        .executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), true))
+                .then(argument("clear", BoolArgumentType.bool())
+                        .executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), ctx.getArgument("clear", Boolean.class)))))
+        .then(argument("clear", BoolArgumentType.bool())
+                .executes(ctx -> execute(ctx, null, ctx.getArgument("clear", Boolean.class)))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, BlockPos pos, boolean clear) throws CommandSyntaxException {

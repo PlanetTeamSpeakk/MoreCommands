@@ -10,6 +10,7 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import com.ptsmods.morecommands.api.util.compat.Compat;
+import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
@@ -270,6 +271,14 @@ public abstract class Command {
 
     protected static String coloured(Object o, Formatting colour) {
         return "" + colour + o + DF;
+    }
+
+    protected static EmptyTextBuilder emptyText() {
+        return EmptyTextBuilder.builder();
+    }
+
+    protected static EmptyTextBuilder emptyText(Style style) {
+        return EmptyTextBuilder.builder(style);
     }
 
     protected static LiteralTextBuilder literalText(String text) {

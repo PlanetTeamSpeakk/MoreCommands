@@ -18,7 +18,8 @@ import java.nio.file.Path;
 public class SysInfoCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("sysinfo").executes(SysInfoCommand::sendSysInfo));
+        dispatcher.register(literalReqOp("sysinfo")
+                .executes(SysInfoCommand::sendSysInfo));
     }
 
     @Override
@@ -67,6 +68,7 @@ public class SysInfoCommand extends Command {
                 "\n    Cores: " + SF + UsageMonitorer.getProcessorCount() +
                 "\n    Used by process: " + SF + UsageMonitorer.getProcessCpuLoad()*100 +
                 "\n    Used by system: " + SF + UsageMonitorer.getSystemCpuLoad()*100;
+
         if (ctx != null) sendMsg(ctx, output);
         else ClientCommand.sendMsg(output);
         return 1;

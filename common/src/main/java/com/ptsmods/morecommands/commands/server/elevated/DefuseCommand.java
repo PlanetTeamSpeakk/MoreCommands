@@ -20,8 +20,10 @@ public class DefuseCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("defuse")
-                .then(argument("range", IntegerArgumentType.integer(1)).executes(ctx -> defuse(ctx, getTntEntities(ctx.getSource(), ctx.getArgument("range", Integer.class)))))
-                .then(literalReqOp("all").executes(ctx -> defuse(ctx, getTntEntities(ctx.getSource(), -1)))));
+                .then(argument("range", IntegerArgumentType.integer(1))
+                        .executes(ctx -> defuse(ctx, getTntEntities(ctx.getSource(), ctx.getArgument("range", Integer.class)))))
+                .then(literalReqOp("all")
+                        .executes(ctx -> defuse(ctx, getTntEntities(ctx.getSource(), -1)))));
     }
 
     @SuppressWarnings("unchecked")

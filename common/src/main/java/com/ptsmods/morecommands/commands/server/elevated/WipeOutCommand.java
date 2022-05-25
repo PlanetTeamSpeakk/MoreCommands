@@ -20,14 +20,22 @@ import java.util.stream.StreamSupport;
 public class WipeOutCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literalReqOp("wipeout").executes(ctx -> execute(ctx, e -> !(e instanceof PlayerEntity)))
-                .then(literal("all").executes(ctx -> execute(ctx, e -> e != ctx.getSource().getEntity())))
-                .then(literal("monsters").executes(ctx -> execute(ctx, e -> e instanceof Monster)))
-                .then(literal("mobs").executes(ctx -> execute(ctx, e -> e instanceof MobEntity)))
-                .then(literal("animals").executes(ctx -> execute(ctx, e -> e instanceof AnimalEntity)))
-                .then(literal("living").executes(ctx -> execute(ctx, e -> e instanceof LivingEntity && !(e instanceof PlayerEntity))))
-                .then(literal("player").executes(ctx -> execute(ctx, e -> e instanceof PlayerEntity)))
-                .then(literal("other").executes(ctx -> execute(ctx, e -> !(e instanceof LivingEntity)))
+        dispatcher.register(literalReqOp("wipeout")
+                .executes(ctx -> execute(ctx, e -> !(e instanceof PlayerEntity)))
+                .then(literal("all")
+                        .executes(ctx -> execute(ctx, e -> e != ctx.getSource().getEntity())))
+                .then(literal("monsters")
+                        .executes(ctx -> execute(ctx, e -> e instanceof Monster)))
+                .then(literal("mobs")
+                        .executes(ctx -> execute(ctx, e -> e instanceof MobEntity)))
+                .then(literal("animals")
+                        .executes(ctx -> execute(ctx, e -> e instanceof AnimalEntity)))
+                .then(literal("living")
+                        .executes(ctx -> execute(ctx, e -> e instanceof LivingEntity && !(e instanceof PlayerEntity))))
+                .then(literal("player")
+                        .executes(ctx -> execute(ctx, e -> e instanceof PlayerEntity)))
+                .then(literal("other")
+                        .executes(ctx -> execute(ctx, e -> !(e instanceof LivingEntity)))
         ));
     }
 

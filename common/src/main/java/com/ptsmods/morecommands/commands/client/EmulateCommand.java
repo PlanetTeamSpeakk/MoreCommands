@@ -90,32 +90,35 @@ public class EmulateCommand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<ClientCommandSource> emulate = cLiteral("emulate");
         for (Type type : Type.values()) {
-            emulate.then(cLiteral(type.name().toLowerCase()).then(cLiteral("clear").executes(ctx -> {
-                int size = tasks.size();
-                synchronized (lock) {
-                    tasks.removeIf(task -> {
-                        boolean b = task.type == type;
-                        if (b) task.onRemove();
-                        return b;
-                    });
-                }
-                int delta = size - tasks.size();
-                sendMsg("Removed " + SF + delta + DF + " task" + (delta == 1 ? "" : "s") + ".");
-                return delta;
-            })).then(cLiteral("add")
-                    .then(cLiteral("interval")
-                            .then(cArgument("interval", IntegerArgumentType.integer(50))
-                                    .executes(ctx -> executeTasksAddInterval(type, ctx, 0, -1))
+            emulate.then(cLiteral(type.name().toLowerCase())
+                    .then(cLiteral("clear")
+                            .executes(ctx -> {
+                                int size = tasks.size();
+                                synchronized (lock) {
+                                    tasks.removeIf(task -> {
+                                        boolean b = task.type == type;
+                                        if (b) task.onRemove();
+                                        return b;
+                                    });
+                                }
+                                int delta = size - tasks.size();
+                                sendMsg("Removed " + SF + delta + DF + " task" + (delta == 1 ? "" : "s") + ".");
+                                return delta;
+                            }))
+                    .then(cLiteral("add")
+                            .then(cLiteral("interval")
+                                    .then(cArgument("interval", IntegerArgumentType.integer(50))
+                                            .executes(ctx -> executeTasksAddInterval(type, ctx, 0, -1))
+                                            .then(cArgument(type.argName, type.argSupplier.get())
+                                                    .executes(ctx -> executeTasksAddInterval(type, ctx, ctx.getArgument(type.argName, Integer.class), -1))
+                                                    .then(cArgument("count", IntegerArgumentType.integer(-1))
+                                                            .executes(ctx -> executeTasksAddInterval(type, ctx, type.getter.apply(ctx), ctx.getArgument("count", Integer.class)))))))
+                            .then(cLiteral("hold")
+                                    .executes(ctx -> executeTasksAddHold(type, 0, -1))
                                     .then(cArgument(type.argName, type.argSupplier.get())
-                                            .executes(ctx -> executeTasksAddInterval(type, ctx, ctx.getArgument(type.argName, Integer.class), -1))
-                                            .then(cArgument("count", IntegerArgumentType.integer(-1))
-                                                    .executes(ctx -> executeTasksAddInterval(type, ctx, type.getter.apply(ctx), ctx.getArgument("count", Integer.class)))))))
-                    .then(cLiteral("hold")
-                            .executes(ctx -> executeTasksAddHold(type, 0, -1))
-                            .then(cArgument(type.argName, type.argSupplier.get())
-                                    .executes(ctx -> executeTasksAddHold(type, ctx.getArgument(type.argName, Integer.class), -1))
-                                    .then(cArgument("holdtime", IntegerArgumentType.integer(20))
-                                            .executes(ctx -> executeTasksAddHold(type, type.getter.apply(ctx), ctx.getArgument("holdtime", Integer.class)))))))
+                                            .executes(ctx -> executeTasksAddHold(type, ctx.getArgument(type.argName, Integer.class), -1))
+                                            .then(cArgument("holdtime", IntegerArgumentType.integer(20))
+                                                    .executes(ctx -> executeTasksAddHold(type, type.getter.apply(ctx), ctx.getArgument("holdtime", Integer.class)))))))
                     .then(cLiteral("remove")
                             .then(cArgument("id", IntegerArgumentType.integer(0))
                                     .executes(ctx -> {
@@ -138,17 +141,20 @@ public class EmulateCommand extends ClientCommand {
                                     sendMsg("There are no tasks of type " + SF + type.name().toLowerCase() + DF + " yet.");
                                 else {
                                     sendMsg("The following tasks are currently running:");
-                                    typeTasks.forEach(task -> sendMsg("  " + task.id + ": " + task.toString()));
+                                    typeTasks.forEach(task -> sendMsg("  " + task.id + ": " + task));
                                 }
                                 return typeTasks.size();
                             })));
         }
-        dispatcher.register(emulate.then(cLiteral("clear").executes(ctx -> {
-            tasks.forEach(EmulateTask::onRemove);
-            tasks.clear();
-            sendMsg("All tasks have been cleared.");
-            return 1;
-        })));
+
+        dispatcher.register(emulate
+                .then(cLiteral("clear")
+                        .executes(ctx -> {
+                            tasks.forEach(EmulateTask::onRemove);
+                            tasks.clear();
+                            sendMsg("All tasks have been cleared.");
+                            return 1;
+                        })));
     }
 
     private int executeTasksAddInterval(Type type, CommandContext<ClientCommandSource> ctx, int button, int count) {

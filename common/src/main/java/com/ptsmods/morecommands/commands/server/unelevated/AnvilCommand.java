@@ -12,14 +12,17 @@ import net.minecraft.server.network.ServerPlayerEntity;
 public class AnvilCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("anvil").executes(ctx -> {
-            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-            ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new AnvilScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
-                public boolean canUse(PlayerEntity player) {
-                    return true;
-                }
-            }, translatableText("container.repair").build()));
-            return 1;
-        }));
+        dispatcher.register(literalReq("anvil")
+                .executes(ctx -> {
+                    ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                    ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) ->
+                            new AnvilScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
+                                public boolean canUse(PlayerEntity player) {
+                                    return true;
+                                }
+                            },
+                            translatableText("container.repair").build()));
+                    return 1;
+                }));
     }
 }

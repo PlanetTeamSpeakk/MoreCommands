@@ -31,56 +31,62 @@ import java.util.List;
 import java.util.Objects;
 
 public class MapPicCommand extends ClientCommand {
-
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     private BlockPos c1 = null, c2 = null;
 
     @Override
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        dispatcher.register(cLiteral("mappic").executes(ctx -> {
-            ItemStack lookingAt = getMapLookingAt();
-            if (getPlayer().getMainHandStack().getItem() == Items.FILLED_MAP || lookingAt != null) {
-                MapState state = getMapState(lookingAt == null ? getPlayer().getMainHandStack() : lookingAt);
-                if (state == null) sendMsg(Formatting.RED + "Could not find a mapstate for the map you're holding or looking at, has it been downloaded yet?");
-                else {
-                    try {
-                        writeImage(getImage(state, 0));
-                    } catch (IOException e) {
-                        log.catching(e);
-                        sendMsg(Formatting.RED + "The image could not be saved.");
-                        return 0;
-                    }
-                    sendMsg("The image has been saved.");
-                    return 1;
-                }
-            } else sendMsg(Formatting.RED + "You must be holding a filled map or looking at an itemframe containing one.");
-            return 0;
-        }).then(cLiteral("stitch").executes(ctx -> {
-            if (c1 == null || c2 == null) sendMsg(Formatting.RED + "Not all corners have been set yet, please set them with /mappic stitch c1 and /mappic stitch c2.");
-            else if (!is2d(c1, c2)) sendMsg(Formatting.RED + "The selected region is not 2D. Both corners must be on the same X, Y or Z value.");
-            else {
-                List<Pair<MapState, Integer>> states = getMapsIn(c1, c2);
-                int[] deltas = getDeltas(c1, c2);
-                int width = Math.abs(deltas[0] == 0 ? deltas[2] : deltas[0]) + 1;
-                int height = states.size() / width;
-                BufferedImage[][] images = new BufferedImage[height][width];
-                for (int y = 0; y < height; y++)
-                    for (int x = 0; x < width; x++) {
-                        Pair<MapState, Integer> pair = states.get(deltas[2] == 0 ? x * height + y : y * width + x);
-                        images[y][x] = getImage(pair.getLeft(), pair.getRight());
-                    }
-                try {
-                    writeImage(stitch(images));
-                } catch (IOException e) {
-                    log.catching(e);
-                    sendMsg(Formatting.RED + "The image could not be saved.");
+        dispatcher.register(cLiteral("mappic")
+                .executes(ctx -> {
+                    ItemStack lookingAt = getMapLookingAt();
+                    if (getPlayer().getMainHandStack().getItem() == Items.FILLED_MAP || lookingAt != null) {
+                        MapState state = getMapState(lookingAt == null ? getPlayer().getMainHandStack() : lookingAt);
+                        if (state == null) sendMsg(Formatting.RED + "Could not find a mapstate for the map you're holding or looking at, has it been downloaded yet?");
+                        else {
+                            try {
+                                writeImage(getImage(state, 0));
+                            } catch (IOException e) {
+                                log.catching(e);
+                                sendMsg(Formatting.RED + "The image could not be saved.");
+                                return 0;
+                            }
+                            sendMsg("The image has been saved.");
+                            return 1;
+                        }
+                    } else sendMsg(Formatting.RED + "You must be holding a filled map or looking at an itemframe containing one.");
                     return 0;
-                }
-                sendMsg("The image has been saved.");
-                return 1;
-            }
-            return 0;
-        }).then(cLiteral("c1").executes(ctx -> executeCorner(0))).then(cLiteral("c2").executes(ctx -> executeCorner(1)))));
+                })
+                .then(cLiteral("stitch")
+                        .executes(ctx -> {
+                            if (c1 == null || c2 == null) sendMsg(Formatting.RED + "Not all corners have been set yet, please set them with /mappic stitch c1 and /mappic stitch c2.");
+                            else if (!is2d(c1, c2)) sendMsg(Formatting.RED + "The selected region is not 2D. Both corners must be on the same X, Y or Z value.");
+                            else {
+                                List<Pair<MapState, Integer>> states = getMapsIn(c1, c2);
+                                int[] deltas = getDeltas(c1, c2);
+                                int width = Math.abs(deltas[0] == 0 ? deltas[2] : deltas[0]) + 1;
+                                int height = states.size() / width;
+                                BufferedImage[][] images = new BufferedImage[height][width];
+                                for (int y = 0; y < height; y++)
+                                    for (int x = 0; x < width; x++) {
+                                        Pair<MapState, Integer> pair = states.get(deltas[2] == 0 ? x * height + y : y * width + x);
+                                        images[y][x] = getImage(pair.getLeft(), pair.getRight());
+                                    }
+                                try {
+                                    writeImage(stitch(images));
+                                } catch (IOException e) {
+                                    log.catching(e);
+                                    sendMsg(Formatting.RED + "The image could not be saved.");
+                                    return 0;
+                                }
+                                sendMsg("The image has been saved.");
+                                return 1;
+                            }
+                            return 0;
+                        })
+                        .then(cLiteral("c1")
+                                .executes(ctx -> executeCorner(0)))
+                        .then(cLiteral("c2")
+                                .executes(ctx -> executeCorner(1)))));
     }
 
     private int executeCorner(int corner) {

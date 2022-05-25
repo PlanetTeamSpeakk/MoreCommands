@@ -8,10 +8,12 @@ import net.minecraft.server.command.ServerCommandSource;
 public class TopCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("top").executes(ctx -> {
-            ctx.getSource().getEntityOrThrow().teleport(ctx.getSource().getPosition().x, MoreCommands.getY(ctx.getSource().getWorld(), (int) ctx.getSource().getPosition().x, (int) ctx.getSource().getPosition().z), ctx.getSource().getPosition().z);
-            sendMsg(ctx, "You have been teleported through the roof.");
-            return 1;
-        }));
+        dispatcher.register(literalReq("top")
+                .executes(ctx -> {
+                    ctx.getSource().getEntityOrThrow().teleport(ctx.getSource().getPosition().x, MoreCommands.getY(ctx.getSource().getWorld(),
+                            (int) ctx.getSource().getPosition().x, (int) ctx.getSource().getPosition().z), ctx.getSource().getPosition().z);
+                    sendMsg(ctx, "You have been teleported through the roof.");
+                    return 1;
+                }));
     }
 }

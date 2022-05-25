@@ -36,22 +36,26 @@ public class LockLookCommand extends ClientCommand {
                 }
             }
         });
-        dispatcher.register(cLiteral("locklook").executes(ctx -> {
-            HitResult hit = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160, false, true);
-            if (hit instanceof EntityHitResult && target != ((EntityHitResult) hit).getEntity()) {
-                target = ((EntityHitResult) hit).getEntity();
-                sendMsg("Your eyes have now been locked onto " + IMoreCommands.get().textToString(target.getDisplayName(), SS, true) + DF + ".");
-                return 1;
-            } else if (target == null) sendMsg(Formatting.RED + "You're not looking at an entity.");
-            else {
-                target = null;
-                sendMsg("Your eyes are now unlocked.");
-            }
-            return 0;
-        }).then(cLiteral("smooth").executes(ctx -> {
-            sendMsg("Looking will " + Util.formatFromBool(smooth = !smooth, Formatting.GREEN + "now", Formatting.RED + "no longer") + DF + " be done smoothly.");
-            return smooth ? 2 : 1;
-        })));
+
+        dispatcher.register(cLiteral("locklook")
+                .executes(ctx -> {
+                    HitResult hit = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160, false, true);
+                    if (hit instanceof EntityHitResult && target != ((EntityHitResult) hit).getEntity()) {
+                        target = ((EntityHitResult) hit).getEntity();
+                        sendMsg("Your eyes have now been locked onto " + IMoreCommands.get().textToString(target.getDisplayName(), SS, true) + DF + ".");
+                        return 1;
+                    } else if (target == null) sendMsg(Formatting.RED + "You're not looking at an entity.");
+                    else {
+                        target = null;
+                        sendMsg("Your eyes are now unlocked.");
+                    }
+                    return 0;
+                })
+                .then(cLiteral("smooth")
+                        .executes(ctx -> {
+                            sendMsg("Looking will " + Util.formatFromBool(smooth = !smooth, Formatting.GREEN + "now", Formatting.RED + "no longer") + DF + " be done smoothly.");
+                            return smooth ? 2 : 1;
+                        })));
     }
 
 

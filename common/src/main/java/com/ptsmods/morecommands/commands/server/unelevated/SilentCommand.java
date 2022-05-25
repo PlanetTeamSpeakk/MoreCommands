@@ -7,6 +7,7 @@ import net.minecraft.server.command.ServerCommandSource;
 public class SilentCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literal("silent").redirect(dispatcher.getRoot(), ctx -> ctx.getSource().withSilent()));
+        dispatcher.register(literal("silent")
+                .redirect(dispatcher.getRoot(), ctx -> ctx.getSource().withSilent()));
     }
 }

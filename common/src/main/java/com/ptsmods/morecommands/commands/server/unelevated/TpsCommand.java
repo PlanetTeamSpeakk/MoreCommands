@@ -12,24 +12,24 @@ import net.minecraft.util.Formatting;
 public class TpsCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        if (!MoreCommandsArch.isFabricModLoaded("spark")) { // Spark Profiler is a great mod and we will not be overriding their command.
-            TickStatistics tickStatistics = new TickStatistics();
-            dispatcher.register(literalReq("tps").executes(ctx -> {
-                sendMsg(ctx, "TPS from last 5s, 10s, 1m, 5m, 15m:");
-                sendMsg(ctx, String.join(DF + ", ", formatTps(tickStatistics.tps5Sec()), formatTps(tickStatistics.tps10Sec()), formatTps(tickStatistics.tps1Min()),
-                        formatTps(tickStatistics.tps5Min()), formatTps(tickStatistics.tps15Min())));
-                sendMsg(ctx, "Tick durations (min/med/95%ile/max ms) from last 10s, 1m:");
-                sendMsg(ctx, formatTickDuration(tickStatistics.duration10Sec()) + DF + "; " + formatTickDuration(tickStatistics.duration1Min()));
-                sendMsg(ctx, literalText("")
-                        .append(literalText("Also have a look at ", DS))
-                        .append(literalText("Spark ")
-                                .formatted(Formatting.DARK_GRAY, Formatting.UNDERLINE))
-                        .append(literalText("\u26A1")
-                                .formatted(Formatting.YELLOW, Formatting.UNDERLINE, Formatting.BOLD))
-                        .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://spark.lucko.me"))));
-                return 1;
-            }));
-        }
+        if (MoreCommandsArch.isFabricModLoaded("spark")) return; // Spark Profiler is a great mod and we will not be overriding their command.
+
+        TickStatistics tickStatistics = new TickStatistics();
+        dispatcher.register(literalReq("tps").executes(ctx -> {
+            sendMsg(ctx, "TPS from last 5s, 10s, 1m, 5m, 15m:");
+            sendMsg(ctx, String.join(DF + ", ", formatTps(tickStatistics.tps5Sec()), formatTps(tickStatistics.tps10Sec()), formatTps(tickStatistics.tps1Min()),
+                    formatTps(tickStatistics.tps5Min()), formatTps(tickStatistics.tps15Min())));
+            sendMsg(ctx, "Tick durations (min/med/95%ile/max ms) from last 10s, 1m:");
+            sendMsg(ctx, formatTickDuration(tickStatistics.duration10Sec()) + DF + "; " + formatTickDuration(tickStatistics.duration1Min()));
+            sendMsg(ctx, literalText("")
+                    .append(literalText("Also have a look at ", DS))
+                    .append(literalText("Spark ")
+                            .formatted(Formatting.DARK_GRAY, Formatting.UNDERLINE))
+                    .append(literalText("\u26A1")
+                            .formatted(Formatting.YELLOW, Formatting.UNDERLINE, Formatting.BOLD))
+                    .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://spark.lucko.me"))));
+            return 1;
+        }));
     }
 
     private String formatTps(double tps) {

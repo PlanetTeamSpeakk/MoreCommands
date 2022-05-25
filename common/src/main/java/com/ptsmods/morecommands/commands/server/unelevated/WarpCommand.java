@@ -160,74 +160,95 @@ public class WarpCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("warp").executes(ctx -> executeList(ctx, 1)).then(argument("page", IntegerArgumentType.integer(1)).executes(ctx -> executeList(ctx, ctx.getArgument("page", Integer.class)))).then(argument("name", StringArgumentType.word()).executes(ctx -> {
-            String name = ctx.getArgument("name", String.class);
-            if (MoreCommands.isInteger(name) && Integer.parseInt(name) > 0) return executeList(ctx, Integer.parseInt(name));
-            Warp warp = getWarp(ctx.getArgument("name", String.class));
-            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-            else if (!warp.mayTeleport(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You may not go there, sorry!");
-            else {
-                warp.teleport(ctx.getSource().getPlayerOrThrow());
-                return 1;
-            }
-            return 0;
-        })));
-        dispatcher.register(literalReq("setwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
-            String name = ctx.getArgument("name", String.class);
-            if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
-            else {
-                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
-                sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF + "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF + "/limitwarp " + warp.getName() + DF + "." : ""));
-                return 1;
-            }
-            return 0;
-        })));
-        dispatcher.register(literalReq("delwarp").then(argument("name", StringArgumentType.word()).executes(ctx -> {
-            String name = ctx.getArgument("name", String.class);
-            Warp warp = getWarp(name);
-            UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer());
-            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-            else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendError(ctx, "You have no control over that warp.");
-            else {
-                warp.delete();
-                sendMsg(ctx, "The warp has been deleted.");
-                return 1;
-            }
-            return 0;
-        })));
-        dispatcher.register(literalReq("limitwarp").requires(hasPermissionOrOp("morecommands.limitwarp")).then(argument("name", StringArgumentType.word()).executes(ctx -> {
-            Warp warp = getWarp(ctx.getArgument("name", String.class));
-            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-            else {
-                warp.setLimited(!warp.isLimited());
-                sendMsg(ctx, "The given warp is now " + Util.formatFromBool(warp.isLimited(), Formatting.GREEN + "limited", Formatting.RED + "unlimited") + DF + ".");
-                return 1;
-            }
-            return 0;
-        })));
+        dispatcher.register(literalReq("warp")
+                .executes(ctx -> executeList(ctx, 1))
+                .then(argument("page", IntegerArgumentType.integer(1))
+                        .executes(ctx -> executeList(ctx, ctx.getArgument("page", Integer.class))))
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> {
+                            String name = ctx.getArgument("name", String.class);
+                            if (MoreCommands.isInteger(name) && Integer.parseInt(name) > 0) return executeList(ctx, Integer.parseInt(name));
+                            Warp warp = getWarp(ctx.getArgument("name", String.class));
+                            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+                            else if (!warp.mayTeleport(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You may not go there, sorry!");
+                            else {
+                                warp.teleport(ctx.getSource().getPlayerOrThrow());
+                                return 1;
+                            }
+                            return 0;
+                        })));
+
+        dispatcher.register(literalReq("setwarp")
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> {
+                            String name = ctx.getArgument("name", String.class);
+                            if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
+                            else {
+                                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() :
+                                        getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
+                                sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF +
+                                        "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF +
+                                        "/limitwarp " + warp.getName() + DF + "." : ""));
+                                return 1;
+                            }
+                            return 0;
+                        })));
+
+        dispatcher.register(literalReq("delwarp")
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> {
+                            String name = ctx.getArgument("name", String.class);
+                            Warp warp = getWarp(name);
+                            UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer());
+                            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+                            else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendError(ctx, "You have no control over that warp.");
+                            else {
+                                warp.delete();
+                                sendMsg(ctx, "The warp has been deleted.");
+                                return 1;
+                            }
+                            return 0;
+                        })));
+
+        dispatcher.register(literalReq("limitwarp")
+                .requires(hasPermissionOrOp("morecommands.limitwarp"))
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> {
+                            Warp warp = getWarp(ctx.getArgument("name", String.class));
+                            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+                            else {
+                                warp.setLimited(!warp.isLimited());
+                                sendMsg(ctx, "The given warp is now " + Util.formatFromBool(warp.isLimited(), Formatting.GREEN + "limited", Formatting.RED + "unlimited") + DF + ".");
+                                return 1;
+                            }
+                            return 0;
+                        })));
+
         SimpleDateFormat format = new SimpleDateFormat("d MMMM yyyy HH:mm:ss");
-        dispatcher.register(literalReq("warpinfo").then(argument("name", StringArgumentType.word()).executes(ctx -> {
-            Warp warp = getWarp(ctx.getArgument("name", String.class));
-            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-            else {
-                StringBuilder header = new StringBuilder();
-                for (int i = 0; i < 35; i++)
-                    if (i == 17)
-                        header.append(DF).append("WARPINFO FOR ").append(SF).append(warp.getName());
-                    else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
-                sendMsg(ctx, header.toString());
-                sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()) == null ?
-                        warp.getOwner() : IMoreCommands.get().textToString(ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
-                sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
-                sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
-                sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());
-                sendMsg(ctx, "World: " + SF + warp.getWorld().getRegistryKey().getValue().toString());
-                sendMsg(ctx, "Limited: " + Util.formatFromBool(warp.isLimited(), "true", "false"));
-                sendMsg(ctx, "Used: " + SF + warp.getCounter() + " times");
-                return 1;
-            }
-            return 0;
-        })));
+        dispatcher.register(literalReq("warpinfo")
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> {
+                            Warp warp = getWarp(ctx.getArgument("name", String.class));
+                            if (warp == null) sendError(ctx, "A warp by that name could not be found.");
+                            else {
+                                StringBuilder header = new StringBuilder();
+                                for (int i = 0; i < 35; i++)
+                                    if (i == 17)
+                                        header.append(DF).append("WARPINFO FOR ").append(SF).append(warp.getName());
+                                    else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
+                                sendMsg(ctx, header.toString());
+                                sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()) == null ?
+                                        warp.getOwner() : IMoreCommands.get().textToString(ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
+                                sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
+                                sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
+                                sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());
+                                sendMsg(ctx, "World: " + SF + warp.getWorld().getRegistryKey().getValue().toString());
+                                sendMsg(ctx, "Limited: " + Util.formatFromBool(warp.isLimited(), "true", "false"));
+                                sendMsg(ctx, "Used: " + SF + warp.getCounter() + " times");
+                                return 1;
+                            }
+                            return 0;
+                        })));
     }
 
     @Override

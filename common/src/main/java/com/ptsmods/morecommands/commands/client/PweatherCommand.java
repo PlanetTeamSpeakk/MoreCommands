@@ -9,7 +9,6 @@ import net.minecraft.client.world.ClientWorld;
 import java.util.function.Consumer;
 
 public class PweatherCommand extends ClientCommand {
-
     public static boolean isRaining = false;
     public static float rainGradient = 0f;
     public static float thunderGradient = 0f;
@@ -19,18 +18,19 @@ public class PweatherCommand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<ClientCommandSource> cmd = cLiteral("pweather");
         for (WeatherType type : WeatherType.values()) {
-            cmd.then(cLiteral(type.name().toLowerCase()).executes(ctx -> {
-                if (type != WeatherType.OFF) {
-                    rainGradient = getWorld().getRainGradient(1f);
-                    thunderGradient = getWorld().getThunderGradient(1f);
-                    isRaining = getWorld().getLevelProperties().isRaining();
-                }
-                pweather = type;
-                pweather.consumer.accept(getWorld());
-                sendMsg(type.msg);
-                if (pweather != WeatherType.OFF) sendMsg("To sync your personal weather with the server again, use " + SF + "/pweather off" + DF + ".");
-                return 1;
-            }));
+            cmd.then(cLiteral(type.name().toLowerCase())
+                    .executes(ctx -> {
+                        if (type != WeatherType.OFF) {
+                            rainGradient = getWorld().getRainGradient(1f);
+                            thunderGradient = getWorld().getThunderGradient(1f);
+                            isRaining = getWorld().getLevelProperties().isRaining();
+                        }
+                        pweather = type;
+                        pweather.consumer.accept(getWorld());
+                        sendMsg(type.msg);
+                        if (pweather != WeatherType.OFF) sendMsg("To sync your personal weather with the server again, use " + SF + "/pweather off" + DF + ".");
+                        return 1;
+                    }));
         }
         dispatcher.register(cmd);
     }

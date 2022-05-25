@@ -9,6 +9,8 @@ public class DifficultyLiteralCommand extends Command {
     @SuppressWarnings("unchecked")
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().getChild("difficulty").getChildren().forEach(cmd -> dispatcher.register((LiteralArgumentBuilder<ServerCommandSource>) cmd.createBuilder().requires(hasPermissionOrOp("morecommands." + cmd.getName()))));
+        dispatcher.getRoot().getChild("difficulty").getChildren().forEach(cmd ->
+                dispatcher.register((LiteralArgumentBuilder<ServerCommandSource>) cmd.createBuilder()
+                        .requires(hasPermissionOrOp("morecommands." + cmd.getName()))));
     }
 }

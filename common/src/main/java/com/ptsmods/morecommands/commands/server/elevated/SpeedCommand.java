@@ -29,8 +29,17 @@ public class SpeedCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> builder = literalReqOp("speed");
         for (SpeedType type : SpeedType.values())
-            builder.then(literal(type.name().toLowerCase()).executes(ctx -> getSpeed(ctx, type, null)).then(argument("target", EntityArgumentType.player()).executes(ctx -> getSpeed(ctx, type, EntityArgumentType.getPlayer(ctx, "target")))).then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null)).then(argument("targets", EntityArgumentType.players()).executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
-        dispatcher.register(builder.then(argument("speed", FloatArgumentType.floatArg(0)).executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrThrow()), ctx.getArgument("speed", Float.class), null))));
+            builder.then(literal(type.name().toLowerCase())
+                    .executes(ctx -> getSpeed(ctx, type, null))
+                    .then(argument("target", EntityArgumentType.player())
+                            .executes(ctx -> getSpeed(ctx, type, EntityArgumentType.getPlayer(ctx, "target"))))
+                    .then(argument("speed", FloatArgumentType.floatArg(0))
+                            .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null))
+                            .then(argument("targets", EntityArgumentType.players())
+                                    .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
+        dispatcher.register(builder
+                .then(argument("speed", FloatArgumentType.floatArg(0))
+                        .executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrThrow()), ctx.getArgument("speed", Float.class), null))));
     }
 
     private SpeedType determineSpeedType(ServerPlayerEntity player) {

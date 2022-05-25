@@ -19,8 +19,11 @@ import java.util.Objects;
 public class SpawnCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        dispatcher.register(literalReq("spawn").executes(ctx -> execute(ctx, null))
-                .then(argument("player", EntityArgumentType.player()).requires(hasPermissionOrOp("morecommands.spawn.others")).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))));
+        dispatcher.register(literalReq("spawn")
+                .executes(ctx -> execute(ctx, null))
+                .then(argument("player", EntityArgumentType.player())
+                        .requires(hasPermissionOrOp("morecommands.spawn.others"))
+                        .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) throws CommandSyntaxException {

@@ -60,33 +60,35 @@ public class DisableCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("disable").then(argument("cmd", StringArgumentType.greedyString()).executes(ctx -> {
-            try {
-                String cmd = ctx.getArgument("cmd", String.class);
-                ParseResults<ServerCommandSource> results = dispatcher.parse(cmd, ctx.getSource().getServer().getCommandSource());
-                if (results.getContext().getNodes().isEmpty()) sendError(ctx, "That command could not be found.");
-                else {
-                    List<CommandNode<ServerCommandSource>> nodes = new ArrayList<>();
-                    results.getContext().getNodes().forEach(node -> nodes.add(node.getNode()));
-                    sendMsg(ctx, "The command has been " + Util.formatFromBool(!disable(nodes, true), "enabled", "disabled") + ".");
-                    return 1;
-                }
-                return 0;
-            } finally {
-                if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrThrow().getUuid())) {
-                    sendMsg(ctx, literalText("", Style.EMPTY.withFormatting(Formatting.RED))
-                            .append(literalText("This command is deprecated, you should consider using "))
-                            .append(literalText("").withStyle(style -> style
-                                            .withFormatting(Formatting.UNDERLINE, Formatting.BOLD)
-                                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/"))
-                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, literalText("Click to download").build())))
-                                    .append(literalText("Luck", Style.EMPTY.withFormatting(Formatting.AQUA)))
-                                    .append(literalText("Perms", Style.EMPTY.withFormatting(Formatting.DARK_AQUA))))
-                            .append(literalText(" instead.")));
-                    remindedLP.add(ctx.getSource().getEntityOrThrow().getUuid());
-                }
-            }
-        })));
+        dispatcher.register(literalReqOp("disable")
+                .then(argument("cmd", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            try {
+                                String cmd = ctx.getArgument("cmd", String.class);
+                                ParseResults<ServerCommandSource> results = dispatcher.parse(cmd, ctx.getSource().getServer().getCommandSource());
+                                if (results.getContext().getNodes().isEmpty()) sendError(ctx, "That command could not be found.");
+                                else {
+                                    List<CommandNode<ServerCommandSource>> nodes = new ArrayList<>();
+                                    results.getContext().getNodes().forEach(node -> nodes.add(node.getNode()));
+                                    sendMsg(ctx, "The command has been " + Util.formatFromBool(!disable(nodes, true), "enabled", "disabled") + ".");
+                                    return 1;
+                                }
+                                return 0;
+                            } finally {
+                                if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrThrow().getUuid())) {
+                                    sendMsg(ctx, literalText("", Style.EMPTY.withFormatting(Formatting.RED))
+                                            .append(literalText("This command is deprecated, you should consider using "))
+                                            .append(emptyText(Style.EMPTY
+                                                            .withFormatting(Formatting.UNDERLINE, Formatting.BOLD)
+                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/"))
+                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, literalText("Click to download").build())))
+                                                    .append(literalText("Luck", Style.EMPTY.withFormatting(Formatting.AQUA)))
+                                                    .append(literalText("Perms", Style.EMPTY.withFormatting(Formatting.DARK_AQUA))))
+                                            .append(literalText(" instead.")));
+                                    remindedLP.add(ctx.getSource().getEntityOrThrow().getUuid());
+                                }
+                            }
+                        })));
     }
 
     @Override

@@ -12,14 +12,16 @@ import net.minecraft.server.network.ServerPlayerEntity;
 public class CraftCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("craft").executes(ctx -> {
-            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-            ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) -> new CraftingScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
-                public boolean canUse(PlayerEntity player) {
-                    return true;
-                }
-            }, translatableText("container.crafting").build()));
-            return 1;
-        }));
+        dispatcher.register(literalReq("craft")
+                .executes(ctx -> {
+                    ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                    ctx.getSource().getPlayerOrThrow().openHandledScreen(new SimpleNamedScreenHandlerFactory((i, playerInventory, playerEntity) ->
+                            new CraftingScreenHandler(i, playerInventory, ScreenHandlerContext.create(player.getWorld(), player.getBlockPos())) {
+                                public boolean canUse(PlayerEntity player) {
+                                    return true;
+                                }
+                            }, translatableText("container.crafting").build()));
+                    return 1;
+                }));
     }
 }

@@ -26,7 +26,11 @@ import java.util.UUID;
 public class SkullCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("skull").then(argument("player", StringArgumentType.word()).executes(ctx -> execute(ctx, 1)).then(argument("amount", IntegerArgumentType.integer(1)).executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
+        dispatcher.register(literalReq("skull")
+                .then(argument("player", StringArgumentType.word())
+                        .executes(ctx -> execute(ctx, 1))
+                        .then(argument("amount", IntegerArgumentType.integer(1))
+                                .executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {

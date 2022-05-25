@@ -13,16 +13,17 @@ import java.util.Objects;
 public class JumpCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("jump").executes(ctx -> {
-            Entity entity = ctx.getSource().getEntityOrThrow();
-            Vec3d velocity = entity.getVelocity();
+        dispatcher.register(literalReqOp("jump")
+                .executes(ctx -> {
+                    Entity entity = ctx.getSource().getEntityOrThrow();
+                    Vec3d velocity = entity.getVelocity();
 
-            MoreCommands.teleport(entity, ctx.getSource().getWorld(),
-                    MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160d, true, true).getPos(),
-                    ((MixinEntityAccessor) Objects.requireNonNull(ctx.getSource().getEntity())).getYaw_(), ((MixinEntityAccessor) ctx.getSource().getEntity()).getPitch_());
+                    MoreCommands.teleport(entity, ctx.getSource().getWorld(),
+                            MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160d, true, true).getPos(),
+                            ((MixinEntityAccessor) Objects.requireNonNull(ctx.getSource().getEntity())).getYaw_(), ((MixinEntityAccessor) ctx.getSource().getEntity()).getPitch_());
 
-            entity.setVelocity(velocity);
-            return 1;
-        }));
+                    entity.setVelocity(velocity);
+                    return 1;
+                }));
     }
 }

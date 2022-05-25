@@ -34,7 +34,6 @@ import java.util.function.Function;
 // An unbelievable amount of code was copied from DataCommand and associated classes.
 // Please don't sue me.
 public class CdataCommand extends ClientCommand {
-
     private static final SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.get.multiple").build());
     private static final DynamicCommandExceptionType GET_UNKNOWN_EXCEPTION = new DynamicCommandExceptionType((object) -> translatableText("commands.data.get.unknown", object).build());
     private static final DynamicCommandExceptionType GET_INVALID_EXCEPTION = new DynamicCommandExceptionType((object) -> translatableText("commands.data.get.invalid", object).build());
@@ -45,7 +44,12 @@ public class CdataCommand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<ClientCommandSource> lab = cLiteral("cdata");
         for (ClientObjectType target : TARGET_OBJECT_TYPES)
-            target.addArgumentsToBuilder(lab, (argumentBuilder) -> argumentBuilder.executes(ctx -> executeGet(target.getObject(ctx))).then(cArgument("path", NbtPathArgumentType.nbtPath()).executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class))).then(cArgument("scale", DoubleArgumentType.doubleArg()).executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class), DoubleArgumentType.getDouble(ctx, "scale"))))));
+            target.addArgumentsToBuilder(lab, (argumentBuilder) -> argumentBuilder
+                    .executes(ctx -> executeGet(target.getObject(ctx)))
+                    .then(cArgument("path", NbtPathArgumentType.nbtPath())
+                            .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class)))
+                            .then(cArgument("scale", DoubleArgumentType.doubleArg())
+                                    .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class), DoubleArgumentType.getDouble(ctx, "scale"))))));
         dispatcher.register(lab);
     }
 

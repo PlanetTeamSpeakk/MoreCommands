@@ -19,14 +19,19 @@ import java.util.Objects;
 public class CannonCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("cannon").executes(ctx -> fire(ctx.getSource(), 4, 1.5F, 80))
-        .then(argument("power", FloatArgumentType.floatArg(0F)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), 1.5F, 80))
-        .then(argument("motionMultiplier", FloatArgumentType.floatArg(0F)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), 80))
-        .then(argument("fuse", IntegerArgumentType.integer(0)).executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), ctx.getArgument("fuse", Integer.class)))))));
+        dispatcher.register(literalReqOp("cannon")
+                .executes(ctx -> fire(ctx.getSource(), 4, 1.5F, 80))
+                .then(argument("power", FloatArgumentType.floatArg(0F))
+                        .executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), 1.5F, 80))
+                        .then(argument("motionMultiplier", FloatArgumentType.floatArg(0F))
+                                .executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), 80))
+                                .then(argument("fuse", IntegerArgumentType.integer(0))
+                                        .executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), ctx.getArgument("fuse", Integer.class)))))));
     }
 
     private int fire(ServerCommandSource source, float power, float motionMultiplier, int fuse) throws CommandSyntaxException {
-        return fire(source.getWorld(), source.getEntityOrThrow().getPos().add(0, Objects.requireNonNull(source.getEntity()).getEyeHeight(source.getEntity().getPose()), 0), source.getEntity().getRotationVec(1F), power, motionMultiplier, fuse);
+        return fire(source.getWorld(), source.getEntityOrThrow().getPos().add(0, Objects.requireNonNull(source.getEntity()).getEyeHeight(source.getEntity().getPose()), 0),
+                source.getEntity().getRotationVec(1F), power, motionMultiplier, fuse);
     }
 
     private int fire(World world, Vec3d pos, Vec3d rotation, float power, float motionMultiplier, int fuse) {

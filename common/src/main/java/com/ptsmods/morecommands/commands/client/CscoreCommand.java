@@ -14,24 +14,30 @@ import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CscoreCommand extends ClientCommand {
 
     @Override
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         dispatcher.register(cLiteral("cscore")
-        .then(cLiteral("teams").executes(ctx -> {
-            sendMsg(ctx.getSource().getTeamNames().isEmpty() ? "There are currently no teams." : "The current teams are " + joinNicely(ctx.getSource().getTeamNames()) + ".");
-            return ctx.getSource().getTeamNames().size();
-        })).then(cLiteral("team").then(cArgument("team", StringArgumentType.word()).executes(ctx -> sendTeamDetails(getTeam(ctx), false))
-                .then(cArgument("showMembers", BoolArgumentType.bool()).executes(ctx -> sendTeamDetails(getTeam(ctx), ctx.getArgument("showMembers", boolean.class))))))
-        .then(cLiteral("objectives").executes(ctx -> {
-            List<String> strings = new ArrayList<>();
-            Scoreboard board = getScoreboard();
-            board.getObjectiveNames().forEach(obj -> strings.add(obj + ": " + board.getObjective(obj).getCriterion().getName()));
-            sendMsg(strings.isEmpty() ? "There are currently no objectives." : "The current objectives and their criteria are " + joinNicely(strings) + ".");
-            return strings.size();
-        })));
+                .then(cLiteral("teams")
+                        .executes(ctx -> {
+                            sendMsg(ctx.getSource().getTeamNames().isEmpty() ? "There are currently no teams." : "The current teams are " + joinNicely(ctx.getSource().getTeamNames()) + ".");
+                            return ctx.getSource().getTeamNames().size();
+                        }))
+                .then(cLiteral("team")
+                        .then(cArgument("team", StringArgumentType.word())
+                                .executes(ctx -> sendTeamDetails(getTeam(ctx), false))
+                .then(cArgument("showMembers", BoolArgumentType.bool())
+                        .executes(ctx -> sendTeamDetails(getTeam(ctx), ctx.getArgument("showMembers", boolean.class))))))
+                .then(cLiteral("objectives").executes(ctx -> {
+                    List<String> strings = new ArrayList<>();
+                    Scoreboard board = getScoreboard();
+                    board.getObjectiveNames().forEach(obj -> strings.add(obj + ": " + board.getObjective(obj).getCriterion().getName()));
+                    sendMsg(strings.isEmpty() ? "There are currently no objectives." : "The current objectives and their criteria are " + joinNicely(strings) + ".");
+                    return strings.size();
+                })));
     }
 
     private int sendTeamDetails(Team team, boolean showMembers) {
@@ -52,7 +58,7 @@ public class CscoreCommand extends ClientCommand {
     }
 
     private Scoreboard getScoreboard() {
-        return MinecraftClient.getInstance().world.getScoreboard();
+        return Objects.requireNonNull(MinecraftClient.getInstance().world).getScoreboard();
     }
 
     private Team getTeam(CommandContext<ClientCommandSource> ctx) {

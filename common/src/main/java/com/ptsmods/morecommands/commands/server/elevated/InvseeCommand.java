@@ -16,19 +16,21 @@ import net.minecraft.text.Text;
 public class InvseeCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReqOp("invsee").then(argument("player", EntityArgumentType.player()).executes(ctx -> {
-            PlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
-            if (p == ctx.getSource().getPlayerOrThrow()) sendMsg(ctx, "You can just press E, you know?");
-            else openInventory(ctx.getSource().getPlayerOrThrow(), p);
-            return 1;
-        })));
+        dispatcher.register(literalReqOp("invsee")
+                .then(argument("player", EntityArgumentType.player())
+                        .executes(ctx -> {
+                            PlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
+                            if (p == ctx.getSource().getPlayerOrThrow()) sendMsg(ctx, "You can just press E, you know?");
+                            else openInventory(ctx.getSource().getPlayerOrThrow(), p);
+                            return 1;
+                        })));
     }
 
     public static void openInventory(PlayerEntity player, PlayerEntity target) {
         player.openHandledScreen(new NamedScreenHandlerFactory() {
             @Override
             public Text getDisplayName() {
-                return literalText("")
+                return emptyText()
                         .append(Compat.get().builderFromText(target.getDisplayName()))
                         .append(literalText("'" + (IMoreCommands.get().textToString(target.getDisplayName(), null, false).endsWith("s") ? "" : "s") + " inventory"))
                         .build();

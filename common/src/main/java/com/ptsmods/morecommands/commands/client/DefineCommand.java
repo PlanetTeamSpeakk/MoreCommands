@@ -21,35 +21,39 @@ public class DefineCommand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<ClientCommandSource> cmd = cLiteral("define");
         for (String lang : languages) {
-            cmd.then(cLiteral(lang).then(cArgument("query", StringArgumentType.word()).executes(ctx -> {
-                MoreCommands.execute(() -> {
-                    List<Map<String, Object>> data;
-                    try {
-                        data = MoreCommands.gson.fromJson(MoreCommands.getHTML("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + ctx.getArgument("query", String.class)), new TypeToken<List<Map<String, Object>>>(){}.getType());
-                    } catch (Exception e) {
-                        if (!e.getClass().getSimpleName().toLowerCase().contains("json")) log.catching(e);
-                        sendMsg(Formatting.RED + "No results were found for the given query.");
-                        return;
-                    }
-                    for (Map<String, Object> map : data) {
-                        List<Map<String, String>> phonetics = (List<Map<String, String>>) map.get("phonetics");
-                        sendMsg(map.get("word").toString() + (phonetics.size() == 0 || phonetics.get(0).size() == 0 ? "" : " " + SF + "(" + phonetics.get(0).get("text") + ")"));
-                        List<Map<String, Object>> meanings = (List<Map<String, Object>>) map.get("meanings");
-                        for (Map<String, Object> meaning : meanings) {
-                            sendMsg("  " + MoreCommands.pascalCase(meaning.get("partOfSpeech").toString(), true));
-                            List<Map<String, String>> definitions = (List<Map<String, String>>) meaning.get("definitions");
-                            for (int i = 0; i < definitions.size(); i++) {
-                                Map<String, String> definition = definitions.get(i);
-                                sendMsg("    " + definition.get("definition"));
-                                if (definition.containsKey("example") && definition.get("example") != null)
-                                    sendMsg("    " + SF + Formatting.ITALIC + definition.get("example"));
-                                if (i != definitions.size() - 1) sendMsg("\u00A0");
-                            }
-                        }
-                    }
-                });
-                return 1;
-            })));
+            cmd.then(cLiteral(lang)
+                    .then(cArgument("query", StringArgumentType.word())
+                            .executes(ctx -> {
+                                MoreCommands.execute(() -> {
+                                    List<Map<String, Object>> data;
+                                    try {
+                                        data = MoreCommands.gson.fromJson(MoreCommands.getHTML("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + ctx.getArgument("query", String.class)),
+                                                new TypeToken<List<Map<String, Object>>>(){}.getType());
+                                    } catch (Exception e) {
+                                        if (!e.getClass().getSimpleName().toLowerCase().contains("json")) log.catching(e);
+                                        sendMsg(Formatting.RED + "No results were found for the given query.");
+                                        return;
+                                    }
+
+                                    for (Map<String, Object> map : data) {
+                                        List<Map<String, String>> phonetics = (List<Map<String, String>>) map.get("phonetics");
+                                        sendMsg(map.get("word").toString() + (phonetics.size() == 0 || phonetics.get(0).size() == 0 ? "" : " " + SF + "(" + phonetics.get(0).get("text") + ")"));
+                                        List<Map<String, Object>> meanings = (List<Map<String, Object>>) map.get("meanings");
+                                        for (Map<String, Object> meaning : meanings) {
+                                            sendMsg("  " + MoreCommands.pascalCase(meaning.get("partOfSpeech").toString(), true));
+                                            List<Map<String, String>> definitions = (List<Map<String, String>>) meaning.get("definitions");
+                                            for (int i = 0; i < definitions.size(); i++) {
+                                                Map<String, String> definition = definitions.get(i);
+                                                sendMsg("    " + definition.get("definition"));
+                                                if (definition.containsKey("example") && definition.get("example") != null)
+                                                    sendMsg("    " + SF + Formatting.ITALIC + definition.get("example"));
+                                                if (i != definitions.size() - 1) sendMsg("\u00A0");
+                                            }
+                                        }
+                                    }
+                                });
+                                return 1;
+                            })));
         }
         dispatcher.register(cmd);
     }

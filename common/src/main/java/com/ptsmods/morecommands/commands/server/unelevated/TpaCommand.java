@@ -32,10 +32,19 @@ public class TpaCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("tpa").then(argument("player", EntityArgumentType.player()).executes(ctx -> executeTpa(ctx, false))));
-        dispatcher.register(literalReq("tpahere").then(argument("player", EntityArgumentType.player()).executes(ctx -> executeTpa(ctx, true))));
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("tpyes", dispatcher.register(literalReq("tpaccept").executes(ctx -> executeResp(ctx, true)))));
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("tpno", dispatcher.register(literalReq("tpdeny").executes(ctx -> executeResp(ctx, false)))));
+        dispatcher.register(literalReq("tpa")
+                .then(argument("player", EntityArgumentType.player())
+                        .executes(ctx -> executeTpa(ctx, false))));
+
+        dispatcher.register(literalReq("tpahere")
+                .then(argument("player", EntityArgumentType.player())
+                        .executes(ctx -> executeTpa(ctx, true))));
+
+        dispatcher.getRoot().addChild(MoreCommands.createAlias("tpyes", dispatcher.register(literalReq("tpaccept")
+                .executes(ctx -> executeResp(ctx, true)))));
+
+        dispatcher.getRoot().addChild(MoreCommands.createAlias("tpno", dispatcher.register(literalReq("tpdeny")
+                .executes(ctx -> executeResp(ctx, false)))));
     }
 
     private int executeResp(CommandContext<ServerCommandSource> ctx, boolean accept) throws CommandSyntaxException {

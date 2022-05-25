@@ -49,23 +49,35 @@ public class HomeCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(literalReq("home").executes(ctx -> executeHome(ctx, null)).then(argument("home", StringArgumentType.word()).executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
-        dispatcher.register(literalReq("homes").executes(ctx -> sendHomes(ctx.getSource().getPlayerOrThrow())));
-        dispatcher.register(literalReq("sethome").executes(ctx -> executeSetHome(ctx, "home")).then(argument("name", StringArgumentType.word()).executes(ctx -> executeSetHome(ctx, ctx.getArgument("name", String.class)))));
-        dispatcher.register(literalReq("delhome").then(argument("home", StringArgumentType.word()).executes(ctx -> {
-            PlayerEntity p = ctx.getSource().getPlayerOrThrow();
-            Home home = getHome(p, ctx.getArgument("home", String.class));
-            if (!homes.containsKey(p.getUuid())) sendHomes(p); // Will send error msg.
-            else if (home == null) sendError(ctx, "Could not find a home by that name.");
-            else {
-                getHomes(p).remove(home);
-                if (getHomes(p).isEmpty()) homes.remove(p.getUuid());
-                saveData();
-                sendMsg(ctx, "Your home " + SF + home.name + DF + " was removed.");
-                return 1;
-            }
-            return 0;
-        })));
+        dispatcher.register(literalReq("home")
+                .executes(ctx -> executeHome(ctx, null))
+                .then(argument("home", StringArgumentType.word())
+                        .executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
+
+        dispatcher.register(literalReq("homes")
+                .executes(ctx -> sendHomes(ctx.getSource().getPlayerOrThrow())));
+
+        dispatcher.register(literalReq("sethome")
+                .executes(ctx -> executeSetHome(ctx, "home"))
+                .then(argument("name", StringArgumentType.word())
+                        .executes(ctx -> executeSetHome(ctx, ctx.getArgument("name", String.class)))));
+
+        dispatcher.register(literalReq("delhome")
+                .then(argument("home", StringArgumentType.word())
+                        .executes(ctx -> {
+                            PlayerEntity p = ctx.getSource().getPlayerOrThrow();
+                            Home home = getHome(p, ctx.getArgument("home", String.class));
+                            if (!homes.containsKey(p.getUuid())) sendHomes(p); // Will send error msg.
+                            else if (home == null) sendError(ctx, "Could not find a home by that name.");
+                            else {
+                                getHomes(p).remove(home);
+                                if (getHomes(p).isEmpty()) homes.remove(p.getUuid());
+                                saveData();
+                                sendMsg(ctx, "Your home " + SF + home.name + DF + " was removed.");
+                                return 1;
+                            }
+                            return 0;
+                        })));
     }
 
     private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
@@ -103,7 +115,7 @@ public class HomeCommand extends Command {
     }
 
     private int tpHome(PlayerEntity player, Home home) {
-        MoreCommands.teleport(player, player.getServer().getWorld(RegistryKey.of(Registry.WORLD_KEY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
+        MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getWorld(RegistryKey.of(Registry.WORLD_KEY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
         RegistryKey<World> registryKey = player.getEntityWorld().getRegistryKey();
         if (World.NETHER.equals(registryKey)) return 9;
         else if (World.OVERWORLD.equals(registryKey)) return 10;
@@ -169,7 +181,5 @@ public class HomeCommand extends Command {
             Map<String, Object> v = data.getValue();
             return new Home(data.getKey(), (Double) v.get("x"), (Double) v.get("y"), (Double) v.get("z"), ((Double) v.get("pitch")).floatValue(), ((Double) v.get("yaw")).floatValue(), new Identifier((String) v.get("dimension")));
         }
-
     }
-
 }

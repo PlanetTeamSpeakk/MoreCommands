@@ -8,6 +8,7 @@ import net.minecraft.client.network.ClientCommandSource;
 public class CSysInfoCommand extends ClientCommand {
     @Override
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        dispatcher.register(cLiteral("csysinfo").executes(ctx -> SysInfoCommand.sendSysInfo(null)));
+        dispatcher.register(cLiteral("csysinfo")
+                .executes(ctx -> SysInfoCommand.sendSysInfo(null)));
     }
 }

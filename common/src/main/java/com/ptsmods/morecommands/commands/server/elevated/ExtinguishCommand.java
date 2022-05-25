@@ -16,7 +16,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExtinguishCommand extends Command {
-
     private static final Random rand = new Random();
 
     @Override

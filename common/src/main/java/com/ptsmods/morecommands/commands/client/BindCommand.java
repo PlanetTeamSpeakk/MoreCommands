@@ -63,10 +63,12 @@ public class BindCommand extends ClientCommand {
                                 .then(cArgument("msg", StringArgumentType.greedyString())
                                         .executes(ctx -> {
                                             String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
-                                            if (bindings.containsKey(key)) sendMsg(Formatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, consider using macros, if not, consider removing the binding with /bind remove " + key + " first.");
+                                            if (bindings.containsKey(key)) sendMsg(Formatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, " +
+                                                    "consider using macros, if not, consider removing the binding with /bind remove " + key + " first.");
                                             else {
                                                 bindings.put(key, ctx.getArgument("msg", String.class));
-                                                if (!bindings.get(key).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
+                                                if (!bindings.get(key).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF +
+                                                        "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
                                                 saveData();
                                                 sendMsg("A binding for key " + SF + key + DF + " has been saved.");
                                                 return 1;

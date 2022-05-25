@@ -24,25 +24,29 @@ public class ReachCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        if (IMoreCommands.get().isServerOnly()) dispatcher.register(literalReqOp("reach").executes(ctx -> {
-            sendError(ctx, "Reach cannot be used in server only mode.");
-            return 0;
-        }));
-        else dispatcher.register(literalReqOp("reach").executes(ctx -> {
-            double reach = ctx.getSource().getPlayerOrThrow().getAttributeValue(REACH_ATTRIBUTE);
-            double base = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
-            sendMsg(ctx, "Your reach is currently " + SF + reach + DF + (base != reach ? " (" + SF + base + " base" + DF + ")" : "") + ".");
-            return (int) reach;
-        }).then(argument("reach", DoubleArgumentType.doubleArg(1d, 160d)).executes(ctx -> {
-            double oldReach = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
-            double reach = ctx.getArgument("reach", Double.class);
-            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-            Objects.requireNonNull(player.getAttributeInstance(REACH_ATTRIBUTE)).setBaseValue(reach);
-            addModifier("pehkui:reach", player, reach);
-            addModifier("reach-entity-attributes:reach", player, reach);
-            sendMsg(ctx, "Your reach has been set from " + SF + oldReach + DF + " to " + SF + reach + DF + ".");
-            return (int) reach;
-        })));
+        if (IMoreCommands.get().isServerOnly()) dispatcher.register(literalReqOp("reach")
+                .executes(ctx -> {
+                    sendError(ctx, "Reach cannot be used in server only mode.");
+                    return 0;
+                }));
+        else dispatcher.register(literalReqOp("reach")
+                .executes(ctx -> {
+                    double reach = ctx.getSource().getPlayerOrThrow().getAttributeValue(REACH_ATTRIBUTE);
+                    double base = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
+                    sendMsg(ctx, "Your reach is currently " + SF + reach + DF + (base != reach ? " (" + SF + base + " base" + DF + ")" : "") + ".");
+                    return (int) reach;
+                })
+                .then(argument("reach", DoubleArgumentType.doubleArg(1d, 160d))
+                        .executes(ctx -> {
+                            double oldReach = ctx.getSource().getPlayerOrThrow().getAttributeBaseValue(REACH_ATTRIBUTE);
+                            double reach = ctx.getArgument("reach", Double.class);
+                            ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                            Objects.requireNonNull(player.getAttributeInstance(REACH_ATTRIBUTE)).setBaseValue(reach);
+                            addModifier("pehkui:reach", player, reach);
+                            addModifier("reach-entity-attributes:reach", player, reach);
+                            sendMsg(ctx, "Your reach has been set from " + SF + oldReach + DF + " to " + SF + reach + DF + ".");
+                            return (int) reach;
+                        })));
     }
 
     private void addModifier(String id, ServerPlayerEntity player, double reach) {

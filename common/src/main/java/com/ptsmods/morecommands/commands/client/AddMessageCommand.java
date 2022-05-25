@@ -10,9 +10,12 @@ import net.minecraft.client.network.ClientCommandSource;
 public class AddMessageCommand extends ClientCommand {
     @Override
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        dispatcher.register(cLiteral("addmsg").redirect(dispatcher.register(cLiteral("addmessage").then(cArgument("msg", StringArgumentType.greedyString()).executes(ctx -> {
-            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(literalText(MoreCommands.translateFormattings(ctx.getArgument("msg", String.class))).build());
-            return 1;
-        })))));
+        dispatcher.register(cLiteral("addmsg")
+                .redirect(dispatcher.register(cLiteral("addmessage")
+                        .then(cArgument("msg", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(literalText(MoreCommands.translateFormattings(ctx.getArgument("msg", String.class))).build());
+                                    return 1;
+                                })))));
     }
 }

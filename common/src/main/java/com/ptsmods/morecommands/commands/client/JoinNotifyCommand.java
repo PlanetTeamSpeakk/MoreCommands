@@ -35,22 +35,24 @@ public class JoinNotifyCommand extends ClientCommand {
 
     @Override
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        dispatcher.register(cLiteral("joinnotify").then(cArgument("player", EntityArgumentType.player()).executes(ctx -> {
-            PlayerListEntry player = getPlayer(ctx, "player");
-            String id = player.getProfile().getId().toString();
-            if (players.containsKey(id)) players.remove(id);
-            else players.put(id, player.getProfile().getName());
-            try {
-                MoreCommands.saveJson(f, players);
-            } catch (IOException e) {
-                log.catching(e);
-                sendMsg(Formatting.RED + "Could not save the joinnotify data file.");
-                return 0;
-            }
-            sendMsg("You will " + Util.formatFromBool(players.containsKey(id), Formatting.GREEN + "now ", Formatting.RED + "no longer ") +
-                    DF + "receive a notification when " + SF + player.getProfile().getName() + DF + " joins.");
-            return 1;
-        })));
+        dispatcher.register(cLiteral("joinnotify")
+                .then(cArgument("player", EntityArgumentType.player())
+                        .executes(ctx -> {
+                            PlayerListEntry player = getPlayer(ctx, "player");
+                            String id = player.getProfile().getId().toString();
+                            if (players.containsKey(id)) players.remove(id);
+                            else players.put(id, player.getProfile().getName());
+                            try {
+                                MoreCommands.saveJson(f, players);
+                            } catch (IOException e) {
+                                log.catching(e);
+                                sendMsg(Formatting.RED + "Could not save the joinnotify data file.");
+                                return 0;
+                            }
+                            sendMsg("You will " + Util.formatFromBool(players.containsKey(id), Formatting.GREEN + "now ", Formatting.RED + "no longer ") +
+                                    DF + "receive a notification when " + SF + player.getProfile().getName() + DF + " joins.");
+                            return 1;
+                        })));
     }
 
     private void onCall(PlayerListEntry entry, boolean joined) {

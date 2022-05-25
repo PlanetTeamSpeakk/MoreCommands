@@ -90,7 +90,8 @@ public class MacroCommand extends ClientCommand {
                                 .executes(ctx -> {
                                     String macro = ctx.getArgument("macro", String.class);
                                     if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
-                                    else if (macros.get(macro).isEmpty()) sendMsg(Formatting.RED + "The given macro does not yet have any commands added, consider adding some with " + "/macro add " + (macro.contains(" ") ? "\"" + macro + "\"" : macro) + " <command>.");
+                                    else if (macros.get(macro).isEmpty()) sendMsg(Formatting.RED + "The given macro does not yet have any commands added, consider adding some with " +
+                                            SF + "/macro add " + (macro.contains(" ") ? "\"" + macro + "\"" : macro) + " <command>" + DF + ".");
                                     else {
                                         StringBuilder msg = new StringBuilder("Commands of macro " + SF + macro + DF + ":");
                                         for (int i = 0; i < macros.get(macro).size(); i++)

@@ -19,7 +19,11 @@ import net.minecraft.text.Text;
 public class EnderChestCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.getRoot().addChild(MoreCommands.createAlias("ec", dispatcher.register(literalReq("enderchest").executes(ctx -> execute(ctx, null)).then(argument("player", EntityArgumentType.player()).requires(hasPermissionOrOp("morecommands.enderchest.others")).executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
+        dispatcher.getRoot().addChild(MoreCommands.createAlias("ec", dispatcher.register(literalReq("enderchest")
+                .executes(ctx -> execute(ctx, null))
+                .then(argument("player", EntityArgumentType.player())
+                        .requires(hasPermissionOrOp("morecommands.enderchest.others"))
+                        .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
