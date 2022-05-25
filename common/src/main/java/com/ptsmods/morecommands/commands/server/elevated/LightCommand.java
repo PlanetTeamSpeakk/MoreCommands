@@ -22,7 +22,7 @@ public class LightCommand extends Command {
         if (!Version.getCurrent().isNewerThanOrEqual(Version.V1_17)) return; // No light blocks in 1.16
 
         dispatcher.register(literalReqOp("light")
-                .executes(ctx -> execute(ctx, 1, 1))
+                .executes(ctx -> execute(ctx, 15, 1))
                 .then(argument("level", IntegerArgumentType.integer(0, 15))
                         .executes(ctx -> execute(ctx, ctx.getArgument("level", int.class), 1))
                         .then(argument("count", IntegerArgumentType.integer(1))
