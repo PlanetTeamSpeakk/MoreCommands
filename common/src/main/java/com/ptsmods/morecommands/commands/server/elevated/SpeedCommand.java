@@ -36,6 +36,7 @@ public class SpeedCommand extends Command {
                     .then(argument("speed", FloatArgumentType.floatArg(0))
                             .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null))
                             .then(argument("targets", EntityArgumentType.players())
+                                    .requires(hasPermissionOrOp("morecommands.speed.others"))
                                     .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
         dispatcher.register(builder
                 .then(argument("speed", FloatArgumentType.floatArg(0))
