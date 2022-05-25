@@ -25,8 +25,8 @@ public class BarrierCommand extends Command {
                 .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow(), 1))
                 .then(argument("amount", IntegerArgumentType.integer(0))
                         .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow(), ctx.getArgument("count", Integer.class)))
-                .then(argument("player", EntityArgumentType.player())
-                        .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
+                        .then(argument("player", EntityArgumentType.player())
+                                .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity player, int count) {

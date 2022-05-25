@@ -27,8 +27,8 @@ public class CmdBlockCommand extends Command {
                 .executes(ctx -> giveCmdBlock(ctx, ctx.getSource().getPlayerOrThrow(), 1))
                 .then(argument("amount", IntegerArgumentType.integer(0))
                         .executes(ctx -> giveCmdBlock(ctx, ctx.getSource().getPlayerOrThrow(), ctx.getArgument("count", Integer.class)))
-                .then(argument("player", EntityArgumentType.player())
-                        .executes(ctx -> giveCmdBlock(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
+                        .then(argument("player", EntityArgumentType.player())
+                                .executes(ctx -> giveCmdBlock(ctx, EntityArgumentType.getPlayer(ctx, "player"), ctx.getArgument("amount", Integer.class))))));
     }
 
     private int giveCmdBlock(CommandContext<ServerCommandSource> ctx, PlayerEntity player, int count) throws CommandSyntaxException {
