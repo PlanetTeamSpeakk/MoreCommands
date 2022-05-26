@@ -30,8 +30,10 @@ public class DropstoreCommand extends Command {
                         .requires(hasPermissionOrOp("morecommands.dropstore.elsewhere"))
                         .executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), true))
                         .then(argument("clear", BoolArgumentType.bool())
+                                .requires(hasPermissionOrOp("morecommands.dropstore.clear"))
                                 .executes(ctx -> execute(ctx, BlockPosArgumentType.getBlockPos(ctx, "pos"), ctx.getArgument("clear", Boolean.class)))))
                 .then(argument("clear", BoolArgumentType.bool())
+                        .requires(hasPermissionOrOp("morecommands.dropstore.clear"))
                         .executes(ctx -> execute(ctx, null, ctx.getArgument("clear", Boolean.class)))));
     }
 
