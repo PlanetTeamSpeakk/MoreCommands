@@ -85,8 +85,14 @@ public class KitCommand extends Command {
                         .executes(ctx -> {
                             String kit = ctx.getArgument("kit", String.class).toLowerCase(Locale.ROOT);
                             if (!kits.containsKey(kit)) sendError(ctx, "A kit by that name does not exist.");
-                            else if (kits.get(kit).onCooldown(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You're still on cooldown! Please wait " +
-                                    MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayerOrThrow()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
+                            else if (kits.get(kit).onCooldown(ctx.getSource().getPlayerOrThrow())) {
+                                Kit kit0 = kits.get(kit);
+
+                                if (kit0.getCooldown() > 0)
+                                    sendError(ctx, "You're still on cooldown! Please wait " +
+                                        MoreCommands.formatSeconds(kits.get(kit).getRemainingCooldown(ctx.getSource().getPlayerOrThrow()) / 1000, Formatting.RED, Formatting.RED) + Formatting.RED + ".");
+                                else sendError(ctx, "That kit can only be used once.");
+                            }
                             else if (!MoreCommandsArch.checkPermission(ctx.getSource(), "morecommands.kit." + kit, true)) sendError(ctx, "You do not have permission to use that kit.");
                             else {
                                 kits.get(kit).give(ctx.getSource().getPlayerOrThrow());
@@ -98,7 +104,7 @@ public class KitCommand extends Command {
 
         dispatcher.register(literalReqOp("createkit")
                 .then(argument("name", StringArgumentType.word())
-                        .then(argument("cooldown", IntegerArgumentType.integer(0))
+                        .then(argument("cooldown", IntegerArgumentType.integer(-1))
                                 .executes(ctx -> {
                                     String name = ctx.getArgument("name", String.class);
                                     if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendError(ctx, "A kit with that name already exists.");
@@ -210,7 +216,7 @@ public class KitCommand extends Command {
         }
 
         public long getRemainingCooldown(PlayerEntity player) {
-            return cooldowns.containsKey(player.getUuid()) ? cooldowns.get(player.getUuid()) - System.currentTimeMillis() : 0;
+            return cooldowns.containsKey(player.getUuid()) ? cooldown < 0 ? Long.MAX_VALUE : cooldowns.get(player.getUuid()) - System.currentTimeMillis() : 0;
         }
 
         public static Kit deserialise(Map<String, Object> data) {
