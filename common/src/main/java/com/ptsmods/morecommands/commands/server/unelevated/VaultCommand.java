@@ -38,7 +38,7 @@ public class VaultCommand extends Command {
                 .then(argument("vault", IntegerArgumentType.integer(1))
                         .executes(ctx -> execute(ctx, ctx.getSource().getPlayerOrThrow()))
                         .then(argument("player", EntityArgumentType.player())
-                                .requires(IS_OP)
+                                .requires(hasPermissionOrOp("morecommands.vault.others"))
                                 .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
