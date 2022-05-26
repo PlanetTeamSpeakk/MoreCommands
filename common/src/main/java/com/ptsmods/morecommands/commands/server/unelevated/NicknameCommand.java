@@ -26,12 +26,12 @@ public class NicknameCommand extends Command {
                 .then(argument("nickname", IgnorantStringArgumentType.word())
                         .executes(ctx -> execute(ctx, Util.translateFormats(ctx.getArgument("nickname", String.class)), null))
                         .then(argument("player", EntityArgumentType.player())
-                                .requires(IS_OP)
+                                .requires(hasPermissionOrOp("morecommands.nickname.others"))
                                 .executes(ctx -> execute(ctx, Util.translateFormats(ctx.getArgument("nickname", String.class)), EntityArgumentType.getPlayer(ctx, "player")))))
                 .then(literal("off")
                         .executes(ctx -> execute(ctx, null, null))
                         .then(argument("player", EntityArgumentType.player())
-                                .requires(IS_OP)
+                                .requires(hasPermissionOrOp("morecommands.nickname.others"))
                                 .executes(ctx -> execute(ctx, null, EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
