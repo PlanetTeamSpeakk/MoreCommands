@@ -201,7 +201,8 @@ public class WarpCommand extends Command {
                             Warp warp = getWarp(name);
                             UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer());
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-                            else if (!isOp(ctx) && !warp.getOwner().equals(id)) sendError(ctx, "You have no control over that warp.");
+                            else if (hasPermissionOrOp("morecommands.delwarp.others").test(ctx.getSource()) && !warp.getOwner().equals(id))
+                                sendError(ctx, "You have no control over that warp.");
                             else {
                                 warp.delete();
                                 sendMsg(ctx, "The warp has been deleted.");
@@ -210,8 +211,7 @@ public class WarpCommand extends Command {
                             return 0;
                         })));
 
-        dispatcher.register(literalReq("limitwarp")
-                .requires(hasPermissionOrOp("morecommands.limitwarp"))
+        dispatcher.register(literalReqOp("limitwarp")
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             Warp warp = getWarp(ctx.getArgument("name", String.class));
