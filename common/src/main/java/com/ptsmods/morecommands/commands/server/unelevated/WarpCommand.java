@@ -39,6 +39,8 @@ public class WarpCommand extends Command {
     private final Set<UUID> dirty = new HashSet<>();
 
     public void init(boolean serverOnly, MinecraftServer server) {
+        // TODO migrate to database
+
         File oldDir = MoreCommandsArch.getConfigDirectory().resolve("warps/").toFile();
         if (oldDir.exists()) {
             for (File f : oldDir.listFiles().or(new File[0]))
@@ -104,7 +106,7 @@ public class WarpCommand extends Command {
     public List<Warp> getWarpsFor(ServerPlayerEntity p) {
         List<Warp> warps = new ArrayList<>();
         for (Warp warp : getWarps())
-            if (warp.mayTeleport(p))
+            if (warp.mayTeleport(p.getCommandSource()))
                 warps.add(warp);
         return warps;
     }
@@ -170,7 +172,7 @@ public class WarpCommand extends Command {
                             if (MoreCommands.isInteger(name) && Integer.parseInt(name) > 0) return executeList(ctx, Integer.parseInt(name));
                             Warp warp = getWarp(ctx.getArgument("name", String.class));
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
-                            else if (!warp.mayTeleport(ctx.getSource().getPlayerOrThrow())) sendError(ctx, "You may not go there, sorry!");
+                            else if (!warp.mayTeleport(ctx.getSource())) sendError(ctx, "You may not go there, sorry!");
                             else {
                                 warp.teleport(ctx.getSource().getPlayerOrThrow());
                                 return 1;
@@ -238,7 +240,8 @@ public class WarpCommand extends Command {
                                     else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
                                 sendMsg(ctx, header.toString());
                                 sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()) == null ?
-                                        warp.getOwner() : IMoreCommands.get().textToString(ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()).getDisplayName(), null, true)));
+                                        warp.getOwner() : IMoreCommands.get().textToString(Objects.requireNonNull(ctx.getSource().getServer().getPlayerManager()
+                                        .getPlayer(warp.getOwner())).getDisplayName(), null, true)));
                                 sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
                                 sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
                                 sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());
@@ -254,6 +257,15 @@ public class WarpCommand extends Command {
     @Override
     public boolean isDedicatedOnly() {
         return true;
+    }
+
+    @Override
+    public Map<String, Boolean> getExtraPermissions() {
+        return warps.values().stream()
+                .flatMap(List::stream)
+                .filter(Warp::isLimited)
+                .map(warp -> "morecommands.warp." + warp.getName())
+                .collect(Collectors.toMap(s -> s, s -> false));
     }
 
     private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {
@@ -355,7 +367,7 @@ public class WarpCommand extends Command {
         }
 
         public void teleport(ServerPlayerEntity p, boolean count) {
-            if (mayTeleport(p)) {
+            if (mayTeleport(p.getCommandSource())) {
                 MoreCommands.teleport(p, getWorld(), getPos(), getYaw(), getPitch());
                 if (count) {
                     sendMsg(p, Formatting.GREEN + "W" + Formatting.BLUE + "h" + Formatting.YELLOW + "oo" + Formatting.RED + "s" + Formatting.LIGHT_PURPLE + "h" + Formatting.WHITE + "!");
@@ -374,8 +386,8 @@ public class WarpCommand extends Command {
             else dirty.remove(getOwner());
         }
 
-        public boolean mayTeleport(ServerPlayerEntity player) {
-            return !isLimited || player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel());
+        public boolean mayTeleport(ServerCommandSource source) {
+            return !isLimited ||hasPermissionOrOp("morecommands.warp." + getName()).test(source);
         }
 
         public void delete() {
