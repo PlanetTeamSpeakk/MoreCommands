@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +21,14 @@ public class RealnameCommand extends Command {
                         .executes(ctx -> {
                             String query = ctx.getArgument("query", String.class).toLowerCase();
                             List<ServerPlayerEntity> players = new ArrayList<>();
-                            for (ServerPlayerEntity player : ctx.getSource().getServer().getPlayerManager().getPlayerList())
-                                if (IMoreCommands.get().textToString(MoreCommands.getNickname(player), null, false).toLowerCase().contains(query) ||
+                            for (ServerPlayerEntity player : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
+                                Text nickname = MoreCommands.getNickname(player);
+                                if (nickname == null) continue;
+
+                                if (IMoreCommands.get().textToString(nickname, null, false).toLowerCase().contains(query) ||
                                         IMoreCommands.get().textToString(player.getName(), null, true).toLowerCase().contains(query))
                                     players.add(player);
+                            }
 
                             if (players.size() == 0) sendError(ctx, "No players whose name matches the given query were found.");
                             else for (ServerPlayerEntity player : players)
