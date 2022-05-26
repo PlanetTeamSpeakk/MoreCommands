@@ -53,6 +53,11 @@ public class CdataCommand extends ClientCommand {
         dispatcher.register(lab);
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/c-data";
+    }
+
     private static NbtElement getTag(NbtPathArgumentType.NbtPath path, ClientDataCommandObject object) throws CommandSyntaxException {
         Collection<NbtElement> collection = path.get(object.getTag());
         Iterator<NbtElement> iterator = collection.iterator();

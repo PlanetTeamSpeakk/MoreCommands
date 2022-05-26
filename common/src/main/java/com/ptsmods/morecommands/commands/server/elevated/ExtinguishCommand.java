@@ -27,6 +27,11 @@ public class ExtinguishCommand extends Command {
                                 .executes(ctx -> execute(ctx, EntityArgumentType.getEntities(ctx, "targets")))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/extinguish";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, Collection<? extends Entity> entities) throws CommandSyntaxException {
         if (entities == null) entities = Collections.singletonList(ctx.getSource().getEntityOrThrow());
         AtomicInteger success = new AtomicInteger();

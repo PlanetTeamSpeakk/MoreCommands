@@ -12,4 +12,9 @@ public class TimeLiteralCommand extends Command {
         dispatcher.register(((LiteralCommandNode<ServerCommandSource>) dispatcher.getRoot().getChild("time").getChild("set").getChild("day")).createBuilder().requires(hasPermissionOrOp("morecommands.day")));
         dispatcher.register(((LiteralCommandNode<ServerCommandSource>) dispatcher.getRoot().getChild("time").getChild("set").getChild("night")).createBuilder().requires(hasPermissionOrOp("morecommands.night")));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/time-literal";
+    }
 }

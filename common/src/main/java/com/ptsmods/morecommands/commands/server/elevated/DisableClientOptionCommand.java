@@ -76,4 +76,9 @@ public class DisableClientOptionCommand extends Command {
     public boolean isDedicatedOnly() {
         return true;
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/disable-client-option";
+    }
 }

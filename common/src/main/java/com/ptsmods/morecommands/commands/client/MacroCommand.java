@@ -119,6 +119,11 @@ public class MacroCommand extends ClientCommand {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/macro";
+    }
+
     private int executeAdd(CommandContext<ClientCommandSource> ctx, int index) {
         String macro = ctx.getArgument("macro", String.class);
         String msg = ctx.getArgument("msg", String.class);

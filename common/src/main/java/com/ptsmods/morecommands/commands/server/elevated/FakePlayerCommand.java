@@ -63,6 +63,11 @@ public class FakePlayerCommand extends Command {
                                 }))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/fake-player";
+    }
+
     @SuppressWarnings("unchecked")
     private int executeCreate(CommandContext<ServerCommandSource> ctx, String skinname, UUID userId) {
         String username = ctx.getArgument("name", String.class);

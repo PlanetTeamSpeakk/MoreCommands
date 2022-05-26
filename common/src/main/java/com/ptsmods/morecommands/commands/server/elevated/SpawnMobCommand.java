@@ -26,6 +26,11 @@ public class SpawnMobCommand extends Command {
                                 .executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/spawn-mob";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
         BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160, true, false);
         Vec3d pos = result.getPos();

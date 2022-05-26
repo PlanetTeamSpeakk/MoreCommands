@@ -22,6 +22,11 @@ public class SmiteCommand extends Command {
                         .executes(ctx -> execute(ctx, Either.right(EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/smite";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, Either<HitResult, ServerPlayerEntity> hitOrPlayer) {
         Vec3d pos = hitOrPlayer.left().isPresent() ? hitOrPlayer.left().get().getPos() : hitOrPlayer.right().orElseThrow(NullPointerException::new).getPos();
         for (int i = 0; i < 3; i++) {

@@ -18,4 +18,9 @@ public class JesusCommand extends Command {
                     return entity.getDataTracker().get(IDataTrackerHelper.get().jesus()) ? 2 : 1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/jesus";
+    }
 }

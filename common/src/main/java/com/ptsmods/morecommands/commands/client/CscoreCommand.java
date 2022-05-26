@@ -40,6 +40,11 @@ public class CscoreCommand extends ClientCommand {
                 })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/c-score";
+    }
+
     private int sendTeamDetails(Team team, boolean showMembers) {
         if (team == null) sendMsg(Formatting.RED + "A team by that name could not be found.");
         else sendMsg("The settings of the given team are as follows:" +

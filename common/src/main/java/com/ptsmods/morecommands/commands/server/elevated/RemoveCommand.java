@@ -25,6 +25,11 @@ public class RemoveCommand extends Command {
                         .executes(ctx -> execute(ctx.getSource(), EntityArgumentType.getEntities(ctx, "targets")))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/remove";
+    }
+
     private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) throws CommandSyntaxException {
         targets = targets.stream()
                 .filter(e -> !(e instanceof PlayerEntity)) // Don't remove players

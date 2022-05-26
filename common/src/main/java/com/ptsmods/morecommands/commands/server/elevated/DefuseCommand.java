@@ -40,4 +40,8 @@ public class DefuseCommand extends Command {
         return entities.size();
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/defuse";
+    }
 }

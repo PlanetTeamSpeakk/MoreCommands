@@ -42,6 +42,11 @@ public class VanishCommand extends Command {
                         .executes(ctx -> execute(ctx, EntityArgumentType.getPlayers(ctx, "players")))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/vanish";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {
         if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayerOrThrow());
         else if (!isOp(ctx)) {

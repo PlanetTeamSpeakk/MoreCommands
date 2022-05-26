@@ -105,6 +105,10 @@ public abstract class Command {
         return Collections.emptyMap();
     }
 
+    public abstract String getDocsPath();
+
+    // UTILITY METHODS
+
     public static Database getLocalDb() {
         return MoreCommands.getLocalDb();
     }

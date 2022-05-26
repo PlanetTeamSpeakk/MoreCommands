@@ -157,6 +157,11 @@ public class EmulateCommand extends ClientCommand {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/emulate";
+    }
+
     private int executeTasksAddInterval(Type type, CommandContext<ClientCommandSource> ctx, int button, int count) {
         return executeTasksAdd(new EmulateTask(type, ctx.getArgument("interval", Integer.class), button, false, count));
     }

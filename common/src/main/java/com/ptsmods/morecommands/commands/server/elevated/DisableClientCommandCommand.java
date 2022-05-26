@@ -62,4 +62,9 @@ public class DisableClientCommandCommand extends Command {
                             return disabled.size();
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/disable-client-command";
+    }
 }

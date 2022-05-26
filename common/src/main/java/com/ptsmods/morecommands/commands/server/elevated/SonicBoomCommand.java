@@ -71,6 +71,11 @@ public class SonicBoomCommand extends Command {
                 }));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/sonic-boom";
+    }
+
     public static class StaticSonicBoomTask extends Task<WardenEntity> {
         private final Vec3d pos;
         private final Entity attacker, target;

@@ -44,4 +44,9 @@ public class ServerOnlyCommand extends Command {
     public boolean isDedicatedOnly() {
         return true;
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/server-only";
+    }
 }

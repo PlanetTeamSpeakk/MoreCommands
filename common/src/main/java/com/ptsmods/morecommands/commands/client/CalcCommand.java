@@ -25,4 +25,9 @@ public class CalcCommand extends ClientCommand {
                             return (int) d;
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/calc";
+    }
 }

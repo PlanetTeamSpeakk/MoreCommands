@@ -23,6 +23,11 @@ public class HealCommand extends Command {
                         })))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/heal";
+    }
+
     private int execute(ServerPlayerEntity player) {
         player.setHealth(player.getMaxHealth());
         player.getHungerManager().add(20, 20);

@@ -28,4 +28,9 @@ public class GetStrucCommand extends Command {
 //            return 0;
 //        }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return null;
+    }
 }

@@ -21,4 +21,9 @@ public class WhereAmICommand extends Command {
                     return 1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/where-am-i";
+    }
 }

@@ -26,6 +26,11 @@ public class EnderChestCommand extends Command {
                         .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/ender-chest";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
         PlayerEntity player = p == null ? ctx.getSource().getPlayerOrThrow() : p;
         ctx.getSource().getPlayerOrThrow().openHandledScreen(new NamedScreenHandlerFactory() {

@@ -35,6 +35,11 @@ public class PweatherCommand extends ClientCommand {
         dispatcher.register(cmd);
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/pweather";
+    }
+
     public enum WeatherType {
         OFF("Your personal weather is now synced with the server again.", world -> {
             world.setRainGradient(rainGradient);

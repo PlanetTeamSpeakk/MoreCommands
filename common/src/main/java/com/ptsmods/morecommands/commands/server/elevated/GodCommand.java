@@ -23,4 +23,9 @@ public class GodCommand extends Command {
                     return 1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/god";
+    }
 }

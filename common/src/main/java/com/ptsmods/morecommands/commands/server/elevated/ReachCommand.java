@@ -49,6 +49,11 @@ public class ReachCommand extends Command {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/reach";
+    }
+
     private void addModifier(String id, ServerPlayerEntity player, double reach) {
         Optional.ofNullable(Registry.ATTRIBUTE.get(new Identifier(id)))
                 .map(player::getAttributeInstance)

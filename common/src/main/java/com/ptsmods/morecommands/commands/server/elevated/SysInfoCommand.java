@@ -27,6 +27,11 @@ public class SysInfoCommand extends Command {
         return true; // It is the exact same as /csysinfo on singleplayer anyway.
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/sys-info";
+    }
+
     public static int sendSysInfo(CommandContext<ServerCommandSource> ctx) {
         // Copied from my Discord bot Impulse at https://github.com/PlanetTeamSpeakk/Impulse
         // Copied from Owner#sysinfo.

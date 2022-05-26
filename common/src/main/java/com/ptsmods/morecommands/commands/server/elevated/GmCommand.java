@@ -22,4 +22,9 @@ public class GmCommand extends Command {
         builder.build().getChildren().forEach(child -> cmd.then(child.createBuilder()));
         return cmd;
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/gm";
+    }
 }

@@ -32,6 +32,11 @@ public class TpsCommand extends Command {
         }));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/tps";
+    }
+
     private String formatTps(double tps) {
         return formatFromFloat((float) tps, 20, 0.8f, 0.9f, true) + (tps > 20 ? "*" : "") + Math.min(Math.round(tps * 100.0) / 100.0, 20.0);
     }

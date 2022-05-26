@@ -41,4 +41,8 @@ public class CyclePaintingCommand extends Command {
         return 0;
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/cycle-painting";
+    }
 }

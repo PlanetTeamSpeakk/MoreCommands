@@ -29,4 +29,9 @@ public class DimensionCommand extends Command {
         sendError(ctx, "The targeted entity is already in that world.");
         return 0;
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/dimension";
+    }
 }

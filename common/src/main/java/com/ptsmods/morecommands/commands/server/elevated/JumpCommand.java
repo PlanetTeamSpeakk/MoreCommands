@@ -26,4 +26,9 @@ public class JumpCommand extends Command {
                     return 1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/jump";
+    }
 }

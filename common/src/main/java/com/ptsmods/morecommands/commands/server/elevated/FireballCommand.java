@@ -43,6 +43,11 @@ public class FireballCommand extends Command {
                                         .executes(ctx -> execute(ctx, ctx.getArgument("power", Float.class), ctx.getArgument("speed", Double.class), ctx.getArgument("impacts", Integer.class)))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/fireball";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, float power, double speed, int impacts) throws CommandSyntaxException {
         Vec3d velocity0 = MoreCommands.getRotationVector(ctx.getSource().getRotation()).multiply(speed*2);
         LivingEntity entity = ctx.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) ctx.getSource().getEntity() : null;

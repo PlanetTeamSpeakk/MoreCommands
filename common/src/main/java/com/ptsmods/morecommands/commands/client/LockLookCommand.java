@@ -58,6 +58,10 @@ public class LockLookCommand extends ClientCommand {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/lock-look";
+    }
 
     private float clampAngle(float from, float to, boolean isPitch) {
         return smooth ? from + MathHelper.clamp(MathHelper.subtractAngles(from, to), isPitch ? -40 : -10, isPitch ? 40 : 10) : to;

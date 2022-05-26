@@ -13,4 +13,9 @@ public class DifficultyLiteralCommand extends Command {
                 dispatcher.register((LiteralArgumentBuilder<ServerCommandSource>) cmd.createBuilder()
                         .requires(hasPermissionOrOp("morecommands." + cmd.getName()))));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/difficulty-literal";
+    }
 }

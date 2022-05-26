@@ -180,6 +180,11 @@ public class PowerToolCommand extends Command {
                         })))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/power-tool";
+    }
+
     public static String getCurrentPowerTool(PlayerEntity player, int button) {
         ItemStack stack = getPowerToolStack(player);
         reformPowerTool(stack);

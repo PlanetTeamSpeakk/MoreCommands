@@ -36,4 +36,9 @@ public class RealnameCommand extends Command {
                             return players.size();
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/realname";
+    }
 }

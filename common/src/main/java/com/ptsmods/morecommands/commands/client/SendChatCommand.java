@@ -20,4 +20,9 @@ public class SendChatCommand extends ClientCommand {
                             return 1;
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/send-chat";
+    }
 }

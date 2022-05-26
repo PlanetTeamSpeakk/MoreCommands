@@ -109,6 +109,11 @@ public class BindCommand extends ClientCommand {
                                 .executes(ctx -> executeRecord(ctx.getArgument("amount", Integer.class))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/bind";
+    }
+
     private int executeRecord(int amount) {
         record = amount;
         sendMsg("The next " + SF + amount + DF + " key" + (amount == 1 ? "" : "s") + " pressed will have their name be printed in chat.");

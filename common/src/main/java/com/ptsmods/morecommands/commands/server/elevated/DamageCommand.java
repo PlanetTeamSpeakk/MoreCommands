@@ -33,4 +33,9 @@ public class DamageCommand extends Command {
 
         dispatcher.register(literalReqOp("damage").then(entities));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/damage";
+    }
 }

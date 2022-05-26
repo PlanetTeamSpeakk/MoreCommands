@@ -10,4 +10,9 @@ public class ConsoleCommand extends Command {
         dispatcher.register(literalReqOp("console")
                 .redirect(dispatcher.getRoot(), ctx -> ctx.getSource().getServer().getCommandSource()));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/console";
+    }
 }

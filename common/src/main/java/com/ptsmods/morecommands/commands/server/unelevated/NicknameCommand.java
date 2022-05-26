@@ -35,6 +35,11 @@ public class NicknameCommand extends Command {
                                 .executes(ctx -> execute(ctx, null, EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/nickname";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {
         boolean self = player == null;
         if (self) player = ctx.getSource().getPlayerOrThrow();

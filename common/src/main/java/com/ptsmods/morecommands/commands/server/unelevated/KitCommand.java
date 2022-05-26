@@ -142,6 +142,11 @@ public class KitCommand extends Command {
     }
 
     @Override
+    public String getDocsPath() {
+        return "/server/unelevated/kit";
+    }
+
+    @Override
     public boolean isDedicatedOnly() {
         return true;
     }

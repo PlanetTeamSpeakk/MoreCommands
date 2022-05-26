@@ -47,4 +47,9 @@ public class SearchCommand extends ClientCommand {
                             return results.size();
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/search";
+    }
 }

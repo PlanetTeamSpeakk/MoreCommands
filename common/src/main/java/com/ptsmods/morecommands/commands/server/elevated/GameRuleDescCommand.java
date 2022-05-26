@@ -24,4 +24,9 @@ public class GameRuleDescCommand extends Command {
         });
         dispatcher.register(gamerule);
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/gamerule-desc";
+    }
 }

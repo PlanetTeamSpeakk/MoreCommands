@@ -39,4 +39,9 @@ public class GetSkinCommand extends ClientCommand {
                             return 0;
                         })));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/get-skin";
+    }
 }

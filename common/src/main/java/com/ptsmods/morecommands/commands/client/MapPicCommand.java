@@ -89,6 +89,11 @@ public class MapPicCommand extends ClientCommand {
                                 .executes(ctx -> executeCorner(1)))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/map-pic";
+    }
+
     private int executeCorner(int corner) {
         if (getMapLookingAt() != null) {
             HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160d, false, true);

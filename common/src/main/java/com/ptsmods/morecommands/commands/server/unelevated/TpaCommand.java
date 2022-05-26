@@ -47,6 +47,11 @@ public class TpaCommand extends Command {
                 .executes(ctx -> executeResp(ctx, false)))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/tpa";
+    }
+
     private int executeResp(CommandContext<ServerCommandSource> ctx, boolean accept) throws CommandSyntaxException {
         ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
         for (int i = requests.size()-1; i >= 0; i--)

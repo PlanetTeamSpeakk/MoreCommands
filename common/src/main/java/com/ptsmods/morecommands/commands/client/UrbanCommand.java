@@ -20,8 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class UrbanCommand extends ClientCommand {
-
-    private static Map<String, List<Map<String, ?>>> cache = new HashMap<>();
+    private static final Map<String, List<Map<String, ?>>> cache = new HashMap<>();
     private static final SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
     private static final SimpleDateFormat formatDate = new SimpleDateFormat("MMMM d yyyy");
     private static final SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm:ss");
@@ -32,6 +31,11 @@ public class UrbanCommand extends ClientCommand {
         dispatcher.register(cLiteral("urban")
                 .then(cArgument("query", StringArgumentType.greedyString())
                         .executes(this::execute)));
+    }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/urban";
     }
 
     @SuppressWarnings("unchecked")

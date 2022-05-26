@@ -39,6 +39,11 @@ public class WipeOutCommand extends Command {
         ));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/wipe-out";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, Predicate<Entity> predicate) {
         List<Entity> entities = StreamSupport.stream(ctx.getSource().getServer().getWorlds().spliterator(), false)
                 .flatMap(world -> StreamSupport.stream(world.iterateEntities().spliterator(), false))

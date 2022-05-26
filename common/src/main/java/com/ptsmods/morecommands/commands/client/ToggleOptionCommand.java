@@ -25,6 +25,11 @@ public class ToggleOptionCommand extends ClientCommand {
         dispatcher.register(toggleoption);
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/toggle-option";
+    }
+
     private static int execute(BooleanClientOption option, Boolean value) {
         boolean b = value == null ? !option.getValueRaw() : value;
         option.setValue(b);

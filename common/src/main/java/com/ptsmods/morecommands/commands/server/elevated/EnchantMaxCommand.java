@@ -22,4 +22,9 @@ public class EnchantMaxCommand extends Command {
                     return 0;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/enchant-max";
+    }
 }

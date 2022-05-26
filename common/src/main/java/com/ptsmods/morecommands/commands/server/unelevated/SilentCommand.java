@@ -10,4 +10,9 @@ public class SilentCommand extends Command {
         dispatcher.register(literal("silent")
                 .redirect(dispatcher.getRoot(), ctx -> ctx.getSource().withSilent()));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/silent";
+    }
 }

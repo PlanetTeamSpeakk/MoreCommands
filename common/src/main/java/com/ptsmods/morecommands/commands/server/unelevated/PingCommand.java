@@ -10,4 +10,9 @@ public class PingCommand extends Command {
         dispatcher.register(literalReq("ping")
                 .executes(ctx -> sendMsg(ctx, "Pong! " + ctx.getSource().getPlayerOrThrow().pingMilliseconds + " ms latency")));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/ping";
+    }
 }

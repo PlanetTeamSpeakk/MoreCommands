@@ -108,6 +108,11 @@ public class ScreenshotCommand extends ClientCommand {
                                 .executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/screenshot";
+    }
+
     private int execute(CommandContext<ClientCommandSource> ctx, int width, int height) {
         width = width == -1 ? MinecraftClient.getInstance().getWindow().getWidth() : width;
         height = height == -1 ? MinecraftClient.getInstance().getWindow().getHeight() : height;

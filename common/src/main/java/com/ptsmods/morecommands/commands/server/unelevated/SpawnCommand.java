@@ -26,6 +26,11 @@ public class SpawnCommand extends Command {
                         .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/spawn";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) throws CommandSyntaxException {
         Entity entity = player == null ? ctx.getSource().getEntityOrThrow() : player;
         ServerWorld world = Objects.requireNonNull(ctx.getSource().getServer().getWorld(World.OVERWORLD));

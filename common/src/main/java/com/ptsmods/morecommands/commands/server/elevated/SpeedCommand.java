@@ -43,6 +43,11 @@ public class SpeedCommand extends Command {
                         .executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrThrow()), ctx.getArgument("speed", Float.class), null))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/speed";
+    }
+
     private SpeedType determineSpeedType(ServerPlayerEntity player) {
         return player.isSubmergedInWater() ? SpeedType.SWIM : ((MixinPlayerEntityAccessor) player).getAbilities_().flying ? SpeedType.FLY : SpeedType.WALK;
     }

@@ -25,4 +25,9 @@ public class BreakCommand extends Command {
                     return 0;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/break";
+    }
 }

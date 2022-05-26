@@ -29,6 +29,11 @@ public class LightCommand extends Command {
                                 .executes(ctx -> execute(ctx, ctx.getArgument("level", int.class), ctx.getArgument("count", int.class))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/light";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, int level, int count) throws CommandSyntaxException {
         ItemStack stack = new ItemStack(Items.LIGHT, count);
         NbtCompound nbt = new NbtCompound();

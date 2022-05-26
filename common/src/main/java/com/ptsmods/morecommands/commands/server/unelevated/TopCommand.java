@@ -16,4 +16,9 @@ public class TopCommand extends Command {
                     return 1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/top";
+    }
 }

@@ -41,4 +41,8 @@ public class CmdBlockCommand extends Command {
         return count;
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/cmd-block";
+    }
 }

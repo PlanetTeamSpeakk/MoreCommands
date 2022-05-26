@@ -68,6 +68,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
@@ -263,7 +264,12 @@ public enum MoreCommands implements IMoreCommands {
                     .filter(cmd -> !cmd.isDedicatedOnly() || dedicated)
                     .forEach(cmd -> {
                         try {
-                            cmd.register(dispatcher, dedicated);
+                            CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
+                            cmd.register(tempDispatcher, dedicated);
+
+                            for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) {
+                                dispatcher.getRoot().addChild(child);
+                            }
                             permissions.putAll(cmd.getExtraPermissions());
                         } catch (Exception e) {
                             LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);

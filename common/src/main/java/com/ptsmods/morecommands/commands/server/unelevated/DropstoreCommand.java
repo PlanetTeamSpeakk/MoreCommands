@@ -37,6 +37,11 @@ public class DropstoreCommand extends Command {
                         .executes(ctx -> execute(ctx, null, ctx.getArgument("clear", Boolean.class)))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/dropstore";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, BlockPos pos, boolean clear) throws CommandSyntaxException {
         PlayerEntity player = ctx.getSource().getPlayerOrThrow();
         if (pos == null) pos = player.getBlockPos();

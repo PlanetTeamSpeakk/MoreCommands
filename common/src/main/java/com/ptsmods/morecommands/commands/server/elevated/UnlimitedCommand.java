@@ -29,6 +29,11 @@ public class UnlimitedCommand extends Command {
                 }));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/unlimited";
+    }
+
     public static boolean isUnlimited(ItemStack stack) {
         return stack.hasNbt() && Objects.requireNonNull(stack.getNbt()).contains("Unlimited");
     }

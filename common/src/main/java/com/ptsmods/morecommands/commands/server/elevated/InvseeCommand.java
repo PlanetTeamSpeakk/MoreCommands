@@ -26,6 +26,11 @@ public class InvseeCommand extends Command {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/invsee";
+    }
+
     public static void openInventory(PlayerEntity player, PlayerEntity target) {
         player.openHandledScreen(new NamedScreenHandlerFactory() {
             @Override

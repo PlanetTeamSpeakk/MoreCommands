@@ -30,6 +30,8 @@ public class HomeCommand extends Command {
     private final Map<UUID, List<Home>> homes = new HashMap<>();
 
     public void init(boolean serverOnly, MinecraftServer server) {
+        // TODO migrate to database
+
         if (MoreCommandsArch.getConfigDirectory().resolve("homes.json").toFile().exists()) MoreCommands.tryMove("config/MoreCommands/homes.json", MoreCommands.getRelativePath().resolve("homes.json").toString());
         dataFile = MoreCommands.getRelativePath().resolve("homes.json").toFile();
         Map<String, Map<String, Map<String, Object>>> data = null;
@@ -78,6 +80,11 @@ public class HomeCommand extends Command {
                             }
                             return 0;
                         })));
+    }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/home";
     }
 
     private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {

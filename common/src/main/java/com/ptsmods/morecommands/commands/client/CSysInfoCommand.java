@@ -11,4 +11,9 @@ public class CSysInfoCommand extends ClientCommand {
         dispatcher.register(cLiteral("csysinfo")
                 .executes(ctx -> SysInfoCommand.sendSysInfo(null)));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/c-sys-info";
+    }
 }

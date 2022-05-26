@@ -75,6 +75,11 @@ public class PotionCommand extends Command {
                                  .executes(this::executeSetColour))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/potion";
+    }
+
     private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         int colour = HexIntegerArgumentType.getHexInt(ctx, "colour");
         ItemStack stack = checkHeldItem(ctx);

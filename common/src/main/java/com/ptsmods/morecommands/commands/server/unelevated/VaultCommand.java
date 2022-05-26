@@ -46,6 +46,11 @@ public class VaultCommand extends Command {
                                 .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player"))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/vault";
+    }
+
     public int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity owner) throws CommandSyntaxException {
         int vault = ctx.getArgument("vault", Integer.class);
         int maxVaults = getCountFromPerms(ctx.getSource(), "morecommands.vault.max.", ctx.getSource().getWorld().getGameRules().getInt(MoreGameRules.get().vaultsRule()));

@@ -33,6 +33,11 @@ public class SkullCommand extends Command {
                                 .executes(ctx -> execute(ctx, ctx.getArgument("amount", Integer.class))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/skull";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
         ItemStack stack = new ItemStack(Items.PLAYER_HEAD, amount);
         String playername = ctx.getArgument("player", String.class);

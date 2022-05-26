@@ -32,6 +32,11 @@ public class ExplodeCommand extends Command {
                                                                 ctx.getArgument("fire", Boolean.class), EnumArgumentType.getEnum(ctx, "destruct"), ctx.getArgument("launch", Boolean.class)))))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/explode";
+    }
+
     private int execute(CommandContext<ServerCommandSource> ctx, Vec3d pos, float power, boolean fire, Explosion.DestructionType destruct, boolean launch) {
         if (pos == null) pos = ctx.getSource().getPosition();
         World world = ctx.getSource().getWorld();

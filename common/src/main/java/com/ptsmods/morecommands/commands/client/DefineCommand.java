@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class DefineCommand extends ClientCommand {
-
     private static final List<String> languages = ImmutableList.of("en", "hi", "es", "fr", "ja", "ru", "de", "it", "ko", "pt-BR", "ar", "tr");
 
     @Override
@@ -56,5 +55,10 @@ public class DefineCommand extends ClientCommand {
                             })));
         }
         dispatcher.register(cmd);
+    }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/define";
     }
 }

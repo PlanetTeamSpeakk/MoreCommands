@@ -19,4 +19,9 @@ public class SuperPickaxeCommand extends Command {
                     return p.getDataTracker().get(IDataTrackerHelper.get().superpickaxe()) ? 2 : 1;
                 }))));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/super-pickaxe";
+    }
 }

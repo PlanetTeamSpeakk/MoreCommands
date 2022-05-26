@@ -268,6 +268,11 @@ public class WarpCommand extends Command {
                 .collect(Collectors.toMap(s -> s, s -> false));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/warp";
+    }
+
     private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {
         List<String> warps = getWarpNamesFor(ctx.getSource().getPlayerOrThrow());
         if (warps.isEmpty()) sendError(ctx, "There are no warps set as of right now.");

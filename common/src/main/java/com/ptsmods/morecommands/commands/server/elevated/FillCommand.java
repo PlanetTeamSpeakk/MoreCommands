@@ -94,6 +94,11 @@ public class FillCommand extends Command {
                                                         BlockPosArgumentType.getLoadedBlockPos(commandContext, "to")), BlockStateArgumentType.getBlockState(commandContext, "block"), Mode.DESTROY, null)))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/fill";
+    }
+
     private static int execute(CommandContext<ServerCommandSource> ctx, BlockBox range, BlockStateArgument block, Mode mode, Predicate<CachedBlockPosition> filter) {
         ServerWorld serverWorld = ctx.getSource().getWorld();
         MixinBlockBoxAccessor rangeAccess = (MixinBlockBoxAccessor) range;

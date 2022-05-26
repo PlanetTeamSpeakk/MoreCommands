@@ -90,6 +90,11 @@ public class AliasCommand extends ClientCommand {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/alias";
+    }
+
     private void saveData() {
         try {
             MoreCommands.saveJson(aliasesFile, aliases);

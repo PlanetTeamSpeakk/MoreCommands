@@ -13,4 +13,9 @@ public class ScoreCommand extends ClientCommand {
                     return getPlayer().getScore()+1;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/client/score";
+    }
 }

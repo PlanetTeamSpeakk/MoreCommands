@@ -55,6 +55,11 @@ public class JoinNotifyCommand extends ClientCommand {
                         })));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/client/join-notify";
+    }
+
     private void onCall(PlayerListEntry entry, boolean joined) {
         String id = entry == null || entry.getProfile() == null ? null : entry.getProfile().getId().toString();
         Map<String, String> nameMCFriends = MoreCommandsClient.getNameMCFriends();

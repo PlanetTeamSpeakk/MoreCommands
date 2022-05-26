@@ -29,6 +29,11 @@ public class CannonCommand extends Command {
                                         .executes(ctx -> fire(ctx.getSource(), ctx.getArgument("power", Float.class), ctx.getArgument("motionMultiplier", Float.class), ctx.getArgument("fuse", Integer.class)))))));
     }
 
+    @Override
+    public String getDocsPath() {
+        return "/server/elevated/cannon";
+    }
+
     private int fire(ServerCommandSource source, float power, float motionMultiplier, int fuse) throws CommandSyntaxException {
         return fire(source.getWorld(), source.getEntityOrThrow().getPos().add(0, Objects.requireNonNull(source.getEntity()).getEyeHeight(source.getEntity().getPose()), 0),
                 source.getEntity().getRotationVec(1F), power, motionMultiplier, fuse);

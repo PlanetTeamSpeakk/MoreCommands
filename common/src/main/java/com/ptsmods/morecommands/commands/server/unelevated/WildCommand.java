@@ -27,4 +27,9 @@ public class WildCommand extends Command {
                     return 0;
                 }));
     }
+
+    @Override
+    public String getDocsPath() {
+        return "/server/unelevated/wild";
+    }
 }
