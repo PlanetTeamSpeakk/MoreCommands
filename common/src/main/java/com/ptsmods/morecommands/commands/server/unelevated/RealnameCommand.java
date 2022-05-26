@@ -26,7 +26,7 @@ public class RealnameCommand extends Command {
                                 if (nickname == null) continue;
 
                                 if (IMoreCommands.get().textToString(nickname, null, false).toLowerCase().contains(query) ||
-                                        IMoreCommands.get().textToString(player.getName(), null, true).toLowerCase().contains(query))
+                                        IMoreCommands.get().textToString(player.getName(), null, true).replace('\u00A7', '&').toLowerCase().contains(query))
                                     players.add(player);
                             }
 
