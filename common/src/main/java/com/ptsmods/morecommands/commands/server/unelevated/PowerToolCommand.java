@@ -214,6 +214,12 @@ public class PowerToolCommand extends Command {
 
         NbtList commands = powertool.getList("Commands", NbtElement.STRING_TYPE);
         NbtString s = (NbtString) commands.remove(index);
+
+        if (commands.size() == 0) {
+            resetPowerTool(stack);
+            return s.asString();
+        }
+
         powertool.putByte("Selected", (byte) Math.max(powertool.getByte("Selected"), commands.size() - 1));
 
         return s.asString();
