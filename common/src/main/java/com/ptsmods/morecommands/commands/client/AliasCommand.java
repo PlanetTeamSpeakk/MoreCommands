@@ -36,8 +36,9 @@ public class AliasCommand extends ClientCommand {
         ClientCompat.get().registerChatProcessListener(message -> {
             TextBuilder<?> builder = Compat.get().builderFromText(message);
             if (!(builder instanceof LiteralTextBuilder)) return message;
+            String literal = ((LiteralTextBuilder) builder).getLiteral();
 
-            String replacement = aliases.getOrDefault(((LiteralTextBuilder) builder).getLiteral().substring(1).split(" ")[0], null);
+            String replacement = literal.startsWith("/") ? aliases.getOrDefault(literal.substring(1).split(" ")[0], null) : null;
             return replacement == null ? message : LiteralTextBuilder.builder(replacement).build();
         });
     }
