@@ -26,7 +26,11 @@ import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class VaultCommand extends Command {
     public static final List<ScreenHandlerType<GenericContainerScreenHandler>> types = ImmutableList.of(ScreenHandlerType.GENERIC_9X1, ScreenHandlerType.GENERIC_9X2,
@@ -78,5 +82,14 @@ public class VaultCommand extends Command {
             player.getDataTracker().set(IDataTrackerHelper.get().vaults(), MoreCommands.wrapTag("Vaults", list));
         });
         return inv;
+    }
+
+    @Override
+    public Map<String, Boolean> getExtraPermissions() {
+        return Stream.concat(IntStream.range(1, 100)
+                        .mapToObj(i -> "morecommands.vault.max." + i),
+                        IntStream.range(1, 6)
+                                .mapToObj(i -> "morecommands.vault.rows." + i))
+                .collect(Collectors.toMap(s -> s, s -> false));
     }
 }
