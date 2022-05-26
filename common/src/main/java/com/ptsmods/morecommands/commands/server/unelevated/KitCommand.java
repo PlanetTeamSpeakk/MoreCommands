@@ -204,7 +204,7 @@ public class KitCommand extends Command {
                 if (!Compat.get().getInventory(player).insertStack(stack0)) player.dropItem(stack0, false);
             }
 
-            if (cooldown <= 0) return;
+            if (cooldown == 0) return;
             cooldowns.put(player.getUuid(), System.currentTimeMillis() + cooldown * 1000L);
             MoreCommands.getLocalDb().insertBuilder("kit_cooldowns", "kit", "player", "time")
                     .insert(name, player.getUuid(), Timestamp.from(Instant.now().plusMillis(cooldown)))
