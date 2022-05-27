@@ -18,12 +18,12 @@ public class DocsCommand extends ClientCommand {
         LiteralArgumentBuilder<ClientCommandSource> clientCommand = cLiteral("clientcommand");
         MoreCommandsClient.getNodes().forEach((cmd, nodes) -> nodes.forEach(node -> clientCommand
                 .then(cLiteral(node.getName())
-                        .executes(ctx -> open("/commands" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
+                        .executes(ctx -> open("/commands/client" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
 
         LiteralArgumentBuilder<ClientCommandSource> command = cLiteral("command");
         MoreCommands.getNodes().forEach((cmd, nodes) -> nodes.forEach(node -> command
                 .then(cLiteral(node.getName())
-                        .executes(ctx -> open("/commands" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
+                        .executes(ctx -> open("/commands/server" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
 
         LiteralArgumentBuilder<ClientCommandSource> gamerule = cLiteral("gamerule");
         IMoreGameRules.get().allRules().forEach((name, key) -> gamerule
@@ -45,7 +45,7 @@ public class DocsCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/docs";
+        return "/docs";
     }
 
     @Override

@@ -29,7 +29,7 @@ public class SysInfoCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/sys-info";
+        return "/elevated/sys-info";
     }
 
     public static int sendSysInfo(CommandContext<ServerCommandSource> ctx) {

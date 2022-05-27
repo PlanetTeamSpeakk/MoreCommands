@@ -27,7 +27,7 @@ public class RemoveCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/remove";
+        return "/elevated/remove";
     }
 
     private static int execute(ServerCommandSource source, Collection<? extends Entity> targets) throws CommandSyntaxException {

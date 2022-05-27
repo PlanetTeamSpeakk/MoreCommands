@@ -104,7 +104,7 @@ public class DiscordCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/discord";
+        return "/unelevated/discord";
     }
 
     private void sendDiscordTag(CommandContext<ServerCommandSource> ctx, PlayerEntity player) {

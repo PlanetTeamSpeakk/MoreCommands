@@ -21,6 +21,6 @@ public class RotateCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/rotate";
+        return "/rotate";
     }
 }

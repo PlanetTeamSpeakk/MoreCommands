@@ -31,7 +31,7 @@ public class LightCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/light";
+        return "/elevated/light";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, int level, int count) throws CommandSyntaxException {

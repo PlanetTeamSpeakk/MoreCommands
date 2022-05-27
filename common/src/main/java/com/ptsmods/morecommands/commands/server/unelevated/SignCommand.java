@@ -31,6 +31,6 @@ public class SignCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/sign";
+        return "/unelevated/sign";
     }
 }

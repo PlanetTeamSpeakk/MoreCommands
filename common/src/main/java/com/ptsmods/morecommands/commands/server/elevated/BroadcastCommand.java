@@ -19,6 +19,6 @@ public class BroadcastCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/broadcast";
+        return "/elevated/broadcast";
     }
 }

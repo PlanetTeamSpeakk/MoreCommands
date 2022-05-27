@@ -13,6 +13,6 @@ public class ConsoleCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/console";
+        return "/elevated/console";
     }
 }

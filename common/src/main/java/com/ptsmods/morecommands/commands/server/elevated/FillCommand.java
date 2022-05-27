@@ -97,7 +97,7 @@ public class FillCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/fill";
+        return "/elevated/fill";
     }
 
     @Override

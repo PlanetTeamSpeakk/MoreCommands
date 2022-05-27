@@ -22,6 +22,6 @@ public class SuperPickaxeCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/super-pickaxe";
+        return "/elevated/super-pickaxe";
     }
 }

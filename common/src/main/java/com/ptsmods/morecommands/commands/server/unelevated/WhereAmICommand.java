@@ -24,6 +24,6 @@ public class WhereAmICommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/where-am-i";
+        return "/unelevated/where-am-i";
     }
 }

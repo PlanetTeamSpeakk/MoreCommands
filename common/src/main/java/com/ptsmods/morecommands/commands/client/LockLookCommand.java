@@ -60,7 +60,7 @@ public class LockLookCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/lock-look";
+        return "/lock-look";
     }
 
     private float clampAngle(float from, float to, boolean isPitch) {

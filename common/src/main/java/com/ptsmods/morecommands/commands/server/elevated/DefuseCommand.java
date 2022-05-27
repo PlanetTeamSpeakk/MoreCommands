@@ -42,6 +42,6 @@ public class DefuseCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/defuse";
+        return "/elevated/defuse";
     }
 }

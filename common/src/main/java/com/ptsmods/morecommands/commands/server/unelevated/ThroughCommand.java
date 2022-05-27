@@ -74,6 +74,6 @@ public class ThroughCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/through";
+        return "/unelevated/through";
     }
 }

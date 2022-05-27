@@ -28,7 +28,7 @@ public class SpawnMobCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/spawn-mob";
+        return "/elevated/spawn-mob";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {

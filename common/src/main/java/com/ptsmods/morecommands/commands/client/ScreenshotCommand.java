@@ -110,7 +110,7 @@ public class ScreenshotCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/screenshot";
+        return "/screenshot";
     }
 
     private int execute(CommandContext<ClientCommandSource> ctx, int width, int height) {

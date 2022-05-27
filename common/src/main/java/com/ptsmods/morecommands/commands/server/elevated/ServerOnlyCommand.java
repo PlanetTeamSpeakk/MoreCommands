@@ -47,6 +47,6 @@ public class ServerOnlyCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/server-only";
+        return "/elevated/server-only";
     }
 }

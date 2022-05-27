@@ -28,6 +28,6 @@ public class BreakCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/break";
+        return "/elevated/break";
     }
 }

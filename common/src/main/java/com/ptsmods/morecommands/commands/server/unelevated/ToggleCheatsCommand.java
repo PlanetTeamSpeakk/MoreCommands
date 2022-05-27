@@ -23,6 +23,6 @@ public class ToggleCheatsCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/toggle-cheats";
+        return "/unelevated/toggle-cheats";
     }
 }

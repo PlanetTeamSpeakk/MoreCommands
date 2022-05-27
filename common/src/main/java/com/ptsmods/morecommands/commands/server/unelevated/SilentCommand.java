@@ -13,6 +13,6 @@ public class SilentCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/silent";
+        return "/unelevated/silent";
     }
 }

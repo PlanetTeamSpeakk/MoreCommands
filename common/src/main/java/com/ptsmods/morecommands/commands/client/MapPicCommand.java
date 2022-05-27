@@ -91,7 +91,7 @@ public class MapPicCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/map-pic";
+        return "/map-pic";
     }
 
     private int executeCorner(int corner) {

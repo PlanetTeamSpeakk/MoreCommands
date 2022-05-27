@@ -28,7 +28,7 @@ public class SpawnCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/spawn";
+        return "/unelevated/spawn";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player) throws CommandSyntaxException {

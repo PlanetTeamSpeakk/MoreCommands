@@ -143,7 +143,7 @@ public class KitCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/kit";
+        return "/unelevated/kit";
     }
 
     @Override

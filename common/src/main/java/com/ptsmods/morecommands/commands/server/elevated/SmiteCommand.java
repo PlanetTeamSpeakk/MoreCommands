@@ -24,7 +24,7 @@ public class SmiteCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/smite";
+        return "/elevated/smite";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Either<HitResult, ServerPlayerEntity> hitOrPlayer) {

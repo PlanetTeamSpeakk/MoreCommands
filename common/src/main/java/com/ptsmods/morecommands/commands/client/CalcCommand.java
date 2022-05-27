@@ -28,6 +28,6 @@ public class CalcCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/calc";
+        return "/calc";
     }
 }

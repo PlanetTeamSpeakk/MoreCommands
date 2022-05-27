@@ -21,6 +21,6 @@ public class AddMessageCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/add-message";
+        return "/add-message";
     }
 }

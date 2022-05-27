@@ -73,7 +73,7 @@ public class SonicBoomCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/sonic-boom";
+        return "/elevated/sonic-boom";
     }
 
     public static class StaticSonicBoomTask extends Task<WardenEntity> {

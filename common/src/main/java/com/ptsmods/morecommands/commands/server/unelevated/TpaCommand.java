@@ -49,7 +49,7 @@ public class TpaCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/tpa";
+        return "/unelevated/tpa";
     }
 
     private int executeResp(CommandContext<ServerCommandSource> ctx, boolean accept) throws CommandSyntaxException {

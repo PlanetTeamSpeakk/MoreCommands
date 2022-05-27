@@ -19,6 +19,6 @@ public class SendCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/send";
+        return "/send";
     }
 }

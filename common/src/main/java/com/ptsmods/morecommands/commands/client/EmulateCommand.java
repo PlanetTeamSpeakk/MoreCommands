@@ -159,7 +159,7 @@ public class EmulateCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/emulate";
+        return "/emulate";
     }
 
     private int executeTasksAddInterval(Type type, CommandContext<ClientCommandSource> ctx, int button, int count) {

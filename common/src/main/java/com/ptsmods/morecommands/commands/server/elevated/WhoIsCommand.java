@@ -32,6 +32,6 @@ public class WhoIsCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/who-is";
+        return "/elevated/who-is";
     }
 }

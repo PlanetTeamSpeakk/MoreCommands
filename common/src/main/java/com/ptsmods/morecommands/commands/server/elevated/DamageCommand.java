@@ -36,6 +36,6 @@ public class DamageCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/damage";
+        return "/elevated/damage";
     }
 }

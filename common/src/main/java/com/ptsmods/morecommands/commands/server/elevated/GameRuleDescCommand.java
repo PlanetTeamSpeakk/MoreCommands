@@ -27,6 +27,6 @@ public class GameRuleDescCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/gamerule-desc";
+        return "/elevated/gamerule-desc";
     }
 }

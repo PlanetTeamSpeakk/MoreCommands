@@ -13,6 +13,6 @@ public class PingCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/ping";
+        return "/unelevated/ping";
     }
 }

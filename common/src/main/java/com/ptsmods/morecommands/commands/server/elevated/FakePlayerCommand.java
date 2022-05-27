@@ -65,7 +65,7 @@ public class FakePlayerCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/fake-player";
+        return "/elevated/fake-player";
     }
 
     @SuppressWarnings("unchecked")

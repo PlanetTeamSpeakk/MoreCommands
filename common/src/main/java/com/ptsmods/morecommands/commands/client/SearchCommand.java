@@ -50,6 +50,6 @@ public class SearchCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/search";
+        return "/search";
     }
 }

@@ -98,7 +98,7 @@ public class DisableCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/disable";
+        return "/elevated/disable";
     }
 
     private boolean disable(List<CommandNode<ServerCommandSource>> nodes, boolean update) {

@@ -37,6 +37,6 @@ public class ChelpCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/c-help";
+        return "/c-help";
     }
 }

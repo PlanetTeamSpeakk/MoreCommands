@@ -24,6 +24,6 @@ public class HatCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/hat";
+        return "/unelevated/hat";
     }
 }

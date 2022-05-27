@@ -79,6 +79,6 @@ public class DisableClientOptionCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/disable-client-option";
+        return "/elevated/disable-client-option";
     }
 }

@@ -32,6 +32,6 @@ public class DimensionCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/dimension";
+        return "/elevated/dimension";
     }
 }

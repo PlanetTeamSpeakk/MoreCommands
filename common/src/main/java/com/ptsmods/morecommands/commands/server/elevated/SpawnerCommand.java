@@ -39,7 +39,7 @@ public class SpawnerCommand extends Command {
                                     MobSpawnerLogic logic = new MobSpawnerLogic() {
                                         @Override
                                         public void sendStatus(World world, BlockPos pos, int i) {
-                                        }
+                                        } // TODO add remapped versions of following methods
 
                                         public void sendStatus(int status) {
                                         }
@@ -81,6 +81,6 @@ public class SpawnerCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/spawner";
+        return "/elevated/spawner";
     }
 }

@@ -16,6 +16,6 @@ public class ScoreCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/score";
+        return "/score";
     }
 }

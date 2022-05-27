@@ -35,7 +35,7 @@ public class UrbanCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/urban";
+        return "/urban";
     }
 
     @SuppressWarnings("unchecked")

@@ -31,7 +31,7 @@ public class CannonCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/cannon";
+        return "/elevated/cannon";
     }
 
     private int fire(ServerCommandSource source, float power, float motionMultiplier, int fuse) throws CommandSyntaxException {

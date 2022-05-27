@@ -44,7 +44,7 @@ public class VanishCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/vanish";
+        return "/elevated/vanish";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> p) throws CommandSyntaxException {

@@ -77,7 +77,7 @@ public class PotionCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/potion";
+        return "/elevated/potion";
     }
 
     private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {

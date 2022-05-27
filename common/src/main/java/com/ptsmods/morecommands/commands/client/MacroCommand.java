@@ -121,7 +121,7 @@ public class MacroCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/macro";
+        return "/macro";
     }
 
     private int executeAdd(CommandContext<ClientCommandSource> ctx, int index) {

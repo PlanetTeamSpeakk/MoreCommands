@@ -270,7 +270,7 @@ public class WarpCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/warp";
+        return "/unelevated/warp";
     }
 
     private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {

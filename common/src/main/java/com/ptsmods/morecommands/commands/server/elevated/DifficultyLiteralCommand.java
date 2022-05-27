@@ -16,6 +16,6 @@ public class DifficultyLiteralCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/difficulty-literal";
+        return "/elevated/difficulty-literal";
     }
 }

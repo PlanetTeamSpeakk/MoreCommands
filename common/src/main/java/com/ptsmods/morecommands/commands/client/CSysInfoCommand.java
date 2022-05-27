@@ -14,6 +14,6 @@ public class CSysInfoCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/c-sys-info";
+        return "/c-sys-info";
     }
 }

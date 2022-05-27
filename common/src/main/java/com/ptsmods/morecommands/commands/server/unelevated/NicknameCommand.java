@@ -37,7 +37,7 @@ public class NicknameCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/nickname";
+        return "/unelevated/nickname";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, String nickname, ServerPlayerEntity player) throws CommandSyntaxException {

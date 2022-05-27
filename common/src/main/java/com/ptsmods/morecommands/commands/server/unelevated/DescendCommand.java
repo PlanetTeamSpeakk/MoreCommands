@@ -38,6 +38,6 @@ public class DescendCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/descend";
+        return "/unelevated/descend";
     }
 }

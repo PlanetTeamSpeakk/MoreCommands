@@ -28,6 +28,6 @@ public class AnvilCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/anvil";
+        return "/unelevated/anvil";
     }
 }

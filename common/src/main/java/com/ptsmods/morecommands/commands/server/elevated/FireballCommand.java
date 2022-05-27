@@ -45,7 +45,7 @@ public class FireballCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/fireball";
+        return "/elevated/fireball";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, float power, double speed, int impacts) throws CommandSyntaxException {

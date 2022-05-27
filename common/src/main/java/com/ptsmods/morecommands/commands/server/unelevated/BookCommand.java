@@ -39,6 +39,6 @@ public class BookCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/book";
+        return "/unelevated/book";
     }
 }

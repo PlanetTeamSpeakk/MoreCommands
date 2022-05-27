@@ -43,6 +43,6 @@ public class CmdBlockCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/cmd-block";
+        return "/elevated/cmd-block";
     }
 }

@@ -25,6 +25,6 @@ public class EnchantMaxCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/enchant-max";
+        return "/elevated/enchant-max";
     }
 }

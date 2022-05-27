@@ -24,6 +24,6 @@ public class GmCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/gm";
+        return "/elevated/gm";
     }
 }

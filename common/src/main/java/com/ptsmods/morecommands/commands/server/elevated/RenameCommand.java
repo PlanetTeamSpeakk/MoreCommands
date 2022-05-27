@@ -28,6 +28,6 @@ public class RenameCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/rename";
+        return "/elevated/rename";
     }
 }

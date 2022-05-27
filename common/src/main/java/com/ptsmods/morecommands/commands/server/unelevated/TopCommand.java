@@ -19,6 +19,6 @@ public class TopCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/top";
+        return "/unelevated/top";
     }
 }

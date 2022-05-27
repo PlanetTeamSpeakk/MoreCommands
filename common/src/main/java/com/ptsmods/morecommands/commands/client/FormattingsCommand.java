@@ -40,6 +40,6 @@ public class FormattingsCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/formattings";
+        return "/formattings";
     }
 }

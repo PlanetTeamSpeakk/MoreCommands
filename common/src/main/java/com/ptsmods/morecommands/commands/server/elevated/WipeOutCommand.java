@@ -41,7 +41,7 @@ public class WipeOutCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/wipe-out";
+        return "/elevated/wipe-out";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Predicate<Entity> predicate) {

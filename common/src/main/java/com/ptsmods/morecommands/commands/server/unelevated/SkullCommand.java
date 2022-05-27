@@ -35,7 +35,7 @@ public class SkullCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/skull";
+        return "/unelevated/skull";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {

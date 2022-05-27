@@ -51,6 +51,6 @@ public class BackCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/back";
+        return "/unelevated/back";
     }
 }

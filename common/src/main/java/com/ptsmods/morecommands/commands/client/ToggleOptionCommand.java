@@ -28,7 +28,7 @@ public class ToggleOptionCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/toggle-option";
+        return "/toggle-option";
     }
 
     private static int execute(BooleanClientOption option, Boolean value) {

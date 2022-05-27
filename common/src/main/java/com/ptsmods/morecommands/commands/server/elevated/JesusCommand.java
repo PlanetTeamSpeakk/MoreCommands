@@ -21,6 +21,6 @@ public class JesusCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/jesus";
+        return "/elevated/jesus";
     }
 }

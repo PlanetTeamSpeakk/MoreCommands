@@ -111,7 +111,7 @@ public class BindCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/bind";
+        return "/bind";
     }
 
     private int executeRecord(int amount) {

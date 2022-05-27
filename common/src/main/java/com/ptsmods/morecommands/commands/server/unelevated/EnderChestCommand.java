@@ -28,7 +28,7 @@ public class EnderChestCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/ender-chest";
+        return "/unelevated/ender-chest";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {

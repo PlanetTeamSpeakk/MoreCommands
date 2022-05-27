@@ -84,7 +84,7 @@ public class HomeCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/home";
+        return "/unelevated/home";
     }
 
     private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {

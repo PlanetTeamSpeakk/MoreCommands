@@ -48,7 +48,7 @@ public class VaultCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/vault";
+        return "/unelevated/vault";
     }
 
     public int execute(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity owner) throws CommandSyntaxException {

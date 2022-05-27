@@ -34,7 +34,7 @@ public class TpsCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/tps";
+        return "/unelevated/tps";
     }
 
     private String formatTps(double tps) {

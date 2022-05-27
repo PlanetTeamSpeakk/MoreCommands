@@ -29,7 +29,7 @@ public class ExtinguishCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/extinguish";
+        return "/elevated/extinguish";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Collection<? extends Entity> entities) throws CommandSyntaxException {

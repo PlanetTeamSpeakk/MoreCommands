@@ -55,7 +55,7 @@ public class CdataCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/c-data";
+        return "/c-data";
     }
 
     private static NbtElement getTag(NbtPathArgumentType.NbtPath path, ClientDataCommandObject object) throws CommandSyntaxException {

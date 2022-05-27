@@ -30,6 +30,6 @@ public class WildCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/wild";
+        return "/unelevated/wild";
     }
 }

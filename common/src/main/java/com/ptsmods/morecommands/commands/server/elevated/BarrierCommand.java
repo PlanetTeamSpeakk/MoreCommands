@@ -41,6 +41,6 @@ public class BarrierCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/barrier";
+        return "/elevated/barrier";
     }
 }

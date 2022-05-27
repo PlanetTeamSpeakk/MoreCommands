@@ -37,7 +37,7 @@ public class PweatherCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/pweather";
+        return "/pweather";
     }
 
     public enum WeatherType {

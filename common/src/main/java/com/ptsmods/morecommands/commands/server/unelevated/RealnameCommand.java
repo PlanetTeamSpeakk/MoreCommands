@@ -39,6 +39,6 @@ public class RealnameCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/realname";
+        return "/unelevated/realname";
     }
 }

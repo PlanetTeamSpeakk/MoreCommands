@@ -15,6 +15,6 @@ public class TimeLiteralCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/time-literal";
+        return "/elevated/time-literal";
     }
 }

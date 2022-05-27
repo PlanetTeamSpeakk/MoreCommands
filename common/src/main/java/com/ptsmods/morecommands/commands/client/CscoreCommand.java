@@ -41,7 +41,7 @@ public class CscoreCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/c-score";
+        return "/c-score";
     }
 
     private int sendTeamDetails(Team team, boolean showMembers) {

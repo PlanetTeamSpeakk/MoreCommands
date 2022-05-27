@@ -57,7 +57,7 @@ public class JoinNotifyCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/join-notify";
+        return "/join-notify";
     }
 
     private void onCall(PlayerListEntry entry, boolean joined) {

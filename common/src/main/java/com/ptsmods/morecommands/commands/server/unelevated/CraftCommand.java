@@ -27,6 +27,6 @@ public class CraftCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/craft";
+        return "/unelevated/craft";
     }
 }

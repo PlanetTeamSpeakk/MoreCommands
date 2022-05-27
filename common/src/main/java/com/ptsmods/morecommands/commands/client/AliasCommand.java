@@ -92,7 +92,7 @@ public class AliasCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/alias";
+        return "/alias";
     }
 
     private void saveData() {

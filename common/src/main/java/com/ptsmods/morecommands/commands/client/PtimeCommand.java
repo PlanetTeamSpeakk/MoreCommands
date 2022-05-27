@@ -53,6 +53,6 @@ public class PtimeCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/ptime";
+        return "/ptime";
     }
 }

@@ -59,6 +59,6 @@ public class DefineCommand extends ClientCommand {
 
     @Override
     public String getDocsPath() {
-        return "/client/define";
+        return "/define";
     }
 }

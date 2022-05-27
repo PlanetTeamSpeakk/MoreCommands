@@ -45,7 +45,7 @@ public class SpeedCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/speed";
+        return "/elevated/speed";
     }
 
     private SpeedType determineSpeedType(ServerPlayerEntity player) {

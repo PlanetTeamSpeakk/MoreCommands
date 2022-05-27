@@ -31,7 +31,7 @@ public class UnlimitedCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/unlimited";
+        return "/elevated/unlimited";
     }
 
     public static boolean isUnlimited(ItemStack stack) {

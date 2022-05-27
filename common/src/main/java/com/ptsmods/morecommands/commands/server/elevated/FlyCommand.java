@@ -27,6 +27,6 @@ public class FlyCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/fly";
+        return "/elevated/fly";
     }
 }

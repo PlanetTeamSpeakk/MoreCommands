@@ -25,6 +25,6 @@ public class MoreCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/more";
+        return "/elevated/more";
     }
 }

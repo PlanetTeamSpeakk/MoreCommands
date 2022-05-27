@@ -49,6 +49,6 @@ public class EcloneCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/eclone";
+        return "/elevated/eclone";
     }
 }

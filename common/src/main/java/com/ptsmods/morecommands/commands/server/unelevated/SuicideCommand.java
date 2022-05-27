@@ -21,6 +21,6 @@ public class SuicideCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/suicide";
+        return "/unelevated/suicide";
     }
 }

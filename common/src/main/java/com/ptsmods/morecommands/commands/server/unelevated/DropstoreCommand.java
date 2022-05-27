@@ -39,7 +39,7 @@ public class DropstoreCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/unelevated/dropstore";
+        return "/unelevated/dropstore";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, BlockPos pos, boolean clear) throws CommandSyntaxException {

@@ -25,7 +25,7 @@ public class HealCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/heal";
+        return "/elevated/heal";
     }
 
     private int execute(ServerPlayerEntity player) {

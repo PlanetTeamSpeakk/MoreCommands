@@ -25,6 +25,6 @@ public class FixCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/fix";
+        return "/elevated/fix";
     }
 }

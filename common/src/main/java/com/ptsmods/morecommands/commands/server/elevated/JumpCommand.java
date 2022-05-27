@@ -29,6 +29,6 @@ public class JumpCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/jump";
+        return "/elevated/jump";
     }
 }

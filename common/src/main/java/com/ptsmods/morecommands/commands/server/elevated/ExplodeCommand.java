@@ -34,7 +34,7 @@ public class ExplodeCommand extends Command {
 
     @Override
     public String getDocsPath() {
-        return "/server/elevated/explode";
+        return "/elevated/explode";
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, Vec3d pos, float power, boolean fire, Explosion.DestructionType destruct, boolean launch) {
