@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.util.tuples.TriConsumer;
 import com.ptsmods.morecommands.util.tuples.TriFunction;
+import lombok.experimental.UtilityClass;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -27,7 +28,6 @@ import java.util.stream.Collectors;
 public enum DataTrackerHelper implements IDataTrackerHelper {
     INSTANCE;
 
-    private static final Map<Class<? extends LivingEntity>, List<DataTrackerEntry<?>>> dataEntries = new HashMap<>();
     private final TrackedData<Boolean> MAY_FLY = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "MayFly", NbtCompound::getBoolean, NbtCompound::putBoolean);
     private final TrackedData<Boolean> INVULNERABLE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "Invulnerable", NbtCompound::getBoolean, NbtCompound::putBoolean);
     private final TrackedData<Boolean> SUPERPICKAXE = registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN, false, "SuperPickaxe", NbtCompound::getBoolean, NbtCompound::putBoolean);
@@ -53,19 +53,19 @@ public enum DataTrackerHelper implements IDataTrackerHelper {
     public static <T> TrackedData<T> registerData(Class<? extends LivingEntity> entityClass, TrackedDataHandler<T> dataHandler, T defaultValue, @Nullable String tagKey,
                                                   @Nullable BiFunction<NbtCompound, String, T> reader, @Nullable TriConsumer<NbtCompound, String, T> writer) {
         TrackedData<T> data = DataTracker.registerData(entityClass, dataHandler);
-        dataEntries.computeIfAbsent(entityClass, c -> new ArrayList<>()).add(new DataTrackerEntry<>(data, defaultValue, tagKey, reader, writer));
+        EntriesHolder.dataEntries.computeIfAbsent(entityClass, c -> new ArrayList<>()).add(new DataTrackerEntry<>(data, defaultValue, tagKey, reader, writer));
         return data;
     }
 
     public static <T, E extends LivingEntity> TrackedData<T> registerData(Class<E> entityClass, TrackedDataHandler<T> dataHandler, T defaultValue, @Nullable String tagKey,
                                                                           @Nullable TriFunction<NbtCompound, String, E, T> reader, @Nullable TriConsumer<NbtCompound, String, T> writer) {
         TrackedData<T> data = DataTracker.registerData(entityClass, dataHandler);
-        dataEntries.computeIfAbsent(entityClass, c -> new ArrayList<>()).add(new DataTrackerEntry<>(data, defaultValue, tagKey, reader, writer));
+        EntriesHolder.dataEntries.computeIfAbsent(entityClass, c -> new ArrayList<>()).add(new DataTrackerEntry<>(data, defaultValue, tagKey, reader, writer));
         return data;
     }
 
     public static List<DataTrackerEntry<?>> getDataEntries(Class<? extends LivingEntity> clazz) {
-        return dataEntries.entrySet().stream()
+        return EntriesHolder.dataEntries.entrySet().stream()
                 .filter(entry -> entry.getKey().isAssignableFrom(clazz))
                 .flatMap(entry -> entry.getValue().stream())
                 .collect(Collectors.toList());
@@ -171,5 +171,10 @@ public enum DataTrackerHelper implements IDataTrackerHelper {
         public void write(NbtCompound nbt, T value) {
             writer.accept(nbt, getTagKey(), value);
         }
+    }
+
+    @UtilityClass
+    private static class EntriesHolder {
+        private final Map<Class<? extends LivingEntity>, List<DataTrackerEntry<?>>> dataEntries = new HashMap<>();
     }
 }
