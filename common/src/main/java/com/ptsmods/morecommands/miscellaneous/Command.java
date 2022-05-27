@@ -107,6 +107,10 @@ public abstract class Command {
 
     public abstract String getDocsPath();
 
+    public boolean doLateInit() {
+        return false;
+    }
+
     // UTILITY METHODS
 
     public static Database getLocalDb() {

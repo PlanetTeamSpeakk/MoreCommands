@@ -258,23 +258,35 @@ public enum MoreCommands implements IMoreCommands {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        // Lomboks @Helper straight up doesn't work.
+        // Complaining about it only being legal on method-local classes even though this is one.
+        class CommandRegisterer {
+            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher) {
+                try {
+                    CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
+                    cmd.register(tempDispatcher, dedicated);
+
+                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) {
+                        dispatcher.getRoot().addChild(child);
+                    }
+                    permissions.putAll(cmd.getExtraPermissions());
+                } catch (Exception e) {
+                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                }
+            }
+        }
+
+        CommandRegisterer registerer = new CommandRegisterer();
+
         CommandRegistrationEvent.EVENT.register((dispatcher, environment) -> {
             boolean dedicated = environment == CommandManager.RegistrationEnvironment.DEDICATED;
             serverCommands.stream()
-                    .filter(cmd -> !cmd.isDedicatedOnly() || dedicated)
-                    .forEach(cmd -> {
-                        try {
-                            CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
-                            cmd.register(tempDispatcher, dedicated);
+                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
 
-                            for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) {
-                                dispatcher.getRoot().addChild(child);
-                            }
-                            permissions.putAll(cmd.getExtraPermissions());
-                        } catch (Exception e) {
-                            LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-                        }
-                    });
+            serverCommands.stream()
+                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
         });
 
         PostInitEvent.EVENT.register(() -> {

@@ -78,6 +78,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient {
@@ -217,17 +218,31 @@ public class MoreCommandsClient {
 
         ClientEntityEvent.ENTITY_UNLOAD.register((world, entity) -> coolKids.remove(entity));
 
-        List<ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
-                .map(MoreCommands::getInstance)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        ClientCommandRegistrationEvent.EVENT.register(dispatcher -> clientCommands.forEach(cmd -> {
-            try {
-                cmd.cRegister(dispatcher);
-            } catch (Exception e) {
-                LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+        class CommandRegisterer {
+            void registerCommand(ClientCommand cmd, CommandDispatcher<ClientCommandSource> dispatcher) {
+                try {
+                    cmd.cRegister(dispatcher);
+                } catch (Exception e) {
+                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                }
             }
-        }));
+        }
+
+        CommandRegisterer registerer = new CommandRegisterer();
+        Stream<? extends ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
+                .map(MoreCommands::getInstance)
+                .filter(Objects::nonNull);
+        ClientCommandRegistrationEvent.EVENT.register(dispatcher -> {
+            clientCommands
+                    .filter(cmd -> !cmd.doLateInit())
+                    .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
+
+            clientCommands
+                    .filter(Command::doLateInit)
+                    .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
+        });
+
+
 
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, new Identifier("morecommands:formatting_update"), (buf, context) -> {
             int id = buf.readByte();
