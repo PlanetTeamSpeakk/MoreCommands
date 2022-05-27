@@ -146,6 +146,7 @@ public enum MoreCommands implements IMoreCommands {
     private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
     private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     private static Database globalDb, localDb;
+    private static final Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
 
     static {
         try {
@@ -258,6 +259,9 @@ public enum MoreCommands implements IMoreCommands {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+
+        Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
+
         // Lomboks @Helper straight up doesn't work.
         // Complaining about it only being legal on method-local classes even though this is one.
         class CommandRegisterer {
@@ -266,9 +270,8 @@ public enum MoreCommands implements IMoreCommands {
                     CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
                     cmd.register(tempDispatcher, dedicated);
 
-                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) {
-                        dispatcher.getRoot().addChild(child);
-                    }
+                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
                     permissions.putAll(cmd.getExtraPermissions());
                 } catch (Exception e) {
                     LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
@@ -287,6 +290,8 @@ public enum MoreCommands implements IMoreCommands {
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
+
+            MoreCommands.nodes.putAll(nodes);
         });
 
         PostInitEvent.EVENT.register(() -> {
@@ -1340,5 +1345,9 @@ public enum MoreCommands implements IMoreCommands {
             Command.log.error("Error reading decoded bytes.", e);
             return null;
         }
+    }
+
+    public static Map<Command, Collection<CommandNode<ServerCommandSource>>> getNodes() {
+        return ImmutableMap.copyOf(nodes);
     }
 }

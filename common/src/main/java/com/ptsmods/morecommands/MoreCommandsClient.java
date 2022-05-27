@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.callbacks.ChatMessageSendEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
@@ -98,6 +99,7 @@ public class MoreCommandsClient {
     private static final File wicFile = MoreCommandsArch.getConfigDirectory().resolve("worldInitCommands.json").toFile();
     private static final Map<String, String> nameMCFriends = new HashMap<>();
     private static final HttpClient sslLenientHttpClient;
+    private static final Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> nodes = new LinkedHashMap<>();
 
     static {
         for (Field f : GLFW.class.getFields())
@@ -218,10 +220,16 @@ public class MoreCommandsClient {
 
         ClientEntityEvent.ENTITY_UNLOAD.register((world, entity) -> coolKids.remove(entity));
 
+
+        Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> nodes = new LinkedHashMap<>();
         class CommandRegisterer {
             void registerCommand(ClientCommand cmd, CommandDispatcher<ClientCommandSource> dispatcher) {
                 try {
-                    cmd.cRegister(dispatcher);
+                    CommandDispatcher<ClientCommandSource> tempDispatcher = new CommandDispatcher<>();
+                    cmd.cRegister(tempDispatcher);
+
+                    for (CommandNode<ClientCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
                 } catch (Exception e) {
                     LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
                 }
@@ -240,9 +248,9 @@ public class MoreCommandsClient {
             clientCommands
                     .filter(Command::doLateInit)
                     .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
+
+            MoreCommandsClient.nodes.putAll(nodes);
         });
-
-
 
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, new Identifier("morecommands:formatting_update"), (buf, context) -> {
             int id = buf.readByte();
@@ -438,5 +446,9 @@ public class MoreCommandsClient {
 
     public static void updateNameMCFriend(String id, String name) {
         nameMCFriends.put(id, name);
+    }
+
+    public static Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> getNodes() {
+        return ImmutableMap.copyOf(nodes);
     }
 }
