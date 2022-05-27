@@ -173,7 +173,7 @@ public class EmulateCommand extends ClientCommand {
     private int executeTasksAdd(EmulateTask task) {
         pendingTasks.add(task);
         sendMsg("The task has been added with id " + SF + task.id + DF + ", to remove it, type " + SF + "/emulate " + task.type.name().toLowerCase() + " remove " + task.id + DF + ".");
-        return tasks.size();
+        return task.id;
     }
 
     private static class EmulateTask {
