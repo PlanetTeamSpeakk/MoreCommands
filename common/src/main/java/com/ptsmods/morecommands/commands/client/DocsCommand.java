@@ -33,7 +33,8 @@ public class DocsCommand extends ClientCommand {
         LiteralArgumentBuilder<ClientCommandSource> clientOption = cLiteral("clientoption");
         ClientOption.getKeyMappedOptions().forEach((key, option) -> clientOption
                 .then(cLiteral(key)
-                        .executes(ctx -> open("/client-options/" + option.getName().toLowerCase(Locale.ROOT).replace(' ', '-')))));
+                        .executes(ctx -> open("/client-options/" + option.getCategory().name().toLowerCase(Locale.ROOT).replace('_', '-') + '/' +
+                                option.getName().toLowerCase(Locale.ROOT).replace(' ', '-')))));
 
         dispatcher.register(cLiteral("mcdocs")
                 .then(clientCommand)
@@ -54,7 +55,7 @@ public class DocsCommand extends ClientCommand {
     }
 
     private static int open(String path) {
-        Util.getOperatingSystem().open("https://morecommands.ptsmods.com" + (path.startsWith("/") ? "" : "/") + path);
+        Util.getOperatingSystem().open("https://morecommands.ptsmods.com" + path);
         return 1;
     }
 
