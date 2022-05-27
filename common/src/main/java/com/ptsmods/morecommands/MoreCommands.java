@@ -436,7 +436,7 @@ public enum MoreCommands implements IMoreCommands {
         // Lomboks @Helper straight up doesn't work.
         // Complaining about it only being legal on method-local classes even though this is one.
         class CommandRegisterer {
-            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher) {
+            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher, boolean ignoreExceptions) {
                 try {
                     CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
                     cmd.register(tempDispatcher, dedicated);
@@ -445,7 +445,8 @@ public enum MoreCommands implements IMoreCommands {
                     nodes.put(cmd, tempDispatcher.getRoot().getChildren());
                     permissions.putAll(cmd.getExtraPermissions());
                 } catch (Exception e) {
-                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                    if (!ignoreExceptions)
+                        LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
                 }
             }
         }
@@ -455,7 +456,9 @@ public enum MoreCommands implements IMoreCommands {
 
         serverCommands.stream()
                 .filter(cmd -> !cmd.doLateInit())
-                .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher));
+                // Some commands cannot yet be registered at this stage
+                // E.g. commands using CommandRegistryAccess
+                .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher, true));
 
         // Only registering them in CommandRegistrationEvent is too late for the docs command.
         MoreCommands.nodes.putAll(nodes);
@@ -464,11 +467,11 @@ public enum MoreCommands implements IMoreCommands {
             boolean dedicated = environment == CommandManager.RegistrationEnvironment.DEDICATED;
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
 
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
         });
     }
 

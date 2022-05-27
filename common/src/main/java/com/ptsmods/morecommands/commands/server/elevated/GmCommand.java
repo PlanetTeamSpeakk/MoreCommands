@@ -1,26 +1,25 @@
 package com.ptsmods.morecommands.commands.server.elevated;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.CommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.world.GameMode;
+
+import java.util.Map;
 
 public class GmCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        CommandNode<ServerCommandSource> gamemode = dispatcher.getRoot().getChild("gamemode");
-        dispatcher.register(setLiteral(((LiteralCommandNode<ServerCommandSource>) gamemode.getChild("creative")).createBuilder(), "gmc").requires(IS_OP));
-        dispatcher.register(setLiteral(((LiteralCommandNode<ServerCommandSource>) gamemode.getChild("survival")).createBuilder(), "gms").requires(IS_OP));
-        dispatcher.register(setLiteral(((LiteralCommandNode<ServerCommandSource>) gamemode.getChild("adventure")).createBuilder(), "gma").requires(IS_OP));
-        dispatcher.register(setLiteral(((LiteralCommandNode<ServerCommandSource>) gamemode.getChild("spectator")).createBuilder(), "gmsp").requires(IS_OP));
-    }
+        Map<String, GameMode> modes = ImmutableMap.of(
+                "gmc", GameMode.CREATIVE,
+                "gms", GameMode.SURVIVAL,
+                "gma", GameMode.ADVENTURE,
+                "gmsp", GameMode.SPECTATOR
+        );
 
-    private LiteralArgumentBuilder<ServerCommandSource> setLiteral(LiteralArgumentBuilder<ServerCommandSource> builder, String literal) {
-        LiteralArgumentBuilder<ServerCommandSource> cmd = literal(literal).requires(hasPermissionOrOp("morecommands." + literal)).forward(builder.getRedirect(), builder.getRedirectModifier(), builder.isFork()).executes(builder.getCommand());
-        builder.build().getChildren().forEach(child -> cmd.then(child.createBuilder()));
-        return cmd;
+        modes.forEach((literal, gameMode) -> dispatcher.register(literalReqOp(literal)
+                .executes(ctx -> ctx.getSource().getServer().getCommandManager().getDispatcher().getRoot().getChild("gamemode").getChild(gameMode.getName()).getCommand().run(ctx))));
     }
 
     @Override

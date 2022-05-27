@@ -79,7 +79,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient {
@@ -237,15 +236,21 @@ public class MoreCommandsClient {
         }
 
         CommandRegisterer registerer = new CommandRegisterer();
-        Stream<? extends ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
+        List<? extends ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
                 .map(MoreCommands::getInstance)
-                .filter(Objects::nonNull);
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         ClientCommandRegistrationEvent.EVENT.register(dispatcher -> {
             clientCommands
+                    .stream()
                     .filter(cmd -> !cmd.doLateInit())
                     .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
 
+            MoreCommandsClient.nodes.putAll(nodes);
+            nodes.clear();
+
             clientCommands
+                    .stream()
                     .filter(Command::doLateInit)
                     .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
 
