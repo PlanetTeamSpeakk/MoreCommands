@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
@@ -14,7 +13,6 @@ import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class CscoreCommand extends ClientCommand {
 
@@ -29,15 +27,16 @@ public class CscoreCommand extends ClientCommand {
                 .then(cLiteral("team")
                         .then(cArgument("team", StringArgumentType.word())
                                 .executes(ctx -> sendTeamDetails(getTeam(ctx), false))
-                .then(cArgument("showMembers", BoolArgumentType.bool())
-                        .executes(ctx -> sendTeamDetails(getTeam(ctx), ctx.getArgument("showMembers", boolean.class))))))
-                .then(cLiteral("objectives").executes(ctx -> {
-                    List<String> strings = new ArrayList<>();
-                    Scoreboard board = getScoreboard();
-                    board.getObjectiveNames().forEach(obj -> strings.add(obj + ": " + board.getObjective(obj).getCriterion().getName()));
-                    sendMsg(strings.isEmpty() ? "There are currently no objectives." : "The current objectives and their criteria are " + joinNicely(strings) + ".");
-                    return strings.size();
-                })));
+                                .then(cArgument("showMembers", BoolArgumentType.bool())
+                                        .executes(ctx -> sendTeamDetails(getTeam(ctx), ctx.getArgument("showMembers", boolean.class))))))
+                .then(cLiteral("objectives")
+                        .executes(ctx -> {
+                            List<String> strings = new ArrayList<>();
+                            Scoreboard board = getScoreboard();
+                            board.getObjectiveNames().forEach(obj -> strings.add(obj + ": " + board.getObjective(obj).getCriterion().getName()));
+                            sendMsg(strings.isEmpty() ? "There are currently no objectives." : "The current objectives and their criteria are " + joinNicely(strings) + ".");
+                            return strings.size();
+                        })));
     }
 
     @Override
@@ -63,7 +62,7 @@ public class CscoreCommand extends ClientCommand {
     }
 
     private Scoreboard getScoreboard() {
-        return Objects.requireNonNull(MinecraftClient.getInstance().world).getScoreboard();
+        return getWorld().getScoreboard();
     }
 
     private Team getTeam(CommandContext<ClientCommandSource> ctx) {
