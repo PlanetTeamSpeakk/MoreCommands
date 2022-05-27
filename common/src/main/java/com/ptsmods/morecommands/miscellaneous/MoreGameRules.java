@@ -22,8 +22,8 @@ import java.util.function.BiConsumer;
 @Accessors(fluent = true)
 @Getter
 public class MoreGameRules implements IMoreGameRules {
-    private static final MoreGameRules INSTANCE = new MoreGameRules();
     private static final List<GameRules.Key<?>> pendingPermChecks = new ArrayList<>();
+    private static final MoreGameRules INSTANCE = new MoreGameRules();
     private final Map<String, GameRules.Key<?>> allRules = new LinkedHashMap<>();
     private final GameRules.Key<EnumRule<FormattingColour>> DFrule = createEnumRule("defaultFormatting", FormattingColour.class, FormattingColour.GOLD,
             (server, value) -> MoreCommands.updateFormatting(server, 0, value.get()));
