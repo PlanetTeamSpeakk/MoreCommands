@@ -254,45 +254,7 @@ public enum MoreCommands implements IMoreCommands {
         File dir = new File("config/MoreCommands");
         if (!dir.exists() && !dir.mkdirs()) throw new RuntimeException("Could not make config dir.");
 
-        List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
-                .map(MoreCommands::getInstance)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-
-        Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
-
-        // Lomboks @Helper straight up doesn't work.
-        // Complaining about it only being legal on method-local classes even though this is one.
-        class CommandRegisterer {
-            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher) {
-                try {
-                    CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
-                    cmd.register(tempDispatcher, dedicated);
-
-                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
-                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
-                    permissions.putAll(cmd.getExtraPermissions());
-                } catch (Exception e) {
-                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-                }
-            }
-        }
-
-        CommandRegisterer registerer = new CommandRegisterer();
-
-        CommandRegistrationEvent.EVENT.register((dispatcher, environment) -> {
-            boolean dedicated = environment == CommandManager.RegistrationEnvironment.DEDICATED;
-            serverCommands.stream()
-                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
-
-            serverCommands.stream()
-                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
-
-            MoreCommands.nodes.putAll(nodes);
-        });
+        doCommandRegistration();
 
         PostInitEvent.EVENT.register(() -> {
             blockBlacklist.clear();
@@ -461,6 +423,53 @@ public enum MoreCommands implements IMoreCommands {
         }
 
         return classes;
+    }
+
+     private static void doCommandRegistration() {
+        List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
+                .map(MoreCommands::getInstance)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
+
+        // Lomboks @Helper straight up doesn't work.
+        // Complaining about it only being legal on method-local classes even though this is one.
+        class CommandRegisterer {
+            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher) {
+                try {
+                    CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
+                    cmd.register(tempDispatcher, dedicated);
+
+                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
+                    permissions.putAll(cmd.getExtraPermissions());
+                } catch (Exception e) {
+                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                }
+            }
+        }
+
+        CommandRegisterer registerer = new CommandRegisterer();
+        CommandDispatcher<ServerCommandSource> nilDispatcher = new CommandDispatcher<>();
+
+        serverCommands.stream()
+                .filter(cmd -> !cmd.doLateInit())
+                .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher));
+
+        // Only registering them in CommandRegistrationEvent is too late for the docs command.
+        MoreCommands.nodes.putAll(nodes);
+
+        CommandRegistrationEvent.EVENT.register((dispatcher, environment) -> {
+            boolean dedicated = environment == CommandManager.RegistrationEnvironment.DEDICATED;
+            serverCommands.stream()
+                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
+
+            serverCommands.stream()
+                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
+                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher));
+        });
     }
 
     @Override
