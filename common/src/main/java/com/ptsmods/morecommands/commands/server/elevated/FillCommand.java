@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.commands.server.elevated;
 
+import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
@@ -97,6 +98,11 @@ public class FillCommand extends Command {
     @Override
     public String getDocsPath() {
         return "/server/elevated/fill";
+    }
+
+    @Override
+    public Collection<String> getRegisteredNodes() {
+        return Lists.newArrayList("fill");
     }
 
     private static int execute(CommandContext<ServerCommandSource> ctx, BlockBox range, BlockStateArgument block, Mode mode, Predicate<CachedBlockPosition> filter) {

@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -436,17 +437,27 @@ public enum MoreCommands implements IMoreCommands {
         // Lomboks @Helper straight up doesn't work.
         // Complaining about it only being legal on method-local classes even though this is one.
         class CommandRegisterer {
-            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher, boolean ignoreExceptions) {
+            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher, boolean dryRun) {
+                Collection<String> registeredNodes = cmd.getRegisteredNodes();
+
+                // Some commands cannot yet be registered at this stage
+                // E.g. commands using CommandRegistryAccess
+                if (dryRun && registeredNodes != null) {
+                    nodes.put(cmd, registeredNodes.stream()
+                            .map(node -> Command.literal(node).build())
+                            .collect(ImmutableList.toImmutableList()));
+                    return;
+                }
+
                 try {
                     CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
                     cmd.register(tempDispatcher, dedicated);
 
                     for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
-                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
+                    nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
                     permissions.putAll(cmd.getExtraPermissions());
                 } catch (Exception e) {
-                    if (!ignoreExceptions)
-                        LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
                 }
             }
         }
@@ -456,8 +467,6 @@ public enum MoreCommands implements IMoreCommands {
 
         serverCommands.stream()
                 .filter(cmd -> !cmd.doLateInit())
-                // Some commands cannot yet be registered at this stage
-                // E.g. commands using CommandRegistryAccess
                 .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher, true));
 
         // Only registering them in CommandRegistrationEvent is too late for the docs command.

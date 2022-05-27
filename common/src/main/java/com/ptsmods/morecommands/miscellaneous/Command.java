@@ -111,6 +111,10 @@ public abstract class Command {
         return false;
     }
 
+    public Collection<String> getRegisteredNodes() {
+        return null; // Default implementation just checks what nodes appear after registering this command.
+    }
+
     // UTILITY METHODS
 
     public static Database getLocalDb() {
