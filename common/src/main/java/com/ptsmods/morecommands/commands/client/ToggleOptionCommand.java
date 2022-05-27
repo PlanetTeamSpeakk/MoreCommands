@@ -15,12 +15,13 @@ public class ToggleOptionCommand extends ClientCommand {
     public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<ClientCommandSource> toggleoption = cLiteral("toggleoption");
 
-        ClientOption.getUnmappedOptions().entrySet().stream()
-                .filter(entry -> entry.getValue() instanceof BooleanClientOption)
-                .forEach(entry -> toggleoption.then(cLiteral(entry.getValue().getKey())
-                        .executes(ctx -> execute((BooleanClientOption) entry.getValue(), null))
+        ClientOption.getUnmappedOptions().values().stream()
+                .filter(option -> option instanceof BooleanClientOption)
+                .map(option -> (BooleanClientOption) option)
+                .forEach(option -> toggleoption.then(cLiteral(option.getKey())
+                        .executes(ctx -> execute(option, null))
                         .then(cArgument("value", BoolArgumentType.bool())
-                                .executes(ctx -> execute((BooleanClientOption) entry.getValue(), ctx.getArgument("value", Boolean.class))))));
+                                .executes(ctx -> execute(option, ctx.getArgument("value", Boolean.class))))));
 
         dispatcher.register(toggleoption);
     }
