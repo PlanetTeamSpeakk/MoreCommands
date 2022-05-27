@@ -3,11 +3,15 @@ package com.ptsmods.morecommands.api;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.GameRules;
 
+import java.util.Map;
+
 public interface IMoreGameRules {
 
     static IMoreGameRules get() {
         return Holder.getMoreGameRules();
     }
+
+    Map<String, GameRules.Key<?>> allRules();
 
     // SFrule and DFrule are not API because EnumRule isn't either.
     GameRules.Key<GameRules.BooleanRule> doMeltRule();

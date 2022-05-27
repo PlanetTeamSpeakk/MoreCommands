@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Holder;
@@ -13,15 +14,17 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 @Accessors(fluent = true)
 @Getter
 public class MoreGameRules implements IMoreGameRules {
-
-    private static final List<GameRules.Key<?>> pendingPermChecks = new ArrayList<>();
     private static final MoreGameRules INSTANCE = new MoreGameRules();
+    private static final List<GameRules.Key<?>> pendingPermChecks = new ArrayList<>();
+    private final Map<String, GameRules.Key<?>> allRules = new LinkedHashMap<>();
     private final GameRules.Key<EnumRule<FormattingColour>> DFrule = createEnumRule("defaultFormatting", FormattingColour.class, FormattingColour.GOLD,
             (server, value) -> MoreCommands.updateFormatting(server, 0, value.get()));
     private final GameRules.Key<EnumRule<FormattingColour>> SFrule = createEnumRule("secondaryFormatting", FormattingColour.class, FormattingColour.YELLOW,
@@ -63,15 +66,26 @@ public class MoreGameRules implements IMoreGameRules {
             pendingPermChecks.add(key); // TODO forge perms
             MoreCommands.registerPermission("morecommands.gamerule." + key.getName(), true);
         }
+
+        allRules.put(name, key);
         return key;
     }
 
     private GameRules.Key<GameRules.IntRule> createIntRule(String name, GameRules.Category category, int defaultValue) {
-        return GameRules.register(name, category, GameRules.IntRule.create(defaultValue));
+        GameRules.Key<GameRules.IntRule> key = GameRules.register(name, category, GameRules.IntRule.create(defaultValue));
+        allRules.put(name, key);
+        return key;
     }
 
     private <E extends Enum<E>> GameRules.Key<EnumRule<E>> createEnumRule(String name, Class<E> clazz, E defaultValue, BiConsumer<MinecraftServer, EnumRule<E>> changeListener) {
-        return GameRules.register(name, GameRules.Category.MISC, EnumRule.createEnumRule(clazz, defaultValue, changeListener));
+        GameRules.Key<EnumRule<E>> key = GameRules.register(name, GameRules.Category.MISC, EnumRule.createEnumRule(clazz, defaultValue, changeListener));
+        allRules.put(name, key);
+        return key;
+    }
+
+    @Override
+    public Map<String, GameRules.Key<?>> allRules() {
+        return ImmutableMap.copyOf(allRules);
     }
 
     public boolean checkBooleanWithPerm(GameRules gameRules, GameRules.Key<GameRules.BooleanRule> key, Entity entity) {
