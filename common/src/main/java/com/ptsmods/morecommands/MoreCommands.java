@@ -46,7 +46,6 @@ import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import io.netty.buffer.Unpooled;
 import lombok.SneakyThrows;
-import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
@@ -112,6 +111,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -138,7 +138,7 @@ public enum MoreCommands implements IMoreCommands {
     public static MinecraftServer serverInstance = null;
     public static final ScoreboardCriterion LATENCY;
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    public static final Map<PlayerEntity, DiscordUser> discordTags = new WeakHashMap<>();
+    public static final Map<PlayerEntity, String> discordTags = new WeakHashMap<>();
     public static final Set<PlayerEntity> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
     public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
     public static boolean creatingWorld = false;
@@ -312,14 +312,12 @@ public enum MoreCommands implements IMoreCommands {
 
             NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:discord_data"), (buf, context) -> {
                 PlayerEntity player = context.getPlayer();
-                DiscordUser user = new DiscordUser();
                 if (buf.readBoolean()) discordTagNoPerm.add(player);
                 else discordTagNoPerm.remove(player);
-                user.userId = buf.readString();
-                user.username = buf.readString();
-                user.discriminator = buf.readString();
-                user.avatar = buf.readString();
-                discordTags.put(player, user);
+                String tag = buf.readString();
+
+                if (tag.contains("#") && tag.lastIndexOf('#') == tag.length() - 5 && isInteger(tag.substring(tag.lastIndexOf('#') + 1)))
+                    discordTags.put(player, tag);
             });
 
             PostInitEvent.EVENT.register(() -> {
@@ -919,21 +917,16 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static boolean isInteger(String s) {
-        try {
-            Integer.parseInt(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return isInteger(s, 10);
     }
 
-    public static boolean isInteger(String s, int base) {
-        try {
-            Integer.parseInt(s, base);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public static boolean isInteger(String s, int radix) {
+        if (s == null) return false;
+        if (s.startsWith("-") || s.startsWith("+")) s = s.substring(1);
+        if (s.isEmpty()) return false;
+
+        for (char c : s.toCharArray()) if (Character.digit(c, radix) < 0) return false;
+        return true;
     }
 
     public static String translateFormattings(String s) {
@@ -1370,5 +1363,11 @@ public enum MoreCommands implements IMoreCommands {
 
     public static Map<Command, Collection<CommandNode<ServerCommandSource>>> getNodes() {
         return ImmutableMap.copyOf(nodes);
+    }
+
+    public static IntStream charStream(char[] chars) {
+        int[] ints = new int[chars.length];
+        for (int i = 0; i < chars.length; i++) ints[i] = chars[i];
+        return IntStream.of(ints);
     }
 }

@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 @ExtensionMethod(ObjectExtensions.class)
 public enum ClientOptionCategory {
-    RICH_PRESENCE("Rich Presence", "Discord Rich Presence support.", "To let everyone on Discord know", "that you've been playing Minecraft for three days straight."),
     RENDERING("Rendering", "These options change or add things regarding rendering."),
     TWEAKS("Tweaks", "Some tweaks to change your game.", "These are harmless, but can be very useful."),
     CHEATS("Cheats", () -> (BooleanClientOption) ClientOption.getOptions().get(TWEAKS).get("Hidden Options"), "Some less harmless tweaks.", "All of them are set to mimic the default behaviour of Minecraft,",

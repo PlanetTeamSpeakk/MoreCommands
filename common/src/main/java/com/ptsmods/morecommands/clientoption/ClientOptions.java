@@ -1,12 +1,8 @@
 package com.ptsmods.morecommands.clientoption;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreCommands;
-import com.ptsmods.morecommands.api.clientoptions.BooleanClientOption;
-import com.ptsmods.morecommands.api.clientoptions.ClientOption;
-import com.ptsmods.morecommands.api.clientoptions.DoubleClientOption;
-import com.ptsmods.morecommands.api.clientoptions.EnumClientOption;
+import com.ptsmods.morecommands.api.clientoptions.*;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import dev.architectury.platform.Platform;
@@ -20,29 +16,6 @@ import java.util.Properties;
 import static com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory.*;
 
 public class ClientOptions {
-    public static class RichPresence {
-        public static final BooleanClientOption enableRPC = new BooleanClientOption(RICH_PRESENCE, "Enable RPC", true, RichPresence::updateRPC,
-                "Toggle Discord Rich Presence", "May not work on Mac.");
-        public static final BooleanClientOption advertiseMC = new BooleanClientOption(RICH_PRESENCE, "Advertise MC", true, RichPresence::updateRPC,
-                "Whether I may advertise this mod on the RPC.", "It would be kindly appreciated if you left this enabled. :)");
-        public static final BooleanClientOption showDetails = new BooleanClientOption(RICH_PRESENCE, "Show Details", true, RichPresence::updateRPC,
-                "Whether to show either the ip of the server you're on", "or the name of the world you're in in the details section of the RPC.");
-        public static final BooleanClientOption shareTag = new BooleanClientOption(RICH_PRESENCE, "Share Tag", true, RichPresence::updateTag,
-                "Whether your Discord tag should be sent to the server", "for others to see.", "Only works if the mod is installed on the server too.");
-        public static final BooleanClientOption askPermission = new BooleanClientOption(RICH_PRESENCE, "Ask Permission", true, RichPresence::updateTag,
-                "Whether players need your permission to view your tag.");
-
-        private static void updateRPC(boolean oldValue, boolean newValue) {
-            MoreCommandsClient.updatePresence();
-        }
-
-        private static void updateTag(boolean oldValue, boolean newValue) {
-            MoreCommandsClient.updateTag();
-        }
-
-        static void init() {}
-    }
-
     public static class Rendering {
         public static final BooleanClientOption seeTagSneaking = new BooleanClientOption(RENDERING, "See Tag Sneaking", true,
                 "See player nametags through blocks", "when they're sneaking.");
@@ -108,6 +81,10 @@ public class ClientOptions {
         public static final DoubleClientOption brightnessMultiplier = new DoubleClientOption(TWEAKS, "Brightness Multiplier", 1d, 0d, 10d,
                 "Multiply the brightness to go above and beyond!", "For best effect, set brightness to max.");
 
+        public static final StringClientOption discordTag = new StringClientOption(TWEAKS, "Discord Tag", null, s -> s.contains("#") && s.lastIndexOf('#') == s.length() - 5 &&
+                MoreCommands.isInteger(s.substring(s.lastIndexOf('#') + 1)), "The tag to send people when they request your tag.");
+        public static final BooleanClientOption askPermission = new BooleanClientOption(TWEAKS, "askPermission", true,
+                "Whether your permission is required for players to", "request your Discord tag.", "Unnecessary if tag is not set.");
         public static final EnumClientOption<PowerToolCommand.PowertoolSelectionMode> powertoolSelection = new EnumClientOption<>(TWEAKS, "Powertool Selection", PowerToolCommand.PowertoolSelectionMode.class,
                 PowerToolCommand.PowertoolSelectionMode.HUD, "The mode to use to display the currently selected powertool command.");
 
@@ -191,7 +168,6 @@ public class ClientOptions {
 
     public static void init() {
         // Initialising all classes, so all options are registered.
-        RichPresence.init();
         Rendering.init();
         Tweaks.init();
         Cheats.init();

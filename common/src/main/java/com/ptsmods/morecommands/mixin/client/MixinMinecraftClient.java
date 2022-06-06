@@ -10,8 +10,6 @@ import com.ptsmods.morecommands.commands.client.SearchCommand;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,7 +29,6 @@ public class MixinMinecraftClient {
         // Reset to defaults when leaving the world.
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
         SearchCommand.lines.clear();
-        MoreCommandsClient.updatePresence();
         ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
         MoreCommandsClient.clearDisabledCommands();
     }
@@ -44,16 +41,6 @@ public class MixinMinecraftClient {
     @Inject(at = @At("TAIL"), method = "render(Z)V")
     public void renderPost(boolean tick, CallbackInfo cbi) {
         RenderTickEvent.POST.invoker().render(tick);
-    }
-
-    @Inject(at = @At("TAIL"), method = "setCurrentServerEntry(Lnet/minecraft/client/network/ServerInfo;)V")
-    public void setCurrentServerEntry(ServerInfo info, CallbackInfo cbi) {
-        if (info != null) MoreCommandsClient.updatePresence();
-    }
-
-    @Inject(at = @At("TAIL"), method = "joinWorld(Lnet/minecraft/client/world/ClientWorld;)V")
-    public void joinWorld(ClientWorld world, CallbackInfo cbi) {
-        MoreCommandsClient.updatePresence();
     }
 
     @Group(name = "postInitClient", min = 1, max = 1)

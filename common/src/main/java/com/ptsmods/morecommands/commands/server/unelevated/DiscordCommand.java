@@ -8,7 +8,6 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.arikia.dev.drpc.DiscordUser;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -108,8 +107,7 @@ public class DiscordCommand extends Command {
     }
 
     private void sendDiscordTag(CommandContext<ServerCommandSource> ctx, PlayerEntity player) {
-        DiscordUser user = MoreCommands.discordTags.get(player);
-        String tag = user.username + "#" + user.discriminator;
+        String tag = MoreCommands.discordTags.get(player);
         sendMsg(ctx, literalText("")
                 .append(Compat.get().builderFromText(player.getDisplayName()))
                 .append(literalText("'s ", SS))

@@ -31,10 +31,6 @@ import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import net.arikia.dev.drpc.DiscordEventHandlers;
-import net.arikia.dev.drpc.DiscordRPC;
-import net.arikia.dev.drpc.DiscordRichPresence;
-import net.arikia.dev.drpc.DiscordUser;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Blocks;
@@ -92,7 +88,6 @@ public class MoreCommandsClient {
     public static final CommandDispatcher<ClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
     private static final Map<String, Integer> keys = new LinkedHashMap<>();
     private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
-    private static DiscordUser discordUser = null;
     private static final List<String> disabledCommands = new ArrayList<>();
     private static final List<String> worldInitCommands = new ArrayList<>();
     private static final File wicFile = MoreCommandsArch.getConfigDirectory().resolve("worldInitCommands.json").toFile();
@@ -151,16 +146,6 @@ public class MoreCommandsClient {
         if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));
         ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemConvertible[0]));
 
-        if (!MinecraftClient.IS_SYSTEM_MAC)
-            DiscordRPC.discordInitialize("754048885755871272", new DiscordEventHandlers.Builder()
-                    .setReadyEventHandler(user -> {
-                        discordUser = user;
-                        LOG.info("Connected to Discord RPC as " + user.username + "#" + user.discriminator + " (" + user.userId + ").");
-                    })
-                    .setDisconnectedEventHandler((errorCode, message) -> LOG.info("Disconnected from Discord RPC with error code " + errorCode + ": " + message))
-                    .setErroredEventHandler((errorCode, message) -> LOG.info("An error occurred on the Discord RPC with error code " + errorCode + ": " + message)).build(), true);
-        updatePresence();
-
         AtomicInteger wicWarmup = new AtomicInteger();
         PlayerEvent.PLAYER_JOIN.register(player -> {
             updateTag();
@@ -172,7 +157,6 @@ public class MoreCommandsClient {
             if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommandManager().execute(server.getCommandSource(), cmd));
         });
 
-        if (!MinecraftClient.IS_SYSTEM_MAC) Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
         KeyMappingRegistry.register(toggleInfoHudBinding);
 
         if (!wicFile.exists()) saveWorldInitCommands();
@@ -330,29 +314,11 @@ public class MoreCommandsClient {
                 MinecraftClient.getInstance().getCurrentServerEntry().address;
     }
 
-    public static void updatePresence() {
-        if (MinecraftClient.IS_SYSTEM_MAC) return;
-        if (ClientOptions.RichPresence.enableRPC.getValue()) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            DiscordRichPresence.Builder builder;
-            if (client.world == null) builder = new DiscordRichPresence.Builder("On the main menu").setBigImage("minecraft_logo", null);
-            else {
-                builder = new DiscordRichPresence.Builder(client.getCurrentServerEntry() == null ? "Singleplayer" : "Multiplayer").setBigImage("in_game", null);
-                if (ClientOptions.RichPresence.showDetails.getValue() && getWorldName() != null) builder.setDetails(getWorldName());
-            }
-            if (ClientOptions.RichPresence.advertiseMC.getValue()) builder.setSmallImage("morecommands_logo", "Download at https://bit.ly/MoreCommands");
-            DiscordRPC.discordUpdatePresence(builder.setStartTimestamps(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis() / 1000L).build());
-        } else DiscordRPC.discordClearPresence();
-    }
-
     public static void updateTag() {
-        if (NetworkManager.canServerReceive(new Identifier("morecommands:discord_data")) && ClientOptions.RichPresence.shareTag.getValue() && discordUser != null) {
+        if (NetworkManager.canServerReceive(new Identifier("morecommands:discord_data")) && ClientOptions.Tweaks.discordTag.getValue() != null) {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-            buf.writeBoolean(ClientOptions.RichPresence.askPermission.getValue());
-            buf.writeString(discordUser.userId);
-            buf.writeString(discordUser.username);
-            buf.writeString(discordUser.discriminator);
-            buf.writeString(discordUser.avatar);
+            buf.writeBoolean(ClientOptions.Tweaks.askPermission.getValue());
+            buf.writeString(ClientOptions.Tweaks.discordTag.getValue());
             NetworkManager.sendToServer(new Identifier("morecommands:discord_data"), buf);
         }
     }
