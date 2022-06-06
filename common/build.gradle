@@ -16,7 +16,6 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
-    implementation files("../lib/discord-rpc-1.6.2.jar")
     implementation "com.ptsmods:asmremapper:1.0.1"
     implementation "com.ptsmods:mysqlw:1.6.1"
 

@@ -63,8 +63,8 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.network.ChatDecorator;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.message.MessageDecorator;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -378,9 +378,9 @@ public enum MoreCommands implements IMoreCommands {
         });
 
         if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
-            ReflectionHelper.setFieldValue(Arrays.stream(ChatDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
-                            new NoSuchElementException("Could not find default decorator field of ChatDecorator class.")),
-                    null, (ChatDecorator) (player, text) -> {
+            ReflectionHelper.setFieldValue(Arrays.stream(MessageDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
+                            new NoSuchElementException("Could not find default decorator field of MessageDecorator class.")),
+                    null, (MessageDecorator) (player, text) -> {
                         TextBuilder<?> builder = Compat.get().builderFromText(text);
                         return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
                                 || player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel())) && builder instanceof LiteralTextBuilder ?

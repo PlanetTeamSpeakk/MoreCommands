@@ -32,8 +32,6 @@ dependencies {
     modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
     modImplementation "com.ptsmods:devlogin:2.0"
 
-    common(files("../lib/discord-rpc-1.6.2.jar"))
-    shadowCommon(files("../lib/discord-rpc-1.6.2.jar"))
     common "com.ptsmods:mysqlw:1.6.1"
     shadowCommon "com.ptsmods:mysqlw:1.6.1"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }

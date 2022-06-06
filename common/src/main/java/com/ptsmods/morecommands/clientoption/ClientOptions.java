@@ -83,7 +83,7 @@ public class ClientOptions {
 
         public static final StringClientOption discordTag = new StringClientOption(TWEAKS, "Discord Tag", null, s -> s.contains("#") && s.lastIndexOf('#') == s.length() - 5 &&
                 MoreCommands.isInteger(s.substring(s.lastIndexOf('#') + 1)), "The tag to send people when they request your tag.");
-        public static final BooleanClientOption askPermission = new BooleanClientOption(TWEAKS, "askPermission", true,
+        public static final BooleanClientOption askPermission = new BooleanClientOption(TWEAKS, "Ask Permission", true,
                 "Whether your permission is required for players to", "request your Discord tag.", "Unnecessary if tag is not set.");
         public static final EnumClientOption<PowerToolCommand.PowertoolSelectionMode> powertoolSelection = new EnumClientOption<>(TWEAKS, "Powertool Selection", PowerToolCommand.PowertoolSelectionMode.class,
                 PowerToolCommand.PowertoolSelectionMode.HUD, "The mode to use to display the currently selected powertool command.");
