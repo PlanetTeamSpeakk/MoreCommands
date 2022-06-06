@@ -132,7 +132,9 @@ public class ClientOptions {
     private static final File f = IMoreCommands.get().getConfigDirectory().resolve("clientoptions.txt").toFile();
 
     public static boolean write() {
-        ClientOption.getUnmappedOptions().values().forEach(option -> props.setProperty(option.getKey(), option.getValueString()));
+        ClientOption.getUnmappedOptions().values().stream()
+                .filter(o -> o.getValueRaw() != null) // Properties uses a ConcurrentHashMap which doesn't support null-values.
+                .forEach(option -> props.setProperty(option.getKey(), option.getValueString()));
         if (!f.exists()) {
             try {
                 if (!f.createNewFile()) return false;
