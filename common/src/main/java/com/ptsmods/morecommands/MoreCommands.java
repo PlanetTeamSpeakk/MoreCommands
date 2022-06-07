@@ -226,9 +226,9 @@ public enum MoreCommands implements IMoreCommands {
         Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
         MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
 
-        Database.registerTypeConverter(UUID.class, UUID::toString, UUID::fromString);
-        Database.registerTypeConverter(NbtCompound.class, MoreCommands::nbtToByteString, MoreCommands::nbtFromByteString);
-        Database.registerTypeConverter(Identifier.class, Identifier::toString, Identifier::new);
+        Database.registerTypeConverter(UUID.class, id -> Database.enquote(id.toString()), UUID::fromString);
+        Database.registerTypeConverter(NbtCompound.class, nbt -> Database.enquote(nbtToByteString(nbt)), MoreCommands::nbtFromByteString);
+        Database.registerTypeConverter(Identifier.class, id -> Database.enquote(id.toString()), Identifier::new);
     }
 
     MoreCommands() {
@@ -645,26 +645,35 @@ public enum MoreCommands implements IMoreCommands {
         return gson.fromJson(readString(f), new TypeToken<T>(){}.getType());
     }
 
-    public static void saveString(Path p, String s) throws IOException {
-        saveString(p.toFile(), s);
+    public static <T> T readJson(Path p) throws IOException {
+        return gson.fromJson(readString(p), new TypeToken<T>(){}.getType());
     }
 
     public static void saveString(File f, String s) throws IOException {
-        createFileAndDirectories(f);
-        try (PrintWriter writer = new PrintWriter(f, "UTF-8")) {
+        saveString(f.toPath(), s);
+    }
+
+    public static void saveString(Path p, String s) throws IOException {
+        createFileAndDirectories(p);
+        try (PrintWriter writer = new PrintWriter(p.toString(), "UTF-8")) {
             writer.print(s);
             writer.flush();
         }
     }
 
     public static String readString(File f) throws IOException {
-        createFileAndDirectories(f);
-        return String.join("\n", Files.readAllLines(f.toPath()));
+        return readString(f.toPath());
     }
 
-    private static void createFileAndDirectories(File f) throws IOException {
-        if (!f.getAbsoluteFile().getParentFile().exists() && !f.getAbsoluteFile().getParentFile().mkdirs()) throw new IOException("Could not create directories");
-        if (!f.exists() && !f.createNewFile()) throw new IOException("Could not create file.");
+    public static String readString(Path p) throws IOException {
+        createFileAndDirectories(p);
+        return String.join("\n", Files.readAllLines(p));
+    }
+
+    private static void createFileAndDirectories(Path p) throws IOException {
+        p = p.toAbsolutePath();
+        if (!Files.exists(p.getParent())) Files.createDirectories(p.getParent());
+        if (!Files.exists(p)) Files.createFile(p);
     }
 
     public static double factorial(double d) {
