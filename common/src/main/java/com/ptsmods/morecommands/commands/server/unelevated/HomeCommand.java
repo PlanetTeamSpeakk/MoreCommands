@@ -179,7 +179,8 @@ public class HomeCommand extends Command {
     }
 
     private int sendHomes(PlayerEntity player) {
-        sendMsg(player, getHomes(player).isEmpty() ? Formatting.RED + "You do not have any homes set yet, set one with /sethome [name]." : "You have set the following homes: " + joinNicely(getHomes(player).stream().collect(Collector.of(ArrayList::new, (l, home) -> l.add(home.name), BinaryOperator.maxBy(Comparator.comparingInt(List::size))))) + ".");
+        sendMsg(player, getHomes(player).isEmpty() ? Formatting.RED + "You do not have any homes set yet, set one with /sethome [name]." : "You have set the following homes: " +
+                joinNicely(getHomes(player).stream().collect(Collector.of(ArrayList::new, (l, home) -> l.add(home.name), BinaryOperator.maxBy(Comparator.comparingInt(List::size))))) + ".");
         return getHomes(player).size();
     }
 
@@ -204,7 +205,6 @@ public class HomeCommand extends Command {
     }
 
     private static class Home {
-
         private final String name;
         private final double x, y, z;
         private final float pitch, yaw;
