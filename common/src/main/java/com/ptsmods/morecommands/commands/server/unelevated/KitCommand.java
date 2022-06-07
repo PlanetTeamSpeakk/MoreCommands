@@ -63,11 +63,8 @@ public class KitCommand extends Command {
                         .addIndex(TableIndex.index("player", TableIndex.Type.INDEX))
                         .createAsync(db))
                 .thenAccept(p -> {
-                    Map<String, List<SelectResults.SelectResultRow>> cooldowns = db.select("kit_cooldowns", "*").stream()
-                            .collect(Collectors.<SelectResults.SelectResultRow, String>groupingBy(row -> row.getString("kit")));
-
                     for (SelectResults.SelectResultRow row : db.select("kits", "*"))
-                        kits.put(row.getString("name"), Kit.deserialiseDb(row, cooldowns.get(row.getString("name"))));
+                        kits.put(row.getString("name"), Kit.deserialiseDb(row));
                 });
 
 
@@ -188,7 +185,6 @@ public class KitCommand extends Command {
         private final String name;
         @Getter
         private final int cooldown;
-        private final Map<UUID, Long> cooldowns = new HashMap<>();
         private final List<ItemStack> items = new ArrayList<>();
 
         public Kit(String name, int cooldown, List<ItemStack> items) {
@@ -210,7 +206,7 @@ public class KitCommand extends Command {
             }
 
             if (cooldown == 0) return;
-            cooldowns.put(player.getUuid(), System.currentTimeMillis() + cooldown * 1000L);
+
             MoreCommands.getLocalDb().insertBuilder("kit_cooldowns", "kit", "player", "time")
                     .insert(name, player.getUuid(), Timestamp.from(Instant.now().plusMillis(cooldown)))
                     .executeAsync();
@@ -221,7 +217,14 @@ public class KitCommand extends Command {
         }
 
         public long getRemainingCooldown(PlayerEntity player) {
-            return cooldowns.containsKey(player.getUuid()) ? cooldown < 0 ? Long.MAX_VALUE : cooldowns.get(player.getUuid()) - System.currentTimeMillis() : 0;
+            return getLocalDb().selectBuilder("kit_cooldowns")
+                    .select("epoch")
+                    .where(QueryCondition.equals("kit", getName()).and(QueryCondition.equals("player", player.getUuid())))
+                    .execute()
+                    .stream()
+                    .findFirst()
+                    .map(row -> cooldown < 0 ? Long.MAX_VALUE : row.getTimestamp("epoch").getTime() - System.currentTimeMillis())
+                    .orElse(0L);
         }
 
         public static Kit deserialise(Map<String, Object> data) {
@@ -234,18 +237,28 @@ public class KitCommand extends Command {
                     .map(KitCommand::deserialiseStack)
                     .collect(Collectors.toList());
             Kit kit = new Kit(name, cooldown, items);
-            kit.cooldowns.putAll(cooldowns);
+
+            getLocalDb().insertBuilder("kits", "name", "cooldown", "items")
+                    .insert(kit.getName(), kit.getCooldown(), kit.getItems().stream()
+                            .map(stack -> MoreCommands.nbtToByteString(serialiseStackToNBT(stack)))
+                            .collect(Collectors.joining(";")))
+                    .executeAsync();
+
+            getLocalDb().insertBuilder("kit_cooldowns", "kit", "player", "time")
+                    .insert(cooldowns.entrySet().stream()
+                            .map(entry -> new Object[] {kit.getName(), entry.getKey(), entry.getValue()})
+                            .collect(Collectors.toList()));
+
             return kit;
         }
 
-        public static Kit deserialiseDb(SelectResults.SelectResultRow row, List<SelectResults.SelectResultRow> cooldownRows) {
+        public static Kit deserialiseDb(SelectResults.SelectResultRow row) {
             String name = row.getString("name");
             int cooldown = row.getInt("cooldown");
             List<ItemStack> stacks = Arrays.stream(row.getString("items").split(";")).map(s -> deserialiseStack(MoreCommands.nbtFromByteString(s))).collect(Collectors.toList()).immutable();
 
-            Kit kit = new Kit(name, cooldown, stacks);
-            kit.cooldowns.putAll(cooldownRows.stream().collect(Collectors.toMap(cdRow -> cdRow.get("player", UUID.class), cdRow -> cdRow.getTimestamp("epoch").getTime())));
-            return kit;
+            //kit.cooldowns.putAll(cooldownRows.stream().collect(Collectors.toMap(cdRow -> cdRow.get("player", UUID.class), cdRow -> cdRow.getTimestamp("epoch").getTime())));
+            return new Kit(name, cooldown, stacks);
         }
     }
 }
