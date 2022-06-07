@@ -150,54 +150,7 @@ public enum MoreCommands implements IMoreCommands {
     private static final Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
 
     static {
-        try {
-            Map<String, byte[]> dumpClasses = new HashMap<>();
-            List<Class<?>> dumps = ReflectionHelper.getClasses(Object.class, "com.ptsmods.morecommands.dumps");
-            for (Class<?> dumpClass : dumps) {
-                try {
-                    byte[] dump = (byte[]) dumpClass.getMethod("dump").invoke(null);
-                    ClassReader reader = new ClassReader(dump);
-
-                    dumpClasses.put(reader.getClassName(), dump);
-                } catch (NoSuchMethodException ignored) {
-                    // Probably not a dump
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    LOG.error("Could not dump class " + dumpClass.getName() + ".", e);
-                }
-            }
-
-            LOG.info("Loading dump classes: " + Command.joinNicely(dumpClasses.keySet().stream()
-                    .map(s -> s.substring(s.lastIndexOf('/') + 1))
-                    .collect(Collectors.toList()), null, null));
-
-            Path dumpsJar = MoreCommandsArch.getConfigDirectory().resolve("jars/dumps.jar");
-            Files.createDirectories(dumpsJar.getParent());
-            if (Files.exists(dumpsJar))
-                Files.delete(dumpsJar);
-
-            ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(dumpsJar)));
-            for (Map.Entry<String, byte[]> dump : dumpClasses.entrySet()) {
-                out.putNextEntry(new ZipEntry(dump.getKey() + ".class"));
-                out.write(dump.getValue());
-            }
-
-            out.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
-            out.write("Manifest-Version: 1.0".getBytes());
-
-            final String comment = "This JAR file was generated using dumps created by ASMRemapper.\nhttps://github.com/PlanetTeamSpeakk/ASMRemapper";
-            out.putNextEntry(new ZipEntry("README.txt"));
-            out.write(comment.getBytes());
-            out.setComment(comment);
-
-            out.flush();
-            out.close();
-
-            MoreCommandsArch.addJarToClassPath(dumpsJar);
-            dumpsJar.toFile().deleteOnExit();
-            LOG.info("Loaded " + dumpClasses.size() + " classes from dumps.");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        loadDumps();
 
         File serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
         boolean serverOnly = false;
@@ -219,9 +172,7 @@ public enum MoreCommands implements IMoreCommands {
             LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
         }
 
-        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
-            argumentTypeRegistry = DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_KEY);
-        } else argumentTypeRegistry = null;
+        argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_KEY) : null;
 
         Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
         MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
@@ -481,6 +432,54 @@ public enum MoreCommands implements IMoreCommands {
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
         });
+    }
+
+    @SneakyThrows
+    private static void loadDumps() {
+        Map<String, byte[]> dumpClasses = new HashMap<>();
+        List<Class<?>> dumps = ReflectionHelper.getClasses(Object.class, "com.ptsmods.morecommands.dumps");
+        for (Class<?> dumpClass : dumps) {
+            try {
+                byte[] dump = (byte[]) dumpClass.getMethod("dump").invoke(null);
+                ClassReader reader = new ClassReader(dump);
+
+                dumpClasses.put(reader.getClassName(), dump);
+            } catch (NoSuchMethodException ignored) {
+                // Probably not a dump
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                LOG.error("Could not dump class " + dumpClass.getName() + ".", e);
+            }
+        }
+
+        LOG.info("Loading dump classes: " + Command.joinNicely(dumpClasses.keySet().stream()
+                .map(s -> s.substring(s.lastIndexOf('/') + 1))
+                .collect(Collectors.toList()), null, null));
+
+        Path dumpsJar = MoreCommandsArch.getConfigDirectory().resolve("jars/dumps.jar");
+        Files.createDirectories(dumpsJar.getParent());
+        if (Files.exists(dumpsJar))
+            Files.delete(dumpsJar);
+
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(dumpsJar)));
+        for (Map.Entry<String, byte[]> dump : dumpClasses.entrySet()) {
+            out.putNextEntry(new ZipEntry(dump.getKey() + ".class"));
+            out.write(dump.getValue());
+        }
+
+        out.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
+        out.write("Manifest-Version: 1.0".getBytes());
+
+        final String comment = "This JAR file was generated using dumps created by ASMRemapper.\nhttps://github.com/PlanetTeamSpeakk/ASMRemapper";
+        out.putNextEntry(new ZipEntry("README.txt"));
+        out.write(comment.getBytes());
+        out.setComment(comment);
+
+        out.flush();
+        out.close();
+
+        MoreCommandsArch.addJarToClassPath(dumpsJar);
+        dumpsJar.toFile().deleteOnExit();
+        LOG.info("Loaded " + dumpClasses.size() + " classes from dumps.");
     }
 
     @Override

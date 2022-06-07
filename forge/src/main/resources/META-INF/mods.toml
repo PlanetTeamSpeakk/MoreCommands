@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[40,)"
+issueTrackerURL = "https://github.com/PlanetTeamSpeakk/MoreCommands/issues"
+license = "CC0-1.0"
+
+[[mods]]
+modId = "morecommands"
+version = "${version}"
+displayName = "MoreCommands"
+authors = "PlanetTeamSpeak"
+description = '''
+Adds loads of commands, gamerules and other neat features.
+'''
+logoFile = "assets/morecommands/icon.png"
+
+[[dependencies.morecommands]]
+modId = "forge"
+mandatory = true
+versionRange = "[35,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.morecommands]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.morecommands]]
+modId = "architectury"
+mandatory = true
+versionRange = "[4.2.50,)"
+ordering = "AFTER"
+side = "BOTH"
