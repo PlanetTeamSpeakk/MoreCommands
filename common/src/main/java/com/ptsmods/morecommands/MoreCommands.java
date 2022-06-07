@@ -228,6 +228,7 @@ public enum MoreCommands implements IMoreCommands {
 
         Database.registerTypeConverter(UUID.class, UUID::toString, UUID::fromString);
         Database.registerTypeConverter(NbtCompound.class, MoreCommands::nbtToByteString, MoreCommands::nbtFromByteString);
+        Database.registerTypeConverter(Identifier.class, Identifier::toString, Identifier::new);
     }
 
     MoreCommands() {
