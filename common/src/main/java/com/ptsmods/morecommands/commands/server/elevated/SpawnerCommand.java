@@ -36,22 +36,8 @@ public class SpawnerCommand extends Command {
                             BlockPos pos = new BlockPos(ctx.getSource().getPosition());
                             if (!state.isOf(Blocks.SPAWNER)) {
                                 if (ctx.getSource().getPlayerOrThrow().getMainHandStack().getItem() == Items.SPAWNER) {
-                                    MobSpawnerLogic logic = new MobSpawnerLogic() {
-                                        @Override
-                                        public void sendStatus(World world, BlockPos pos, int i) {
-                                        } // TODO add remapped versions of following methods
+                                    MobSpawnerLogic logic = new LegacyMobSpawnerLogic(ctx.getSource().getWorld(), pos);
 
-                                        public void sendStatus(int status) {
-                                        }
-
-                                        public World getWorld() {
-                                            return ctx.getSource().getWorld();
-                                        }
-
-                                        public BlockPos getPos() {
-                                            return pos;
-                                        }
-                                    }; // Keeping the old methods in there even though they don't override anything in 1.17 for compatibility with 1.16
                                     ItemStack stack = ctx.getSource().getPlayerOrThrow().getMainHandStack();
                                     NbtCompound tag = stack.getOrCreateNbt();
                                     if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
@@ -82,5 +68,49 @@ public class SpawnerCommand extends Command {
     @Override
     public String getDocsPath() {
         return "/elevated/spawner";
+    }
+
+    // Keeping the old methods in there even though they don't override anything in 1.17 for compatibility with 1.16
+    private static class LegacyMobSpawnerLogic extends MobSpawnerLogic {
+        private final World world;
+        private final BlockPos pos;
+
+        public LegacyMobSpawnerLogic(World world, BlockPos pos) {
+            this.world = world;
+            this.pos = pos;
+        }
+
+        @Override
+        public void sendStatus(World world, BlockPos pos, int i) {
+        }
+
+        // sendStatus(I)V
+        public void sendStatus(int status) {}
+
+        public void method_8273(int status) {}
+
+        public void broadcastEvent(int status) {}
+
+        // getWorld()Lnet/minecraft/world/World
+        public World getWorld() {
+            return world;
+        }
+
+        public World method_8271() {
+            return getWorld();
+        }
+
+        public World getLevel() {
+            return getWorld();
+        }
+
+        // getPos()Lnet/minecraft/util/math/BlockPos (moj name is the same)
+        public BlockPos getPos() {
+            return pos;
+        }
+
+        public BlockPos method_8276() {
+            return getPos();
+        }
     }
 }
