@@ -56,7 +56,8 @@
     "accessor.MixinSuggestionWindowAccessor",
     "accessor.MixinWindowAccessor",
     "MixinPlayerEntityModel",
-    "MixinAbstractClientPlayerEntity"
+    "MixinAbstractClientPlayerEntity",
+    "MixinClickableWidget"
   ],
   "injectors": {
 	"defaultRequire": 1

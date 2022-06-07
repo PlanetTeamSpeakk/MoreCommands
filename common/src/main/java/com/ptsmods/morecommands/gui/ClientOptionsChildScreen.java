@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.gui;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.addons.ScalableClickableWidget;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
@@ -63,6 +64,7 @@ public class ClientOptionsChildScreen extends Screen {
             }, ClientOptions::write));
 
             if (btn != null) {
+                ((ScalableClickableWidget) btn).setAutoScale(true);
                 page.add(new Pair<>(btn, option.getValue()));
                 btnFields.put(btn, option.getValue());
             }
