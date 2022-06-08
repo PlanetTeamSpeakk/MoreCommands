@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.compat.client;
 import com.mojang.brigadier.ParseResults;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinClientPlayerEntityAccessor;
-import dev.architectury.event.CompoundEventResult;
+import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -20,7 +20,6 @@ import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -74,11 +73,13 @@ public class ClientCompat19 extends ClientCompat17 {
     }
 
     @Override
-    public void registerChatProcessListener(Function<Text, Text> listener) {
-        ClientChatEvent.PROCESS.register((chatType, message, sender) -> {
-            Text output = listener.apply(message);
+    public void registerChatProcessListener(Function<String, String> listener) {
+        ClientChatEvent.PROCESS.register(processor -> {
+            String output = listener.apply(processor.getMessage());
 
-            return output == null || output.equals(message) ? CompoundEventResult.pass() : CompoundEventResult.interruptTrue(output);
+            if (output == null || output.equals(processor.getMessage())) return EventResult.pass();
+            processor.setMessage(output);
+            return EventResult.interruptTrue();
         });
     }
 

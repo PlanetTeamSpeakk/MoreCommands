@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.forge;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
+import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.util.Identifier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

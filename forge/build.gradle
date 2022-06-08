@@ -13,6 +13,16 @@ loom {
     forge {
         convertAccessWideners = true
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+
+        mixinConfig "morecommands_client.mixins.json"
+        mixinConfig "morecommands_common.mixins.json"
+        mixinConfig "morecommands_reach.mixins.json"
+        mixinConfig "morecommands_server.mixins.json"
+        mixinConfig "morecommands_compat16.mixins.json"
+        mixinConfig "morecommands_compat17.mixins.json"
+        mixinConfig "morecommands_compat18.mixins.json"
+        mixinConfig "morecommands_compat182.mixins.json"
+        mixinConfig "morecommands_compat19.mixins.json"
     }
 }
 
@@ -30,7 +40,7 @@ dependencies {
 
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
     // Remove the next line if you don't want to depend on the API
-    modApi "dev.architectury:architectury:${rootProject.architectury_version}" // TODO
+    modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
     common "com.ptsmods:mysqlw:1.6.1"
     shadowCommon "com.ptsmods:mysqlw:1.6.1"

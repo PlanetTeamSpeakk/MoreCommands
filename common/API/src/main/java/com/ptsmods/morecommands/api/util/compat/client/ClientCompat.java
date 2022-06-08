@@ -12,7 +12,6 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -47,7 +46,7 @@ public interface ClientCompat {
 
     Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat);
 
-    void registerChatProcessListener(Function<Text, Text> listener);
+    void registerChatProcessListener(Function<String, String> listener);
 
     void sendMessageOrCommand(String msg);
 }

@@ -1,8 +1,6 @@
 package com.ptsmods.morecommands.compat.client;
 
-import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
-import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
 import net.minecraft.client.MinecraftClient;
@@ -18,7 +16,6 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -77,13 +74,11 @@ public class ClientCompat16 implements ClientCompat {
     }
 
     @Override
-    public void registerChatProcessListener(Function<Text, Text> listener) {
+    public void registerChatProcessListener(Function<String, String> listener) {
         ClientChatEvent.PROCESS.register(message -> {
-            Text input = LiteralTextBuilder.builder(message).build();
-            Text output = listener.apply(input);
+            String output = listener.apply(message);
 
-            return output == null || output.equals(input) ? CompoundEventResult.pass() :
-                    CompoundEventResult.interruptTrue(IMoreCommands.get().textToString(output, null, true));
+            return output == null || output.equals(message) ? CompoundEventResult.pass() : CompoundEventResult.interruptTrue(output);
         });
     }
 

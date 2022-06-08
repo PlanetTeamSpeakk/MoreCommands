@@ -5,11 +5,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsArch;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
-import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import com.ptsmods.morecommands.api.util.text.TextBuilder;
+import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import lombok.experimental.ExtensionMethod;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.Formatting;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@ExtensionMethod(ObjectExtensions.class)
 public class AliasCommand extends ClientCommand {
     private static final File aliasesFile = MoreCommandsArch.getConfigDirectory().resolve("aliases.json").toFile();
     private final Map<String, String> aliases = new HashMap<>();
@@ -34,12 +34,8 @@ public class AliasCommand extends ClientCommand {
         } else saveData();
 
         ClientCompat.get().registerChatProcessListener(message -> {
-            TextBuilder<?> builder = Compat.get().builderFromText(message);
-            if (!(builder instanceof LiteralTextBuilder)) return message;
-            String literal = ((LiteralTextBuilder) builder).getLiteral();
-
-            String replacement = literal.startsWith("/") ? aliases.getOrDefault(literal.substring(1).split(" ")[0], null) : null;
-            return replacement == null ? message : LiteralTextBuilder.builder(replacement).build();
+            String replacement = message.startsWith("/") ? aliases.getOrDefault(message.substring(1).split(" ")[0], null) : null;
+            return replacement.or(message);
         });
     }
 
