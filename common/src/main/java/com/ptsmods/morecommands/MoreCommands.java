@@ -17,6 +17,7 @@ import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
+import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
@@ -617,7 +618,8 @@ public enum MoreCommands implements IMoreCommands {
             s.append(I18n.translate(tt.getKey(), Arrays.stream(args)
                     .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
                     .collect(Collectors.toList())));
-        } else s.append(builder instanceof LiteralTextBuilder ? ((LiteralTextBuilder) builder).getLiteral() :
+        } else s.append(builder instanceof EmptyTextBuilder ? "" :
+                builder instanceof LiteralTextBuilder ? ((LiteralTextBuilder) builder).getLiteral() :
                 builder instanceof TranslatableTextBuilder ? ((TranslatableTextBuilder) builder).getKey() :
                         text);
 
