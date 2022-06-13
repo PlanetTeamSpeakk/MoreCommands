@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = Main.class, priority = 1100)
 public class MixinMain {
 
-    @Group(name = "postInitServer", min = 0, max = 1)
+    @Group(name = "postInitServer", min = 1, max = 1)
     @Inject(at = @At(value = "INVOKE", target = "Lnet/fabricmc/loader/entrypoint/minecraft/hooks/EntrypointServer;start(Ljava/io/File;Ljava/lang/Object;)V", remap = false, shift = At.Shift.AFTER), method = "main", remap = false)
     private static void postInitOld(String[] args, CallbackInfo cbi) {
         PostInitEvent.EVENT.invoker().postInit();
     }
 
-    @Group(name = "postInitServer", min = 0, max = 1)
+    @Group(name = "postInitServer", min = 1, max = 1)
     @Inject(at = @At(value = "INVOKE", target = "Lnet/fabricmc/loader/impl/game/minecraft/Hooks;startServer(Ljava/io/File;Ljava/lang/Object;)V", remap = false, shift = At.Shift.AFTER), method = "main", remap = false)
     private static void postInitNew(String[] args, CallbackInfo cbi) {
         PostInitEvent.EVENT.invoker().postInit();
