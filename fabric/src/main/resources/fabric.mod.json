@@ -31,7 +31,6 @@
     "morecommands.mixins.json",
     "morecommands_client.mixins.json",
     "morecommands_common.mixins.json",
-    "morecommands_server.mixins.json",
     "morecommands_reach.mixins.json",
     "morecommands_compat16.mixins.json",
     "morecommands_compat17.mixins.json",

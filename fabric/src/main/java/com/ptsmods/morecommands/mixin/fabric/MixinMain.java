@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.server;
+package com.ptsmods.morecommands.mixin.fabric;
 
 import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import net.minecraft.server.Main;

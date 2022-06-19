@@ -9,6 +9,9 @@
   ],
   "mixins": [
   ],
+  "server": [
+    "MixinMain"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

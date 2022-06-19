@@ -17,7 +17,6 @@ loom {
         mixinConfig "morecommands_client.mixins.json"
         mixinConfig "morecommands_common.mixins.json"
         mixinConfig "morecommands_reach.mixins.json"
-        mixinConfig "morecommands_server.mixins.json"
         mixinConfig "morecommands_compat16.mixins.json"
         mixinConfig "morecommands_compat17.mixins.json"
         mixinConfig "morecommands_compat18.mixins.json"
