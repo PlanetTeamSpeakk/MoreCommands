@@ -149,6 +149,7 @@ public enum MoreCommands implements IMoreCommands {
     private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     private static Database globalDb, localDb;
     private static final Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
+    private static final Map<PlayerEntity, Integer> targetedEntities = new HashMap<>();
 
     static {
         loadDumps();
@@ -251,27 +252,9 @@ public enum MoreCommands implements IMoreCommands {
                 if (NetworkManager.canPlayerReceive(player, new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(player);
             });
 
-            NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:sit_on_stairs"), (buf, context) -> {
-                BlockPos pos = buf.readBlockPos();
-                PlayerEntity player = context.getPlayer();
+            PlayerEvent.PLAYER_QUIT.register(targetedEntities::remove);
 
-                if (player.getPos().squaredDistanceTo(new Vec3d(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
-                    return; // Out of reach
-
-                BlockState state = player.getWorld().getBlockState(pos);
-                if (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
-                    Chair.createAndPlace(pos, player, player.getWorld());
-            });
-
-            NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:discord_data"), (buf, context) -> {
-                PlayerEntity player = context.getPlayer();
-                if (buf.readBoolean()) discordTagNoPerm.add(player);
-                else discordTagNoPerm.remove(player);
-                String tag = buf.readString();
-
-                if (tag.contains("#") && tag.lastIndexOf('#') == tag.length() - 5 && isInteger(tag.substring(tag.lastIndexOf('#') + 1)))
-                    discordTags.put(player, tag);
-            });
+            registerPacketReceivers();
 
             PostInitEvent.EVENT.register(() -> {
                 DefaultedList<ItemStack> defaultedList = DefaultedList.of();
@@ -283,7 +266,7 @@ public enum MoreCommands implements IMoreCommands {
                 }
 
                 for (Item item : Registry.ITEM)
-                    if (item.getGroup() == null && item != Items.AIR) ((MixinItemAccessor) item).setGroup(unobtainableItems);
+                    if (item.getGroup() == null) ((MixinItemAccessor) item).setGroup(unobtainableItems);
 
                 defaultedList = DefaultedList.of();
                 for (Item item : Registry.ITEM) item.appendStacks(ItemGroup.SEARCH, defaultedList);
@@ -432,6 +415,35 @@ public enum MoreCommands implements IMoreCommands {
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
+        });
+    }
+
+    private static void registerPacketReceivers() {
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:sit_on_stairs"), (buf, context) -> {
+            BlockPos pos = buf.readBlockPos();
+            PlayerEntity player = context.getPlayer();
+
+            if (player.getPos().squaredDistanceTo(new Vec3d(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
+                return; // Out of reach
+
+            BlockState state = player.getWorld().getBlockState(pos);
+            if (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
+                Chair.createAndPlace(pos, player, player.getWorld());
+        });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:discord_data"), (buf, context) -> {
+            PlayerEntity player = context.getPlayer();
+            if (buf.readBoolean()) discordTagNoPerm.add(player);
+            else discordTagNoPerm.remove(player);
+            String tag = buf.readString();
+
+            if (tag.contains("#") && tag.lastIndexOf('#') == tag.length() - 5 && isInteger(tag.substring(tag.lastIndexOf('#') + 1)))
+                discordTags.put(player, tag);
+        });
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:entity_target_update"), (buf, context) -> {
+            int targetEntity = buf.readVarInt();
+            targetedEntities.put(context.getPlayer(), targetEntity);
         });
     }
 
@@ -789,25 +801,27 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     // Blatantly copied from GameRenderer, can raytrace both entities and blocks.
-    public static HitResult getRayTraceTarget(Entity entity, World world, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
-        HitResult crosshairTarget = null;
-        if (entity != null && world != null) {
-            float td = Platform.getEnv() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
-            crosshairTarget = entity.raycast(reach, td, !ignoreLiquids);
-            if (!ignoreEntities) {
-                Vec3d vec3d = entity.getCameraPosVec(td);
-                double e = reach;
-                e *= e;
-                if (crosshairTarget != null)
-                    e = crosshairTarget.getPos().squaredDistanceTo(vec3d);
-                Vec3d vec3d2 = entity.getRotationVec(td);
-                Vec3d vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
-                Box box = entity.getBoundingBox().stretch(vec3d2.multiply(reach)).expand(1.0D, 1.0D, 1.0D);
-                EntityHitResult entityHitResult = ProjectileUtil.raycast(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
-                if (entityHitResult != null) crosshairTarget = entityHitResult;
-            }
-        }
+    public static HitResult getRayTraceTarget(Entity entity, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
+        if (entity == null) return null;
+
+        float td = Platform.getEnv() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
+        HitResult crosshairTarget = entity.raycast(reach, td, !ignoreLiquids);
+        if (ignoreEntities) return crosshairTarget;
+
+        EntityHitResult entityHit = getEntityRayTraceTarget(entity, reach);
+        if (entityHit != null) crosshairTarget = entityHit;
         return crosshairTarget;
+    }
+
+    public static EntityHitResult getEntityRayTraceTarget(Entity entity, double reach) {
+        float td = Platform.getEnv() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
+        Vec3d vec3d = entity.getCameraPosVec(td);
+        double e = reach;
+        e *= e;
+        Vec3d vec3d2 = entity.getRotationVec(td);
+        Vec3d vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
+        Box box = entity.getBoundingBox().stretch(vec3d2.multiply(reach)).expand(1.0D, 1.0D, 1.0D);
+        return ProjectileUtil.raycast(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
     }
 
     public static Entity cloneEntity(Entity entity, boolean summon) {
@@ -1380,5 +1394,10 @@ public enum MoreCommands implements IMoreCommands {
         int[] ints = new int[chars.length];
         for (int i = 0; i < chars.length; i++) ints[i] = chars[i];
         return IntStream.of(ints);
+    }
+
+    public static Entity getTargetedEntity(PlayerEntity entity) {
+        int target = targetedEntities.getOrDefault(entity, -1);
+        return entity.getWorld().getEntityById(target);
     }
 }

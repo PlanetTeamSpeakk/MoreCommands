@@ -14,7 +14,7 @@ public class BreakCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("break")
                 .executes(ctx -> {
-                    BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrThrow(), ctx.getSource().getWorld(), 160, true, true)).getBlockPos();
+                    BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrThrow(), 160, true, true)).getBlockPos();
                     PlayerEntity player = ctx.getSource().getPlayerOrThrow();
                     if (block == null || player.getEntityWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
                     else {

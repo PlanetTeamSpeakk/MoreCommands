@@ -30,7 +30,7 @@ public class SpawnerCommand extends Command {
                 .then(argument("type", EntitySummonArgumentType.entitySummon())
                         .suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
                         .executes(ctx -> {
-                            BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160, true, true);
+                            BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160, true, true);
                             BlockState state = ctx.getSource().getWorld().getBlockState(result.getBlockPos());
                             EntityType<?> type = Registry.ENTITY_TYPE.get(ctx.getArgument("type", Identifier.class));
                             BlockPos pos = new BlockPos(ctx.getSource().getPosition());

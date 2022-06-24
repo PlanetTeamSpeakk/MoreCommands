@@ -26,7 +26,7 @@ public class CyclePaintingCommand extends Command {
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, PaintingVariant motive) throws CommandSyntaxException {
-        HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160F, false, true);
+        HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160F, false, true);
         if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
             PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
             PaintingVariant oldArt = (PaintingVariant) Compat.get().getPaintingVariant(painting);

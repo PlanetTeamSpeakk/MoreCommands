@@ -96,7 +96,7 @@ public class MapPicCommand extends ClientCommand {
 
     private int executeCorner(int corner) {
         if (getMapLookingAt() != null) {
-            HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160d, false, true);
+            HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), 160d, false, true);
             if (result instanceof EntityHitResult && ((EntityHitResult) result).getEntity() instanceof ItemFrameEntity && ((ItemFrameEntity) ((EntityHitResult) result).getEntity()).getHeldItemStack().getItem() == Items.FILLED_MAP) {
                 BlockPos pos = new BlockPos(result.getPos().getX() < 0 ? Math.ceil(result.getPos().getX()) : result.getPos().getX(), result.getPos().getY(), result.getPos().getZ() < 0 ? Math.ceil(result.getPos().getZ()) : result.getPos().getZ());
                 if (corner == 0) c1 = pos;
@@ -227,7 +227,7 @@ public class MapPicCommand extends ClientCommand {
     }
 
     private ItemStack getMapLookingAt() {
-        HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160d, false, true);
+        HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), 160d, false, true);
         if (result instanceof EntityHitResult) {
             EntityHitResult eresult = (EntityHitResult) result;
             if (eresult.getEntity() instanceof ItemFrameEntity) {

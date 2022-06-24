@@ -41,7 +41,7 @@ public class InfoHud extends DrawableHelper {
     private long lastRead = 0;
 
     public void render(MatrixStack matrices, float tickDelta) {
-        result = MoreCommands.getRayTraceTarget(client.player, client.world, 160f, false, true);
+        result = MoreCommands.getRayTraceTarget(client.player, 160f, false, true);
         if (System.currentTimeMillis() - lastRead >= 500) {
             try {
                 loadLines();

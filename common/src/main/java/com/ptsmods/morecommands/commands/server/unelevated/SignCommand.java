@@ -16,7 +16,7 @@ public class SignCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReq("sign")
                 .executes(ctx -> {
-                    BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrThrow(), ctx.getSource().getWorld(), 160, true, true);
+                    BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrThrow(), 160, true, true);
                     BlockEntity be = ctx.getSource().getWorld().getBlockEntity(result.getBlockPos());
                     if (Compat.get().tagContains(new Identifier("minecraft:signs"), ctx.getSource().getWorld().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
                         SignBlockEntity sbe = (SignBlockEntity) be;

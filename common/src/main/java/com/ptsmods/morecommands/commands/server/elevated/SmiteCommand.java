@@ -17,7 +17,7 @@ public class SmiteCommand extends Command {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("smite")
-                .executes(ctx -> execute(ctx, Either.left(MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160D, false, true))))
+                .executes(ctx -> execute(ctx, Either.left(MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160D, false, true))))
                 .then(argument("player", EntityArgumentType.player())
                         .executes(ctx -> execute(ctx, Either.right(EntityArgumentType.getPlayer(ctx, "player"))))));
     }

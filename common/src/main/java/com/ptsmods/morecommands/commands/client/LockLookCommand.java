@@ -39,7 +39,7 @@ public class LockLookCommand extends ClientCommand {
 
         dispatcher.register(cLiteral("locklook")
                 .executes(ctx -> {
-                    HitResult hit = MoreCommands.getRayTraceTarget(getPlayer(), getWorld(), 160, false, true);
+                    HitResult hit = MoreCommands.getRayTraceTarget(getPlayer(), 160, false, true);
                     if (hit instanceof EntityHitResult && target != ((EntityHitResult) hit).getEntity()) {
                         target = ((EntityHitResult) hit).getEntity();
                         sendMsg("Your eyes have now been locked onto " + IMoreCommands.get().textToString(target.getDisplayName(), SS, true) + DF + ".");

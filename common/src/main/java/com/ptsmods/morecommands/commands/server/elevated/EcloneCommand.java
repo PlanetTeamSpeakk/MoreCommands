@@ -19,7 +19,7 @@ public class EcloneCommand extends Command {
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literalReqOp("eclone")
                 .executes(ctx -> {
-                    HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160D, false, true);
+                    HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160D, false, true);
                     if (result.getType() == HitResult.Type.ENTITY) {
                         Entity hit = ((EntityHitResult) result).getEntity();
                         if (!(hit instanceof PlayerEntity)) {

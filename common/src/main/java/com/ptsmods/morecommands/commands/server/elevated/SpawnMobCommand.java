@@ -32,7 +32,7 @@ public class SpawnMobCommand extends Command {
     }
 
     private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
-        BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160, true, false);
+        BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160, true, false);
         Vec3d pos = result.getPos();
         NbtCompound tag = MoreCommands.getDefaultTag(Registry.ENTITY_TYPE.get(ctx.getArgument("type", Identifier.class)));
         for (int i = 0; i < amount; i++) MoreCommands.summon(tag, ctx.getSource().getWorld(), pos);

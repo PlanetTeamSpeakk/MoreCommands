@@ -19,7 +19,7 @@ public class JumpCommand extends Command {
                     Vec3d velocity = entity.getVelocity();
 
                     MoreCommands.teleport(entity, ctx.getSource().getWorld(),
-                            MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), 160d, true, true).getPos(),
+                            MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160d, true, true).getPos(),
                             ((MixinEntityAccessor) Objects.requireNonNull(ctx.getSource().getEntity())).getYaw_(), ((MixinEntityAccessor) ctx.getSource().getEntity()).getPitch_());
 
                     entity.setVelocity(velocity);

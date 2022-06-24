@@ -55,7 +55,7 @@ public class SonicBoomCommand extends Command {
 
         dispatcher.register(literalReqOp("sonicboom")
                 .executes(ctx -> {
-                    HitResult hit = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getWorld(), ctx.getSource().getEntity() instanceof PlayerEntity ?
+                    HitResult hit = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), ctx.getSource().getEntity() instanceof PlayerEntity ?
                             ReachCommand.getReach(ctx.getSource().getPlayerOrThrow(), false) : 5f, false, true);
 
                     if (hit.getType() != HitResult.Type.ENTITY) {
