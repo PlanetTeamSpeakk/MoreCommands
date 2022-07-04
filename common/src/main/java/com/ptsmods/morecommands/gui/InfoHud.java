@@ -21,29 +21,37 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.LightType;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.regex.PatternSyntaxException;
 
 public class InfoHud extends DrawableHelper {
-
-    public static final InfoHud instance = new InfoHud();
+    public static final InfoHud INSTANCE = new InfoHud();
     private static final File file = MoreCommandsArch.getConfigDirectory().resolve("infoHud.txt").toFile();
     private static final List<StackTraceElement> printedExceptions = new ArrayList<>();
     private static final Map<String, Variable<?>> variables = new HashMap<>();
     private static final Map<String, Object> variableValues = new HashMap<>();
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final List<String> lines = new ArrayList<>();
-    private HitResult result;
-    private long lastRead = 0;
+    private static HitResult result;
+    private static long lastRead = 0;
+    private static int width = 0, height = 0;
 
     static {
         registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0, 0)));
         registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0, val, 0)));
         registerVariable(new DoubleVariable("scale", 1.0, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
+
+        AtomicInteger backgroundOpacity = new AtomicInteger();
+        registerVariable(new IntVariable("backgroundOpacity", 0, ((matrixStack, val) -> backgroundOpacity.set(val))).clamped(0, 100));
+        registerVariable(new ColourVariable("backgroundColour", Color.BLACK, (matrixStack, val) -> fill(matrixStack, -2, -2, width + 2, height,
+                new Color(val.getRed(), val.getGreen(), val.getBlue(), (int) (backgroundOpacity.get() / 100f * 255)).getRGB())));
     }
 
     private static void registerVariable(Variable<?> variable) {
@@ -62,6 +70,13 @@ public class InfoHud extends DrawableHelper {
             setupDefaultLines();
         }
 
+        List<String> parsedLines = parseLines();
+        width = parsedLines.stream()
+                .mapToInt(client.textRenderer::getWidth)
+                .max()
+                .orElse(0);
+        height = parsedLines.size() * 10;
+
         variables.forEach((name, var) -> {
             if (variableValues.containsKey(name))
                 var.apply(matrices, var.upcast(variableValues.get(name)));
@@ -69,8 +84,8 @@ public class InfoHud extends DrawableHelper {
         });
 
         int row = 0;
-        for (String s : parseLines())
-            drawString(matrices, s, row++);
+        for (String line : parsedLines)
+            drawString(matrices, line, row++);
 
         matrices.pop();
     }
@@ -130,7 +145,9 @@ public class InfoHud extends DrawableHelper {
                 String name = lineParts[1];
                 if (!variables.containsKey(name)) continue;
 
-                variableValues.put(name, variables.get(name).fromString(lineParts[3]));
+                try {
+                    variableValues.put(name, variables.get(name).fromString(lineParts[3]));
+                } catch (Exception ignored) {}
             } else {
                 StringBuilder s = new StringBuilder();
                 int index = -1;
@@ -374,18 +391,27 @@ public class InfoHud extends DrawableHelper {
     }
 
     public static class IntVariable extends AbstractVariable<Integer> {
+        private int min = Integer.MIN_VALUE, max = Integer.MAX_VALUE;
+
         public IntVariable(String name, Integer defaultValue, BiConsumer<MatrixStack, Integer> applicator) {
             super(name, defaultValue, applicator);
         }
 
         @Override
         public Integer fromString(String val) {
-            return Integer.parseInt(val);
+            return MathHelper.clamp(Integer.parseInt(val), min, max);
         }
 
         @Override
         public Integer upcast(Object value) {
             return (Integer) value;
+        }
+
+        public IntVariable clamped(int min, int max) {
+            this.min = min;
+            this.max = max;
+
+            return this;
         }
     }
 
@@ -402,6 +428,23 @@ public class InfoHud extends DrawableHelper {
         @Override
         public Double upcast(Object value) {
             return (Double) value;
+        }
+    }
+
+    public static class ColourVariable extends AbstractVariable<Color> {
+
+        public ColourVariable(String name, Color defaultValue, BiConsumer<MatrixStack, Color> applicator) {
+            super(name, defaultValue, applicator);
+        }
+
+        @Override
+        public Color fromString(String val) {
+            return new Color(Integer.parseInt(val.startsWith("#") ? val.substring(1) : val, 16));
+        }
+
+        @Override
+        public Color upcast(Object value) {
+            return (Color) value;
         }
     }
 }
