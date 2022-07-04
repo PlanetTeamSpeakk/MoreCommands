@@ -1,25 +1,36 @@
 package com.ptsmods.morecommands.mixin.client;
 
+import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
+import dev.architectury.networking.NetworkManager;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
-
+    private static final @Unique Identifier entityTargetPacketId = new Identifier("morecommands:entity_target_update");
     @Shadow @Final private MinecraftClient client;
+    private @Unique Entity lastTargetedEntity = null;
 
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
     public double updateTargetedEntity_d(double d) {
@@ -41,4 +52,17 @@ public class MixinGameRenderer {
         return false;
     }
 
+    @Inject(at = @At("RETURN"), method = "updateTargetedEntity")
+    public void updateTargetedEntity(float tickDelta, CallbackInfo cbi) {
+        if (!NetworkManager.canServerReceive(entityTargetPacketId)) return;
+
+        // If there's an entity the player is targeting within reach, use that. Otherwise, check if there is one within 160 blocks of reach.
+        HitResult hit = client.targetedEntity == null ? MoreCommands.getRayTraceTarget(client.player, 160, false, true) : null;
+        Entity target = client.targetedEntity == null ? hit.getType() == HitResult.Type.ENTITY ? ((EntityHitResult) hit).getEntity() : null : client.targetedEntity;
+
+        if (target == lastTargetedEntity) return;
+
+        lastTargetedEntity = client.targetedEntity;
+        NetworkManager.sendToServer(entityTargetPacketId, new PacketByteBuf(Unpooled.buffer()).writeVarInt(lastTargetedEntity == null ? -1 : ((MixinEntityAccessor) lastTargetedEntity).getId_()));
+    }
 }

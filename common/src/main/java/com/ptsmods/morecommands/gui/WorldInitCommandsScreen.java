@@ -48,7 +48,7 @@ public class WorldInitCommandsScreen extends Screen {
         ((ScreenAddon) this).mc$clear();
         MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
         addField("");
-        ((ScreenAddon) this).mc$addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), (buttonWidget) -> {
+        ((ScreenAddon) this).mc$addButton(new ButtonWidget(width / 4 - 30, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), (buttonWidget) -> {
             MoreCommandsClient.clearWorldInitCommands();
             init();
         }));
@@ -59,7 +59,7 @@ public class WorldInitCommandsScreen extends Screen {
     private void addField(String content) {
         AtomicReference<TextFieldWidget> atomicField = new AtomicReference<>();
         AtomicReference<Pair<TextFieldWidget, CommandSuggestor>> atomicPair = new AtomicReference<>();
-        TextFieldWidget field = new TextFieldWidget(textRenderer, 25, fields.size() * 25 + 50, width - 50, 20, LiteralTextBuilder.builder("Insert command here").build()) {
+        TextFieldWidget field = new TextFieldWidget(textRenderer, 25, fields.size() * 25 + 50, width - 50, 20, LiteralTextBuilder.literal("Insert command here")) {
             @Override
             public void write(String string) {
                 super.write(string);

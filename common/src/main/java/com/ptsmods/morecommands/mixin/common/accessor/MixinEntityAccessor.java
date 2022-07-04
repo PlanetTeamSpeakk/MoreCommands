@@ -13,6 +13,9 @@ public interface MixinEntityAccessor {
     @Accessor("pitch")
     float getPitch_();
 
+    @Accessor("id")
+    int getId_();
+
     @Accessor("yaw")
     void setYaw_(float yaw);
 

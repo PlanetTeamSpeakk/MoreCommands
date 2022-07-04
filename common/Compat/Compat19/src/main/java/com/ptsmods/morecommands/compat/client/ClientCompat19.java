@@ -63,7 +63,7 @@ public class ClientCompat19 extends ClientCompat17 {
         ChatMessageSigner signer = ChatMessageSigner.create(player.getUuid());
         MixinClientPlayerEntityAccessor accessor = (MixinClientPlayerEntityAccessor) player;
 
-        if (!message.startsWith("/")) return new ChatMessageC2SPacket(message, accessor.callSignChatMessage(signer, LiteralTextBuilder.builder(message).build()), false);
+        if (!message.startsWith("/")) return new ChatMessageC2SPacket(message, accessor.callSignChatMessage(signer, LiteralTextBuilder.literal(message)), false);
         else {
             message = message.substring(1);
             ParseResults<CommandSource> parseResults = player.networkHandler.getCommandDispatcher().parse(message, player.networkHandler.getCommandSource());

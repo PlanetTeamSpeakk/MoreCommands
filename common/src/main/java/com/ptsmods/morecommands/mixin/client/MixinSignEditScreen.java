@@ -39,7 +39,7 @@ public class MixinSignEditScreen {
     @Inject(at = @At("RETURN"), method = "init()V")
     private void init(CallbackInfo cbi) {
         SignEditScreen thiz = ReflectionHelper.cast(this);
-        ((ScreenAddon) thiz).mc$addButton(mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, LiteralTextBuilder.builder("Translate formattings: " + Formatting.RED + "OFF").build(), btn -> {
+        ((ScreenAddon) thiz).mc$addButton(mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, LiteralTextBuilder.literal("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
             translateFormattings = !translateFormattings;
             mc_updateBtn();
         }) {
@@ -51,7 +51,7 @@ public class MixinSignEditScreen {
     }
 
     private void mc_updateBtn() {
-        mc_btn.setMessage(LiteralTextBuilder.builder("Translate formattings: " + Util.formatFromBool(translateFormattings, Formatting.GREEN + "ON", Formatting.RED + "OFF")).build());
+        mc_btn.setMessage(LiteralTextBuilder.literal("Translate formattings: " + Util.formatFromBool(translateFormattings, Formatting.GREEN + "ON", Formatting.RED + "OFF")));
     }
 
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V")

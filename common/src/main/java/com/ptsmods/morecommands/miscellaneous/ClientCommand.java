@@ -98,7 +98,7 @@ public abstract class ClientCommand extends Command {
     }
 
     public static void sendMsg(String s, Object... formats) {
-        sendMsg(LiteralTextBuilder.builder(fixResets(formatted(s, formats))).withStyle(DS).build());
+        sendMsg(LiteralTextBuilder.literal(fixResets(formatted(s, formats)), DS));
     }
 
     public static void sendMsg(Text t) {
@@ -110,7 +110,7 @@ public abstract class ClientCommand extends Command {
     }
 
     public static void sendAbMsg(String s, Object... formats) {
-        sendAbMsg(LiteralTextBuilder.builder(fixResets(formatted(s, formats))).withStyle(DS).build());
+        sendAbMsg(LiteralTextBuilder.literal(fixResets(formatted(s, formats)), DS));
     }
 
     public static void sendAbMsg(TextBuilder<?> textBuilder) {
@@ -122,7 +122,7 @@ public abstract class ClientCommand extends Command {
     }
 
     public static void sendError(String error, Object... formats) {
-        sendError(LiteralTextBuilder.builder(fixResets(formatted(error, formats), Formatting.RED)).withStyle(Style.EMPTY.withColor(Formatting.RED)).build());
+        sendError(LiteralTextBuilder.literal(fixResets(formatted(error, formats), Formatting.RED), Style.EMPTY.withColor(Formatting.RED)));
     }
 
     public static void sendError(Text error) {

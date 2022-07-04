@@ -34,7 +34,7 @@ public final class EnumRuleWidget<E extends Enum<E>> extends EditGameRulesScreen
 
     public Text getValueText(E value) {
         String key = this.rootTranslationKey + "." + value.name().toLowerCase(Locale.ROOT);
-        return (I18n.hasTranslation(key) ? TranslatableTextBuilder.builder(key) : LiteralTextBuilder.builder(value.toString())).build();
+        return (I18n.hasTranslation(key) ? TranslatableTextBuilder.translatable(key) : LiteralTextBuilder.literal(value.toString()));
     }
 
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {

@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(staticName = "paintingVariant")
 public class PaintingVariantArgumentType implements CompatArgumentType<PaintingVariantArgumentType, Identifier, ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier>> {
     public static final ConstantSerialiser<PaintingVariantArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PaintingVariantArgumentType::new);
-    private static final DynamicCommandExceptionType MOTIVE_NOT_FOUND = new DynamicCommandExceptionType(o -> LiteralTextBuilder.builder("Could not find a painting motive with an id of " + o + ".").build());
+    private static final DynamicCommandExceptionType MOTIVE_NOT_FOUND = new DynamicCommandExceptionType(o -> LiteralTextBuilder.literal("Could not find a painting motive with an id of " + o + "."));
 
     public static PaintingVariant getPaintingVariant(CommandContext<?> ctx, String argName) {
         return Registry.PAINTING_VARIANT.get(ctx.getArgument(argName, Identifier.class));
@@ -38,7 +38,7 @@ public class PaintingVariantArgumentType implements CompatArgumentType<PaintingV
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestFromIdentifier(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getId, variant -> LiteralTextBuilder.builder(Registry.PAINTING_VARIANT.getId(variant).getPath()).build());
+        return CommandSource.suggestFromIdentifier(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getId, variant -> LiteralTextBuilder.literal(Registry.PAINTING_VARIANT.getId(variant).getPath()));
     }
 
     @Override

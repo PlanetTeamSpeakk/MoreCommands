@@ -75,7 +75,7 @@ public class ClientOptionsChildScreen extends Screen {
 
         if (!page.isEmpty()) pages.add(page);
         if (pages.size() > 1) {
-            seekLeft = addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 145, 120, 20, LiteralTextBuilder.builder("<---").build(), button -> {
+            seekLeft = addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 145, 120, 20, LiteralTextBuilder.literal("<---"), button -> {
                 this.page -= 1;
                 updatePage();
             }) {
@@ -84,7 +84,7 @@ public class ClientOptionsChildScreen extends Screen {
                     return TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("previous page")).build();
                 }
             });
-            seekRight = addon.mc$addButton(new ButtonWidget(width / 2 + 30, height / 6 + 145, 120, 20, LiteralTextBuilder.builder("--->").build(), button -> {
+            seekRight = addon.mc$addButton(new ButtonWidget(width / 2 + 30, height / 6 + 145, 120, 20, LiteralTextBuilder.literal("--->"), button -> {
                 this.page += 1;
                 updatePage();
             }) {
@@ -96,7 +96,7 @@ public class ClientOptionsChildScreen extends Screen {
         }
         updatePage();
 
-        addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), button -> {
+        addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), button -> {
             ClientOptions.reset();
             init();
         }));
@@ -121,7 +121,7 @@ public class ClientOptionsChildScreen extends Screen {
             if (comments != null && btn.isMouseOver(mouseX, mouseY)) {
                 List<Text> texts = new ArrayList<>();
                 for (String s : comments)
-                    texts.add(LiteralTextBuilder.builder(s).build());
+                    texts.add(LiteralTextBuilder.literal(s));
                 renderTooltip(matrices, texts, mouseX, mouseY);
             }
         });

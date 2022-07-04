@@ -2,8 +2,10 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
+import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
+import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinJsonUnbakedModelAccessor;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
@@ -40,6 +42,21 @@ public abstract class MixinModelLoader {
     @SuppressWarnings("unchecked")
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/model/ModelLoader;loadModelFromJson(Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/model/json/JsonUnbakedModel;"), method = "loadModel")
     private JsonUnbakedModel loadModel_loadModelFromJson(ModelLoader modelLoader, Identifier id) throws IOException {
+        if (ClientOptions.Tweaks.overrideAirModels.getValue() && "minecraft".equals(id.getNamespace()) && id.getPath().contains("item/") && id.getPath().contains("air")) {
+            MoreCommandsClient.LOG.info(id);
+            switch (id.getPath()) {
+                case "item/air":
+                    MoreCommandsClient.LOG.info("Loading air model");
+                    return loadModelFromJson(new Identifier("morecommands:item/air"));
+                case "item/mcsynthetic_cave_air":
+                    return loadModelFromJson(new Identifier("morecommands:item/cave_air"));
+                case "item/mcsynthetic_void_air":
+                    return loadModelFromJson(new Identifier("morecommands:item/void_air"));
+                default:
+                    break;
+            }
+        }
+
         try {
             return loadModelFromJson(id);
         } catch (IOException e) {

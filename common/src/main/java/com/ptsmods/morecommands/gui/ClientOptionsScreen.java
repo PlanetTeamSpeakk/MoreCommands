@@ -44,17 +44,17 @@ public class ClientOptionsScreen extends Screen {
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24 * (row + 1) - 6;
 
-            categoryButtons.put(addon.mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.builder(category.getName()).build(),
+            categoryButtons.put(addon.mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.literal(category.getName()),
                     button -> client.setScreen(new ClientOptionsChildScreen(this, category)))), category);
 
             if (right) row++;
             right = !right;
         }
 
-        wicButton = addon.mc$addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.builder("World Init Commands").build(),
+        wicButton = addon.mc$addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.literal("World Init Commands"),
                 button -> client.setScreen(new WorldInitCommandsScreen(this))));
 
-        addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.builder("Reset").build(), btn -> {
+        addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), btn -> {
             ClientOptions.reset();
             init();
         }));
@@ -71,13 +71,13 @@ public class ClientOptionsScreen extends Screen {
             if (btn.isMouseOver(mouseX, mouseY) && category.getComments() != null) {
                 List<Text> texts = new ArrayList<>();
                 for (String s : category.getComments())
-                    texts.add(LiteralTextBuilder.builder(s).build());
+                    texts.add(LiteralTextBuilder.literal(s));
                 renderTooltip(matrices, texts, mouseX, mouseY);
             }
         });
 
         if (wicButton.isMouseOver(mouseX, mouseY))
-            renderTooltip(matrices, Lists.newArrayList(LiteralTextBuilder.builder("Commands that get ran upon creating a world.").build()), mouseX, mouseY);
+            renderTooltip(matrices, Lists.newArrayList(LiteralTextBuilder.literal("Commands that get ran upon creating a world.")), mouseX, mouseY);
     }
 
     @Override

@@ -31,7 +31,7 @@ public class MixinOptionsScreen extends Screen {
             y = this.height / 6 + 24 - 6;
         }
 
-        ((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.builder("MoreCommands", MoreCommands.DS).build(),
+        ((ScreenAddon) this).mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.literal("MoreCommands", MoreCommands.DS),
                 button -> MinecraftClient.getInstance().setScreen(new ClientOptionsScreen(this))));
     }
 

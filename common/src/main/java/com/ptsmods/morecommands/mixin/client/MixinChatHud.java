@@ -44,7 +44,7 @@ public abstract class MixinChatHud {
     @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;addMessage(Lnet/minecraft/text/Text;I)V"), method = "addMessage(Lnet/minecraft/text/Text;)V")
     public void addMessage_addMessage(Args args) {
         TextBuilder<?> builder = Compat.get().builderFromText(args.get(0));
-        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral())) args.set(0, LiteralTextBuilder.builder("").build());
+        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral())) args.set(0, LiteralTextBuilder.literal(""));
         args.set(1, id++);
     }
 

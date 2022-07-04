@@ -17,7 +17,7 @@ import java.util.Collection;
 @RequiredArgsConstructor(staticName = "hexInt")
 public class HexIntegerArgumentType implements CompatArgumentType<HexIntegerArgumentType, String, ConstantSerialiser.ConstantProperties<HexIntegerArgumentType, String>> {
     public static final ConstantSerialiser<HexIntegerArgumentType, String> SERIALISER = new ConstantSerialiser<>(HexIntegerArgumentType::new);
-    private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(LiteralTextBuilder.builder("The given value is not a (hexa)decimal number between #000000 and #FFFFFF").build());
+    private static final SimpleCommandExceptionType exc = new SimpleCommandExceptionType(LiteralTextBuilder.literal("The given value is not a (hexa)decimal number between #000000 and #FFFFFF"));
 
     public static int getHexInt(CommandContext<?> ctx, String argName) {
         return Integer.parseInt(ctx.getArgument(argName, String.class));

@@ -87,6 +87,8 @@ public class ClientOptions {
                 "Whether your permission is required for players to", "request your Discord tag.", "Unnecessary if tag is not set.");
         public static final EnumClientOption<PowerToolCommand.PowertoolSelectionMode> powertoolSelection = new EnumClientOption<>(TWEAKS, "Powertool Selection", PowerToolCommand.PowertoolSelectionMode.class,
                 PowerToolCommand.PowertoolSelectionMode.HUD, "The mode to use to display the currently selected powertool command.");
+        public static final BooleanClientOption overrideAirModels = new BooleanClientOption(TWEAKS, "Override Air Models", true,
+                "When enabled, the models of air blocks display", "what kind of air they air.", "(Normal, cave or void)");
 
         static void init() {}
     }

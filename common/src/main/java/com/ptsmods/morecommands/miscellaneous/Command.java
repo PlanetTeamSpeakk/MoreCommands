@@ -126,7 +126,7 @@ public abstract class Command {
     }
 
     public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
-        return sendMsg(ctx, LiteralTextBuilder.builder(fixResets(formats.length == 0 ? msg : formatted(msg, formats))).withStyle(DS).build());
+        return sendMsg(ctx, LiteralTextBuilder.literal(fixResets(formats.length == 0 ? msg : formatted(msg, formats)), DS));
     }
 
     public static int sendMsg(CommandContext<ServerCommandSource> ctx, Text msg) {
@@ -139,7 +139,7 @@ public abstract class Command {
     }
 
     public static int sendError(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
-        return sendError(ctx, LiteralTextBuilder.builder(fixResets(formatted(msg, formats), Formatting.RED)).build());
+        return sendError(ctx, LiteralTextBuilder.literal(fixResets(formatted(msg, formats), Formatting.RED)));
     }
 
     public static int sendError(CommandContext<ServerCommandSource> ctx, TextBuilder<?> textBuilder) {
@@ -152,7 +152,7 @@ public abstract class Command {
     }
 
     public static int sendMsg(Entity entity, String msg, Object... formats) {
-        return sendMsg(entity, LiteralTextBuilder.builder(formatted(msg, formats)).withStyle(DS).build());
+        return sendMsg(entity, LiteralTextBuilder.literal(formatted(msg, formats), DS));
     }
 
     public static int sendMsg(Entity entity, Text msg) {
@@ -167,7 +167,7 @@ public abstract class Command {
     }
 
     public static void broadcast(MinecraftServer server, String msg, Object... formats) {
-        broadcast(server, LiteralTextBuilder.builder(formatted(msg, formats)).withStyle(DS).build());
+        broadcast(server, LiteralTextBuilder.literal(formatted(msg, formats), DS));
     }
 
     public static void broadcast(MinecraftServer server, Text msg) {

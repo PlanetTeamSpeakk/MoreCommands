@@ -39,7 +39,7 @@ public class PotionArgumentType implements CompatArgumentType<PotionArgumentType
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestFromIdentifier(Registry.POTION.stream(), builder, Registry.POTION::getId, potion -> LiteralTextBuilder.builder(Registry.POTION.getId(potion).getPath()).build());
+        return CommandSource.suggestFromIdentifier(Registry.POTION.stream(), builder, Registry.POTION::getId, potion -> LiteralTextBuilder.literal(Registry.POTION.getId(potion).getPath()));
     }
 
     @Override

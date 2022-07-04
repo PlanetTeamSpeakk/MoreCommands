@@ -46,6 +46,6 @@ public class BooleanClientOption extends ClientOption<Boolean> {
 
     @Override
     public Text createButtonText(String name) {
-        return LiteralTextBuilder.builder(name + " : " + Util.formatFromBool(getValueRaw()) + String.valueOf(getValueRaw()).toUpperCase()).build();
+        return LiteralTextBuilder.literal(name + " : " + Util.formatFromBool(getValueRaw()) + String.valueOf(getValueRaw()).toUpperCase());
     }
 }

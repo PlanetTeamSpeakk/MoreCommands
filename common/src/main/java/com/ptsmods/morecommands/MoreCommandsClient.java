@@ -360,14 +360,14 @@ public class MoreCommandsClient {
                             .build(),
                     btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
                     /*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
-                    LiteralTextBuilder.builder(Formatting.RED + "Only works on servers with MoreCommands installed.").build(), mouseX, mouseY) : ButtonWidget.EMPTY) {
+                    LiteralTextBuilder.literal(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
                 public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
                     return false;
                 }
             }, btn -> btn.visible = initOpened0)));
         }
         Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
-                50, 20, LiteralTextBuilder.builder("Colours").withStyle(Command.DS).build(), btn -> {
+                50, 20, LiteralTextBuilder.literal("Colours", Command.DS), btn -> {
             boolean b = !btns.get(0).visible;
             if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
             btns.forEach(btn0 -> btn0.visible = b);

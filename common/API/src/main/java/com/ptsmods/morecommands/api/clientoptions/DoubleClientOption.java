@@ -48,10 +48,10 @@ public class DoubleClientOption extends ClientOption<Double> {
 
     @Override
     public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        return new SliderWidget(x, y, 150, 20, LiteralTextBuilder.builder(name + " : " + getValueString()).build(), MathHelper.clamp((getValueRaw() - min) / (max - min), 0.0D, 1.0D)) {
+        return new SliderWidget(x, y, 150, 20, LiteralTextBuilder.literal(name + " : " + getValueString()), MathHelper.clamp((getValueRaw() - min) / (max - min), 0.0D, 1.0D)) {
             @Override
             protected void updateMessage() {
-                setMessage(LiteralTextBuilder.builder(name + " : " + getValueString()).build());
+                setMessage(LiteralTextBuilder.literal(name + " : " + getValueString()));
             }
 
             @Override
@@ -64,6 +64,6 @@ public class DoubleClientOption extends ClientOption<Double> {
 
     @Override
     public Text createButtonText(String name) {
-        return LiteralTextBuilder.builder(name + " : " + getValueString()).build();
+        return LiteralTextBuilder.literal(name + " : " + getValueString());
     }
 }

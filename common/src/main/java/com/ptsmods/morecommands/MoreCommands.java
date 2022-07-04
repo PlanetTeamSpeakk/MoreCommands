@@ -320,7 +320,7 @@ public enum MoreCommands implements IMoreCommands {
                         TextBuilder<?> builder = Compat.get().builderFromText(text);
                         return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
                                 || player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel())) && builder instanceof LiteralTextBuilder ?
-                                LiteralTextBuilder.builder(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())).build() : text);
+                                LiteralTextBuilder.literal(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())) : text);
                     });
         }
 

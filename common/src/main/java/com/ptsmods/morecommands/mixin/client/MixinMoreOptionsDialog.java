@@ -21,7 +21,7 @@ public abstract class MixinMoreOptionsDialog {
 
     @Inject(at = @At("TAIL"), method = "init")
     private void init(CreateWorldScreen parent, MinecraftClient client, TextRenderer textRenderer, CallbackInfo ci) {
-        ((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, LiteralTextBuilder.builder("Initialisation Commands").build(),
+        ((ScreenAddon) parent).mc$addButton(wicBtn = new ButtonWidget(parent.width / 2 + 5, 151, 150, 20, LiteralTextBuilder.literal("Initialisation Commands"),
                 btn -> MinecraftClient.getInstance().setScreen(new WorldInitCommandsScreen(parent)))).visible = false;
     }
 

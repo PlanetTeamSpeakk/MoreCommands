@@ -22,7 +22,7 @@ public class MixinScreen {
         TextBuilder<?> builder = Compat.get().builderFromText(text);
         if (builder instanceof TranslatableTextBuilder && "itemGroup.morecommands.unobtainable_items".equalsIgnoreCase(((TranslatableTextBuilder) builder).getKey())) {
             cbi.cancel();
-            ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, LiteralTextBuilder.builder("MoreCommands", MoreCommands.DS).build()), x, y);
+            ReflectionHelper.<Screen>cast(this).renderTooltip(matrices, Lists.newArrayList(text, LiteralTextBuilder.literal("MoreCommands", MoreCommands.DS)), x, y);
         }
     }
 }
