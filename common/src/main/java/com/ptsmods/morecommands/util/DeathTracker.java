@@ -17,13 +17,12 @@ import java.util.Objects;
 
 public class DeathTracker implements IDeathTracker {
     public static final DeathTracker INSTANCE = new DeathTracker();
+    private final List<Pair<Long, Vec3d>> deaths = new ArrayList<>();
 
     @SneakyThrows
     private DeathTracker() {
         if (INSTANCE != null) throw new IllegalAccessException("There may only be one DeathTracker");
     }
-
-    private final List<Pair<Long, Vec3d>> deaths = new ArrayList<>();
 
     @Override
     public void addDeath(World world, Vec3d pos) {
