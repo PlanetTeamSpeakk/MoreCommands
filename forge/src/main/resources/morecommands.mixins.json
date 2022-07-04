@@ -3,7 +3,7 @@
   "package": "com.ptsmods.morecommands.forge.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MixinCreativeInventoryScreen"
+    "com.ptsmods.morecommands.mixin.forge.MixinCreativeInventoryScreen"
   ],
   "mixins": [
   ],

@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.forge.mixin;
+package com.ptsmods.morecommands.mixin.forge;
 
 import com.ptsmods.morecommands.api.addons.CreativeInventoryScreenAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
