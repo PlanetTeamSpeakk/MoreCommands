@@ -25,6 +25,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.regex.PatternSyntaxException;
 
 public class InfoHud extends DrawableHelper {
@@ -32,34 +33,50 @@ public class InfoHud extends DrawableHelper {
     public static final InfoHud instance = new InfoHud();
     private static final File file = MoreCommandsArch.getConfigDirectory().resolve("infoHud.txt").toFile();
     private static final List<StackTraceElement> printedExceptions = new ArrayList<>();
-    private final Map<String, String> variables = new HashMap<>();
+    private static final Map<String, Variable<?>> variables = new HashMap<>();
+    private static final Map<String, Object> variableValues = new HashMap<>();
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final List<String> lines = new ArrayList<>();
     private HitResult result;
-    private int xOffset = 2;
-    private int yOffset = 2;
     private long lastRead = 0;
 
+    static {
+        registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0, 0)));
+        registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0, val, 0)));
+        registerVariable(new DoubleVariable("scale", 1.0, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
+    }
+
+    private static void registerVariable(Variable<?> variable) {
+        variables.put(variable.getName(), variable);
+    }
+
     public void render(MatrixStack matrices, float tickDelta) {
+        matrices.push();
+
         result = MoreCommands.getRayTraceTarget(client.player, 160f, false, true);
-        if (System.currentTimeMillis() - lastRead >= 500) {
-            try {
-                loadLines();
-                lastRead = System.currentTimeMillis();
-            } catch (IOException e) {
-                MoreCommands.LOG.catching(e);
-                setupDefaultLines();
-            }
+        if (System.currentTimeMillis() - lastRead >= 500) try {
+            loadLines();
+            lastRead = System.currentTimeMillis();
+        } catch (IOException e) {
+            MoreCommands.LOG.catching(e);
+            setupDefaultLines();
         }
-        if (variables.containsKey("xOffset") && MoreCommands.isInteger(variables.get("xOffset"))) xOffset = Integer.parseInt(variables.get("xOffset"));
-        if (variables.containsKey("yOffset") && MoreCommands.isInteger(variables.get("yOffset"))) yOffset = Integer.parseInt(variables.get("yOffset"));
+
+        variables.forEach((name, var) -> {
+            if (variableValues.containsKey(name))
+                var.apply(matrices, var.upcast(variableValues.get(name)));
+            else var.applyDefault(matrices);
+        });
+
         int row = 0;
         for (String s : parseLines())
             drawString(matrices, s, row++);
+
+        matrices.pop();
     }
 
     private void drawString(MatrixStack matrices, String s, int row) {
-        client.textRenderer.drawWithShadow(matrices, LiteralTextBuilder.builder(s).build(), xOffset, row * 10 + yOffset, 0xFFFFFF);
+        client.textRenderer.drawWithShadow(matrices, LiteralTextBuilder.literal(s), 0, row * 10, 0xFFFFFF);
     }
 
     private void setupDefaultLines() {
@@ -103,11 +120,17 @@ public class InfoHud extends DrawableHelper {
     }
 
     private List<String> parseLines() {
-        variables.clear();
+        variableValues.clear();
         List<String> output = new ArrayList<>();
         for (String line : lines)
             if (line.startsWith("var ")) {
-                if (line.split(" ").length == 4) variables.put(line.split(" ")[1], line.split(" ")[3]);
+                String[] lineParts = line.split(" ");
+                if (lineParts.length != 4) continue;
+
+                String name = lineParts[1];
+                if (!variables.containsKey(name)) continue;
+
+                variableValues.put(name, variables.get(name).fromString(lineParts[3]));
             } else {
                 StringBuilder s = new StringBuilder();
                 int index = -1;
@@ -309,4 +332,76 @@ public class InfoHud extends DrawableHelper {
         return output;
     }
 
+    public interface Variable<T> {
+        String getName();
+        T getDefaultValue();
+        T fromString(String val);
+        void apply(MatrixStack matrixStack, Object value);
+        void applyDefault(MatrixStack matrixStack);
+        T upcast(Object value);
+    }
+
+    private abstract static class AbstractVariable<T> implements Variable<T> {
+        protected final String name;
+        protected final T defaultValue;
+        private final BiConsumer<MatrixStack, T> applicator;
+
+        public AbstractVariable(String name, T defaultValue, BiConsumer<MatrixStack, T> applicator) {
+            this.name = name;
+            this.defaultValue = defaultValue;
+            this.applicator = applicator;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public T getDefaultValue() {
+            return defaultValue;
+        }
+
+        @Override
+        public void apply(MatrixStack matrixStack, Object value) {
+            applicator.accept(matrixStack, upcast(value));
+        }
+
+        @Override
+        public void applyDefault(MatrixStack matrixStack) {
+            applicator.accept(matrixStack, getDefaultValue());
+        }
+    }
+
+    public static class IntVariable extends AbstractVariable<Integer> {
+        public IntVariable(String name, Integer defaultValue, BiConsumer<MatrixStack, Integer> applicator) {
+            super(name, defaultValue, applicator);
+        }
+
+        @Override
+        public Integer fromString(String val) {
+            return Integer.parseInt(val);
+        }
+
+        @Override
+        public Integer upcast(Object value) {
+            return (Integer) value;
+        }
+    }
+
+    public static class DoubleVariable extends AbstractVariable<Double> {
+        public DoubleVariable(String name, Double defaultValue, BiConsumer<MatrixStack, Double> applicator) {
+            super(name, defaultValue, applicator);
+        }
+
+        @Override
+        public Double fromString(String val) {
+            return Double.parseDouble(val);
+        }
+
+        @Override
+        public Double upcast(Object value) {
+            return (Double) value;
+        }
+    }
 }
