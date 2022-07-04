@@ -96,7 +96,7 @@ public class InfoHud extends DrawableHelper {
 
     private void setupDefaultLines() {
         lines.clear();
-        lines.add("// Have a look at https://github.com/PlanetTeamSpeakk/MoreCommands to see what variables you can use here.");
+        lines.add("// Have a look at https://morecommands.ptsmods.com/misc/info-hud to see what variables you can use here.");
         lines.add("{DF}Player: {SF}{playerName}");
         lines.add("{DF}FPS: {SF}{fps}");
         lines.add("{DF}X: {SF}{x}");
