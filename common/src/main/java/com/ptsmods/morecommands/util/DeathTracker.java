@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import lombok.SneakyThrows;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -17,7 +18,7 @@ import java.util.Objects;
 
 public class DeathTracker implements IDeathTracker {
     public static final DeathTracker INSTANCE = new DeathTracker();
-    private final List<Pair<Long, Vec3d>> deaths = new ArrayList<>();
+    private final List<Pair<Long, Pair<Identifier, Vec3d>>> deaths = new ArrayList<>();
 
     @SneakyThrows
     private DeathTracker() {
@@ -26,7 +27,7 @@ public class DeathTracker implements IDeathTracker {
 
     @Override
     public void addDeath(World world, Vec3d pos) {
-        deaths.add(new Pair<>(System.currentTimeMillis(), pos));
+        deaths.add(new Pair<>(System.currentTimeMillis(), new Pair<>(world.getRegistryKey().getValue(), pos)));
         if (ClientOptions.Tweaks.trackDeaths.getValue()) log(world, pos);
     }
 
@@ -43,7 +44,7 @@ public class DeathTracker implements IDeathTracker {
     }
 
     @Override
-    public List<Pair<Long, Vec3d>> getDeaths() {
+    public List<Pair<Long, Pair<Identifier, Vec3d>>> getDeaths() {
         return ImmutableList.copyOf(deaths);
     }
 }
