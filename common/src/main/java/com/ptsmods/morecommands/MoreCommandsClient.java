@@ -7,6 +7,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
+import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.callbacks.ChatMessageSendEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
@@ -19,6 +20,7 @@ import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.gui.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
+import com.ptsmods.morecommands.util.DeathTracker;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
@@ -145,6 +147,8 @@ public class MoreCommandsClient {
         List<ItemConvertible> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
         if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));
         ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemConvertible[0]));
+
+        Holder.setDeathTracker(DeathTracker.INSTANCE);
 
         AtomicInteger wicWarmup = new AtomicInteger();
         PlayerEvent.PLAYER_JOIN.register(player -> {

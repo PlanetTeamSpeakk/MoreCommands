@@ -6,7 +6,8 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "plus.MixinScreen",
-    "plus.MixinSignEditScreen"
+    "plus.MixinSignEditScreen",
+    "plus.MixinClientPlayNetworkHandler"
   ],
   "mixins": [
     "min.MixinServerWorld",

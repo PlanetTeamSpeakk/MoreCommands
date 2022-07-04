@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.api.IDeathTracker;
 import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import com.ptsmods.morecommands.api.callbacks.RenderTickEvent;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
@@ -12,7 +13,6 @@ import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.network.ClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = MinecraftClient.class, priority = 1100)
 public class MixinMinecraftClient {
-    @Unique
-    private boolean createdWorld = false;
 
     @Inject(at = @At("TAIL"), method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;)V")
     public void disconnect(Screen screen, CallbackInfo cbi) {
@@ -31,6 +29,7 @@ public class MixinMinecraftClient {
         SearchCommand.lines.clear();
         ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
         MoreCommandsClient.clearDisabledCommands();
+        IDeathTracker.get().reset();
     }
 
     @Inject(at = @At("HEAD"), method = "render(Z)V")

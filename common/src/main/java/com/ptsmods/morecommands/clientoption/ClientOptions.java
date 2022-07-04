@@ -89,6 +89,8 @@ public class ClientOptions {
                 PowerToolCommand.PowertoolSelectionMode.HUD, "The mode to use to display the currently selected powertool command.");
         public static final BooleanClientOption overrideAirModels = new BooleanClientOption(TWEAKS, "Override Air Models", true,
                 "When enabled, the models of air blocks display", "what kind of air they air.", "(Normal, cave or void)");
+        public static final BooleanClientOption trackDeaths = new BooleanClientOption(TWEAKS, "Track Deaths", false,
+                "When enabled, your location is logged in chat", "every time you die.", "Even when disabled, deaths can be listed using /deaths.");
 
         static void init() {}
     }

@@ -28,6 +28,9 @@ public class Holder {
     @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IDataTrackerHelper#get() instead.
     private static IDataTrackerHelper dataTrackerHelper;
 
+    @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IDeathTracker#get() instead.
+    private static IDeathTracker deathTracker;
+
     public static void setMoreCommands(IMoreCommands moreCommands) {
         if (Holder.moreCommands != null) throw new IllegalStateException("MoreCommands instance already set.");
         Holder.moreCommands = moreCommands;
@@ -61,6 +64,11 @@ public class Holder {
     public static void setDataTrackerHelper(IDataTrackerHelper dataTrackerHelper) {
         if (Holder.dataTrackerHelper != null) throw new IllegalStateException("DataTrackerHelper instance already set.");
         Holder.dataTrackerHelper = dataTrackerHelper;
+    }
+
+    public static void setDeathTracker(IDeathTracker deathTracker) {
+        if (Holder.deathTracker != null) throw new IllegalStateException("DeathTracker instance already set.");
+        Holder.deathTracker = deathTracker;
     }
 
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
