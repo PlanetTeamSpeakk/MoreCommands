@@ -63,7 +63,7 @@ public class InfoHud extends DrawableHelper {
 
         result = MoreCommands.getRayTraceTarget(client.player, 160f, false, true);
         if (System.currentTimeMillis() - lastRead >= 500) try {
-            loadLines();
+            if (file.lastModified() > lastRead) loadLines();
             lastRead = System.currentTimeMillis();
         } catch (IOException e) {
             MoreCommands.LOG.catching(e);
