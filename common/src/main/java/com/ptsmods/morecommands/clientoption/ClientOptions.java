@@ -159,17 +159,20 @@ public class ClientOptions {
     }
 
     public static void read() {
-        if (f.exists())
-            try (FileReader reader = new FileReader(f)) {
-                props.load(reader);
-                ClientOption.getUnmappedOptions().values().stream()
-                        .filter(option -> props.containsKey(option.getKey()))
-                        .forEach(option -> option.setValueString(props.getProperty(option.getKey())));
-                write();
-            } catch (IOException e) {
-                MoreCommands.LOG.catching(e);
-            }
-        else write();
+        if (!f.exists()) {
+            write();
+            return;
+        }
+
+        try (FileReader reader = new FileReader(f)) {
+            props.load(reader);
+            ClientOption.getUnmappedOptions().values().stream()
+                    .filter(option -> props.containsKey(option.getKey()))
+                    .forEach(option -> option.setValueString(props.getProperty(option.getKey())));
+            write();
+        } catch (IOException e) {
+            MoreCommands.LOG.catching(e);
+        }
     }
 
     public static void init() {
