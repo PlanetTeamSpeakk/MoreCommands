@@ -172,7 +172,7 @@ public class MoreCommandsClient {
         }
 
         ClientGuiEvent.RENDER_HUD.register((matrices, tickDelta) -> {
-            if (ClientOptions.Tweaks.enableInfoHUD.getValue()) InfoHud.INSTANCE.render(matrices, tickDelta);
+            if (ClientOptions.Tweaks.enableInfoHUD.getValue()) InfoHud.INSTANCE.render(matrices);
         });
 
         Set<Entity> coolKids = new HashSet<>();

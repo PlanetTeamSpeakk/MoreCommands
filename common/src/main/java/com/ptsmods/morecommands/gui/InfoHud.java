@@ -37,8 +37,8 @@ public class InfoHud extends DrawableHelper {
     private static final List<StackTraceElement> printedExceptions = new ArrayList<>();
     private static final Map<String, Variable<?>> variables = new HashMap<>();
     private static final Map<String, Object> variableValues = new HashMap<>();
-    private final MinecraftClient client = MinecraftClient.getInstance();
-    private final List<String> lines = new ArrayList<>();
+    private static final MinecraftClient client = MinecraftClient.getInstance();
+    private static final List<String> lines = new ArrayList<>();
     private static HitResult result;
     private static long lastRead = 0;
     private static int width = 0, height = 0;
@@ -58,7 +58,7 @@ public class InfoHud extends DrawableHelper {
         variables.put(variable.getName(), variable);
     }
 
-    public void render(MatrixStack matrices, float tickDelta) {
+    public void render(MatrixStack matrices) {
         matrices.push();
 
         result = MoreCommands.getRayTraceTarget(client.player, 160f, false, true);
