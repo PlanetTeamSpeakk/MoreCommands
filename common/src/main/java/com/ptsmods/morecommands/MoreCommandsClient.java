@@ -17,7 +17,7 @@ import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.gui.InfoHud;
+import com.ptsmods.morecommands.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
 import com.ptsmods.morecommands.util.DeathTracker;

@@ -105,6 +105,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -999,15 +1000,12 @@ public enum MoreCommands implements IMoreCommands {
         return hours + ":" + mm + (muricanClock ? " " + ampm : "");
     }
 
-    public static String formatDouble(Double dbl) {
-        String dblString = dbl.toString();
-        String dblString1 = dblString.split("\\.").length == 2 ? dblString.split("\\.")[1] : "";
-        while (dblString1.endsWith("0"))
-            dblString1 = dblString1.substring(0, dblString1.length() - 1);
-        dblString1 = dblString1.length() >= 5 ? dblString1.substring(0, 5) : dblString1;
-        if (dblString1.equals("")) dblString = dblString.split("\\.")[0];
-        else dblString = dblString.split("\\.")[0] + "." + dblString1;
-        return dblString;
+    public static String formatDouble(double dbl) {
+        return formatDouble(dbl, 2);
+    }
+
+    public static String formatDouble(double dbl, int decimals) {
+        return new DecimalFormat("0." + multiplyString("#", decimals), new DecimalFormatSymbols(Locale.ROOT)).format(dbl);
     }
 
     public static <S> LiteralCommandNode<S> createAlias(String alias, LiteralCommandNode<S> node) {

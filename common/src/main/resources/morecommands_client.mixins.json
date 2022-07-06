@@ -57,7 +57,8 @@
     "accessor.MixinWindowAccessor",
     "MixinPlayerEntityModel",
     "MixinAbstractClientPlayerEntity",
-    "MixinClickableWidget"
+    "MixinClickableWidget",
+    "accessor.MixinMinecraftClientAccessor"
   ],
   "injectors": {
 	"defaultRequire": 1
