@@ -36,12 +36,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.StreamSupport;
 
 public class InfoHud extends DrawableHelper {
     public static final InfoHud INSTANCE = new InfoHud();
     private static final File file = MoreCommandsArch.getConfigDirectory().resolve("infoHud.txt").toFile();
+    private static final Pattern varPattern = Pattern.compile("var (?<key>[A-Za-z]*?) *?= *?(?<value>.*)");
     private static final List<StackTraceElement> printedExceptions = new ArrayList<>();
     private static final Map<String, Function<KeyContext, Object>> keys;
     private static final Map<String, Variable<?>> variables = new HashMap<>();
@@ -210,16 +213,14 @@ public class InfoHud extends DrawableHelper {
         variableValues.clear();
 
         List<Pair<Integer, String>> output = new ArrayList<>();
-        for (String line : lines)
-            if (line.startsWith("var ")) {
-                String[] lineParts = line.split(" ");
-                if (lineParts.length != 4) continue;
-
-                String name = lineParts[1];
-                if (!variables.containsKey(name)) continue;
+        for (String line : lines) {
+            Matcher varMatcher = varPattern.matcher(line);
+            if (varMatcher.matches()) {
+                String key = varMatcher.group("key");
+                if (!variables.containsKey(key)) continue;
 
                 try {
-                    variableValues.put(name, variables.get(name).fromString(lineParts[3]));
+                    variableValues.put(key, variables.get(key).fromString(varMatcher.group("value").trim()));
                 } catch (Exception ignored) {}
             } else {
                 StringBuilder s = new StringBuilder();
@@ -242,6 +243,7 @@ public class InfoHud extends DrawableHelper {
                 if (parsedLine.equals("") || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line));
                 // normal, non-multiline Java comments work.
             }
+        }
         return output;
     }
 
