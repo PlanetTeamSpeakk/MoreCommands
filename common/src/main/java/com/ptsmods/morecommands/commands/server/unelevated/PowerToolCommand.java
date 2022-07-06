@@ -44,6 +44,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.Util;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Collections;
@@ -201,7 +202,11 @@ public class PowerToolCommand extends Command {
 
         NbtCompound tag = stack.getOrCreateNbt();
         if (command.startsWith("/")) command = command.substring(1);
-        if (!tag.contains("PowerTool", NbtElement.COMPOUND_TYPE)) tag.put("PowerTool", new NbtCompound());
+        if (!tag.contains("PowerTool", NbtElement.COMPOUND_TYPE)) tag.put("PowerTool", Util.make(new NbtCompound(), nbt -> {
+            nbt.put("Commands", new NbtList());
+            nbt.putByte("Selected", (byte) 0);
+            nbt.putByte("Buttons", (byte) (0x4 | 0x2 | 0x1));
+        }));
 
         NbtList commands = tag.getCompound("PowerTool").getList("Commands", NbtElement.STRING_TYPE);
         if (commands.size() == Byte.MAX_VALUE) throw TOO_MANY_COMMANDS.create();
