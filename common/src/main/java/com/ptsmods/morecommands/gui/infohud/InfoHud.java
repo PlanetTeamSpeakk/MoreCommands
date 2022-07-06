@@ -74,7 +74,7 @@ public class InfoHud extends DrawableHelper {
             }
 
             for (int i = 0; i < parsedLines.size(); i++)
-                fill(matrixStack, -2, i * 10 - 2, parsedLines.get(i).getLeft() + (i == parsedLines.size() - 1 ? 2 : 0), (i + 1) * 10, c);
+                fill(matrixStack, -2, i * 10 - 2, parsedLines.get(i).getLeft() + 2, (i + 1) * 10 - (i == parsedLines.size() - 1 ? 2 : 0), c);
         }));
 
         keys = registerKeys();
