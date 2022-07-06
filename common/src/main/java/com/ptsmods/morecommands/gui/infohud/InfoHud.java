@@ -16,7 +16,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,12 +58,12 @@ public class InfoHud extends DrawableHelper {
     static {
         registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0, 0)));
         registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0, val, 0)));
-        registerVariable(new DoubleVariable("scale", 0.8, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
+        registerVariable(new DoubleVariable("scale", 0.75, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
         registerVariable(new IntVariable("decimals", 2, (matrixStack, val) -> decimals = val).clamped(0, 7));
 
         AtomicInteger backgroundOpacity = new AtomicInteger();
         AtomicBoolean perLineBackground = new AtomicBoolean();
-        registerVariable(new IntVariable("backgroundOpacity", 25, ((matrixStack, val) -> backgroundOpacity.set(val))).clamped(0, 100));
+        registerVariable(new IntVariable("backgroundOpacity", 25, (matrixStack, val) -> backgroundOpacity.set(val)).clamped(0, 100));
         registerVariable(new BooleanVariable("perLineBackground", true, (matrixStack, val) -> perLineBackground.set(val)));
         registerVariable(new ColourVariable("backgroundColour", Color.BLACK, (matrixStack, val) -> {
             if (backgroundOpacity.get() == 0) return;
@@ -250,7 +248,7 @@ public class InfoHud extends DrawableHelper {
 
                 String parsedLine = s.toString();
                 line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // Handling comments in the config, this should be exactly the same as how
-                if (parsedLine.equals("") || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line)); // normal, non-multiline Java comments work.
+                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line)); // normal, non-multiline Java comments work.
             }
         }
         return output;
