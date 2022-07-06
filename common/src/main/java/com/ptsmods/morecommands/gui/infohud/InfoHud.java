@@ -44,7 +44,7 @@ import java.util.stream.StreamSupport;
 public class InfoHud extends DrawableHelper {
     public static final InfoHud INSTANCE = new InfoHud();
     private static final File file = MoreCommandsArch.getConfigDirectory().resolve("infoHud.txt").toFile();
-    private static final Pattern varPattern = Pattern.compile("var (?<key>[A-Za-z]*?) *?= *?(?<value>.*)");
+    private static final Pattern varPattern = Pattern.compile("var\\s(?<key>[A-Za-z]*?)\\s*?=\\s*(?<value>\".*\"|\\S*)");
     private static final List<StackTraceElement> printedExceptions = new ArrayList<>();
     private static final Map<String, Function<KeyContext, Object>> keys;
     private static final Map<String, Variable<?>> variables = new HashMap<>();
@@ -76,8 +76,18 @@ public class InfoHud extends DrawableHelper {
                 return;
             }
 
-            for (int i = 0; i < parsedLines.size(); i++)
-                fill(matrixStack, -2, i * 10 - 2, parsedLines.get(i).getLeft() + 2, (i + 1) * 10 - (i == parsedLines.size() - 1 ? 2 : 0), c);
+            for (int i = 0; i < parsedLines.size(); i++) {
+                Pair<Integer, String> line = parsedLines.get(i);
+                if (line.getLeft() == 0) continue;
+                boolean topPadding = i == 0 || parsedLines.get(i - 1).getLeft() == 0; // First line or above line is empty.
+
+                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.getLeft() + 2, (i + 1) * 10, c);
+                if (topPadding) continue;
+
+                int prevWidth = parsedLines.get(i - 1).getLeft();
+                if (prevWidth < line.getLeft())
+                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.getLeft() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
+            }
         }));
 
         keys = registerKeys();
@@ -220,7 +230,7 @@ public class InfoHud extends DrawableHelper {
                 if (!variables.containsKey(key)) continue;
 
                 try {
-                    variableValues.put(key, variables.get(key).fromString(varMatcher.group("value").trim()));
+                    variableValues.put(key, variables.get(key).fromString(varMatcher.group("value")));
                 } catch (Exception ignored) {}
             } else {
                 StringBuilder s = new StringBuilder();
