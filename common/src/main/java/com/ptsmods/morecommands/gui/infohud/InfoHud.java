@@ -249,9 +249,8 @@ public class InfoHud extends DrawableHelper {
                 }
 
                 String parsedLine = s.toString();
-                line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // handling comments in the config, this should be exactly the same as how
-                if (parsedLine.equals("") || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line));
-                // normal, non-multiline Java comments work.
+                line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // Handling comments in the config, this should be exactly the same as how
+                if (parsedLine.equals("") || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line)); // normal, non-multiline Java comments work.
             }
         }
         return output;
