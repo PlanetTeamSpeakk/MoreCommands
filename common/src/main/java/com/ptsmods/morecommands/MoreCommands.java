@@ -228,11 +228,11 @@ public enum MoreCommands implements IMoreCommands {
                 } catch (Exception ignored) {} // Getting collision shape probably requires a world and position which we don't have.
 
                 try {
-                    Method onEntityCollision = ReflectionHelper.getMappedMethod(block.getClass(), "onEntityCollision", "method_9548", "entityInside",
+                    Method onEntityCollision = ReflectionHelper.getMappedMethod(block.getClass(), "onEntityCollision", "method_9548", "m_7892_",
                             BlockState.class, World.class, BlockPos.class, Entity.class);
                     if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
 
-                    onEntityCollision = ReflectionHelper.getMappedMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", "entityInside",
+                    onEntityCollision = ReflectionHelper.getMappedMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", "m_60682_",
                             World.class, BlockPos.class, Entity.class);
                     if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.AbstractBlockState.class) blockBlacklist.add(block);
                     // onEntityCollision method was overridden, block does something to entities on collision, assume it's malicious.
