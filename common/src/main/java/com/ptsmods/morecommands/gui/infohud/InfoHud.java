@@ -60,13 +60,13 @@ public class InfoHud extends DrawableHelper {
     static {
         registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0, 0)));
         registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0, val, 0)));
-        registerVariable(new DoubleVariable("scale", 1.0, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
+        registerVariable(new DoubleVariable("scale", 0.8, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
         registerVariable(new IntVariable("decimals", 2, (matrixStack, val) -> decimals = val).clamped(0, 7));
 
         AtomicInteger backgroundOpacity = new AtomicInteger();
         AtomicBoolean perLineBackground = new AtomicBoolean();
-        registerVariable(new IntVariable("backgroundOpacity", 0, ((matrixStack, val) -> backgroundOpacity.set(val))).clamped(0, 100));
-        registerVariable(new BooleanVariable("perLineBackground", false, (matrixStack, val) -> perLineBackground.set(val)));
+        registerVariable(new IntVariable("backgroundOpacity", 25, ((matrixStack, val) -> backgroundOpacity.set(val))).clamped(0, 100));
+        registerVariable(new BooleanVariable("perLineBackground", true, (matrixStack, val) -> perLineBackground.set(val)));
         registerVariable(new ColourVariable("backgroundColour", Color.BLACK, (matrixStack, val) -> {
             if (backgroundOpacity.get() == 0) return;
             int c = new Color(val.getRed(), val.getGreen(), val.getBlue(), (int) (backgroundOpacity.get() / 100f * 255)).getRGB();
