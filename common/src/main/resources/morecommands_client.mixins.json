@@ -58,7 +58,8 @@
     "MixinPlayerEntityModel",
     "MixinAbstractClientPlayerEntity",
     "MixinClickableWidget",
-    "accessor.MixinMinecraftClientAccessor"
+    "accessor.MixinMinecraftClientAccessor",
+    "MixinSuspiciousStewItem"
   ],
   "injectors": {
 	"defaultRequire": 1

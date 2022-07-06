@@ -91,6 +91,8 @@ public class ClientOptions {
                 "When enabled, the models of air blocks display", "what kind of air they are.", "(Normal, cave or void)");
         public static final BooleanClientOption trackDeaths = new BooleanClientOption(TWEAKS, "Track Deaths", false,
                 "When enabled, your location is logged in chat", "every time you die.", "Even when disabled, deaths can be listed using /deaths.");
+        public static final BooleanClientOption suspiciousTooltips = new BooleanClientOption(TWEAKS, "Suspicious Tooltips", false,
+                "Add tooltips to suspicious stews stating their effects.");
 
         static void init() {}
     }
