@@ -41,8 +41,8 @@ dependencies {
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
-    common "com.ptsmods:mysqlw:1.6.1"
-    shadowCommon "com.ptsmods:mysqlw:1.6.1"
+    common "com.ptsmods:mysqlw:1.7"
+    shadowCommon "com.ptsmods:mysqlw:1.7"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }

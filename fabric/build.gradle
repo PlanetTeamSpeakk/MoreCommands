@@ -30,10 +30,10 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
     modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
-    modImplementation "com.ptsmods:devlogin:2.0"
+    modImplementation 'com.ptsmods:devlogin:2.1'
 
-    common "com.ptsmods:mysqlw:1.6.1"
-    shadowCommon "com.ptsmods:mysqlw:1.6.1"
+    common 'com.ptsmods:mysqlw:1.7'
+    shadowCommon "com.ptsmods:mysqlw:1.7"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
@@ -92,6 +92,10 @@ sourcesJar {
     sources.stream()
             .map { it.archiveFile.map { zipTree(it) } }
             .forEach { from it }
+}
+
+repositories {
+    mavenCentral()
 }
 
 components.java {
