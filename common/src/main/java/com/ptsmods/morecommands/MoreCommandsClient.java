@@ -135,7 +135,6 @@ public class MoreCommandsClient {
         return MoreCommands.readInputStream(sslLenientHttpClient.execute(new HttpGet(url)).getEntity().getContent());
     }
 
-    // TODO call on Forge
     public static void init() {
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
