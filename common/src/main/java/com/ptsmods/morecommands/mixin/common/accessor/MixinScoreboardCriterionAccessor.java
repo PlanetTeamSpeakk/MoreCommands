@@ -1,21 +1,21 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.Map;
 
-@Mixin(ScoreboardCriterion.class)
+@Mixin(ObjectiveCriteria.class)
 public interface MixinScoreboardCriterionAccessor {
 
-    @Accessor("CRITERIA")
-    static Map<String, ScoreboardCriterion> getCriteria() {
+    @Accessor("CRITERIA_CACHE")
+    static Map<String, ObjectiveCriteria> getCriteria() {
         throw new AssertionError("This shouldn't happen.");
     }
     @Invoker("<init>")
-    static ScoreboardCriterion newInstance(String name, boolean readOnly, ScoreboardCriterion.RenderType renderType) {
+    static ObjectiveCriteria newInstance(String name, boolean readOnly, ObjectiveCriteria.RenderType renderType) {
         throw new AssertionError("This shouldn't happen.");
     }
 }

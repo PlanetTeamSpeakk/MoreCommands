@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TextColor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -12,32 +12,32 @@ import java.util.Map;
 @Mixin(TextColor.class)
 public interface MixinTextColorAccessor {
     @Invoker("<init>")
-    static TextColor newInstance(int rgb, String name) {
+    static TextColor newInstance(int value, String name) {
         throw new AssertionError("This shouldn't happen.");
     }
 
-    @Accessor("FORMATTING_TO_COLOR")
-    static Map<Formatting, TextColor> getFormattingToColor() {
+    @Accessor("LEGACY_FORMAT_TO_COLOR")
+    static Map<ChatFormatting, TextColor> getLegacyFormatToColor() {
         throw new AssertionError("This shouldn't happen.");
     }
 
-    @Accessor("FORMATTING_TO_COLOR")
+    @Accessor("LEGACY_FORMAT_TO_COLOR")
     @Mutable
-    static void setFormattingToColor(Map<Formatting, TextColor> formattingToColor) {
+    static void setLegacyFormatToColor(Map<ChatFormatting, TextColor> legacyFormatToColor) {
         throw new AssertionError("This shouldn't happen.");
     }
 
-    @Accessor("BY_NAME")
-    static Map<String, TextColor> getByName() {
+    @Accessor("NAMED_COLORS")
+    static Map<String, TextColor> getNamedColors() {
         throw new AssertionError("This shouldn't happen.");
     }
 
-    @Accessor("BY_NAME")
+    @Accessor("NAMED_COLORS")
     @Mutable
-    static void setByName(Map<String, TextColor> byName) {
+    static void setNamedColors(Map<String, TextColor> namedColors) {
         throw new AssertionError("This shouldn't happen.");
     }
 
-    @Accessor("rgb")
-    int getRgb_();
+    @Accessor("value")
+    int getValue_();
 }

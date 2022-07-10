@@ -48,49 +48,59 @@ import dev.architectury.registry.registries.DeferredRegister;
 import io.netty.buffer.Unpooled;
 import lombok.SneakyThrows;
 import net.fabricmc.api.EnvType;
-import net.minecraft.block.*;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.message.MessageDecorator;
-import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.ChatDecorator;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.objectweb.asm.ClassReader;
 
 import java.awt.*;
@@ -121,27 +131,27 @@ public enum MoreCommands implements IMoreCommands {
     INSTANCE;
 
     public static final String MOD_ID = "morecommands";
-    public static Formatting DF = ClientOptions.Tweaks.defColour.getValue().asFormatting();
-    public static Formatting SF = ClientOptions.Tweaks.secColour.getValue().asFormatting();
+    public static ChatFormatting DF = ClientOptions.Tweaks.defColour.getValue().asFormatting();
+    public static ChatFormatting SF = ClientOptions.Tweaks.secColour.getValue().asFormatting();
     public static Style DS = Style.EMPTY.withColor(DF);
     public static Style SS = Style.EMPTY.withColor(SF);
     public static final boolean SERVER_ONLY;
-    private static final DeferredRegister<ArgumentSerializer<?, ?>> argumentTypeRegistry;
-    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, Registry.SOUND_EVENT_KEY);
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, Registry.BLOCK_KEY);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, Registry.ITEM_KEY);
-    private static final DeferredRegister<EntityAttribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_KEY);
+    private static final DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegistry;
+    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, Registry.SOUND_EVENT_REGISTRY);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, Registry.BLOCK_REGISTRY);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, Registry.ITEM_REGISTRY);
+    private static final DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_REGISTRY);
     public static final Set<Block> blockBlacklist = new HashSet<>();
     public static final Set<Block> blockWhitelist = new HashSet<>();
-    public static final Block lockedChest = new Block(AbstractBlock.Settings.of(Material.WOOD));
-    public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Settings());
-    public static final Item netherPortalItem = new BlockItem(Blocks.NETHER_PORTAL, new Item.Settings().fireproof()); // After all, why not? Why shouldn't a nether portal be fireproof?
-    public static final ItemGroup unobtainableItems = CreativeTabRegistry.create(new Identifier("morecommands:unobtainable_items"), () -> new ItemStack(lockedChestItem));
+    public static final Block lockedChest = new Block(BlockBehaviour.Properties.of(Material.WOOD));
+    public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Properties());
+    public static final Item netherPortalItem = new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()); // After all, why not? Why shouldn't a nether portal be fireproof?
+    public static final CreativeModeTab unobtainableItems = CreativeTabRegistry.create(new ResourceLocation("morecommands:unobtainable_items"), () -> new ItemStack(lockedChestItem));
     public static MinecraftServer serverInstance = null;
-    public static final ScoreboardCriterion LATENCY;
+    public static final ObjectiveCriteria LATENCY;
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    public static final Map<PlayerEntity, String> discordTags = new WeakHashMap<>();
-    public static final Set<PlayerEntity> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
+    public static final Map<Player, String> discordTags = new WeakHashMap<>();
+    public static final Set<Player> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
     public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
     public static boolean creatingWorld = false;
     private static final Executor executor = Executors.newCachedThreadPool();
@@ -149,8 +159,8 @@ public enum MoreCommands implements IMoreCommands {
     private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
     private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     private static Database globalDb, localDb;
-    private static final Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
-    private static final Map<PlayerEntity, Integer> targetedEntities = new HashMap<>();
+    private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
+    private static final Map<Player, Integer> targetedEntities = new HashMap<>();
 
     static {
         loadDumps();
@@ -175,14 +185,14 @@ public enum MoreCommands implements IMoreCommands {
             LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
         }
 
-        argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_KEY) : null;
+        argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_REGISTRY) : null;
 
         Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
-        MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ScoreboardCriterion.RenderType.INTEGER));
+        MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ObjectiveCriteria.RenderType.INTEGER));
 
         Database.registerTypeConverter(UUID.class, id -> Database.enquote(id.toString()), UUID::fromString);
-        Database.registerTypeConverter(NbtCompound.class, nbt -> Database.enquote(nbtToByteString(nbt)), MoreCommands::nbtFromByteString);
-        Database.registerTypeConverter(Identifier.class, id -> Database.enquote(id.toString()), Identifier::new);
+        Database.registerTypeConverter(CompoundTag.class, nbt -> Database.enquote(nbtToByteString(nbt)), MoreCommands::nbtFromByteString);
+        Database.registerTypeConverter(ResourceLocation.class, id -> Database.enquote(id.toString()), ResourceLocation::new);
     }
 
     MoreCommands() {
@@ -201,7 +211,7 @@ public enum MoreCommands implements IMoreCommands {
 
 //        globalDb = Database.connect(getConfigDirectory().resolve("globaldata.db").toFile()); // Not sure if this'll be necessary.
 
-        MixinFormattingAccessor.setFormattingCodePattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
+        MixinFormattingAccessor.setStripFormattingPattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
         Holder.setCompat((Compat) determineCurrentCompat(false));
         Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
         MoreGameRules.init();
@@ -216,41 +226,41 @@ public enum MoreCommands implements IMoreCommands {
             blockBlacklist.clear();
             blockWhitelist.clear();
             Registry.BLOCK.forEach(block -> {
-                if (block instanceof FluidBlock || !((MixinAbstractBlockAccessor) block).isCollidable()) blockBlacklist.add(block);
+                if (block instanceof LiquidBlock || !((MixinAbstractBlockAccessor) block).isHasCollision()) blockBlacklist.add(block);
                 try {
-                    VoxelShape shape = block.getDefaultState().getCollisionShape(null, null);
-                    if (shape.getMax(Direction.Axis.Y) > 16) blockBlacklist.add(block); // Will fall through if teleported on. (E.g. fences)
-                    if (shape.getMin(Direction.Axis.Z) > 6 / 16d || shape.getMax(Direction.Axis.Z) < 10 / 16d || // Can't stand on this. (E.g. doors)
-                            shape.getMin(Direction.Axis.X) > 6 / 16d || shape.getMax(Direction.Axis.X) < 10 / 16d) blockBlacklist.add(block);
-                    if (shape.getMin(Direction.Axis.Y) == shape.getMax(Direction.Axis.Y)) blockBlacklist.add(block); // Will fall straight through.
+                    VoxelShape shape = block.defaultBlockState().getCollisionShape(null, null);
+                    if (shape.max(Direction.Axis.Y) > 16) blockBlacklist.add(block); // Will fall through if teleported on. (E.g. fences)
+                    if (shape.min(Direction.Axis.Z) > 6 / 16d || shape.max(Direction.Axis.Z) < 10 / 16d || // Can't stand on this. (E.g. doors)
+                            shape.min(Direction.Axis.X) > 6 / 16d || shape.max(Direction.Axis.X) < 10 / 16d) blockBlacklist.add(block);
+                    if (shape.min(Direction.Axis.Y) == shape.max(Direction.Axis.Y)) blockBlacklist.add(block); // Will fall straight through.
 
-                    if (!block.getDefaultState().getMaterial().blocksMovement() || !Block.isShapeFullCube(shape)) blockWhitelist.add(block); // Block does not cause suffocation.
+                    if (!block.defaultBlockState().getMaterial().blocksMotion() || !Block.isShapeFullBlock(shape)) blockWhitelist.add(block); // Block does not cause suffocation.
                 } catch (Exception ignored) {} // Getting collision shape probably requires a world and position which we don't have.
 
                 try {
                     Method onEntityCollision = ReflectionHelper.getMappedMethod(block.getClass(), "onEntityCollision", "method_9548", "m_7892_",
-                            BlockState.class, World.class, BlockPos.class, Entity.class);
-                    if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.class) blockBlacklist.add(block);
+                            BlockState.class, Level.class, BlockPos.class, Entity.class);
+                    if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != BlockBehaviour.class) blockBlacklist.add(block);
 
-                    onEntityCollision = ReflectionHelper.getMappedMethod(block.getDefaultState().getClass(), "onEntityCollision", "method_26178", "m_60682_",
-                            World.class, BlockPos.class, Entity.class);
-                    if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != AbstractBlock.AbstractBlockState.class) blockBlacklist.add(block);
+                    onEntityCollision = ReflectionHelper.getMappedMethod(block.defaultBlockState().getClass(), "onEntityCollision", "method_26178", "m_60682_",
+                            Level.class, BlockPos.class, Entity.class);
+                    if (onEntityCollision != null && onEntityCollision.getDeclaringClass() != BlockBehaviour.BlockStateBase.class) blockBlacklist.add(block);
                     // onEntityCollision method was overridden, block does something to entities on collision, assume it's malicious.
                 } catch (Throwable ignored) {} // For some reason, this can throw NoClassDefFoundErrors.
             });
         });
 
         if (!isServerOnly()) {
-            soundEventRegistry.register(new Identifier("morecommands:copy"), () -> new SoundEvent(new Identifier("morecommands:copy")));
-            soundEventRegistry.register(new Identifier("morecommands:ee"), () -> new SoundEvent(new Identifier("morecommands:ee")));
-            blockRegistry.register(new Identifier("morecommands:locked_chest"), () -> lockedChest);
-            itemRegistry.register(new Identifier("morecommands:locked_chest"), () -> lockedChestItem);
-            itemRegistry.register(new Identifier("minecraft:nether_portal"), () -> netherPortalItem);
-            attributeRegistry.register(new Identifier("morecommands:reach"), () -> ReachCommand.REACH_ATTRIBUTE);
-            attributeRegistry.register(new Identifier("morecommands:swim_speed"), () -> SpeedCommand.SpeedType.swimSpeedAttribute);
+            soundEventRegistry.register(new ResourceLocation("morecommands:copy"), () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
+            soundEventRegistry.register(new ResourceLocation("morecommands:ee"), () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
+            blockRegistry.register(new ResourceLocation("morecommands:locked_chest"), () -> lockedChest);
+            itemRegistry.register(new ResourceLocation("morecommands:locked_chest"), () -> lockedChestItem);
+            itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> netherPortalItem);
+            attributeRegistry.register(new ResourceLocation("morecommands:reach"), () -> ReachCommand.REACH_ATTRIBUTE);
+            attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () -> SpeedCommand.SpeedType.swimSpeedAttribute);
 
             PlayerEvent.PLAYER_JOIN.register(player -> {
-                if (NetworkManager.canPlayerReceive(player, new Identifier("morecommands:formatting_update"))) sendFormattingUpdates(player);
+                if (NetworkManager.canPlayerReceive(player, new ResourceLocation("morecommands:formatting_update"))) sendFormattingUpdates(player);
             });
 
             PlayerEvent.PLAYER_QUIT.register(targetedEntities::remove);
@@ -258,19 +268,19 @@ public enum MoreCommands implements IMoreCommands {
             registerPacketReceivers();
 
             PostInitEvent.EVENT.register(() -> {
-                DefaultedList<ItemStack> defaultedList = DefaultedList.of();
-                for (Item item : Registry.ITEM) item.appendStacks(ItemGroup.SEARCH, defaultedList);
+                NonNullList<ItemStack> defaultedList = NonNullList.create();
+                for (Item item : Registry.ITEM) item.fillItemCategory(CreativeModeTab.TAB_SEARCH, defaultedList);
 
                 for (Block block : Registry.BLOCK) {
-                    Identifier id = Registry.BLOCK.getId(block);
-                    if (!Compat.get().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM, new Identifier(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Settings()));
+                    ResourceLocation id = Registry.BLOCK.getKey(block);
+                    if (!Compat.get().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM, new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
                 }
 
                 for (Item item : Registry.ITEM)
-                    if (item.getGroup() == null) ((MixinItemAccessor) item).setGroup(unobtainableItems);
+                    if (item.getItemCategory() == null) ((MixinItemAccessor) item).setCategory(unobtainableItems);
 
-                defaultedList = DefaultedList.of();
-                for (Item item : Registry.ITEM) item.appendStacks(ItemGroup.SEARCH, defaultedList);
+                defaultedList = NonNullList.create();
+                for (Item item : Registry.ITEM) item.fillItemCategory(CreativeModeTab.TAB_SEARCH, defaultedList);
             });
 
             Compat compat = Compat.get();
@@ -284,10 +294,10 @@ public enum MoreCommands implements IMoreCommands {
             compat.registerArgumentType(argumentTypeRegistry, "morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
         } else {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
-                World world = player.world;
+                Level world = player.level;
                 BlockState state = world.getBlockState(pos);
-                if (!player.isSneaking() && player.getStackInHand(hand).isEmpty() && MoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), MoreGameRules.get().doChairsRule(), player) &&
-                        Compat.get().tagContains(new Identifier("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
+                if (!player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty() && MoreGameRules.get().checkBooleanWithPerm(world.getGameRules(), MoreGameRules.get().doChairsRule(), player) &&
+                        Compat.get().tagContains(new ResourceLocation("minecraft:stairs"), state.getBlock()) && Chair.isValid(state)) {
                     Chair.createAndPlace(pos, player, world);
                     return EventResult.interruptTrue();
                 }
@@ -295,19 +305,19 @@ public enum MoreCommands implements IMoreCommands {
             });
         }
 
-        Set<ServerPlayerEntity> howlingPlayers = new HashSet<>();
+        Set<ServerPlayer> howlingPlayers = new HashSet<>();
         TickEvent.SERVER_PRE.register(server -> {
             // This does absolutely nothing whatsoever, just pass along. :)
-            for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
-                if (p.isSneaking()) {
-                    float pitch = MathHelper.wrapDegrees(((MixinEntityAccessor) p).getPitch_());
-                    float yaw = MathHelper.wrapDegrees(((MixinEntityAccessor) p).getYaw_());
+            for (ServerPlayer p : server.getPlayerList().getPlayers())
+                if (p.isShiftKeyDown()) {
+                    float pitch = Mth.wrapDegrees(((MixinEntityAccessor) p).getXRot_());
+                    float yaw = Mth.wrapDegrees(((MixinEntityAccessor) p).getYRot_());
                     double moonWidth = Math.PI / 32 * -pitch;
-                    long dayTime = p.getWorld().getTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-                    if (!howlingPlayers.contains(p) && getMoonPhase(p.getWorld().getLunarTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
+                    long dayTime = p.getLevel().getGameTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
+                    if (!howlingPlayers.contains(p) && getMoonPhase(p.getLevel().dayTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
                         double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
                         if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
-                            p.getWorld().playSound(null, p.getBlockPos(), SoundEvents.ENTITY_WOLF_HOWL, SoundCategory.PLAYERS, 1f, 1f);
+                            p.getLevel().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1f, 1f);
                             howlingPlayers.add(p);
                         }
                     }
@@ -315,12 +325,12 @@ public enum MoreCommands implements IMoreCommands {
         });
 
         if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
-            ReflectionHelper.setFieldValue(Arrays.stream(MessageDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
+            ReflectionHelper.setFieldValue(Arrays.stream(ChatDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
                             new NoSuchElementException("Could not find default decorator field of MessageDecorator class.")),
-                    null, (MessageDecorator) (player, text) -> {
+                    null, (ChatDecorator) (player, text) -> {
                         TextBuilder<?> builder = Compat.get().builderFromText(text);
-                        return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
-                                || player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel())) && builder instanceof LiteralTextBuilder ?
+                        return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
+                                || player.hasPermissions(Objects.requireNonNull(player.getServer()).getOperatorUserPermissionLevel())) && builder instanceof LiteralTextBuilder ?
                                 LiteralTextBuilder.literal(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())) : text);
                     });
         }
@@ -367,12 +377,12 @@ public enum MoreCommands implements IMoreCommands {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        Map<Command, Collection<CommandNode<ServerCommandSource>>> nodes = new LinkedHashMap<>();
+        Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
 
         // Lomboks @Helper straight up doesn't work.
         // Complaining about it only being legal on method-local classes even though this is one.
         class CommandRegisterer {
-            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<ServerCommandSource> dispatcher, boolean dryRun) {
+            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<CommandSourceStack> dispatcher, boolean dryRun) {
                 Collection<String> registeredNodes = cmd.getRegisteredNodes();
 
                 // Some commands cannot yet be registered at this stage
@@ -385,10 +395,10 @@ public enum MoreCommands implements IMoreCommands {
                 }
 
                 try {
-                    CommandDispatcher<ServerCommandSource> tempDispatcher = new CommandDispatcher<>();
+                    CommandDispatcher<CommandSourceStack> tempDispatcher = new CommandDispatcher<>();
                     cmd.register(tempDispatcher, dedicated);
 
-                    for (CommandNode<ServerCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                    for (CommandNode<CommandSourceStack> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
                     nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
                     permissions.putAll(cmd.getExtraPermissions());
                 } catch (Exception e) {
@@ -398,7 +408,7 @@ public enum MoreCommands implements IMoreCommands {
         }
 
         CommandRegisterer registerer = new CommandRegisterer();
-        CommandDispatcher<ServerCommandSource> nilDispatcher = new CommandDispatcher<>();
+        CommandDispatcher<CommandSourceStack> nilDispatcher = new CommandDispatcher<>();
 
         serverCommands.stream()
                 .filter(cmd -> !cmd.doLateInit())
@@ -408,7 +418,7 @@ public enum MoreCommands implements IMoreCommands {
         MoreCommands.nodes.putAll(nodes);
 
         CommandRegistrationEvent.EVENT.register((dispatcher, environment) -> {
-            boolean dedicated = environment == CommandManager.RegistrationEnvironment.DEDICATED;
+            boolean dedicated = environment == Commands.CommandSelection.DEDICATED;
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
@@ -420,29 +430,29 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     private static void registerPacketReceivers() {
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:sit_on_stairs"), (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:sit_on_stairs"), (buf, context) -> {
             BlockPos pos = buf.readBlockPos();
-            PlayerEntity player = context.getPlayer();
+            Player player = context.getPlayer();
 
-            if (player.getPos().squaredDistanceTo(new Vec3d(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
+            if (player.position().distanceToSqr(new Vec3(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
                 return; // Out of reach
 
-            BlockState state = player.getWorld().getBlockState(pos);
-            if (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
-                Chair.createAndPlace(pos, player, player.getWorld());
+            BlockState state = player.getLevel().getBlockState(pos);
+            if (MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
+                Chair.createAndPlace(pos, player, player.getLevel());
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:discord_data"), (buf, context) -> {
-            PlayerEntity player = context.getPlayer();
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:discord_data"), (buf, context) -> {
+            Player player = context.getPlayer();
             if (buf.readBoolean()) discordTagNoPerm.add(player);
             else discordTagNoPerm.remove(player);
-            String tag = buf.readString();
+            String tag = buf.readUtf();
 
             if (tag.contains("#") && tag.lastIndexOf('#') == tag.length() - 5 && isInteger(tag.substring(tag.lastIndexOf('#') + 1)))
                 discordTags.put(player, tag);
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new Identifier("morecommands:entity_target_update"), (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:entity_target_update"), (buf, context) -> {
             int targetEntity = buf.readVarInt();
             targetedEntities.put(context.getPlayer(), targetEntity);
         });
@@ -497,16 +507,16 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     @Override
-    public Formatting getDefaultFormatting() {
+    public ChatFormatting getDefaultFormatting() {
         return DF;
     }
 
     @Override
-    public Formatting getSecondaryFormatting() {
+    public ChatFormatting getSecondaryFormatting() {
         return SF;
     }
 
-    public static void setFormattings(Formatting def, Formatting sec) {
+    public static void setFormattings(ChatFormatting def, ChatFormatting sec) {
         if (def != null) {
             DF = Command.DF = def;
             DS = Command.DS = DS.withColor(DF);
@@ -523,14 +533,14 @@ public enum MoreCommands implements IMoreCommands {
 
         switch (id) {
             case 0:
-                value = value == null ? server.getGameRules().get(MoreGameRules.get().DFrule()).get() : value;
+                value = value == null ? server.getGameRules().getRule(MoreGameRules.get().DFrule()).get() : value;
                 if (value.asFormatting() != DF) {
                     setFormattings(value.asFormatting(), null);
                     sendFormattingUpdate(server, 0, DF);
                 }
                 break;
             case 1:
-                value = value == null ? server.getGameRules().get(MoreGameRules.get().SFrule()).get() : value;
+                value = value == null ? server.getGameRules().getRule(MoreGameRules.get().SFrule()).get() : value;
                 if (value.asFormatting() != SF) {
                     setFormattings(null, value.asFormatting());
                     sendFormattingUpdate(server, 1, SF);
@@ -539,24 +549,24 @@ public enum MoreCommands implements IMoreCommands {
         }
     }
 
-    public static void sendFormattingUpdates(ServerPlayerEntity p) {
+    public static void sendFormattingUpdates(ServerPlayer p) {
         if (IMoreCommands.get().isServerOnly()) return;
         sendFormattingUpdate(p, 0, DF);
         sendFormattingUpdate(p, 1, SF);
     }
 
-    private static void sendFormattingUpdate(MinecraftServer server, int id, Formatting colour) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getColorIndex()));
-        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList())
+    private static void sendFormattingUpdate(MinecraftServer server, int id, ChatFormatting colour) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer().writeByte(id).writeByte(colour.getId()));
+        for (ServerPlayer p : server.getPlayerList().getPlayers())
             sendFormattingUpdate(p, buf);
     }
 
-    private static void sendFormattingUpdate(ServerPlayerEntity p, int id, Formatting colour) {
-        sendFormattingUpdate(p, new PacketByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name())))));
+    private static void sendFormattingUpdate(ServerPlayer p, int id, ChatFormatting colour) {
+        sendFormattingUpdate(p, new FriendlyByteBuf(Unpooled.buffer().writeByte(id).writeByte(Arrays.binarySearch(FormattingColour.values(), FormattingColour.valueOf(colour.name())))));
     }
 
-    private static void sendFormattingUpdate(ServerPlayerEntity p, PacketByteBuf buf) {
-        if (NetworkManager.canPlayerReceive(p, new Identifier("morecommands:formatting_update"))) NetworkManager.sendToPlayer(p, new Identifier("morecommands:formatting_update"), buf);
+    private static void sendFormattingUpdate(ServerPlayer p, FriendlyByteBuf buf) {
+        if (NetworkManager.canPlayerReceive(p, new ResourceLocation("morecommands:formatting_update"))) NetworkManager.sendToPlayer(p, new ResourceLocation("morecommands:formatting_update"), buf);
     }
 
     static <T extends Command> T getInstance(Class<T> cmd) {
@@ -578,27 +588,27 @@ public enum MoreCommands implements IMoreCommands {
         return ReflectionHelper.cast(instance);
     }
 
-    public String textToString(Text text, Style parentStyle, boolean includeFormattings) {
+    public String textToString(Component text, Style parentStyle, boolean includeFormattings) {
         return textToString(text, parentStyle, Platform.getEnv() == EnvType.CLIENT, includeFormattings);
     }
 
-    public String textToString(Text text, Style parentStyle, boolean translate, boolean includeFormattings) {
+    public String textToString(Component text, Style parentStyle, boolean translate, boolean includeFormattings) {
         if (parentStyle == null) parentStyle = Style.EMPTY;
 
         TextBuilder<?> builder = Compat.get().builderFromText(text);
         StringBuilder s = new StringBuilder();
         Style style = text.getStyle();
-        style = (style == null ? Style.EMPTY : style).withParent(parentStyle);
+        style = (style == null ? Style.EMPTY : style).applyTo(parentStyle);
 
         if (includeFormattings) {
             TextColor c = style.getColor();
 
             if (c != null) {
-                int rgb = ((MixinTextColorAccessor) (Object) c).getRgb_();
-                Formatting f = null;
+                int rgb = ((MixinTextColorAccessor) (Object) c).getValue_();
+                ChatFormatting f = null;
 
-                for (Formatting form : Formatting.values())
-                    if (form.getColorValue() != null && form.getColorValue().equals(rgb)) {
+                for (ChatFormatting form : ChatFormatting.values())
+                    if (form.getColor() != null && form.getColor().equals(rgb)) {
                         f = form;
                         break;
                     }
@@ -610,11 +620,11 @@ public enum MoreCommands implements IMoreCommands {
                 }
             }
 
-            if (style.isBold()) s.append(Formatting.BOLD);
-            if (style.isStrikethrough()) s.append(Formatting.STRIKETHROUGH);
-            if (style.isUnderlined()) s.append(Formatting.UNDERLINE);
-            if (style.isItalic()) s.append(Formatting.ITALIC);
-            if (style.isObfuscated()) s.append(Formatting.OBFUSCATED);
+            if (style.isBold()) s.append(ChatFormatting.BOLD);
+            if (style.isStrikethrough()) s.append(ChatFormatting.STRIKETHROUGH);
+            if (style.isUnderlined()) s.append(ChatFormatting.UNDERLINE);
+            if (style.isItalic()) s.append(ChatFormatting.ITALIC);
+            if (style.isObfuscated()) s.append(ChatFormatting.OBFUSCATED);
         }
 
         if (builder instanceof TranslatableTextBuilder && translate) {
@@ -623,12 +633,12 @@ public enum MoreCommands implements IMoreCommands {
 
             for (int i = 0; i < args.length; i++) {
                 Object arg = tt.getArgs()[i];
-                if (arg instanceof Text || arg instanceof TextBuilder)
-                    args[i] = textToString(arg instanceof Text ? (Text) arg : ((TextBuilder<?>) arg).build(), style, true, includeFormattings);
+                if (arg instanceof Component || arg instanceof TextBuilder)
+                    args[i] = textToString(arg instanceof Component ? (Component) arg : ((TextBuilder<?>) arg).build(), style, true, includeFormattings);
                 else args[i] = arg;
             }
 
-            s.append(I18n.translate(tt.getKey(), Arrays.stream(args)
+            s.append(I18n.get(tt.getKey(), Arrays.stream(args)
                     .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
                     .collect(Collectors.toList())));
         } else s.append(builder instanceof EmptyTextBuilder ? "" :
@@ -637,14 +647,14 @@ public enum MoreCommands implements IMoreCommands {
                         text);
 
         if (!text.getSiblings().isEmpty())
-            for (Text t : text.getSiblings())
+            for (Component t : text.getSiblings())
                 s.append(textToString(t, style, translate, includeFormattings));
 
         return s.toString();
     }
 
     public static String stripFormattings(String s) {
-        return Objects.requireNonNull(Formatting.strip(s)).replaceAll("\u00A7#[0-9A-Fa-f]{6}", "");
+        return Objects.requireNonNull(ChatFormatting.stripFormatting(s)).replaceAll("\u00A7#[0-9A-Fa-f]{6}", "");
     }
 
     public static void saveJson(File f, Object data) throws IOException {
@@ -805,8 +815,8 @@ public enum MoreCommands implements IMoreCommands {
     public static HitResult getRayTraceTarget(Entity entity, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
         if (entity == null) return null;
 
-        float td = Platform.getEnv() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
-        HitResult crosshairTarget = entity.raycast(reach, td, !ignoreLiquids);
+        float td = Platform.getEnv() == EnvType.CLIENT ? Minecraft.getInstance().getFrameTime() : 1f;
+        HitResult crosshairTarget = entity.pick(reach, td, !ignoreLiquids);
         if (ignoreEntities) return crosshairTarget;
 
         EntityHitResult entityHit = getEntityRayTraceTarget(entity, reach);
@@ -815,26 +825,26 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static EntityHitResult getEntityRayTraceTarget(Entity entity, double reach) {
-        float td = Platform.getEnv() == EnvType.CLIENT ? MinecraftClient.getInstance().getTickDelta() : 1f;
-        Vec3d vec3d = entity.getCameraPosVec(td);
+        float td = Platform.getEnv() == EnvType.CLIENT ? Minecraft.getInstance().getFrameTime() : 1f;
+        Vec3 vec3d = entity.getEyePosition(td);
         double e = reach;
         e *= e;
-        Vec3d vec3d2 = entity.getRotationVec(td);
-        Vec3d vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
-        Box box = entity.getBoundingBox().stretch(vec3d2.multiply(reach)).expand(1.0D, 1.0D, 1.0D);
-        return ProjectileUtil.raycast(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
+        Vec3 vec3d2 = entity.getViewVector(td);
+        Vec3 vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
+        AABB box = entity.getBoundingBox().expandTowards(vec3d2.scale(reach)).inflate(1.0D, 1.0D, 1.0D);
+        return ProjectileUtil.getEntityHitResult(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), e);
     }
 
     public static Entity cloneEntity(Entity entity, boolean summon) {
-        NbtCompound nbt = new NbtCompound();
-        entity.saveSelfNbt(nbt);
-        Entity e = EntityType.loadEntityWithPassengers(nbt, entity.getEntityWorld(), e0 -> {
-            e0.refreshPositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), ((MixinEntityAccessor) entity).getYaw_(), ((MixinEntityAccessor) entity).getPitch_());
+        CompoundTag nbt = new CompoundTag();
+        entity.saveAsPassenger(nbt);
+        Entity e = EntityType.loadEntityRecursive(nbt, entity.getCommandSenderWorld(), e0 -> {
+            e0.moveTo(entity.getX(), entity.getY(), entity.getZ(), ((MixinEntityAccessor) entity).getYRot_(), ((MixinEntityAccessor) entity).getXRot_());
             return e0;
         });
         if (e != null) {
-            e.setUuid(UUID.randomUUID());
-            if (summon) entity.getEntityWorld().spawnEntity(e);
+            e.setUUID(UUID.randomUUID());
+            if (summon) entity.getCommandSenderWorld().addFreshEntity(e);
         }
         return e;
     }
@@ -846,45 +856,45 @@ public enum MoreCommands implements IMoreCommands {
         return s.toString();
     }
 
-    public static void teleport(Entity target, ServerWorld world, Vec3d pos, float yaw, float pitch) {
+    public static void teleport(Entity target, ServerLevel world, Vec3 pos, float yaw, float pitch) {
         teleport(target, world, pos.x, pos.y, pos.z, yaw, pitch);
     }
 
     // Blatantly copied from TeleportCommand#teleport.
-    public static void teleport(Entity target, ServerWorld world, double x, double y, double z, float yaw, float pitch) {
-        if (target instanceof ServerPlayerEntity) {
+    public static void teleport(Entity target, ServerLevel world, double x, double y, double z, float yaw, float pitch) {
+        if (target instanceof ServerPlayer) {
             ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-            world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, target.getId());
+            world.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkPos, 1, target.getId());
             target.stopRiding();
-            if (((ServerPlayerEntity) target).isSleeping()) ((ServerPlayerEntity) target).wakeUp(true, true);
-            if (world == target.world)
-                ((ServerPlayerEntity) target).networkHandler.requestTeleport(x, y, z, yaw, pitch, Collections.emptySet());
-            else ((ServerPlayerEntity) target).teleport(world, x, y, z, yaw, pitch);
-            target.setHeadYaw(yaw);
+            if (((ServerPlayer) target).isSleeping()) ((ServerPlayer) target).stopSleepInBed(true, true);
+            if (world == target.level)
+                ((ServerPlayer) target).connection.teleport(x, y, z, yaw, pitch, Collections.emptySet());
+            else ((ServerPlayer) target).teleportTo(world, x, y, z, yaw, pitch);
+            target.setYHeadRot(yaw);
         } else {
-            float f = MathHelper.wrapDegrees(yaw);
-            float g = MathHelper.wrapDegrees(pitch);
-            g = MathHelper.clamp(g, -90.0F, 90.0F);
-            if (world == target.world) {
-                target.refreshPositionAndAngles(x, y, z, f, g);
-                target.setHeadYaw(f);
+            float f = Mth.wrapDegrees(yaw);
+            float g = Mth.wrapDegrees(pitch);
+            g = Mth.clamp(g, -90.0F, 90.0F);
+            if (world == target.level) {
+                target.moveTo(x, y, z, f, g);
+                target.setYHeadRot(f);
             } else {
-                target.detach();
+                target.unRide();
                 Entity entity = target;
                 target = target.getType().create(world);
                 if (target == null) return;
-                target.copyFrom(entity);
-                target.refreshPositionAndAngles(x, y, z, f, g);
-                target.setHeadYaw(f);
-                world.onDimensionChanged(target);
+                target.restoreFrom(entity);
+                target.moveTo(x, y, z, f, g);
+                target.setYHeadRot(f);
+                world.addDuringTeleport(target);
                 Compat.get().setRemoved(entity, 4); // CHANGED_DIMENSION
             }
         }
         if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
-            target.setVelocity(target.getVelocity().multiply(1.0D, 0.0D, 1.0D));
+            target.setDeltaMovement(target.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
             target.setOnGround(true);
         }
-        if (target instanceof PathAwareEntity) ((PathAwareEntity) target).getNavigation().stop();
+        if (target instanceof PathfinderMob) ((PathfinderMob) target).getNavigation().stop();
     }
 
     public static <T> void removeNode(CommandDispatcher<T> dispatcher, CommandNode<T> child) {
@@ -923,7 +933,7 @@ public enum MoreCommands implements IMoreCommands {
         File file = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
 
         try {
-            if (server.isDedicated() && (!file.exists() || Files.readAllLines(file.toPath()).isEmpty())) {
+            if (server.isDedicatedServer() && (!file.exists() || Files.readAllLines(file.toPath()).isEmpty())) {
                 Properties props = new Properties();
                 props.setProperty("serverOnly", "" + file.exists());
 
@@ -956,7 +966,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static String translateFormattings(String s) {
-        for (Formatting f : Formatting.values())
+        for (ChatFormatting f : ChatFormatting.values())
             s = s.replaceAll("&" + f.toString().charAt(1), f.toString());
         return s;
     }
@@ -1042,55 +1052,55 @@ public enum MoreCommands implements IMoreCommands {
 
     // Me
     public static boolean isCool(Entity entity) {
-        return entity instanceof PlayerEntity && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getUuidAsString()) || Platform.isDevelopmentEnvironment());
+        return entity instanceof Player && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getStringUUID()) || Platform.isDevelopmentEnvironment());
     }
 
     // My best friend :3
     public static boolean isCute(Entity entity) {
-        return entity instanceof PlayerEntity && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getUuidAsString());
+        return entity instanceof Player && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getStringUUID());
     }
 
-    public static NbtCompound getDefaultTag(EntityType<?> type) {
-        NbtCompound tag = new NbtCompound();
-        tag.putString("id", Registry.ENTITY_TYPE.getId(type).toString());
+    public static CompoundTag getDefaultTag(EntityType<?> type) {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
         return tag;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public static Entity summon(NbtCompound tag, ServerWorld world, Vec3d pos) {
-        return EntityType.loadEntityWithPassengers(tag, world, (entityx) -> {
-            entityx.refreshPositionAndAngles(pos.x, pos.y, pos.z, ((MixinEntityAccessor) entityx).getYaw_(), ((MixinEntityAccessor) entityx).getPitch_());
-            return !world.tryLoadEntity(entityx) ? null : entityx;
+    public static Entity summon(CompoundTag tag, ServerLevel world, Vec3 pos) {
+        return EntityType.loadEntityRecursive(tag, world, (entityx) -> {
+            entityx.moveTo(pos.x, pos.y, pos.z, ((MixinEntityAccessor) entityx).getYRot_(), ((MixinEntityAccessor) entityx).getXRot_());
+            return !world.addWithUUID(entityx) ? null : entityx;
         });
     }
 
-    public static Vec3d getRotationVector(Vec2f rotation) {
+    public static Vec3 getRotationVector(Vec2 rotation) {
         return getRotationVector(rotation.x, rotation.y);
     }
 
-    public static Vec3d getRotationVector(float pitch, float yaw) {
+    public static Vec3 getRotationVector(float pitch, float yaw) {
         float pitchRad = pitch * 0.017453292F;
         float yawRad = -yaw * 0.017453292F;
-        float h = MathHelper.cos(yawRad);
-        float i = MathHelper.sin(yawRad);
-        float j = MathHelper.cos(pitchRad);
-        float k = MathHelper.sin(pitchRad);
-        return new Vec3d(i * j, -k, h * j);
+        float h = Mth.cos(yawRad);
+        float i = Mth.sin(yawRad);
+        float j = Mth.cos(pitchRad);
+        float k = Mth.sin(pitchRad);
+        return new Vec3(i * j, -k, h * j);
     }
 
     public static boolean teleportSafely(Entity entity) {
-        World world = entity.getEntityWorld();
-        double x = entity.getPos().x;
+        Level world = entity.getCommandSenderWorld();
+        double x = entity.position().x;
         double y;
-        double z = entity.getPos().z;
+        double z = entity.position().z;
         boolean found = false;
-        boolean blockAbove = world.isSkyVisible(entity.getBlockPos());
-        if (!world.isClient) while (!found && !blockAbove) {
-            for (y = entity.getPos().y + 1; y < entity.getEntityWorld().getHeight(); y += 1) {
+        boolean blockAbove = world.canSeeSky(entity.blockPosition());
+        if (!world.isClientSide) while (!found && !blockAbove) {
+            for (y = entity.position().y + 1; y < entity.getCommandSenderWorld().getHeight(); y += 1) {
                 Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
                 Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
-                if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.isSkyVisible(new BlockPos(x, y, z)))) {
-                    entity.updatePosition(x + 0.5, y, z + 0.5);
+                if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.canSeeSky(new BlockPos(x, y, z)))) {
+                    entity.absMoveTo(x + 0.5, y, z + 0.5);
                     found = true;
                     break;
                 }
@@ -1102,8 +1112,8 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     // Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
-    public static int getY(BlockView blockView, double x, double z) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable(x, Compat.get().getWorldHeight(blockView), z);
+    public static int getY(BlockGetter blockView, double x, double z) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, Compat.get().getWorldHeight(blockView), z);
         boolean bl = blockView.getBlockState(mutable).isAir();
         mutable.move(Direction.DOWN);
         boolean bl3;
@@ -1116,8 +1126,8 @@ public enum MoreCommands implements IMoreCommands {
         return blockView.getHeight();
     }
 
-    public static NbtCompound wrapTag(String key, NbtElement tag) {
-        NbtCompound compound = new NbtCompound();
+    public static CompoundTag wrapTag(String key, Tag tag) {
+        CompoundTag compound = new CompoundTag();
         compound.put(key, tag);
         return compound;
     }
@@ -1134,7 +1144,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static VoxelShape getFluidShape(BlockState state) {
-        return VoxelShapes.cuboid(0, 0, 0, 1, 1d/1.125d/8 * (8-state.get(FluidBlock.LEVEL)), 1);
+        return Shapes.box(0, 0, 0, 1, 1d/1.125d/8 * (8-state.getValue(LiquidBlock.LEVEL)), 1);
     }
 
     public static Path getRelativePath() {
@@ -1142,7 +1152,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static Path getRelativePath(MinecraftServer server) {
-        return Paths.get(server.getSavePath(WorldSavePath.ROOT).toAbsolutePath() + "MoreCommands");
+        return Paths.get(server.getWorldPath(LevelResource.ROOT).toAbsolutePath() + "MoreCommands");
     }
 
     public static void tryMove(String from, String to) {
@@ -1154,11 +1164,11 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static boolean isSingleplayer() {
-        return Platform.getEnv() != EnvType.SERVER && MinecraftClient.getInstance() != null &&
-                MinecraftClient.getInstance().getCurrentServerEntry() == null && MinecraftClient.getInstance().world != null;
+        return Platform.getEnv() != EnvType.SERVER && Minecraft.getInstance() != null &&
+                Minecraft.getInstance().getCurrentServer() == null && Minecraft.getInstance().level != null;
     }
 
-    public static String formatSeconds(long seconds, Formatting mainColour, Formatting commaColour) {
+    public static String formatSeconds(long seconds, ChatFormatting mainColour, ChatFormatting commaColour) {
         long days = seconds / 86400;
         long hours = seconds / 3600 - days * 24;
         long minutes = seconds / 60 - hours * 60 - days * 1440;
@@ -1249,8 +1259,8 @@ public enum MoreCommands implements IMoreCommands {
         return Collections.unmodifiableList(gradient);
     }
 
-    public static Text getNickname(PlayerEntity player) {
-        return player.getDataTracker().get(IDataTrackerHelper.get().nickname()).orElse(null);
+    public static Component getNickname(Player player) {
+        return player.getEntityData().get(IDataTrackerHelper.get().nickname()).orElse(null);
     }
 
 //    public static PlaceholderResult gradientPlaceholder(PlaceholderContext ctx) {
@@ -1361,13 +1371,13 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     @SneakyThrows // Shouldn't be possible as this is a memory output stream, it's not outputting to a file or whatever.
-    public static String nbtToByteString(NbtCompound tag) {
+    public static String nbtToByteString(CompoundTag tag) {
         ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
         NbtIo.writeCompressed(tag, bytestream);
         return encodeHex(bytestream.toByteArray());
     }
 
-    public static NbtCompound nbtFromByteString(String byteString) {
+    public static CompoundTag nbtFromByteString(String byteString) {
         if (byteString == null) return null;
         byte[] bytes;
         try {
@@ -1384,7 +1394,7 @@ public enum MoreCommands implements IMoreCommands {
         }
     }
 
-    public static Map<Command, Collection<CommandNode<ServerCommandSource>>> getNodes() {
+    public static Map<Command, Collection<CommandNode<CommandSourceStack>>> getNodes() {
         return ImmutableMap.copyOf(nodes);
     }
 
@@ -1394,8 +1404,8 @@ public enum MoreCommands implements IMoreCommands {
         return IntStream.of(ints);
     }
 
-    public static Entity getTargetedEntity(PlayerEntity entity) {
+    public static Entity getTargetedEntity(Player entity) {
         int target = targetedEntities.getOrDefault(entity, -1);
-        return entity.getWorld().getEntityById(target);
+        return entity.getLevel().getEntity(target);
     }
 }

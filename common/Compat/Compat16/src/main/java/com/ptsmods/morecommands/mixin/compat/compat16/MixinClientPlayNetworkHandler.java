@@ -1,10 +1,10 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
 import com.ptsmods.morecommands.api.IDeathTracker;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.packet.s2c.play.CombatEventS2CPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.protocol.game.ClientboundPlayerCombatPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
-@Mixin(ClientPlayNetworkHandler.class)
+@Mixin(ClientPacketListener.class)
 public class MixinClientPlayNetworkHandler {
 
-    @Shadow private MinecraftClient client;
-    @Shadow private ClientWorld world;
+    @Shadow private Minecraft minecraft;
+    @Shadow private ClientLevel level;
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/util/thread/ThreadExecutor;)V", shift = At.Shift.AFTER), method = "onCombatEvent")
-    private void onCombatEvent(CombatEventS2CPacket packet, CallbackInfo cbi) {
-        if (packet.type == CombatEventS2CPacket.Type.ENTITY_DIED && world.getEntityById(packet.entityId) == client.player)
-            IDeathTracker.get().addDeath(world, Objects.requireNonNull(client.player).getPos());
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V", shift = At.Shift.AFTER), method = "handlePlayerCombat")
+    private void onCombatEvent(ClientboundPlayerCombatPacket packet, CallbackInfo cbi) {
+        if (packet.event == ClientboundPlayerCombatPacket.Event.ENTITY_DIED && level.getEntity(packet.playerId) == minecraft.player)
+            IDeathTracker.get().addDeath(level, Objects.requireNonNull(minecraft.player).position());
     }
 }

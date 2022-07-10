@@ -1,27 +1,27 @@
 package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.MobSpawnerLogic;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import oshi.SystemInfo;
 
 public class Compat17 extends Compat16 {
@@ -37,53 +37,53 @@ public class Compat17 extends Compat16 {
     }
 
     @Override
-    public PlayerInventory getInventory(PlayerEntity player) {
+    public Inventory getInventory(Player player) {
         return player.getInventory();
     }
 
     @Override
-    public boolean isInBuildLimit(World world, BlockPos pos) {
-        return world.isInBuildLimit(pos);
+    public boolean isInBuildLimit(Level world, BlockPos pos) {
+        return world.isInWorldBounds(pos);
     }
 
     @Override
-    public Text toText(NbtElement tag) {
-        return NbtHelper.toPrettyPrintedText(tag);
+    public Component toText(Tag tag) {
+        return NbtUtils.toPrettyComponent(tag);
     }
 
     @Override
-    public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
-        return new ServerPlayerEntity(server, world, profile);
+    public ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile) {
+        return new ServerPlayer(server, world, profile);
     }
 
     @Override
-    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.writeNbt(world, pos, nbt);
+    public CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+        return logic.save(world, pos, nbt);
     }
 
     @Override
-    public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        logic.readNbt(world, pos, nbt);
+    public void readSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+        logic.load(world, pos, nbt);
     }
 
     @Override
-    public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
-        sbe.setEditor(player.getUuid());
+    public void setSignEditor(SignBlockEntity sbe, Player player) {
+        sbe.setAllowedPlayerEditor(player.getUUID());
     }
 
     @Override
-    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-        return manager.get(key); // Signature changed, method now returns a Registry rather than a MutableRegistry.
+    public <E> Registry<E> getRegistry(RegistryAccess manager, ResourceKey<? extends Registry<E>> key) {
+        return manager.registryOrThrow(key); // Signature changed, method now returns a Registry rather than a MutableRegistry.
     }
 
     @Override
-    public int getWorldHeight(BlockView world) {
+    public int getWorldHeight(BlockGetter world) {
         return world.getHeight();
     }
 
     @Override
-    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
-        return new FireballEntity(world, owner, velocityX, velocityY, velocityZ, explosionPower);
+    public LargeFireball newFireballEntity(Level world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+        return new LargeFireball(world, owner, velocityX, velocityY, velocityZ, explosionPower);
     }
 
     @Override
@@ -92,12 +92,12 @@ public class Compat17 extends Compat16 {
     }
 
     @Override
-    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
-        player.setWorld(world);
+    public void playerSetWorld(ServerPlayer player, ServerLevel world) {
+        player.setLevel(world);
     }
 
     @Override
-    public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
-        return new PlayerListS2CPacket(PlayerListS2CPacket.Action.values()[action], players);
+    public ClientboundPlayerInfoPacket newPlayerListS2CPacket(int action, ServerPlayer... players) {
+        return new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.values()[action], players);
     }
 }

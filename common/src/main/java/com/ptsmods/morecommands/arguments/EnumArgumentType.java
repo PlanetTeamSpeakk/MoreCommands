@@ -16,8 +16,7 @@ import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.PacketByteBuf;
-
+import net.minecraft.network.FriendlyByteBuf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -96,14 +95,14 @@ public class EnumArgumentType implements CompatArgumentType<EnumArgumentType, St
 
         @SuppressWarnings("unchecked")
         @Override
-        public EnumArgumentType fromPacket(PacketByteBuf buf) {
+        public EnumArgumentType fromPacket(FriendlyByteBuf buf) {
             try {
-                Class<Enum<?>> clazz = (Class<Enum<?>>) Class.forName(buf.readString());
+                Class<Enum<?>> clazz = (Class<Enum<?>>) Class.forName(buf.readUtf());
                 int x = buf.readVarInt();
                 List<Enum<?>> enums = new ArrayList<>();
 
                 for (int i = 0; i < x; i++) {
-                    String s = buf.readString(); // Gotta retain the correct order, so we use a nested for loop instead or first reading all strings and checking for each Enum if it's in the list. :)
+                    String s = buf.readUtf(); // Gotta retain the correct order, so we use a nested for loop instead or first reading all strings and checking for each Enum if it's in the list. :)
                     for (Enum<?> e : clazz.getEnumConstants())
                         if (e.name().equals(s))
                             enums.add(e);
@@ -113,7 +112,7 @@ public class EnumArgumentType implements CompatArgumentType<EnumArgumentType, St
                 x = buf.readVarInt();
 
                 for (int i = 0; i < x; i++)
-                    strings.add(buf.readString());
+                    strings.add(buf.readUtf());
 
                 return new EnumArgumentType(clazz, enums.toArray(new Enum[0]), strings);
             } catch (ClassNotFoundException e) {
@@ -159,15 +158,15 @@ public class EnumArgumentType implements CompatArgumentType<EnumArgumentType, St
         }
 
         @Override
-        public void write(PacketByteBuf buf) {
-            buf.writeString(clazz.getName());
+        public void write(FriendlyByteBuf buf) {
+            buf.writeUtf(clazz.getName());
 
             buf.writeVarInt(values.length);
             for (Enum<?> e : values)
-                buf.writeString(e.name());
+                buf.writeUtf(e.name());
 
             buf.writeVarInt(strings.size());
-            strings.forEach(buf::writeString);
+            strings.forEach(buf::writeUtf);
         }
     }
 }

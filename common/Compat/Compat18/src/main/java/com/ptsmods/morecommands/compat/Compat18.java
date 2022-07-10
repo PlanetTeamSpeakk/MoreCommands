@@ -1,23 +1,22 @@
 package com.ptsmods.morecommands.compat;
 
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.MobSpawnerLogic;
-import net.minecraft.world.World;
-
 import java.util.stream.DoubleStream;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class Compat18 extends Compat17 {
     @Override
-    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.writeNbt(nbt);
+    public CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+        return logic.save(nbt);
     }
 
     @Override
-    public NbtCompound writeBENBT(BlockEntity be) {
-        return be.createNbtWithIdentifyingData();
+    public CompoundTag writeBENBT(BlockEntity be) {
+        return be.saveWithFullMetadata();
     }
 
     @Override

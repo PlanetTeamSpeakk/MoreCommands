@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.gui.infohud.variables;
 
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 public interface Variable<T> {
     String getName();
@@ -9,9 +9,9 @@ public interface Variable<T> {
 
     T fromString(String val);
 
-    void apply(MatrixStack matrixStack, Object value);
+    void apply(PoseStack matrixStack, Object value);
 
-    void applyDefault(MatrixStack matrixStack);
+    void applyDefault(PoseStack matrixStack);
 
     T upcast(Object value);
 }

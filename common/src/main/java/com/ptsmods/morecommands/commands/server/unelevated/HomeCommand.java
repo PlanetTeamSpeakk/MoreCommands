@@ -14,15 +14,14 @@ import com.ptsmods.mysqlw.table.ColumnType;
 import com.ptsmods.mysqlw.table.TableIndex;
 import com.ptsmods.mysqlw.table.TablePreset;
 import dev.architectury.event.events.common.PlayerEvent;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
-
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,24 +36,24 @@ public class HomeCommand extends Command {
     @Override
     public void preinit() throws Exception {
         PlayerEvent.PLAYER_JOIN.register(player -> {
-            if (homes.containsKey(player.getUuid())) return; // Still in cache
+            if (homes.containsKey(player.getUUID())) return; // Still in cache
 
             getLocalDb().selectBuilder("homes")
                     .select("*")
-                    .where(QueryCondition.equals("owner", player.getUuid()))
+                    .where(QueryCondition.equals("owner", player.getUUID()))
                     .executeAsync()
                     .thenAccept(res -> {
-                        homes.put(player.getUuid(), getLocalDb().select("homes", "*", QueryCondition.equals("owner", player.getUuid())).stream()
+                        homes.put(player.getUUID(), getLocalDb().select("homes", "*", QueryCondition.equals("owner", player.getUUID())).stream()
                                 .map(row -> new Home(row.getString("name"), row.getDouble("x"), row.getDouble("y"), row.getDouble("z"),
-                                        row.getFloat("pitch"), row.getFloat("yaw"), row.get("dimension", Identifier.class))).collect(Collectors.toList()));
+                                        row.getFloat("pitch"), row.getFloat("yaw"), row.get("dimension", ResourceLocation.class))).collect(Collectors.toList()));
                     });
         });
 
         PlayerEvent.PLAYER_QUIT.register(player -> {
             MinecraftServer server0 = player.getServer();
-            UUID id = player.getUuid();
+            UUID id = player.getUUID();
             scheduleTask(() -> {
-                if (Objects.requireNonNull(server0).getPlayerManager().getPlayer(id) == null) homes.remove(id);
+                if (Objects.requireNonNull(server0).getPlayerList().getPlayer(id) == null) homes.remove(id);
             }, 600); // Clear cache if player does not relog within 30 seconds
         });
     }
@@ -108,14 +107,14 @@ public class HomeCommand extends Command {
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("home")
                 .executes(ctx -> executeHome(ctx, null))
                 .then(argument("home", StringArgumentType.word())
                         .executes(ctx -> executeHome(ctx, ctx.getArgument("home", String.class)))));
 
         dispatcher.register(literalReq("homes")
-                .executes(ctx -> sendHomes(ctx.getSource().getPlayerOrThrow())));
+                .executes(ctx -> sendHomes(ctx.getSource().getPlayerOrException())));
 
         dispatcher.register(literalReq("sethome")
                 .executes(ctx -> executeSetHome(ctx, "home"))
@@ -125,14 +124,14 @@ public class HomeCommand extends Command {
         dispatcher.register(literalReq("delhome")
                 .then(argument("home", StringArgumentType.word())
                         .executes(ctx -> {
-                            PlayerEntity p = ctx.getSource().getPlayerOrThrow();
+                            Player p = ctx.getSource().getPlayerOrException();
                             Home home = getHome(p, ctx.getArgument("home", String.class));
-                            if (!homes.containsKey(p.getUuid())) sendHomes(p); // Will send error msg.
+                            if (!homes.containsKey(p.getUUID())) sendHomes(p); // Will send error msg.
                             else if (home == null) sendError(ctx, "Could not find a home by that name.");
                             else {
                                 getHomes(p).remove(home);
-                                if (getHomes(p).isEmpty()) homes.remove(p.getUuid());
-                                getLocalDb().delete("homes", QueryCondition.equals("owner", p.getUuid()).and(QueryCondition.equals("name", home.name)));
+                                if (getHomes(p).isEmpty()) homes.remove(p.getUUID());
+                                getLocalDb().delete("homes", QueryCondition.equals("owner", p.getUUID()).and(QueryCondition.equals("name", home.name)));
                                 sendMsg(ctx, "Your home " + SF + home.name + DF + " was removed.");
                                 return 1;
                             }
@@ -145,29 +144,29 @@ public class HomeCommand extends Command {
         return "/unelevated/home";
     }
 
-    private int executeSetHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
-        PlayerEntity p = ctx.getSource().getPlayerOrThrow();
-        int globalMax = p.getEntityWorld().getGameRules().getInt(MoreGameRules.get().maxHomesRule());
+    private int executeSetHome(CommandContext<CommandSourceStack> ctx, String name) throws CommandSyntaxException {
+        Player p = ctx.getSource().getPlayerOrException();
+        int globalMax = p.getCommandSenderWorld().getGameRules().getInt(MoreGameRules.get().maxHomesRule());
         int max = getCountFromPerms(ctx.getSource(), "morecommands.sethome.", globalMax);
         if (max < 0) max = Integer.MAX_VALUE;
         boolean bypass = isOp(ctx);
         if (max == 0 && !bypass) sendError(ctx, "Homes are currently disabled" + (globalMax > 0 ? " (for you)" : "") + ".");
         else if (getHomes(p).size() >= max && !bypass) sendError(ctx, "You cannot set more than " + max + " homes.");
         else {
-            if (!homes.containsKey(p.getUuid())) homes.put(p.getUuid(), new ArrayList<>());
+            if (!homes.containsKey(p.getUUID())) homes.put(p.getUUID(), new ArrayList<>());
 
-            Home home = new Home(name, p.getPos().x, p.getPos().y, p.getPos().z, ((MixinEntityAccessor) p).getPitch_(), ((MixinEntityAccessor) p).getYaw_(), p.getEntityWorld().getRegistryKey().getValue());
+            Home home = new Home(name, p.position().x, p.position().y, p.position().z, ((MixinEntityAccessor) p).getXRot_(), ((MixinEntityAccessor) p).getYRot_(), p.getCommandSenderWorld().dimension().location());
             getHomes(p).add(home);
             getLocalDb().insert("homes", new String[] {"owner", "name", "x", "y", "z", "pitch", "yaw", "dimension"},
-                    new Object[] {p.getUuid(), home.name, home.x, home.y, home.z, home.pitch, home.yaw, home.dimension});
+                    new Object[] {p.getUUID(), home.name, home.x, home.y, home.z, home.pitch, home.yaw, home.dimension});
 
             sendMsg(ctx, "A home by the name of " + SF + name + DF + " has been set.");
         }
-        return homes.get(p.getUuid()).size();
+        return homes.get(p.getUUID()).size();
     }
 
-    private int executeHome(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException {
-        PlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int executeHome(CommandContext<CommandSourceStack> ctx, String name) throws CommandSyntaxException {
+        Player player = ctx.getSource().getPlayerOrException();
         if (getHomes(player).isEmpty() || name == null && getHomes(player).size() > 1) sendHomes(player);
         else {
             // Get home named 'home' if no home was given or, if that does not exist, get the first set home.
@@ -178,39 +177,39 @@ public class HomeCommand extends Command {
         return 0;
     }
 
-    private int sendHomes(PlayerEntity player) {
-        sendMsg(player, getHomes(player).isEmpty() ? Formatting.RED + "You do not have any homes set yet, set one with /sethome [name]." : "You have set the following homes: " +
+    private int sendHomes(Player player) {
+        sendMsg(player, getHomes(player).isEmpty() ? ChatFormatting.RED + "You do not have any homes set yet, set one with /sethome [name]." : "You have set the following homes: " +
                 joinNicely(getHomes(player).stream().collect(Collector.of(ArrayList::new, (l, home) -> l.add(home.name), BinaryOperator.maxBy(Comparator.comparingInt(List::size))))) + ".");
         return getHomes(player).size();
     }
 
-    private int tpHome(PlayerEntity player, Home home) {
-        MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getWorld(RegistryKey.of(Registry.WORLD_KEY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
-        RegistryKey<World> registryKey = player.getEntityWorld().getRegistryKey();
-        if (World.NETHER.equals(registryKey)) return 9;
-        else if (World.OVERWORLD.equals(registryKey)) return 10;
-        else if (World.END.equals(registryKey)) return 11;
+    private int tpHome(Player player, Home home) {
+        MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
+        ResourceKey<Level> registryKey = player.getCommandSenderWorld().dimension();
+        if (Level.NETHER.equals(registryKey)) return 9;
+        else if (Level.OVERWORLD.equals(registryKey)) return 10;
+        else if (Level.END.equals(registryKey)) return 11;
         return 12;
     }
 
-    private Home getHome(PlayerEntity player, String name) {
+    private Home getHome(Player player, String name) {
         for (Home home : getHomes(player))
             if (home.name.equalsIgnoreCase(name))
                 return home;
         return null;
     }
 
-    private List<Home> getHomes(PlayerEntity player) {
-        return homes.getOrDefault(player.getUuid(), Collections.emptyList());
+    private List<Home> getHomes(Player player) {
+        return homes.getOrDefault(player.getUUID(), Collections.emptyList());
     }
 
     private static class Home {
         private final String name;
         private final double x, y, z;
         private final float pitch, yaw;
-        private final Identifier dimension;
+        private final ResourceLocation dimension;
 
-        private Home(String name, double x, double y, double z, float pitch, float yaw, Identifier dimension) {
+        private Home(String name, double x, double y, double z, float pitch, float yaw, ResourceLocation dimension) {
             this.name = name;
             this.x = x;
             this.y = y;
@@ -222,7 +221,7 @@ public class HomeCommand extends Command {
 
         private static Home fromMap(Map.Entry<String, Map<String, Object>> data) {
             Map<String, Object> v = data.getValue();
-            return new Home(data.getKey(), (Double) v.get("x"), (Double) v.get("y"), (Double) v.get("z"), ((Double) v.get("pitch")).floatValue(), ((Double) v.get("yaw")).floatValue(), new Identifier((String) v.get("dimension")));
+            return new Home(data.getKey(), (Double) v.get("x"), (Double) v.get("y"), (Double) v.get("z"), ((Double) v.get("pitch")).floatValue(), ((Double) v.get("yaw")).floatValue(), new ResourceLocation((String) v.get("dimension")));
         }
     }
 }

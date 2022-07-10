@@ -11,22 +11,25 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindTranslationsAccessor;
 import dev.architectury.registry.registries.DeferredRegister;
-import net.minecraft.block.BlockState;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.BlockStateArgumentType;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.*;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.*;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -38,69 +41,69 @@ public class Compat19 extends Compat182 {
     @Override
     public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-        ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>> serializer = (ArgumentSerializer<A, ArgumentSerializer.ArgumentTypeProperties<A>>) serialiser.toVanillaSerialiser();
-        ((DeferredRegister<ArgumentSerializer<?, ?>>) registry).register(new Identifier(identifier), () -> serializer);
-        ((Map<Class<?>, ArgumentSerializer<?, ?>>) MixinAccessWidener.get().argumentTypes$getClassMap()).put(clazz, serializer);
+        ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>> serializer = (ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>>) serialiser.toVanillaSerialiser();
+        ((DeferredRegister<ArgumentTypeInfo<?, ?>>) registry).register(new ResourceLocation(identifier), () -> serializer);
+        ((Map<Class<?>, ArgumentTypeInfo<?, ?>>) MixinAccessWidener.get().argumentTypes$getClassMap()).put(clazz, serializer);
     }
 
     @Override
-    public BlockStateArgumentType createBlockStateArgumentType() {
-        return BlockStateArgumentType.blockState((CommandRegistryAccess) CommandRegistryAccessHolder.commandRegistryAccess);
+    public BlockStateArgument createBlockStateArgumentType() {
+        return BlockStateArgument.block((CommandBuildContext) CommandRegistryAccessHolder.commandRegistryAccess);
     }
 
     @Override
     public Direction randomDirection() {
-        return Direction.random(Random.create());
+        return Direction.getRandom(RandomSource.create());
     }
 
     @Override
-    public Object getPaintingVariant(PaintingEntity painting) {
+    public Object getPaintingVariant(Painting painting) {
         return painting.getVariant().value();
     }
 
     @Override
-    public void setPaintingVariant(PaintingEntity entity, Object variant) {
+    public void setPaintingVariant(Painting entity, Object variant) {
         ((PaintingEntityAddon) entity).mc$setVariant(variant);
     }
 
     @Override
-    public MutableText buildText(LiteralTextBuilder builder) {
-        return buildText(new LiteralTextContent(builder.getLiteral()), builder);
+    public MutableComponent buildText(LiteralTextBuilder builder) {
+        return buildText(new LiteralContents(builder.getLiteral()), builder);
     }
 
     @Override
-    public MutableText buildText(TranslatableTextBuilder builder) {
-        return buildText(builder.getArgs().length == 0 ? new TranslatableTextContent(builder.getKey()) : new TranslatableTextContent(builder.getKey(), Arrays.stream(builder.getArgs())
+    public MutableComponent buildText(TranslatableTextBuilder builder) {
+        return buildText(builder.getArgs().length == 0 ? new TranslatableContents(builder.getKey()) : new TranslatableContents(builder.getKey(), Arrays.stream(builder.getArgs())
                 .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
                 .toArray(Object[]::new)), builder);
     }
 
     @Override
-    public MutableText buildText(EmptyTextBuilder builder) {
-        return buildText(TextContent.EMPTY, builder);
+    public MutableComponent buildText(EmptyTextBuilder builder) {
+        return buildText(ComponentContents.EMPTY, builder);
     }
 
-    private MutableText buildText(TextContent content, TextBuilder<?> builder) {
-        MutableText text = MutableText.of(content).setStyle(builder.getStyle());
+    private MutableComponent buildText(ComponentContents content, TextBuilder<?> builder) {
+        MutableComponent text = MutableComponent.create(content).setStyle(builder.getStyle());
         builder.getChildren().forEach(child -> text.append(child.build()));
         return text;
     }
 
     @Override
-    public TextBuilder<?> builderFromText(Text text) {
-        TextContent content = text.getContent();
+    public TextBuilder<?> builderFromText(Component text) {
+        ComponentContents content = text.getContents();
         TextBuilder<?> builder;
-        if (content instanceof LiteralTextContent)
-            builder = LiteralTextBuilder.builder(((LiteralTextContent) content).string());
-        else if (content instanceof TranslatableTextContent)
-            builder = TranslatableTextBuilder.builder(((TranslatableTextContent) content).getKey(), Arrays.stream(((TranslatableTextContent) content).getArgs())
-                    .map(o -> o instanceof Text ? builderFromText((Text) o) : o)
+        if (content instanceof LiteralContents)
+            builder = LiteralTextBuilder.builder(((LiteralContents) content).text());
+        else if (content instanceof TranslatableContents)
+            builder = TranslatableTextBuilder.builder(((TranslatableContents) content).getKey(), Arrays.stream(((TranslatableContents) content).getArgs())
+                    .map(o -> o instanceof Component ? builderFromText((Component) o) : o)
                     .toArray(Object[]::new));
-        else if (content instanceof KeybindTextContent)
-            builder = builderFromText(MixinKeybindTranslationsAccessor.getFactory().apply(((KeybindTextContent) content).getKey()).get());
-        else if (content instanceof ScoreTextContent || content instanceof NbtTextContent || content instanceof SelectorTextContent)
+        else if (content instanceof KeybindContents)
+            builder = builderFromText(MixinKeybindTranslationsAccessor.getFactory().apply(((KeybindContents) content).getName()).get());
+        else if (content instanceof ScoreContents || content instanceof NbtContents || content instanceof SelectorContents)
             builder = LiteralTextBuilder.builder(content.toString()); // Not sure how to handle this.
-        else if (content == TextContent.EMPTY) builder = EmptyTextBuilder.builder();
+        else if (content == ComponentContents.EMPTY) builder = EmptyTextBuilder.builder();
         else throw new IllegalArgumentException("Given text is not supported.");
 
         return builder
@@ -111,17 +114,17 @@ public class Compat19 extends Compat182 {
     }
 
     @Override
-    public void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message) {
-        playerManager.broadcast(message, RegistryKey.of(Registry.MESSAGE_TYPE_KEY, type.getRight()));
+    public void broadcast(PlayerList playerManager, Tuple<Integer, ResourceLocation> type, Component message) {
+        playerManager.broadcastSystemMessage(message, ResourceKey.create(Registry.CHAT_TYPE_REGISTRY, type.getB()));
     }
 
     @Override
-    public void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b) {
-        state.onStacksDropped(world, pos, stack, b);
+    public void onStacksDropped(BlockState state, ServerLevel world, BlockPos pos, ItemStack stack, boolean b) {
+        state.spawnAfterBreak(world, pos, stack, b);
     }
 
     @Override
-    public BlockPos getWorldSpawnPos(ServerWorld world) {
-        return world.getSpawnPos();
+    public BlockPos getWorldSpawnPos(ServerLevel world) {
+        return world.getSharedSpawnPos();
     }
 }

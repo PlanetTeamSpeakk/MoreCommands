@@ -8,16 +8,15 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
 
 public class UrbanCommand extends ClientCommand {
     private static final Map<String, List<Map<String, ?>>> cache = new HashMap<>();
@@ -26,7 +25,7 @@ public class UrbanCommand extends ClientCommand {
     private static final SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm:ss");
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         dispatcher.register(cLiteral("urban")
                 .then(cArgument("query", StringArgumentType.greedyString())
@@ -39,7 +38,7 @@ public class UrbanCommand extends ClientCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private int execute(CommandContext<ClientCommandSource> ctx) {
+    private int execute(CommandContext<ClientSuggestionProvider> ctx) {
         MoreCommands.execute(() -> {
             int result = 0;
             String query = ctx.getArgument("query", String.class);
@@ -54,11 +53,11 @@ public class UrbanCommand extends ClientCommand {
                 cache.put(query.toLowerCase(), results);
             } catch (IOException e) {
                 log.catching(e);
-                sendMsg(Formatting.RED + "An unknown error occurred while trying to get the search results from urban dictionary.");
+                sendMsg(ChatFormatting.RED + "An unknown error occurred while trying to get the search results from urban dictionary.");
                 return;
             }
-            if (result >= results.size()) sendError("Only found %s%d %sresults for query %s%s %swhile result %s%d %swas requested.", Formatting.DARK_RED, results.size(), Formatting.RED, Formatting.DARK_RED, query,
-                    Formatting.RED, Formatting.DARK_RED, result, Formatting.RED);
+            if (result >= results.size()) sendError("Only found %s%d %sresults for query %s%s %swhile result %s%d %swas requested.", ChatFormatting.DARK_RED, results.size(), ChatFormatting.RED, ChatFormatting.DARK_RED, query,
+                    ChatFormatting.RED, ChatFormatting.DARK_RED, result, ChatFormatting.RED);
             else {
                 Map<String, ?> data = results.get(result);
                 sendMsg("Result for query " + SF + query + DF + ":");
@@ -69,12 +68,12 @@ public class UrbanCommand extends ClientCommand {
                     sendMsg(parseText(cleanString(ex)));
                 }
                 sendMsg("\u00A0");
-                sendMsg(Formatting.GREEN + "Thumbs up: " + ((Double) data.get("thumbs_up")).intValue());
-                sendMsg(Formatting.RED + "Thumbs down: " + ((Double) data.get("thumbs_down")).intValue());
+                sendMsg(ChatFormatting.GREEN + "Thumbs up: " + ((Double) data.get("thumbs_up")).intValue());
+                sendMsg(ChatFormatting.RED + "Thumbs down: " + ((Double) data.get("thumbs_down")).intValue());
                 LiteralTextBuilder link = literalText("Click ");
                 link.withStyle(DS);
                 LiteralTextBuilder linkChild = literalText("here");
-                linkChild.withStyle(Style.EMPTY.withFormatting(Formatting.BLUE, Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, data.get("permalink").toString())));
+                linkChild.withStyle(Style.EMPTY.applyFormats(ChatFormatting.BLUE, ChatFormatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, data.get("permalink").toString())));
                 link.append(linkChild);
                 linkChild = literalText(" to view this result in the browser.");
                 linkChild.withStyle(DS);
@@ -91,14 +90,14 @@ public class UrbanCommand extends ClientCommand {
 
                 LiteralTextBuilder pager = literalText("");
                 LiteralTextBuilder prev = literalText("[<<<]");
-                if (result > 0) prev.withStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result-1) + " " + query)));
-                else prev.withStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
+                if (result > 0) prev.withStyle(Style.EMPTY.applyFormat(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result-1) + " " + query)));
+                else prev.withStyle(Style.EMPTY.applyFormat(ChatFormatting.GRAY));
                 pager.append(prev);
                 pager.append(literalText("  "));
                 LiteralTextBuilder next = literalText("[>>>]");
 
-                if (result < results.size()-1) next.withStyle(Style.EMPTY.withFormatting(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result+1) + " " + query)));
-                else next.withStyle(Style.EMPTY.withFormatting(Formatting.GRAY));
+                if (result < results.size()-1) next.withStyle(Style.EMPTY.applyFormat(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + (result+1) + " " + query)));
+                else next.withStyle(Style.EMPTY.applyFormat(ChatFormatting.GRAY));
                 pager.append(next);
                 sendMsg(pager);
             }
@@ -136,7 +135,7 @@ public class UrbanCommand extends ClientCommand {
             hoverText.append(hoverTextChild);
 
             child.withStyle(SS
-                    .withFormatting(Formatting.UNDERLINE)
+                    .applyFormat(ChatFormatting.UNDERLINE)
                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/urban " + term))
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText.build())));
             text.append(child);

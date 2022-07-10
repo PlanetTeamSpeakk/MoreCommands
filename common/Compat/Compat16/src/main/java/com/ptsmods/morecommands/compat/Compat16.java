@@ -12,46 +12,45 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.command.argument.ArgumentTypes;
-import net.minecraft.command.argument.BlockStateArgumentType;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingMotive;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.MessageType;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.Util;
+import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.synchronization.ArgumentSerializer;
+import net.minecraft.commands.synchronization.ArgumentTypes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.Tag;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.registry.SimpleRegistry;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.MobSpawnerLogic;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.Motive;
+import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import oshi.SystemInfo;
 
 import java.util.Map;
@@ -59,7 +58,7 @@ import java.util.Random;
 import java.util.stream.DoubleStream;
 
 public class Compat16 implements Compat {
-    private static Map<Identifier, Object> blockTags = null;
+    private static Map<ResourceLocation, Object> blockTags = null;
 
     @Override
     public boolean isRemoved(Entity entity) {
@@ -72,56 +71,56 @@ public class Compat16 implements Compat {
     }
 
     @Override
-    public PlayerInventory getInventory(PlayerEntity player) {
+    public Inventory getInventory(Player player) {
         return player.inventory;
     }
 
     @Override
-    public boolean isInBuildLimit(World world, BlockPos pos) {
-        return World.isInBuildLimit(pos);
+    public boolean isInBuildLimit(Level world, BlockPos pos) {
+        return Level.isInWorldBounds(pos);
     }
 
     @Override
-    public Text toText(NbtElement tag) {
-        return tag.toText();
+    public Component toText(Tag tag) {
+        return tag.getPrettyDisplay();
     }
 
     @Override
-    public ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile) {
-        ServerPlayerInteractionManager interactionManager = new ServerPlayerInteractionManager(world);
-        ServerPlayerEntity player = new ServerPlayerEntity(server, world, profile, interactionManager);
+    public ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile) {
+        ServerPlayerGameMode interactionManager = new ServerPlayerGameMode(world);
+        ServerPlayer player = new ServerPlayer(server, world, profile, interactionManager);
         interactionManager.player = player;
         return player;
     }
 
     @Override
-    public NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        return logic.toTag(nbt);
+    public CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+        return logic.save(nbt);
     }
 
     @Override
-    public void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt) {
-        logic.fromTag(nbt);
+    public void readSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+        logic.load(nbt);
     }
 
     @Override
-    public void setSignEditor(SignBlockEntity sbe, PlayerEntity player) {
-        sbe.setEditor(player);
+    public void setSignEditor(SignBlockEntity sbe, Player player) {
+        sbe.setAllowedPlayerEditor(player);
     }
 
     @Override
-    public <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key) {
-        return manager.get(key);
+    public <E> Registry<E> getRegistry(RegistryAccess manager, ResourceKey<? extends Registry<E>> key) {
+        return manager.registryOrThrow(key);
     }
 
     @Override
-    public int getWorldHeight(BlockView world) {
-        return world.getHeight();
+    public int getWorldHeight(BlockGetter world) {
+        return world.getMaxBuildHeight();
     }
 
     @Override
-    public FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
-        FireballEntity fireball = new FireballEntity(world, owner, velocityX, velocityY, velocityZ);
+    public LargeFireball newFireballEntity(Level world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower) {
+        LargeFireball fireball = new LargeFireball(world, owner, velocityX, velocityY, velocityZ);
         fireball.explosionPower = explosionPower;
         return fireball;
     }
@@ -132,23 +131,23 @@ public class Compat16 implements Compat {
     }
 
     @Override
-    public <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id) {
+    public <T> boolean registryContainsId(MappedRegistry<T> registry, ResourceLocation id) {
         return registry.get(id) != null; // containsId is client-only
     }
 
     @Override
-    public void playerSetWorld(ServerPlayerEntity player, ServerWorld world) {
-        player.setWorld(world);
+    public void playerSetWorld(ServerPlayer player, ServerLevel world) {
+        player.setLevel(world);
     }
 
     @Override
-    public PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players) {
-        return new PlayerListS2CPacket(PlayerListS2CPacket.Action.values()[action], players);
+    public ClientboundPlayerInfoPacket newPlayerListS2CPacket(int action, ServerPlayer... players) {
+        return new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.values()[action], players);
     }
 
     @Override
-    public NbtCompound writeBENBT(BlockEntity be) {
-        return be.writeNbt(new NbtCompound());
+    public CompoundTag writeBENBT(BlockEntity be) {
+        return be.save(new CompoundTag());
     }
 
     @SuppressWarnings("unchecked")
@@ -161,30 +160,30 @@ public class Compat16 implements Compat {
     @SuppressWarnings("unchecked")
     @Override
     public boolean tagContains(Object tag, Object obj) {
-        return ((Tag<Object>) tag).contains(obj);
+        return ((net.minecraft.tags.Tag<Object>) tag).contains(obj);
     }
 
     @Override
-    public Biome getBiome(World world, BlockPos pos) {
+    public Biome getBiome(Level world, BlockPos pos) {
         return world.getBiome(pos);
     }
 
     @Override
-    public BlockStateArgumentType createBlockStateArgumentType() {
-        return BlockStateArgumentType.blockState();
+    public BlockStateArgument createBlockStateArgumentType() {
+        return BlockStateArgument.block();
     }
 
     @Override
     public Direction randomDirection() {
-        return Direction.random(new Random());
+        return Direction.getRandom(new Random());
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @Override
-    public Map<Identifier, Object> getBlockTags() {
-        return blockTags == null ? blockTags = BlockTags.getTagGroup().getTags().entrySet().stream()
-                .map(entry -> new Pair<>(entry.getKey(), (Object) entry.getValue()))
-                .collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight)) : blockTags;
+    public Map<ResourceLocation, Object> getBlockTags() {
+        return blockTags == null ? blockTags = BlockTags.getAllTags().getAllTags().entrySet().stream()
+                .map(entry -> new Tuple<>(entry.getKey(), (Object) entry.getValue()))
+                .collect(ImmutableMap.toImmutableMap(Tuple::getA, Tuple::getB)) : blockTags;
     }
 
     @Override
@@ -193,47 +192,47 @@ public class Compat16 implements Compat {
     }
 
     @Override
-    public Object getPaintingVariant(PaintingEntity painting) {
+    public Object getPaintingVariant(Painting painting) {
         return painting.motive;
     }
 
     @Override
-    public void setPaintingVariant(PaintingEntity entity, Object variant) {
-        entity.motive = (PaintingMotive) variant;
+    public void setPaintingVariant(Painting entity, Object variant) {
+        entity.motive = (Motive) variant;
     }
 
     @Override
-    public MutableText buildText(LiteralTextBuilder builder) {
+    public MutableComponent buildText(LiteralTextBuilder builder) {
         return PrivateCompat16.buildText(builder);
     }
 
     @Override
-    public MutableText buildText(TranslatableTextBuilder builder) {
+    public MutableComponent buildText(TranslatableTextBuilder builder) {
         return PrivateCompat16.buildText(builder);
     }
 
     @Override
-    public MutableText buildText(EmptyTextBuilder builder) {
+    public MutableComponent buildText(EmptyTextBuilder builder) {
         return PrivateCompat16.buildText(builder);
     }
 
     @Override
-    public TextBuilder<?> builderFromText(Text text) {
+    public TextBuilder<?> builderFromText(Component text) {
         return PrivateCompat16.builderFromText(text);
     }
 
     @Override
-    public void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message) {
-        playerManager.broadcastChatMessage(message, MessageType.values()[type.getLeft()], Util.NIL_UUID);
+    public void broadcast(PlayerList playerManager, Tuple<Integer, ResourceLocation> type, Component message) {
+        playerManager.broadcastMessage(message, ChatType.values()[type.getA()], Util.NIL_UUID);
     }
 
     @Override
-    public void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b) {
-        state.onStacksDropped(world, pos, stack);
+    public void onStacksDropped(BlockState state, ServerLevel world, BlockPos pos, ItemStack stack, boolean b) {
+        state.spawnAfterBreak(world, pos, stack);
     }
 
     @Override
-    public BlockPos getWorldSpawnPos(ServerWorld world) {
-        return world.getSpawnPos();
+    public BlockPos getWorldSpawnPos(ServerLevel world) {
+        return world.getSharedSpawnPos();
     }
 }

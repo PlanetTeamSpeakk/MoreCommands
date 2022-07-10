@@ -2,14 +2,13 @@ package com.ptsmods.morecommands.api.clientoptions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.text.Text;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import net.minecraft.network.chat.Component;
 
 public abstract class ClientOption<T> {
     private static final Map<ClientOptionCategory, Map<String, ClientOption<?>>> options = new LinkedHashMap<>();
@@ -92,7 +91,7 @@ public abstract class ClientOption<T> {
 
     public abstract Object createButton(int x, int y, String name, Runnable init, Runnable save);
 
-    public abstract Text createButtonText(String name);
+    public abstract Component createButtonText(String name);
 
     public void reset() {
         setValue(getDefaultValue());

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,17 +11,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(CommandManager.class)
+@Mixin(Commands.class)
 public class MixinCommandManagerCarpetCompat {
-    private @Unique ServerCommandSource lastCommandSource = null;
+    private @Unique CommandSourceStack lastCommandSource = null;
 
-    @Inject(at = @At("HEAD"), method = "execute")
-    private void onExecute(ServerCommandSource commandSource, String command, CallbackInfoReturnable<Integer> cbi) {
+    @Inject(at = @At("HEAD"), method = "performCommand")
+    private void onExecute(CommandSourceStack commandSource, String command, CallbackInfoReturnable<Integer> cbi) {
         lastCommandSource = commandSource;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z", remap = false), method = "execute", require = 0)
+    @Redirect(at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;isDebugEnabled()Z", remap = false), method = "performCommand", require = 0)
     private boolean execute_isDebugEnabled(Logger logger) {
-        return lastCommandSource.getWorld() != null && lastCommandSource.getWorld().getGameRules().getBoolean(MoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
+        return lastCommandSource.getLevel() != null && lastCommandSource.getLevel().getGameRules().getBoolean(MoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
     }
 }

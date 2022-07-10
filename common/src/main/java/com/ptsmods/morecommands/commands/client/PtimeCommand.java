@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.arguments.TimeArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import dev.architectury.event.events.client.ClientTickEvent;
-import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class PtimeCommand extends ClientCommand {
     private static int time = -1;
@@ -22,20 +22,20 @@ public class PtimeCommand extends ClientCommand {
     public void preinit() {
         ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
             if (isEnabled()) {
-                world.setTimeOfDay(fixed ? time : (time = (time+1) % 24000));
+                world.setDayTime(fixed ? time : (time = (time+1) % 24000));
                 serverTime++;
             }
         });
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("ptime")
                 .then(cLiteral("off")
                         .executes(ctx -> {
                             time = -1;
                             fixed = false;
-                            getWorld().setTimeOfDay(serverTime);
+                            getWorld().setDayTime(serverTime);
                             serverTime = -1;
                             sendMsg("Time is now synchronised with the server time.");
                             return 1;
@@ -43,7 +43,7 @@ public class PtimeCommand extends ClientCommand {
                 .then(cArgument("time", TimeArgumentType.time())
                         .executes(ctx -> {
                             TimeArgumentType.WorldTime worldTime = TimeArgumentType.getTime(ctx, "time");
-                            if (time != -1) setServerTime(getWorld().getTimeOfDay());
+                            if (time != -1) setServerTime(getWorld().getDayTime());
                             time = worldTime.getTime();
                             fixed = worldTime.isFixed();
                             sendMsg("Your personal time has been " + (fixed ? "fixed" : "set") + ".");

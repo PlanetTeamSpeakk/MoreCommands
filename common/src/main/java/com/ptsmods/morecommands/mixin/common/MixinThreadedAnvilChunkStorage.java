@@ -4,9 +4,9 @@ import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.commands.server.elevated.VanishCommand;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityTrackerAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,20 +14,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ChunkMap.class)
 public class MixinThreadedAnvilChunkStorage {
-    @Shadow @Final private Int2ObjectMap<?> entityTrackers;
+    @Shadow @Final private Int2ObjectMap<?> entityMap;
 
-    @Inject(at = @At("HEAD"), method = "unloadEntity(Lnet/minecraft/entity/Entity;)V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "removeEntity", cancellable = true)
     public void unloadEntity(Entity entity, CallbackInfo cbi) {
-        if (entity instanceof ServerPlayerEntity && entity.getDataTracker().get(IDataTrackerHelper.get().vanishToggled())) {
+        if (entity instanceof ServerPlayer && entity.getEntityData().get(IDataTrackerHelper.get().vanishToggled())) {
             cbi.cancel();
-            Object tracker = entityTrackers.remove(entity.getId());
+            Object tracker = entityMap.remove(entity.getId());
             if (tracker != null) {
-                ((MixinEntityTrackerAccessor) tracker).callStopTracking();
-                VanishCommand.trackers.put((ServerPlayerEntity) entity, ((MixinEntityTrackerAccessor) tracker).getEntry());
+                ((MixinEntityTrackerAccessor) tracker).callBroadcastRemoved();
+                VanishCommand.trackers.put((ServerPlayer) entity, ((MixinEntityTrackerAccessor) tracker).getServerEntity());
             }
-            entity.getDataTracker().set(IDataTrackerHelper.get().vanishToggled(), false);
+            entity.getEntityData().set(IDataTrackerHelper.get().vanishToggled(), false);
         }
     }
 }

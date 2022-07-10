@@ -1,5 +1,3 @@
-import java.nio.file.Paths
-
 architectury {
     common(rootProject.enabled_platforms.split(","))
 }
@@ -10,13 +8,12 @@ loom {
 
 dependencies {
     minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_build}:v2"
+    mappings loom.officialMojangMappings()
 
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
-    implementation "com.ptsmods:asmremapper:1.0.1"
     implementation "com.ptsmods:mysqlw:1.7"
 
     api project(path: ":common:API", configuration: "namedElements")
@@ -26,44 +23,3 @@ dependencies {
     implementation project(path: ":common:Compat:Compat182", configuration: "namedElements")
     implementation project(path: ":common:Compat:Compat19", configuration: "namedElements")
 }
-
-project(":common:Compat").subprojects {
-    dependencies {
-        implementation "com.ptsmods:asmremapper:1.0.1"
-    }
-}
-
-task genCompatDumps(dependsOn: "classes") {
-    doLast { // Run after all dependencies have been resolved.
-        def output = sourceSets.main.allJava.srcDirs.iterator().next().toPath().resolve("com/ptsmods/morecommands/dumps/compat")
-        def cache = Paths.get(System.getProperty("user.dir"), ".gradle").toAbsolutePath().toString()
-
-        project(":common:Compat").subprojects {
-            def projectCP = sourceSets.main.runtimeClasspath
-            def mappings = null
-            configurations.mappings.forEach { mappings = it } // Should only be one entry
-            if (mappings == null) {
-                System.err.printf("Project %s has no mappings dependency, skipping.\n", it.name)
-                return
-            }
-
-            def input = it.buildDir.toPath().resolve("classes/java/main/com/ptsmods/morecommands/compat")
-            System.out.printf("ASMifying project %s.\n", it.name)
-            javaexec {
-                classpath = projectCP // All dependencies ASMRemapper has are already present on this classpath, including the necessary Minecraft jar.
-                main = "com.ptsmods.asmremapper.ASMRemapper"
-
-                args = [
-                        "--cache=\"" + cache + '"',
-                        "--package=com.ptsmods.morecommands.dumps.compat",
-                        "--input=\"" + input.toAbsolutePath() + '"',
-                        "--output=\"" + output.toAbsolutePath() + '"',
-                        "--mappings=\"" + mappings + '"',
-                        "--maputil=com.ptsmods.morecommands.dumps.ASMDump"
-                ]
-            }
-        }
-    }
-}
-
-tasks.build.dependsOn(genCompatDumps)

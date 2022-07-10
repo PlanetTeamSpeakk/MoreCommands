@@ -1,11 +1,11 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.world.entity.player.Abilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(PlayerAbilities.class)
+@Mixin(Abilities.class)
 public interface MixinPlayerAbilitiesAccessor {
-    @Accessor("walkSpeed") void setWalkSpeed_(float speed);
-    @Accessor("flySpeed") void setFlySpeed_(float speed);
+    @Accessor("walkingSpeed") void setWalkingSpeed_(float speed);
+    @Accessor("flyingSpeed") void setFlyingSpeed_(float speed);
 }

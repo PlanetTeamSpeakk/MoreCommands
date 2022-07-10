@@ -8,15 +8,14 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Formatting;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class MacroCommand extends ClientCommand {
 
@@ -35,7 +34,7 @@ public class MacroCommand extends ClientCommand {
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("macro")
                 .then(cLiteral("create")
                         .then(cArgument("name", StringArgumentType.greedyString())
@@ -63,8 +62,8 @@ public class MacroCommand extends ClientCommand {
                                         .executes(ctx -> {
                                             String macro = ctx.getArgument("macro", String.class);
                                             int index = ctx.getArgument("index", Integer.class)-1;
-                                            if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
-                                            else if (index >= macros.get(macro).size()) sendMsg(Formatting.RED + "The given index was greater than the amount of commands in this macro (" + SF + macros.get(macro).size() + DF + ").");
+                                            if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
+                                            else if (index >= macros.get(macro).size()) sendMsg(ChatFormatting.RED + "The given index was greater than the amount of commands in this macro (" + SF + macros.get(macro).size() + DF + ").");
                                             else {
                                                 String cmd = macros.get(macro).remove(index);
                                                 saveData();
@@ -76,7 +75,7 @@ public class MacroCommand extends ClientCommand {
                         .then(cArgument("macro", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     String macro = ctx.getArgument("macro", String.class);
-                                    if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
+                                    if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
                                     else {
                                         macros.remove(macro);
                                         saveData();
@@ -89,8 +88,8 @@ public class MacroCommand extends ClientCommand {
                         .then(cArgument("macro", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     String macro = ctx.getArgument("macro", String.class);
-                                    if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
-                                    else if (macros.get(macro).isEmpty()) sendMsg(Formatting.RED + "The given macro does not yet have any commands added, consider adding some with " +
+                                    if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
+                                    else if (macros.get(macro).isEmpty()) sendMsg(ChatFormatting.RED + "The given macro does not yet have any commands added, consider adding some with " +
                                             SF + "/macro add " + (macro.contains(" ") ? "\"" + macro + "\"" : macro) + " <command>" + DF + ".");
                                     else {
                                         StringBuilder msg = new StringBuilder("Commands of macro " + SF + macro + DF + ":");
@@ -103,14 +102,14 @@ public class MacroCommand extends ClientCommand {
                                 })))
                 .then(cLiteral("list")
                         .executes(ctx -> {
-                            if (macros.isEmpty()) sendMsg(Formatting.RED + "You have not made any macros yet, consider making some with /macro create <name>.");
+                            if (macros.isEmpty()) sendMsg(ChatFormatting.RED + "You have not made any macros yet, consider making some with /macro create <name>.");
                             else sendMsg("You have the following macros: " + joinNicely(macros.keySet()) + ".");
                             return macros.size();
                         }))
                 .then(cArgument("macro", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             String macro = ctx.getArgument("macro", String.class);
-                            if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
+                            if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
                             else {
                                 for (String msg : macros.get(macro)) ClientCompat.get().sendMessageOrCommand(msg);
                                 return macros.get(macro).size();
@@ -124,14 +123,14 @@ public class MacroCommand extends ClientCommand {
         return "/macro";
     }
 
-    private int executeAdd(CommandContext<ClientCommandSource> ctx, int index) {
+    private int executeAdd(CommandContext<ClientSuggestionProvider> ctx, int index) {
         String macro = ctx.getArgument("macro", String.class);
         String msg = ctx.getArgument("msg", String.class);
-        if (!macros.containsKey(macro)) sendMsg(Formatting.RED + "A macro by the given name could not be found.");
+        if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
         else {
             macros.get(macro).add(index == -1 ? macros.get(macro).size() : index, msg);
             saveData();
-            if (!msg.startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
+            if (!msg.startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " + ChatFormatting.RED + "not " + SF + "a command" + DF + ".");
             sendMsg("The message has been added to macro " + SF + macro + DF + " with an index of " + SF + (macros.get(macro).size()-1) + DF + ".");
             return macros.get(macro).size();
         }

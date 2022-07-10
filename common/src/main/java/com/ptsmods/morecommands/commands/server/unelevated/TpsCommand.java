@@ -5,13 +5,13 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.RollingAverage;
 import com.ptsmods.morecommands.util.TickStatistics;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
 
 public class TpsCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
         if (MoreCommandsArch.isFabricModLoaded("spark")) return; // Spark Profiler is a great mod and we will not be overriding their command.
 
         TickStatistics tickStatistics = new TickStatistics();
@@ -24,9 +24,9 @@ public class TpsCommand extends Command {
             sendMsg(ctx, literalText("")
                     .append(literalText("Also have a look at ", DS))
                     .append(literalText("Spark ")
-                            .formatted(Formatting.DARK_GRAY, Formatting.UNDERLINE))
+                            .formatted(ChatFormatting.DARK_GRAY, ChatFormatting.UNDERLINE))
                     .append(literalText("\u26A1")
-                            .formatted(Formatting.YELLOW, Formatting.UNDERLINE, Formatting.BOLD))
+                            .formatted(ChatFormatting.YELLOW, ChatFormatting.UNDERLINE, ChatFormatting.BOLD))
                     .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://spark.lucko.me"))));
             return 1;
         }));

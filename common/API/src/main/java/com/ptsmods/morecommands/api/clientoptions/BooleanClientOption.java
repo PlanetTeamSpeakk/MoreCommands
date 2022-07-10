@@ -2,10 +2,9 @@ package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-
 import java.util.function.BiConsumer;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 public class BooleanClientOption extends ClientOption<Boolean> {
     public BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue) {
@@ -36,7 +35,7 @@ public class BooleanClientOption extends ClientOption<Boolean> {
 
     @Override
     public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        return new ButtonWidget(x, y, 150, 20, createButtonText(name), btn -> {
+        return new Button(x, y, 150, 20, createButtonText(name), btn -> {
             setValue(!getValueRaw());
             btn.setMessage(createButtonText(name));
             init.run();
@@ -45,7 +44,7 @@ public class BooleanClientOption extends ClientOption<Boolean> {
     }
 
     @Override
-    public Text createButtonText(String name) {
+    public Component createButtonText(String name) {
         return LiteralTextBuilder.literal(name + " : " + Util.formatFromBool(getValueRaw()) + String.valueOf(getValueRaw()).toUpperCase());
     }
 }

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.api;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,9 +16,9 @@ public interface IMoreCommands {
         return Holder.getMoreCommands();
     }
 
-    Formatting getDefaultFormatting();
+    ChatFormatting getDefaultFormatting();
 
-    Formatting getSecondaryFormatting();
+    ChatFormatting getSecondaryFormatting();
 
     boolean isServerOnly();
 
@@ -26,7 +26,7 @@ public interface IMoreCommands {
 
     Path getConfigDirectory();
 
-    String textToString(Text text, Style parentStyle, boolean includeFormattings);
+    String textToString(Component text, Style parentStyle, boolean includeFormattings);
 
     void setCreatingWorld(boolean creatingWorld);
 

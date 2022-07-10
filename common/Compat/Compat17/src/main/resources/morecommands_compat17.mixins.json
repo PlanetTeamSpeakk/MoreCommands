@@ -16,7 +16,8 @@
     "plus.MixinHopperBlockEntity",
     "plus.MixinHopperBlockEntityAccessor",
     "plus.MixinScreenHandler",
-    "plus.MixinServerPlayerEntity"
+    "plus.MixinServerPlayerEntity",
+    "plus.MixinServerPlayNetworkHandler"
   ],
   "injectors": {
     "defaultRequire": 1

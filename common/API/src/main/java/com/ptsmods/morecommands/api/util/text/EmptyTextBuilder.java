@@ -3,8 +3,8 @@ package com.ptsmods.morecommands.api.util.text;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public interface EmptyTextBuilder extends TextBuilder<EmptyTextBuilder> {
 
@@ -16,11 +16,11 @@ public interface EmptyTextBuilder extends TextBuilder<EmptyTextBuilder> {
         return new EmptyTextBuilderImpl(style);
     }
 
-    static MutableText empty() {
+    static MutableComponent empty() {
         return builder().build();
     }
 
-    static MutableText empty(Style style) {
+    static MutableComponent empty(Style style) {
         return builder(style).build();
     }
 
@@ -32,7 +32,7 @@ public interface EmptyTextBuilder extends TextBuilder<EmptyTextBuilder> {
         }
 
         @Override
-        public MutableText build() {
+        public MutableComponent build() {
             return Compat.get().buildText(this);
         }
 

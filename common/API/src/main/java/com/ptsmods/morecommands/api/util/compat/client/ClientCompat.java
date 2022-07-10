@@ -1,25 +1,24 @@
 package com.ptsmods.morecommands.api.util.compat.client;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ptsmods.morecommands.api.Holder;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.option.ChatVisibility;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.Packet;
-import net.minecraft.network.listener.ServerPlayPacketListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
+import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerGamePacketListener;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.ChatVisiblity;
+import net.minecraft.world.phys.BlockHitResult;
 
 public interface ClientCompat {
 
@@ -30,21 +29,21 @@ public interface ClientCompat {
 
     void bufferBuilderBegin(BufferBuilder builder, int drawMode, VertexFormat format);
 
-    int getFrameCount(Sprite sprite);
+    int getFrameCount(TextureAtlasSprite sprite);
 
-    void bindTexture(Identifier id);
+    void bindTexture(ResourceLocation id);
 
-    ChatVisibility getChatVisibility(GameOptions options);
+    ChatVisiblity getChatVisibility(Options options);
 
-    double getChatLineSpacing(GameOptions options);
+    double getChatLineSpacing(Options options);
 
-    ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit);
+    InteractionResult interactBlock(MultiPlayerGameMode interactionManager, LocalPlayer player, ClientLevel world, InteractionHand hand, BlockHitResult hit);
 
-    InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException;
+    InputStream getResourceStream(ResourceManager manager, ResourceLocation id) throws IOException;
 
-    double getGamma(GameOptions options);
+    double getGamma(Options options);
 
-    Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat);
+    Packet<ServerGamePacketListener> newChatMessagePacket(LocalPlayer player, String message, boolean forceChat);
 
     void registerChatProcessListener(Function<String, String> listener);
 

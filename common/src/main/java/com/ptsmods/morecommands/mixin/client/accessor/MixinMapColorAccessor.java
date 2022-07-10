@@ -1,14 +1,14 @@
 package com.ptsmods.morecommands.mixin.client.accessor;
 
-import net.minecraft.block.MapColor;
+import net.minecraft.world.level.material.MaterialColor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(MapColor.class)
+@Mixin(MaterialColor.class)
 public interface MixinMapColorAccessor {
 
-    @Accessor("COLORS")
-    static MapColor[] getColors() {
+    @Accessor("MATERIAL_COLORS")
+    static MaterialColor[] getMaterialColors() {
         throw new AssertionError("This shouldn't happen!");
     }
 }

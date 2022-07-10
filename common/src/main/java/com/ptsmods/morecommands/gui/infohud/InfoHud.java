@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.gui.infohud;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsArch;
@@ -12,18 +13,17 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.gui.infohud.variables.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinMinecraftClientAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.LightType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.Registry;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import java.awt.*;
 import java.io.*;
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.StreamSupport;
 
-public class InfoHud extends DrawableHelper {
+public class InfoHud extends GuiComponent {
     public static final InfoHud INSTANCE = new InfoHud();
     private static final File file = MoreCommandsArch.getConfigDirectory().resolve("infoHud.txt").toFile();
     private static final Pattern varPattern = Pattern.compile("var\\s(?<key>[A-Za-z]*?)\\s*?=\\s*(?<value>\".*\"|\\S*)");
@@ -47,9 +47,9 @@ public class InfoHud extends DrawableHelper {
     private static final Map<String, Function<KeyContext, Object>> keys;
     private static final Map<String, Variable<?>> variables = new HashMap<>();
     private static final Map<String, Object> variableValues = new HashMap<>();
-    private static final MinecraftClient client = MinecraftClient.getInstance();
+    private static final Minecraft client = Minecraft.getInstance();
     private static final List<String> lines = new ArrayList<>();
-    private static List<Pair<Integer, String>> parsedLines = Collections.emptyList();
+    private static List<Tuple<Integer, String>> parsedLines = Collections.emptyList();
     private static HitResult result;
     private static long lastRead = 0;
     private static int width = 0, height = 0;
@@ -75,16 +75,16 @@ public class InfoHud extends DrawableHelper {
             }
 
             for (int i = 0; i < parsedLines.size(); i++) {
-                Pair<Integer, String> line = parsedLines.get(i);
-                if (line.getLeft() == 0) continue;
-                boolean topPadding = i == 0 || parsedLines.get(i - 1).getLeft() == 0; // First line or above line is empty.
+                Tuple<Integer, String> line = parsedLines.get(i);
+                if (line.getA() == 0) continue;
+                boolean topPadding = i == 0 || parsedLines.get(i - 1).getA() == 0; // First line or above line is empty.
 
-                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.getLeft() + 2, (i + 1) * 10, c);
+                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.getA() + 2, (i + 1) * 10, c);
                 if (topPadding) continue;
 
-                int prevWidth = parsedLines.get(i - 1).getLeft();
-                if (prevWidth < line.getLeft())
-                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.getLeft() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
+                int prevWidth = parsedLines.get(i - 1).getA();
+                if (prevWidth < line.getA())
+                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.getA() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
             }
         }));
 
@@ -100,50 +100,50 @@ public class InfoHud extends DrawableHelper {
         keysBuilder.put("DF", ctx -> MoreCommands.DF);
         keysBuilder.put("SF", ctx -> MoreCommands.SF);
         keysBuilder.put("playerName", ctx -> IMoreCommands.get().textToString(ctx.getPlayer().getName(), null, true));
-        keysBuilder.put("x", ctx -> MoreCommands.formatDouble(ctx.getPlayer().getPos().getX(), decimals));
-        keysBuilder.put("y", ctx -> MoreCommands.formatDouble(ctx.getPlayer().getPos().getY(), decimals));
-        keysBuilder.put("z", ctx -> MoreCommands.formatDouble(ctx.getPlayer().getPos().getZ(), decimals));
-        keysBuilder.put("chunkX", ctx -> (ctx.getPlayer().getBlockPos().getX()) >> 4);
-        keysBuilder.put("chunkY", ctx -> (ctx.getPlayer().getBlockPos().getY()) >> 4);
-        keysBuilder.put("chunkZ", ctx -> (ctx.getPlayer().getBlockPos().getZ()) >> 4);
-        keysBuilder.put("yaw", ctx -> MoreCommands.formatDouble(MathHelper.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYaw_()), decimals));
-        keysBuilder.put("pitch", ctx -> MoreCommands.formatDouble(MathHelper.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getPitch_()), decimals));
-        keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().getRegistryManager(), Registry.BIOME_KEY)
-                .getId(Compat.get().getBiome(ctx.getWorld(), ctx.getPlayer().getBlockPos()))));
-        keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelProperties().getDifficulty().name());
+        keysBuilder.put("x", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().x(), decimals));
+        keysBuilder.put("y", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().y(), decimals));
+        keysBuilder.put("z", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().z(), decimals));
+        keysBuilder.put("chunkX", ctx -> (ctx.getPlayer().blockPosition().getX()) >> 4);
+        keysBuilder.put("chunkY", ctx -> (ctx.getPlayer().blockPosition().getY()) >> 4);
+        keysBuilder.put("chunkZ", ctx -> (ctx.getPlayer().blockPosition().getZ()) >> 4);
+        keysBuilder.put("yaw", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), decimals));
+        keysBuilder.put("pitch", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getXRot_()), decimals));
+        keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().registryAccess(), Registry.BIOME_REGISTRY)
+                .getKey(Compat.get().getBiome(ctx.getWorld(), ctx.getPlayer().blockPosition()))));
+        keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelData().getDifficulty().name());
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("avgSpeed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed(), decimals) + " blocks/sec");
-        keysBuilder.put("toggleKey", ctx -> IMoreCommands.get().textToString(MoreCommandsClient.toggleInfoHudBinding.getBoundKeyLocalizedText(), null, true));
+        keysBuilder.put("toggleKey", ctx -> IMoreCommands.get().textToString(MoreCommandsClient.toggleInfoHudBinding.getTranslatedKeyMessage(), null, true));
         keysBuilder.put("configFile", ctx -> file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
-        keysBuilder.put("facing", ctx -> MoreCommands.getLookDirection(MathHelper.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYaw_()), ((MixinEntityAccessor) ctx.getPlayer()).getPitch_()));
-        keysBuilder.put("time", ctx -> MoreCommands.parseTime(ctx.getWorld().getTime() % 24000L, false));
-        keysBuilder.put("time12", ctx -> MoreCommands.parseTime(ctx.getWorld().getTime() % 24000L, true));
-        keysBuilder.put("UUID", ctx -> ctx.getPlayer().getUuidAsString());
-        keysBuilder.put("holding", ctx -> I18n.translate(ctx.getPlayer().getMainHandStack().getItem().getTranslationKey()));
+        keysBuilder.put("facing", ctx -> MoreCommands.getLookDirection(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), ((MixinEntityAccessor) ctx.getPlayer()).getXRot_()));
+        keysBuilder.put("time", ctx -> MoreCommands.parseTime(ctx.getWorld().getGameTime() % 24000L, false));
+        keysBuilder.put("time12", ctx -> MoreCommands.parseTime(ctx.getWorld().getGameTime() % 24000L, true));
+        keysBuilder.put("UUID", ctx -> ctx.getPlayer().getStringUUID());
+        keysBuilder.put("holding", ctx -> I18n.get(ctx.getPlayer().getMainHandItem().getItem().getDescriptionId()));
         keysBuilder.put("xp", ctx -> ctx.getPlayer().totalExperience);
         keysBuilder.put("xpLevel", ctx -> ctx.getPlayer().experienceLevel);
-        keysBuilder.put("gamemode", ctx -> ctx.getInteractionManager().getCurrentGameMode().name());
-        keysBuilder.put("fps", ctx -> MixinMinecraftClientAccessor.getCurrentFps());
-        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkManager().getLightingProvider().get(LightType.BLOCK).getLightLevel(ctx.getPlayer().getBlockPos()));
-        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkManager().getLightingProvider().get(LightType.SKY).getLightLevel(ctx.getPlayer().getBlockPos()));
-        keysBuilder.put("lookingAtX", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getX(), eHit -> eHit.getPos().getX()));
-        keysBuilder.put("lookingAtY", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getY(), eHit -> eHit.getPos().getY()));
-        keysBuilder.put("lookingAtZ", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getZ(), eHit -> eHit.getPos().getZ()));
+        keysBuilder.put("gamemode", ctx -> ctx.getInteractionManager().getPlayerMode().name());
+        keysBuilder.put("fps", ctx -> MixinMinecraftClientAccessor.getFps());
+        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(ctx.getPlayer().blockPosition()));
+        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(ctx.getPlayer().blockPosition()));
+        keysBuilder.put("lookingAtX", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getX(), eHit -> eHit.getLocation().x()));
+        keysBuilder.put("lookingAtY", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getY(), eHit -> eHit.getLocation().y()));
+        keysBuilder.put("lookingAtZ", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getZ(), eHit -> eHit.getLocation().z()));
         keysBuilder.put("lookingAt", ctx -> IMoreCommands.get().textToString(ctx.getHit().map(bHit -> MoreObjects.firstNonNull(ctx.getWorld()
-                .getBlockState(bHit.getBlockPos()).getBlock().getPickStack(ctx.getWorld(), bHit.getBlockPos(), ctx.getWorld().getBlockState(bHit.getBlockPos())), ItemStack.EMPTY).getName(),
+                .getBlockState(bHit.getBlockPos()).getBlock().getCloneItemStack(ctx.getWorld(), bHit.getBlockPos(), ctx.getWorld().getBlockState(bHit.getBlockPos())), ItemStack.EMPTY).getHoverName(),
                 eHit -> eHit.getEntity().getName()), null, true));
-        keysBuilder.put("lookingAtSide", ctx -> ctx.getHit().map(bHit -> bHit.getSide().getName(), eHit -> "none"));
-        keysBuilder.put("language", ctx -> ctx.getClient().options.language);
-        keysBuilder.put("lookingVecX", ctx -> result.getPos().getX());
-        keysBuilder.put("lookingVecY", ctx -> result.getPos().getY());
-        keysBuilder.put("lookingVecZ", ctx -> result.getPos().getZ());
-        keysBuilder.put("entities", ctx -> StreamSupport.stream(ctx.getWorld().getEntities().spliterator(), false).count());
+        keysBuilder.put("lookingAtSide", ctx -> ctx.getHit().map(bHit -> bHit.getDirection().getName(), eHit -> "none"));
+        keysBuilder.put("language", ctx -> ctx.getClient().options.languageCode);
+        keysBuilder.put("lookingVecX", ctx -> result.getLocation().x());
+        keysBuilder.put("lookingVecY", ctx -> result.getLocation().y());
+        keysBuilder.put("lookingVecZ", ctx -> result.getLocation().z());
+        keysBuilder.put("entities", ctx -> StreamSupport.stream(ctx.getWorld().entitiesForRendering().spliterator(), false).count());
 
         return keysBuilder.buildOrThrow();
     }
 
-    public void render(MatrixStack matrices) {
-        matrices.push();
+    public void render(PoseStack matrices) {
+        matrices.pushPose();
 
         result = MoreCommands.getRayTraceTarget(client.player, 160f, false, true);
         if (System.currentTimeMillis() - lastRead >= 500) try {
@@ -156,7 +156,7 @@ public class InfoHud extends DrawableHelper {
 
         parsedLines = parseLines();
         width = parsedLines.stream()
-                .mapToInt(Pair::getLeft)
+                .mapToInt(Tuple::getA)
                 .max()
                 .orElse(0);
         height = parsedLines.size() * 10;
@@ -168,14 +168,14 @@ public class InfoHud extends DrawableHelper {
         });
 
         int row = 0;
-        for (Pair<Integer, String> line : parsedLines)
-            drawString(matrices, line.getRight(), row++);
+        for (Tuple<Integer, String> line : parsedLines)
+            drawString(matrices, line.getB(), row++);
 
-        matrices.pop();
+        matrices.popPose();
     }
 
-    private void drawString(MatrixStack matrices, String s, int row) {
-        client.textRenderer.drawWithShadow(matrices, LiteralTextBuilder.literal(s), 0, row * 10, 0xFFFFFF);
+    private void drawString(PoseStack matrices, String s, int row) {
+        client.font.drawShadow(matrices, LiteralTextBuilder.literal(s), 0, row * 10, 0xFFFFFF);
     }
 
     private void setupDefaultLines() {
@@ -217,10 +217,10 @@ public class InfoHud extends DrawableHelper {
         }
     }
 
-    private List<Pair<Integer, String>> parseLines() {
+    private List<Tuple<Integer, String>> parseLines() {
         variableValues.clear();
 
-        List<Pair<Integer, String>> output = new ArrayList<>();
+        List<Tuple<Integer, String>> output = new ArrayList<>();
         for (String line : lines) {
             Matcher varMatcher = varPattern.matcher(line);
             if (varMatcher.matches()) {
@@ -248,7 +248,7 @@ public class InfoHud extends DrawableHelper {
 
                 String parsedLine = s.toString();
                 line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // Handling comments in the config, this should be exactly the same as how
-                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(new Pair<>(client.textRenderer.getWidth(line), line)); // normal, non-multiline Java comments work.
+                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(new Tuple<>(client.font.width(line), line)); // normal, non-multiline Java comments work.
             }
         }
         return output;
@@ -260,8 +260,8 @@ public class InfoHud extends DrawableHelper {
 
         BlockHitResult bHit = result instanceof BlockHitResult ? (BlockHitResult) result : null;
         EntityHitResult eHit = result instanceof EntityHitResult ? (EntityHitResult) result : null;
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.player == null || mc.world == null || bHit == null && eHit == null) return output;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || bHit == null && eHit == null) return output;
 
         KeyContext ctx = new KeyContext(mc, bHit != null ? Either.left(bHit) : Either.right(eHit));
         try {

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.api.addons;
 
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.components.Button;
 
 public interface CreativeInventoryScreenAddon {
-    ButtonWidget mc$getPagerPrev();
+    Button mc$getPagerPrev();
 
-    ButtonWidget mc$getPagerNext();
+    Button mc$getPagerNext();
 }

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(LivingEntity.class)
 public class MixinLivingEntityOriginsCompat {
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity; updateVelocity(FLnet/minecraft/util/math/Vec3d;)V"), method = "travel(Lnet/minecraft/util/math/Vec3d;)V")
-    private void travel_updateVelocity(LivingEntity thiz, float speed, Vec3d movementInput) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;moveRelative(FLnet/minecraft/world/phys/Vec3;)V"), method = "travel")
+    private void travel_updateVelocity(LivingEntity thiz, float speed, Vec3 movementInput) {
         // Applying swim speed
-        thiz.updateVelocity(speed * (thiz instanceof PlayerEntity ? (float) thiz.getAttributeValue(SpeedCommand.SpeedType.swimSpeedAttribute) : 1f), movementInput);
+        thiz.moveRelative(speed * (thiz instanceof Player ? (float) thiz.getAttributeValue(SpeedCommand.SpeedType.swimSpeedAttribute) : 1f), movementInput);
     }
 }

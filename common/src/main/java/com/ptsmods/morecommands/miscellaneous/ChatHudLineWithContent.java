@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessage;
 
-public class ChatHudLineWithContent<T> extends ChatHudLine<T> {
+public class ChatHudLineWithContent<T> extends GuiMessage<T> {
 
     private String content = null;
     private String contentStripped = null;
@@ -15,7 +15,7 @@ public class ChatHudLineWithContent<T> extends ChatHudLine<T> {
 
     public void setContent(String content) {
         this.content = content;
-        contentStripped = Formatting.strip(content).toLowerCase();
+        contentStripped = ChatFormatting.stripFormatting(content).toLowerCase();
     }
 
     public String getContent() {

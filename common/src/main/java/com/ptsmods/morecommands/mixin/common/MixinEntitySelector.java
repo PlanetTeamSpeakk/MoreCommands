@@ -7,12 +7,12 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.addons.EntitySelectorAddon;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,31 +37,31 @@ public class MixinEntitySelector implements EntitySelectorAddon {
         this.targetOnly = targetOnly;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/command/EntitySelector;isLocalWorldOnly()Z"), method = "getEntities(Lnet/minecraft/server/command/ServerCommandSource;)Ljava/util/List;", cancellable = true)
-    public void getEntities(ServerCommandSource source, CallbackInfoReturnable<List<? extends Entity>> cbi) throws CommandSyntaxException {
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelector;isWorldLimited()Z"), method = "findEntities", cancellable = true)
+    public void getEntities(CommandSourceStack source, CallbackInfoReturnable<List<? extends Entity>> cbi) throws CommandSyntaxException {
         if (!targetOnly) return;
 
         cbi.setReturnValue(Lists.newArrayList(getTarget(source, false)));
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/command/EntitySelector;isLocalWorldOnly()Z"), method = "getPlayers", cancellable = true)
-    public void getPlayers(ServerCommandSource source, CallbackInfoReturnable<List<ServerPlayerEntity>> cbi) throws CommandSyntaxException {
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelector;isWorldLimited()Z"), method = "findPlayers", cancellable = true)
+    public void getPlayers(CommandSourceStack source, CallbackInfoReturnable<List<ServerPlayer>> cbi) throws CommandSyntaxException {
         if (!targetOnly) return;
 
-        cbi.setReturnValue(Lists.newArrayList((ServerPlayerEntity) getTarget(source, true)));
+        cbi.setReturnValue(Lists.newArrayList((ServerPlayer) getTarget(source, true)));
     }
 
-    private @Unique Entity getTarget(ServerCommandSource source, boolean playerOnly) throws CommandSyntaxException {
+    private @Unique Entity getTarget(CommandSourceStack source, boolean playerOnly) throws CommandSyntaxException {
         Entity target;
-        if (IMoreCommands.get().isServerOnly() || !(source.getEntityOrThrow() instanceof PlayerEntity)) {
-            EntityHitResult hit = MoreCommands.getEntityRayTraceTarget(source.getEntityOrThrow(), 160);
+        if (IMoreCommands.get().isServerOnly() || !(source.getEntityOrException() instanceof Player)) {
+            EntityHitResult hit = MoreCommands.getEntityRayTraceTarget(source.getEntityOrException(), 160);
 
             if (hit == null) throw NO_TARGET.create();
             target = hit.getEntity();
-        } else target = MoreCommands.getTargetedEntity(source.getPlayerOrThrow());
+        } else target = MoreCommands.getTargetedEntity(source.getPlayerOrException());
 
         if (target == null) throw NO_TARGET.create();
-        if (playerOnly && !(target instanceof ServerPlayerEntity)) throw NO_PLAYER_TARGET.create();
+        if (playerOnly && !(target instanceof ServerPlayer)) throw NO_PLAYER_TARGET.create();
 
         return target;
     }

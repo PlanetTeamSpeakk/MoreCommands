@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.mixin.compat.compat18.min;
 import com.ptsmods.morecommands.api.clientoptions.BooleanClientOption;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
-import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;

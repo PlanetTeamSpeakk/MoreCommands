@@ -3,21 +3,21 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class HatCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("hat")
                 .executes(ctx -> {
-                    PlayerEntity player = ctx.getSource().getPlayerOrThrow();
-                    ItemStack stack = player.getEquippedStack(EquipmentSlot.HEAD);
-                    Compat.get().getInventory(player).armor.set(EquipmentSlot.HEAD.getEntitySlotId(), player.getMainHandStack());
-                    if (PlayerInventory.isValidHotbarIndex(Compat.get().getInventory(player).selectedSlot)) Compat.get().getInventory(player).main.set(Compat.get().getInventory(player).selectedSlot, stack);
+                    Player player = ctx.getSource().getPlayerOrException();
+                    ItemStack stack = player.getItemBySlot(EquipmentSlot.HEAD);
+                    Compat.get().getInventory(player).armor.set(EquipmentSlot.HEAD.getIndex(), player.getMainHandItem());
+                    if (Inventory.isHotbarSlot(Compat.get().getInventory(player).selected)) Compat.get().getInventory(player).items.set(Compat.get().getInventory(player).selected, stack);
                     return 1;
                 }));
     }

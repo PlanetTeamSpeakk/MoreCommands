@@ -3,22 +3,22 @@ package com.ptsmods.morecommands.api.miscellaneous;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
 
 @ExtensionMethod(ObjectExtensions.class)
 public enum FormattingColour {
     BLACK, DARK_BLUE, DARK_GREEN, DARK_AQUA, DARK_RED, DARK_PURPLE, GOLD, GRAY, DARK_GRAY, BLUE, GREEN, AQUA, RED, LIGHT_PURPLE, YELLOW, WHITE, RAINBOW;
 
     @Getter(lazy = true)
-    private static final Formatting rainbow = getRainbowLazy();
+    private static final ChatFormatting rainbow = getRainbowLazy();
 
-    public Formatting asFormatting() {
-        return this == RAINBOW ? getRainbow().or(Formatting.WHITE) : Formatting.values()[ordinal()];
+    public ChatFormatting asFormatting() {
+        return this == RAINBOW ? getRainbow().or(ChatFormatting.WHITE) : ChatFormatting.values()[ordinal()];
     }
 
-    private static Formatting getRainbowLazy() {
+    private static ChatFormatting getRainbowLazy() {
         try {
-            return Formatting.valueOf("RAINBOW");
+            return ChatFormatting.valueOf("RAINBOW");
         } catch (Exception e) {
             return null;
         }

@@ -3,10 +3,9 @@ package com.ptsmods.morecommands.api.util.text;
 import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.function.UnaryOperator;
 // changing any bytecode method call made to it. So we use a builder instead.
 public interface TextBuilder<T extends TextBuilder<T>> {
 
-    MutableText build();
+    MutableComponent build();
 
     Style getStyle();
 
@@ -28,8 +27,8 @@ public interface TextBuilder<T extends TextBuilder<T>> {
         return withStyle(operator.apply(getStyle()));
     }
 
-    default T formatted(Formatting... formattings) {
-        return withStyle(style -> style.withFormatting(formattings));
+    default T formatted(ChatFormatting... formattings) {
+        return withStyle(style -> style.applyFormats(formattings));
     }
 
     T append(TextBuilder<?> text);

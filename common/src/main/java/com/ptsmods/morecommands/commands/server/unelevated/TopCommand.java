@@ -3,14 +3,14 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public class TopCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("top")
                 .executes(ctx -> {
-                    ctx.getSource().getEntityOrThrow().teleport(ctx.getSource().getPosition().x, MoreCommands.getY(ctx.getSource().getWorld(),
+                    ctx.getSource().getEntityOrException().teleportToWithTicket(ctx.getSource().getPosition().x, MoreCommands.getY(ctx.getSource().getLevel(),
                             (int) ctx.getSource().getPosition().x, (int) ctx.getSource().getPosition().z), ctx.getSource().getPosition().z);
                     sendMsg(ctx, "You have been teleported through the roof.");
                     return 1;

@@ -6,19 +6,18 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
-
 import java.util.Objects;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class CannonCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("cannon")
                 .executes(ctx -> fire(ctx.getSource(), 4, 1.5F, 80))
                 .then(argument("power", FloatArgumentType.floatArg(0F))
@@ -34,38 +33,38 @@ public class CannonCommand extends Command {
         return "/elevated/cannon";
     }
 
-    private int fire(ServerCommandSource source, float power, float motionMultiplier, int fuse) throws CommandSyntaxException {
-        return fire(source.getWorld(), source.getEntityOrThrow().getPos().add(0, Objects.requireNonNull(source.getEntity()).getEyeHeight(source.getEntity().getPose()), 0),
-                source.getEntity().getRotationVec(1F), power, motionMultiplier, fuse);
+    private int fire(CommandSourceStack source, float power, float motionMultiplier, int fuse) throws CommandSyntaxException {
+        return fire(source.getLevel(), source.getEntityOrException().position().add(0, Objects.requireNonNull(source.getEntity()).getEyeHeight(source.getEntity().getPose()), 0),
+                source.getEntity().getViewVector(1F), power, motionMultiplier, fuse);
     }
 
-    private int fire(World world, Vec3d pos, Vec3d rotation, float power, float motionMultiplier, int fuse) {
-        TntEntity tnt = new TntEntity(world, pos.x, pos.y, pos.z, null) {
+    private int fire(Level world, Vec3 pos, Vec3 rotation, float power, float motionMultiplier, int fuse) {
+        PrimedTnt tnt = new PrimedTnt(world, pos.x, pos.y, pos.z, null) {
             private int fuseTimer = fuse;
 
             @Override
             public void tick() {
-                if (!this.hasNoGravity())
-                    this.setVelocity(this.getVelocity().add(0.0D, -0.04D, 0.0D));
+                if (!this.isNoGravity())
+                    this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
 
-                this.move(MovementType.SELF, this.getVelocity());
-                this.setVelocity(this.getVelocity().multiply(0.98D));
-                if (this.onGround) this.setVelocity(this.getVelocity().multiply(0.7D, -0.5D, 0.7D));
+                this.move(MoverType.SELF, this.getDeltaMovement());
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.98D));
+                if (this.onGround) this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D, -0.5D, 0.7D));
 
                 --this.fuseTimer;
                 if (this.fuseTimer <= 0) {
                     Compat.get().setRemoved(this, 0);
-                    if (!world.isClient)
-                        world.createExplosion(this, this.getX(), this.getBodyY(0.0625D), this.getZ(), power, Explosion.DestructionType.BREAK);
+                    if (!level.isClientSide)
+                        level.explode(this, this.getX(), this.getY(0.0625D), this.getZ(), power, Explosion.BlockInteraction.BREAK);
                 } else {
-                    this.updateWaterState();
-                    if (world.isClient)
-                        world.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
+                    this.updateInWaterStateAndDoFluidPushing();
+                    if (level.isClientSide)
+                        level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
                 }
             }
         };
-        tnt.setVelocity(rotation.multiply(motionMultiplier));
-        world.spawnEntity(tnt);
+        tnt.setDeltaMovement(rotation.scale(motionMultiplier));
+        world.addFreshEntity(tnt);
         return (int) power;
     }
 

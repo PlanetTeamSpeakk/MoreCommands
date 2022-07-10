@@ -6,10 +6,10 @@ import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import net.minecraft.client.gui.screen.ingame.SignEditScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.SelectionManager;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.font.TextFieldHelper;
+import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,21 +25,21 @@ import java.util.Objects;
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
     private @Unique boolean translateFormattings = false;
-    private ButtonWidget mc_btn = null;
+    private Button mc_btn = null;
     private @Unique static boolean colourPickerOpen = false;
-    @Shadow private SelectionManager selectionManager;
+    @Shadow private TextFieldHelper signField;
     private @Unique String lastContent;
     private @Unique String lastContentTranslated;
 
-    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;getWidth(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
+    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
     private String init_getWidth_s(String s) {
-        return ClientOptions.Tweaks.noSignLimit.getValue() ? Formatting.strip(Util.translateFormats(s)) : s; // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
+        return ClientOptions.Tweaks.noSignLimit.getValue() ? ChatFormatting.stripFormatting(Util.translateFormats(s)) : s; // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
     }
 
     @Inject(at = @At("RETURN"), method = "init()V")
     private void init(CallbackInfo cbi) {
         SignEditScreen thiz = ReflectionHelper.cast(this);
-        ((ScreenAddon) thiz).mc$addButton(mc_btn = new ButtonWidget(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, LiteralTextBuilder.literal("Translate formattings: " + Formatting.RED + "OFF"), btn -> {
+        ((ScreenAddon) thiz).mc$addButton(mc_btn = new Button(thiz.width/2 - 150/2, thiz.height/4 + 145, 150, 20, LiteralTextBuilder.literal("Translate formattings: " + ChatFormatting.RED + "OFF"), btn -> {
             translateFormattings = !translateFormattings;
             mc_updateBtn();
         }) {
@@ -47,14 +47,14 @@ public class MixinSignEditScreen {
                 return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
             }
         });
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, selectionManager::insert, b -> colourPickerOpen = b);
+        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, signField::insertText, b -> colourPickerOpen = b);
     }
 
     private void mc_updateBtn() {
-        mc_btn.setMessage(LiteralTextBuilder.literal("Translate formattings: " + Util.formatFromBool(translateFormattings, Formatting.GREEN + "ON", Formatting.RED + "OFF")));
+        mc_btn.setMessage(LiteralTextBuilder.literal("Translate formattings: " + Util.formatFromBool(translateFormattings, ChatFormatting.GREEN + "ON", ChatFormatting.RED + "OFF")));
     }
 
-    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V")
+    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "render")
     private String render_string2(String string2) {
         if (translateFormattings && !Objects.equals(lastContent, string2)) lastContentTranslated = Util.translateFormats(string2);
         lastContent = string2;

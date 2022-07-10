@@ -12,12 +12,11 @@ import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +29,15 @@ public class DisableClientOptionCommand extends Command {
     public void init(boolean serverOnly, MinecraftServer server) throws Exception {
         disabled.addAll(MoreCommands.readJson(MoreCommands.getRelativePath(server).resolve("disabledClientOptions.json").toFile()).or(new ArrayList<String>()));
         PlayerEvent.PLAYER_JOIN.register(player -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
-            disabled.forEach(buf::writeString);
-            NetworkManager.sendToPlayer(player, new Identifier("morecommands:disable_client_options"), isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf);
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
+            disabled.forEach(buf::writeUtf);
+            NetworkManager.sendToPlayer(player, new ResourceLocation("morecommands:disable_client_options"), isOp(player) ? new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(0) : buf);
         });
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        LiteralArgumentBuilder<ServerCommandSource> disableclientoption = literalReqOp("disableclientoption");
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
+        LiteralArgumentBuilder<CommandSourceStack> disableclientoption = literalReqOp("disableclientoption");
 
         ClientOption.getUnmappedOptions().values().stream()
                 .filter(clientOption -> clientOption instanceof BooleanClientOption)
@@ -55,11 +54,11 @@ public class DisableClientOptionCommand extends Command {
                                         log.error("Could not save the disabled client options data file.", e);
                                         return 0;
                                     }
-                                    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
-                                    disabled.forEach(buf::writeString);
-                                    ctx.getSource().getServer().getPlayerManager().getPlayerList().forEach(player -> NetworkManager.sendToPlayer(player, new Identifier("morecommands:disable_client_options"),
-                                            isOp(player) ? new PacketByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
-                                    sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + Util.formatFromBool(disabled.contains(option), Formatting.RED + "disabled", Formatting.GREEN + "enabled") +
+                                    FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(disabled.size());
+                                    disabled.forEach(buf::writeUtf);
+                                    ctx.getSource().getServer().getPlayerList().getPlayers().forEach(player -> NetworkManager.sendToPlayer(player, new ResourceLocation("morecommands:disable_client_options"),
+                                            isOp(player) ? new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(0) : buf));
+                                    sendMsg(ctx, "The clientoption " + SF + option + DF + " has been " + Util.formatFromBool(disabled.contains(option), ChatFormatting.RED + "disabled", ChatFormatting.GREEN + "enabled") +
                                             DF + " for all regular players.");
                                     return disabled.contains(option) ? 2 : 1;
                                 })));

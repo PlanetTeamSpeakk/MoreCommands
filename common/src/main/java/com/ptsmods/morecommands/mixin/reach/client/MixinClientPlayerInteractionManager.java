@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.mixin.reach.client;
 
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
 
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public class MixinClientPlayerInteractionManager {
-    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
-    @Inject(at = @At("RETURN"), method = "getReachDistance()F", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "getPickRange", cancellable = true)
     public void getReachDistance(CallbackInfoReturnable<Float> cbi) {
-        cbi.setReturnValue((float) ReachCommand.getReach(Objects.requireNonNull(client.player), false));
+        cbi.setReturnValue((float) ReachCommand.getReach(Objects.requireNonNull(minecraft.player), false));
     }
 }

@@ -8,15 +8,14 @@ import com.ptsmods.morecommands.api.callbacks.PlayerListEvent;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.util.Formatting;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.commands.arguments.EntityArgument;
 
 public class JoinNotifyCommand extends ClientCommand {
     private static final Map<String, String> players = new HashMap<>();
@@ -34,11 +33,11 @@ public class JoinNotifyCommand extends ClientCommand {
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("joinnotify")
-                .then(cArgument("player", EntityArgumentType.player())
+                .then(cArgument("player", EntityArgument.player())
                         .executes(ctx -> {
-                            PlayerListEntry player = getPlayer(ctx, "player");
+                            PlayerInfo player = getPlayer(ctx, "player");
                             String id = player.getProfile().getId().toString();
                             if (players.containsKey(id)) players.remove(id);
                             else players.put(id, player.getProfile().getName());
@@ -46,10 +45,10 @@ public class JoinNotifyCommand extends ClientCommand {
                                 MoreCommands.saveJson(f, players);
                             } catch (IOException e) {
                                 log.catching(e);
-                                sendMsg(Formatting.RED + "Could not save the joinnotify data file.");
+                                sendMsg(ChatFormatting.RED + "Could not save the joinnotify data file.");
                                 return 0;
                             }
-                            sendMsg("You will " + Util.formatFromBool(players.containsKey(id), Formatting.GREEN + "now ", Formatting.RED + "no longer ") +
+                            sendMsg("You will " + Util.formatFromBool(players.containsKey(id), ChatFormatting.GREEN + "now ", ChatFormatting.RED + "no longer ") +
                                     DF + "receive a notification when " + SF + player.getProfile().getName() + DF + " joins.");
                             return 1;
                         })));
@@ -60,7 +59,7 @@ public class JoinNotifyCommand extends ClientCommand {
         return "/join-notify";
     }
 
-    private void onCall(PlayerListEntry entry, boolean joined) {
+    private void onCall(PlayerInfo entry, boolean joined) {
         String id = entry == null || entry.getProfile() == null ? null : entry.getProfile().getId().toString();
         Map<String, String> nameMCFriends = MoreCommandsClient.getNameMCFriends();
         if (id != null && (players.containsKey(id) || ClientOptions.Tweaks.joinNotifyNameMC.getValue() && MoreCommandsClient.getNameMCFriends().containsKey(id))) {

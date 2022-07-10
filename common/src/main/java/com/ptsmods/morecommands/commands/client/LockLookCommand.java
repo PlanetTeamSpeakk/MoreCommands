@@ -8,31 +8,31 @@ import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class LockLookCommand extends ClientCommand {
     private Entity target = null;
     private boolean smooth = false;
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         RenderTickEvent.PRE.register(tick -> {
             if (target != null) {
                 if (Compat.get().isRemoved(target)) target = null;
                 else {
-                    Vec3d ctr = getPlayer().getPos();
-                    Vec3d pos = target.getPos();
-                    double dx = pos.getX() - ctr.getX();
-                    double dz = pos.getZ() - ctr.getZ();
-                    getPlayer().changeLookDirection(
-                            (clampAngle(((MixinEntityAccessor) getPlayer()).getYaw_(), (float) Math.toDegrees(-Math.atan2(pos.getX() - ctr.getX(), pos.getZ() - ctr.getZ())), false) - ((MixinEntityAccessor) getPlayer()).getYaw_()) / 0.15,
-                            (clampAngle(((MixinEntityAccessor) getPlayer()).getPitch_(), (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - ((MixinEntityAccessor) getPlayer()).getPitch_()) / 0.15);
+                    Vec3 ctr = getPlayer().position();
+                    Vec3 pos = target.position();
+                    double dx = pos.x() - ctr.x();
+                    double dz = pos.z() - ctr.z();
+                    getPlayer().turn(
+                            (clampAngle(((MixinEntityAccessor) getPlayer()).getYRot_(), (float) Math.toDegrees(-Math.atan2(pos.x() - ctr.x(), pos.z() - ctr.z())), false) - ((MixinEntityAccessor) getPlayer()).getYRot_()) / 0.15,
+                            (clampAngle(((MixinEntityAccessor) getPlayer()).getXRot_(), (float) -Math.toDegrees(Math.atan2(target.getEyeY() - getPlayer().getEyeY(), Math.sqrt(dx * dx + dz * dz))), true) - ((MixinEntityAccessor) getPlayer()).getXRot_()) / 0.15);
                 }
             }
         });
@@ -44,7 +44,7 @@ public class LockLookCommand extends ClientCommand {
                         target = ((EntityHitResult) hit).getEntity();
                         sendMsg("Your eyes have now been locked onto " + IMoreCommands.get().textToString(target.getDisplayName(), SS, true) + DF + ".");
                         return 1;
-                    } else if (target == null) sendMsg(Formatting.RED + "You're not looking at an entity.");
+                    } else if (target == null) sendMsg(ChatFormatting.RED + "You're not looking at an entity.");
                     else {
                         target = null;
                         sendMsg("Your eyes are now unlocked.");
@@ -53,7 +53,7 @@ public class LockLookCommand extends ClientCommand {
                 })
                 .then(cLiteral("smooth")
                         .executes(ctx -> {
-                            sendMsg("Looking will " + Util.formatFromBool(smooth = !smooth, Formatting.GREEN + "now", Formatting.RED + "no longer") + DF + " be done smoothly.");
+                            sendMsg("Looking will " + Util.formatFromBool(smooth = !smooth, ChatFormatting.GREEN + "now", ChatFormatting.RED + "no longer") + DF + " be done smoothly.");
                             return smooth ? 2 : 1;
                         })));
     }
@@ -64,6 +64,6 @@ public class LockLookCommand extends ClientCommand {
     }
 
     private float clampAngle(float from, float to, boolean isPitch) {
-        return smooth ? from + MathHelper.clamp(MathHelper.subtractAngles(from, to), isPitch ? -40 : -10, isPitch ? 40 : 10) : to;
+        return smooth ? from + Mth.clamp(Mth.degreesDifference(from, to), isPitch ? -40 : -10, isPitch ? 40 : 10) : to;
     }
 }

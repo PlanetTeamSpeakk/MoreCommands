@@ -9,13 +9,13 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,27 +23,27 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @ExtensionMethod(ObjectExtensions.class)
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class MixinPlayerEntity {
-    @Inject(at = @At("RETURN"), method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;", cancellable = true)
-    private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cbi) {
+    @Inject(at = @At("RETURN"), method = "createAttributes", cancellable = true)
+    private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cbi) {
         cbi.setReturnValue(cbi.getReturnValue().add(Holder.REACH_ATTRIBUTE).add(SpeedCommand.SpeedType.swimSpeedAttribute));
     }
 
-    @Inject(at = @At("RETURN"), method = "getName()Lnet/minecraft/text/Text;", cancellable = true)
-    public void getName(CallbackInfoReturnable<Text> cbi) {
+    @Inject(at = @At("RETURN"), method = "getName", cancellable = true)
+    public void getName(CallbackInfoReturnable<Component> cbi) {
         if (!MoreCommands.isCute(ReflectionHelper.cast(this))) return;
         TextBuilder<?> builder = Compat.get().builderFromText(cbi.getReturnValue());
-        cbi.setReturnValue(builder.withStyle(style -> style.withFormatting(Formatting.LIGHT_PURPLE)).build());
+        cbi.setReturnValue(builder.withStyle(style -> style.applyFormat(ChatFormatting.LIGHT_PURPLE)).build());
     }
 
-    @Inject(at = @At("HEAD"), method = "checkFallFlying()Z", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "tryToStartFallFlying", cancellable = true)
     public void checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {
-        if (ReflectionHelper.<PlayerEntity>cast(this).getEntityWorld().isClient && ClientOptions.Tweaks.disableElytra.getValue()) cbi.setReturnValue(false);
+        if (ReflectionHelper.<Player>cast(this).getCommandSenderWorld().isClientSide && ClientOptions.Tweaks.disableElytra.getValue()) cbi.setReturnValue(false);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Team; decorateName(Lnet/minecraft/scoreboard/AbstractTeam;Lnet/minecraft/text/Text;)Lnet/minecraft/text/MutableText;"), method = "getDisplayName()Lnet/minecraft/text/Text;")
-    public MutableText getDisplayName_modifyText(AbstractTeam team, Text name) {
-        return Team.decorateName(team, MoreCommands.getNickname(ReflectionHelper.cast(this)).or(name));
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/PlayerTeam;formatNameForTeam(Lnet/minecraft/world/scores/Team;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;"), method = "getDisplayName")
+    public MutableComponent getDisplayName_modifyText(Team team, Component name) {
+        return PlayerTeam.formatNameForTeam(team, MoreCommands.getNickname(ReflectionHelper.cast(this)).or(name));
     }
 }

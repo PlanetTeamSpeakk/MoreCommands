@@ -8,25 +8,25 @@ import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinArgumentTypesAccessor;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.block.enums.DoorHinge;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
@@ -40,35 +40,35 @@ public class MixinAccessWidenerImpl implements MixinAccessWidener {
     }
 
     @Override
-    public void serverPlayerEntity$setSyncedExperience(ServerPlayerEntity player, int experience) {
-        ((MixinServerPlayerEntityAccessor) player).setSyncedExperience(experience);
+    public void serverPlayerEntity$setSyncedExperience(ServerPlayer player, int experience) {
+        ((MixinServerPlayerEntityAccessor) player).setLastSentExp(experience);
     }
 
     @Override
-    public char serverPlayNetworkHandler$gameMsgCharAt(ServerPlayNetworkHandler thiz, String string, int index, ServerPlayerEntity player, MinecraftServer server) {
+    public char serverPlayNetworkHandler$gameMsgCharAt(ServerGamePacketListenerImpl thiz, String string, int index, ServerPlayer player, MinecraftServer server) {
         char ch = string.charAt(index);
-        if (!string.startsWith("/") && ch == '\u00A7' && (MoreGameRules.get().checkBooleanWithPerm(thiz.player.world.getGameRules(), MoreGameRules.get().doChatColoursRule(), thiz.player)
-                || player.hasPermissionLevel(server.getOpPermissionLevel()))) ch = '&';
+        if (!string.startsWith("/") && ch == '\u00A7' && (MoreGameRules.get().checkBooleanWithPerm(thiz.player.level.getGameRules(), MoreGameRules.get().doChatColoursRule(), thiz.player)
+                || player.hasPermissions(server.getOperatorUserPermissionLevel()))) ch = '&';
         return ch;
     }
 
     @Override
-    public Text[] signBlockEntity$getTexts(SignBlockEntity sbe) {
-        return ((MixinSignBlockEntityAccessor) sbe).getTexts();
+    public Component[] signBlockEntity$getTexts(SignBlockEntity sbe) {
+        return ((MixinSignBlockEntityAccessor) sbe).getMessages();
     }
 
     @Override
-    public void doMultiDoorInteract(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cbi) {
-        if (ClientOptions.Tweaks.openDoubleDoors.getValue() && interactionManager.getCurrentGameMode() != GameMode.SPECTATOR && cbi.getReturnValue().isAccepted() &&
-                Compat.get().tagContains(new Identifier("minecraft:wooden_doors"), world.getBlockState(hit.getBlockPos()).getBlock())) {
+    public void doMultiDoorInteract(MultiPlayerGameMode interactionManager, LocalPlayer player, ClientLevel world, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cbi) {
+        if (ClientOptions.Tweaks.openDoubleDoors.getValue() && interactionManager.getPlayerMode() != GameType.SPECTATOR && cbi.getReturnValue().consumesAction() &&
+                Compat.get().tagContains(new ResourceLocation("minecraft:wooden_doors"), world.getBlockState(hit.getBlockPos()).getBlock())) {
             if (ignoreInteract) {
                 ignoreInteract = false;
                 return;
             }
-            DoorHinge hinge = world.getBlockState(hit.getBlockPos()).get(DoorBlock.HINGE);
-            Direction facing = world.getBlockState(hit.getBlockPos()).get(DoorBlock.FACING);
-            BlockPos.Mutable other = hit.getBlockPos().mutableCopy();
-            Vec3d pos = hit.getPos();
+            DoorHingeSide hinge = world.getBlockState(hit.getBlockPos()).getValue(DoorBlock.HINGE);
+            Direction facing = world.getBlockState(hit.getBlockPos()).getValue(DoorBlock.FACING);
+            BlockPos.MutableBlockPos other = hit.getBlockPos().mutable();
+            Vec3 pos = hit.getLocation();
             switch (facing) {
                 case NORTH:
                     switch (hinge) {
@@ -121,11 +121,11 @@ public class MixinAccessWidenerImpl implements MixinAccessWidener {
             }
             BlockState state = world.getBlockState(hit.getBlockPos());
             BlockState state0 = world.getBlockState(other);
-            if (Compat.get().tagContains(new Identifier("minecraft:wooden_doors"), state0.getBlock()) && state0.get(DoorBlock.FACING) == state.get(DoorBlock.FACING) &&
-                    state0.get(DoorBlock.HINGE) != state.get(DoorBlock.HINGE) && state0.get(DoorBlock.OPEN) != state.get(DoorBlock.OPEN)) {
+            if (Compat.get().tagContains(new ResourceLocation("minecraft:wooden_doors"), state0.getBlock()) && state0.getValue(DoorBlock.FACING) == state.getValue(DoorBlock.FACING) &&
+                    state0.getValue(DoorBlock.HINGE) != state.getValue(DoorBlock.HINGE) && state0.getValue(DoorBlock.OPEN) != state.getValue(DoorBlock.OPEN)) {
                 // Open must not be equal cuz the other door already got opened at this stage.
                 ignoreInteract = true;
-                ClientCompat.get().interactBlock(interactionManager, player, world, hand, new BlockHitResult(pos, hit.getSide(), other, hit.isInsideBlock()));
+                ClientCompat.get().interactBlock(interactionManager, player, world, hand, new BlockHitResult(pos, hit.getDirection(), other, hit.isInside()));
             }
         }
     }

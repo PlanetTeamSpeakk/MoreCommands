@@ -16,15 +16,15 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.mysqlw.Database;
 import dev.architectury.event.events.common.TickEvent;
-import net.minecraft.entity.Entity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,22 +36,22 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class Command {
-    public static Formatting DF = MoreCommands.DF;
-    public static Formatting SF = MoreCommands.SF;
+    public static ChatFormatting DF = MoreCommands.DF;
+    public static ChatFormatting SF = MoreCommands.SF;
     public static Style DS = MoreCommands.DS;
     public static Style SS = MoreCommands.SS;
     public static final Logger log = MoreCommands.LOG;
-    public static final Predicate<ServerCommandSource> IS_OP = source -> source.hasPermissionLevel(source.getServer().getOpPermissionLevel());
+    public static final Predicate<CommandSourceStack> IS_OP = source -> source.hasPermission(source.getServer().getOperatorUserPermissionLevel());
     private static final Map<Class<?>, Command> activeInstances = new HashMap<>();
-    private static final List<Pair<Consumer<MinecraftServer>, AtomicInteger>> scheduledTasks = new ArrayList<>();
+    private static final List<Tuple<Consumer<MinecraftServer>, AtomicInteger>> scheduledTasks = new ArrayList<>();
 
     static {
-        List<Pair<Consumer<MinecraftServer>, AtomicInteger>> finishedTasks = new ArrayList<>();
+        List<Tuple<Consumer<MinecraftServer>, AtomicInteger>> finishedTasks = new ArrayList<>();
         TickEvent.SERVER_POST.register(server -> {
             scheduledTasks.forEach(pair -> {
-                if (pair.getRight().getAndDecrement() > 0) return;
+                if (pair.getB().getAndDecrement() > 0) return;
 
-                pair.getLeft().accept(server);
+                pair.getA().accept(server);
                 finishedTasks.add(pair);
             });
 
@@ -91,9 +91,9 @@ public abstract class Command {
      * @param dispatcher The dispatcher to register on.
      * @throws Exception Can throw any exception.
      */
-    public abstract void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception;
+    public abstract void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception;
 
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) throws Exception {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher, boolean dedicated) throws Exception {
         register(dispatcher);
     }
 
@@ -125,29 +125,29 @@ public abstract class Command {
         return MoreCommands.getGlobalDb();
     }
 
-    public static int sendMsg(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
+    public static int sendMsg(CommandContext<CommandSourceStack> ctx, String msg, Object... formats) {
         return sendMsg(ctx, LiteralTextBuilder.literal(fixResets(formats.length == 0 ? msg : formatted(msg, formats)), DS));
     }
 
-    public static int sendMsg(CommandContext<ServerCommandSource> ctx, Text msg) {
+    public static int sendMsg(CommandContext<CommandSourceStack> ctx, Component msg) {
         return sendMsg(ctx, Compat.get().builderFromText(msg));
     }
 
-    public static int sendMsg(CommandContext<ServerCommandSource> ctx, TextBuilder<?> textBuilder) {
-        ctx.getSource().sendFeedback(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), true);
+    public static int sendMsg(CommandContext<CommandSourceStack> ctx, TextBuilder<?> textBuilder) {
+        ctx.getSource().sendSuccess(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), true);
         return 1;
     }
 
-    public static int sendError(CommandContext<ServerCommandSource> ctx, String msg, Object... formats) {
-        return sendError(ctx, LiteralTextBuilder.literal(fixResets(formatted(msg, formats), Formatting.RED)));
+    public static int sendError(CommandContext<CommandSourceStack> ctx, String msg, Object... formats) {
+        return sendError(ctx, LiteralTextBuilder.literal(fixResets(formatted(msg, formats), ChatFormatting.RED)));
     }
 
-    public static int sendError(CommandContext<ServerCommandSource> ctx, TextBuilder<?> textBuilder) {
+    public static int sendError(CommandContext<CommandSourceStack> ctx, TextBuilder<?> textBuilder) {
         return sendError(ctx, textBuilder.build());
     }
 
-    public static int sendError(CommandContext<ServerCommandSource> ctx, Text msg) {
-        ctx.getSource().sendError(msg);
+    public static int sendError(CommandContext<CommandSourceStack> ctx, Component msg) {
+        ctx.getSource().sendFailure(msg);
         return 0;
     }
 
@@ -155,14 +155,14 @@ public abstract class Command {
         return sendMsg(entity, LiteralTextBuilder.literal(formatted(msg, formats), DS));
     }
 
-    public static int sendMsg(Entity entity, Text msg) {
+    public static int sendMsg(Entity entity, Component msg) {
         return sendMsg(entity, Compat.get().builderFromText(msg));
     }
 
     public static int sendMsg(Entity entity, TextBuilder<?> textBuilder) {
         TextBuilder<?> copy = textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style);
 
-        entity.getCommandSource().sendFeedback(copy.build(), false);
+        entity.createCommandSourceStack().sendSuccess(copy.build(), false);
         return 1;
     }
 
@@ -170,8 +170,8 @@ public abstract class Command {
         broadcast(server, LiteralTextBuilder.literal(formatted(msg, formats), DS));
     }
 
-    public static void broadcast(MinecraftServer server, Text msg) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList())
+    public static void broadcast(MinecraftServer server, Component msg) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
             sendMsg(player, msg);
     }
 
@@ -179,26 +179,26 @@ public abstract class Command {
         return fixResets(s, DF);
     }
 
-    static String fixResets(String s, Formatting formatting) {
-        return s.replace(Formatting.RESET.toString(), Formatting.RESET.toString() + formatting).replaceAll("\n", "\n" + formatting);
+    static String fixResets(String s, ChatFormatting formatting) {
+        return s.replace(ChatFormatting.RESET.toString(), ChatFormatting.RESET.toString() + formatting).replaceAll("\n", "\n" + formatting);
     }
 
-    public static LiteralArgumentBuilder<ServerCommandSource> literal(String literal) {
-        return CommandManager.literal(literal);
+    public static LiteralArgumentBuilder<CommandSourceStack> literal(String literal) {
+        return Commands.literal(literal);
     }
 
-    public static LiteralArgumentBuilder<ServerCommandSource> literalReqOp(String literal) {
+    public static LiteralArgumentBuilder<CommandSourceStack> literalReqOp(String literal) {
         MoreCommands.registerPermission("morecommands." + literal, false);
         return literal(literal).requires(hasPermissionOrOp("morecommands." + literal));
     }
 
-    public static LiteralArgumentBuilder<ServerCommandSource> literalReq(String literal) {
+    public static LiteralArgumentBuilder<CommandSourceStack> literalReq(String literal) {
         MoreCommands.registerPermission("morecommands." + literal, true);
         return literal(literal).requires(hasPermission("morecommands." + literal));
     }
 
-    public static <T> RequiredArgumentBuilder<ServerCommandSource, T> argument(String name, ArgumentType<T> type) {
-        RequiredArgumentBuilder<ServerCommandSource, T> builder = CommandManager.argument(name, type instanceof CompatArgumentType<?, ?, ?> && IMoreCommands.get().isServerOnly() ?
+    public static <T> RequiredArgumentBuilder<CommandSourceStack, T> argument(String name, ArgumentType<T> type) {
+        RequiredArgumentBuilder<CommandSourceStack, T> builder = Commands.argument(name, type instanceof CompatArgumentType<?, ?, ?> && IMoreCommands.get().isServerOnly() ?
                 ((CompatArgumentType<?, T, ?>) type).toVanillaArgumentType() : type);
 
         if (IMoreCommands.get().isServerOnly()) builder.suggests(type::listSuggestions);
@@ -209,7 +209,7 @@ public abstract class Command {
         return joinNicely(strings, SF, DF);
     }
 
-    public static String joinNicely(Collection<String> strings, Formatting colour, Formatting commaColour) {
+    public static String joinNicely(Collection<String> strings, ChatFormatting colour, ChatFormatting commaColour) {
         List<String> l = new ArrayList<>(strings);
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < l.size(); i++)
@@ -219,16 +219,16 @@ public abstract class Command {
 
     public static String formatFromFloat(float v, float max, float yellow, float green, boolean colourOnly) {
         float percent = v/max;
-        return "" + (percent >= green ? Formatting.GREEN : percent >= yellow ? Formatting.YELLOW : Formatting.RED) +
-                (colourOnly ? "" : new DecimalFormat("#.##").format(v) + DF + "/" + Formatting.GREEN + max);
+        return "" + (percent >= green ? ChatFormatting.GREEN : percent >= yellow ? ChatFormatting.YELLOW : ChatFormatting.RED) +
+                (colourOnly ? "" : new DecimalFormat("#.##").format(v) + DF + "/" + ChatFormatting.GREEN + max);
     }
 
-    public static boolean isOp(CommandContext<ServerCommandSource> ctx) {
+    public static boolean isOp(CommandContext<CommandSourceStack> ctx) {
         return IS_OP.test(ctx.getSource());
     }
 
-    public static boolean isOp(ServerPlayerEntity player) {
-        return player.hasPermissionLevel(Objects.requireNonNull(player.getServer()).getOpPermissionLevel());
+    public static boolean isOp(ServerPlayer player) {
+        return player.hasPermissions(Objects.requireNonNull(player.getServer()).getOperatorUserPermissionLevel());
     }
 
     public void setActiveInstance() {
@@ -236,7 +236,7 @@ public abstract class Command {
     }
 
     public static UUID getServerUuid(MinecraftServer server) {
-        return UUID.nameUUIDFromBytes(server.getCommandSource().getName().getBytes(StandardCharsets.UTF_8));
+        return UUID.nameUUIDFromBytes(server.createCommandSourceStack().getTextName().getBytes(StandardCharsets.UTF_8));
     }
 
     public static void doInitialisations(MinecraftServer server) {
@@ -248,15 +248,15 @@ public abstract class Command {
             }
     }
 
-    protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission, int defaultRequiredLevel) {
-        return isPermissionsLoaded() ? MoreCommandsArch.requirePermission(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
+    protected static Predicate<CommandSourceStack> hasPermission(@NotNull String permission, int defaultRequiredLevel) {
+        return isPermissionsLoaded() ? MoreCommandsArch.requirePermission(permission, defaultRequiredLevel) : source -> source.hasPermission(defaultRequiredLevel);
     }
 
-    protected static Predicate<ServerCommandSource> hasPermissionOrOp(@NotNull String permission) {
+    protected static Predicate<CommandSourceStack> hasPermissionOrOp(@NotNull String permission) {
         return hasPermission(permission, 2);
     }
 
-    protected static Predicate<ServerCommandSource> hasPermission(@NotNull String permission) {
+    protected static Predicate<CommandSourceStack> hasPermission(@NotNull String permission) {
         return hasPermission(permission, 0);
     }
 
@@ -264,7 +264,7 @@ public abstract class Command {
         return MoreCommandsArch.isFabricModLoaded("fabric-permissions-api-v0");
     }
 
-    protected int getCountFromPerms(ServerCommandSource source, String prefix, int max) {
+    protected int getCountFromPerms(CommandSourceStack source, String prefix, int max) {
         final int finalMax = max;
         if (isPermissionsLoaded())
             for (int i = 0; i < 100; i++)
@@ -281,7 +281,7 @@ public abstract class Command {
         return coloured(o, SF);
     }
 
-    protected static String coloured(Object o, Formatting colour) {
+    protected static String coloured(Object o, ChatFormatting colour) {
         return "" + colour + o + DF;
     }
 
@@ -320,6 +320,6 @@ public abstract class Command {
     public static void scheduleTask(Consumer<MinecraftServer> task, int delay) {
         if (delay < 0) throw new IllegalArgumentException("Delay must be at least 0.");
         AtomicInteger atomicDelay = new AtomicInteger(delay);
-        scheduledTasks.add(new Pair<>(task, atomicDelay));
+        scheduledTasks.add(new Tuple<>(task, atomicDelay));
     }
 }

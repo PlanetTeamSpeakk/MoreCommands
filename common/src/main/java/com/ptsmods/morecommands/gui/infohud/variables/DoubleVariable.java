@@ -1,11 +1,10 @@
 package com.ptsmods.morecommands.gui.infohud.variables;
 
-import net.minecraft.client.util.math.MatrixStack;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.BiConsumer;
 
 public class DoubleVariable extends AbstractVariable<Double> {
-    public DoubleVariable(String name, Double defaultValue, BiConsumer<MatrixStack, Double> applicator) {
+    public DoubleVariable(String name, Double defaultValue, BiConsumer<PoseStack, Double> applicator) {
         super(name, defaultValue, applicator);
     }
 

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.api;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -13,16 +13,16 @@ public interface IDeathTracker {
         return Holder.getDeathTracker();
     }
 
-    void addDeath(World world, Vec3d pos);
+    void addDeath(Level world, Vec3 pos);
 
-    void log(World world, Vec3d pos);
+    void log(Level world, Vec3 pos);
 
-    List<Pair<Long, Pair<Identifier, Vec3d>>> getDeaths();
+    List<Tuple<Long, Tuple<ResourceLocation, Vec3>>> getDeaths();
 
     void reset();
 
-    default Pair<Long, Pair<Identifier, Vec3d>> getLastDeath() {
-        List<Pair<Long, Pair<Identifier, Vec3d>>> deaths = getDeaths();
+    default Tuple<Long, Tuple<ResourceLocation, Vec3>> getLastDeath() {
+        List<Tuple<Long, Tuple<ResourceLocation, Vec3>>> deaths = getDeaths();
         return deaths.isEmpty() ? null : deaths.get(deaths.size() - 1);
     }
 }

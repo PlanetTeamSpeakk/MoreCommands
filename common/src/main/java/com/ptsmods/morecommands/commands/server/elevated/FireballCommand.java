@@ -11,28 +11,28 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.entity.projectile.WitherSkullEntity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.explosion.Explosion;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class FireballCommand extends Command {
-    public static final Map<FireballEntity, Triple<Vec3d, AtomicInteger, Integer>> fireballs = new HashMap<>();
+    public static final Map<LargeFireball, Triple<Vec3, AtomicInteger, Integer>> fireballs = new HashMap<>();
     private static final SimpleCommandExceptionType ONLY_LIVING = new SimpleCommandExceptionType(literalText("Only living entities may run this command.").build());
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("fireball")
                 .executes(ctx -> execute(ctx, 4f, 1d, 1))
                 .then(argument("power", FloatArgumentType.floatArg(0f))
@@ -48,35 +48,35 @@ public class FireballCommand extends Command {
         return "/elevated/fireball";
     }
 
-    private int execute(CommandContext<ServerCommandSource> ctx, float power, double speed, int impacts) throws CommandSyntaxException {
-        Vec3d velocity0 = MoreCommands.getRotationVector(ctx.getSource().getRotation()).multiply(speed*2);
+    private int execute(CommandContext<CommandSourceStack> ctx, float power, double speed, int impacts) throws CommandSyntaxException {
+        Vec3 velocity0 = MoreCommands.getRotationVector(ctx.getSource().getRotation()).scale(speed*2);
         LivingEntity entity = ctx.getSource().getEntity() instanceof LivingEntity ? (LivingEntity) ctx.getSource().getEntity() : null;
         if (entity == null) throw ONLY_LIVING.create();
         AtomicInteger impactsDone = new AtomicInteger();
-        ExplosiveProjectileEntity fireball = MoreCommands.isAprilFirst() ? new WitherSkullEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z) {
-            public void setVelocity(Vec3d velocity) {
-                super.setVelocity(velocity0);
+        AbstractHurtingProjectile fireball = MoreCommands.isAprilFirst() ? new WitherSkull(ctx.getSource().getLevel(), entity, velocity0.x, velocity0.y, velocity0.z) {
+            public void setDeltaMovement(Vec3 velocity) {
+                super.setDeltaMovement(velocity0);
             }
 
-            protected void onCollision(HitResult result) {
+            protected void onHit(HitResult result) {
                 HitResult.Type type = result.getType();
-                if (type == HitResult.Type.ENTITY) this.onEntityHit((EntityHitResult) result);
-                else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult) result);
-                if (!this.world.isClient) {
-                    this.world.createExplosion(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.DestructionType.DESTROY);
+                if (type == HitResult.Type.ENTITY) this.onHitEntity((EntityHitResult) result);
+                else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult) result);
+                if (!this.level.isClientSide) {
+                    this.level.explode(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.BlockInteraction.DESTROY);
                     if (impactsDone.addAndGet(1) >= impacts) Compat.get().setRemoved(this, 1);
                 }
             }
-        } : Compat.get().newFireballEntity(ctx.getSource().getWorld(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
-        fireball.setVelocity(velocity0);
+        } : Compat.get().newFireballEntity(ctx.getSource().getLevel(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
+        fireball.setDeltaMovement(velocity0);
 
         MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;
-        accessor.setPitch_(ctx.getSource().getRotation().x);
-        accessor.setYaw_(ctx.getSource().getRotation().y);
+        accessor.setXRot_(ctx.getSource().getRotation().x);
+        accessor.setYRot_(ctx.getSource().getRotation().y);
 
-        fireball.setPos(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeHeight(ctx.getSource().getEntity().getPose())), ctx.getSource().getPosition().z);
+        fireball.setPosRaw(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y + (ctx.getSource().getEntity() == null ? 0 : ctx.getSource().getEntity().getEyeHeight(ctx.getSource().getEntity().getPose())), ctx.getSource().getPosition().z);
         fireball.tick();
-        ctx.getSource().getWorld().spawnEntity(fireball);
+        ctx.getSource().getLevel().addFreshEntity(fireball);
         return 1;
     }
 

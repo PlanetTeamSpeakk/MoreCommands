@@ -11,34 +11,33 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(staticName = "paintingVariant")
-public class PaintingVariantArgumentType implements CompatArgumentType<PaintingVariantArgumentType, Identifier, ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier>> {
-    public static final ConstantSerialiser<PaintingVariantArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PaintingVariantArgumentType::new);
+public class PaintingVariantArgumentType implements CompatArgumentType<PaintingVariantArgumentType, ResourceLocation, ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, ResourceLocation>> {
+    public static final ConstantSerialiser<PaintingVariantArgumentType, ResourceLocation> SERIALISER = new ConstantSerialiser<>(PaintingVariantArgumentType::new);
     private static final DynamicCommandExceptionType MOTIVE_NOT_FOUND = new DynamicCommandExceptionType(o -> LiteralTextBuilder.literal("Could not find a painting motive with an id of " + o + "."));
 
     public static PaintingVariant getPaintingVariant(CommandContext<?> ctx, String argName) {
-        return Registry.PAINTING_VARIANT.get(ctx.getArgument(argName, Identifier.class));
+        return Registry.PAINTING_VARIANT.get(ctx.getArgument(argName, ResourceLocation.class));
     }
 
     @Override
-    public Identifier parse(StringReader reader) throws CommandSyntaxException {
-        Identifier id = Identifier.fromCommandInput(reader);
-        if (!Registry.PAINTING_VARIANT.containsId(id)) throw MOTIVE_NOT_FOUND.create(id);
+    public ResourceLocation parse(StringReader reader) throws CommandSyntaxException {
+        ResourceLocation id = ResourceLocation.read(reader);
+        if (!Registry.PAINTING_VARIANT.containsKey(id)) throw MOTIVE_NOT_FOUND.create(id);
         return id;
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestFromIdentifier(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getId, variant -> LiteralTextBuilder.literal(Registry.PAINTING_VARIANT.getId(variant).getPath()));
+        return SharedSuggestionProvider.suggestResource(Registry.PAINTING_VARIANT.stream(), builder, Registry.PAINTING_VARIANT::getKey, variant -> LiteralTextBuilder.literal(Registry.PAINTING_VARIANT.getKey(variant).getPath()));
     }
 
     @Override
@@ -47,12 +46,12 @@ public class PaintingVariantArgumentType implements CompatArgumentType<PaintingV
     }
 
     @Override
-    public ArgumentType<Identifier> toVanillaArgumentType() {
-        return IdentifierArgumentType.identifier();
+    public ArgumentType<ResourceLocation> toVanillaArgumentType() {
+        return ResourceLocationArgument.id();
     }
 
     @Override
-    public ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, Identifier> getProperties() {
+    public ConstantSerialiser.ConstantProperties<PaintingVariantArgumentType, ResourceLocation> getProperties() {
         return SERIALISER.getProperties();
     }
 }

@@ -4,28 +4,28 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 
 public class WhoIsCommand extends Command {
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("whois")
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", EntityArgument.player())
                         .executes(ctx -> {
-                            ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+                            ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
                             sendMsg(ctx, "Info for player " + SF + IMoreCommands.get().textToString(player.getDisplayName(), null, true));
-                            sendMsg(ctx, "UUID: " + SF + player.getUuidAsString());
-                            sendMsg(ctx, "World: " + SF + player.getWorld().getRegistryKey().getValue().toString());
-                            sendMsg(ctx, "Coords: " + SF + player.getBlockPos().getX() + DF + ", " + SF + player.getBlockPos().getY() + DF + ", " + SF + player.getBlockPos().getZ());
-                            sendMsg(ctx, "Rotation: " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getYaw_()) + DF + ", " + SF + MathHelper.wrapDegrees(((MixinEntityAccessor) player).getPitch_()));
+                            sendMsg(ctx, "UUID: " + SF + player.getStringUUID());
+                            sendMsg(ctx, "World: " + SF + player.getLevel().dimension().location().toString());
+                            sendMsg(ctx, "Coords: " + SF + player.blockPosition().getX() + DF + ", " + SF + player.blockPosition().getY() + DF + ", " + SF + player.blockPosition().getZ());
+                            sendMsg(ctx, "Rotation: " + SF + Mth.wrapDegrees(((MixinEntityAccessor) player).getYRot_()) + DF + ", " + SF + Mth.wrapDegrees(((MixinEntityAccessor) player).getXRot_()));
                             sendMsg(ctx, "Health: " + formatFromFloat(player.getHealth(), player.getMaxHealth(), .5f, .8f, false));
-                            sendMsg(ctx, "Food: " + formatFromFloat(player.getHungerManager().getFoodLevel(), 20f, .5f, .8f, false));
-                            sendMsg(ctx, "Saturation: " + SF + player.getHungerManager().getSaturationLevel());
-                            sendMsg(ctx, "IP: " + SF + player.getIp());
+                            sendMsg(ctx, "Food: " + formatFromFloat(player.getFoodData().getFoodLevel(), 20f, .5f, .8f, false));
+                            sendMsg(ctx, "Saturation: " + SF + player.getFoodData().getSaturationLevel());
+                            sendMsg(ctx, "IP: " + SF + player.getIpAddress());
                             return 1;
                         })));
     }

@@ -1,11 +1,10 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-
 import java.util.function.BiConsumer;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 public class IntegerClientOption extends ClientOption<Integer> {
     private final int min, max;
@@ -46,7 +45,7 @@ public class IntegerClientOption extends ClientOption<Integer> {
 
     @Override
     public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        return new SliderWidget(x, y, 150, 20, LiteralTextBuilder.literal(name + " : " + getValueRaw()), MathHelper.clamp((double) (getValueRaw() - min) / (double) (max - min), 0.0D, 1.0D)) {
+        return new AbstractSliderButton(x, y, 150, 20, LiteralTextBuilder.literal(name + " : " + getValueRaw()), Mth.clamp((double) (getValueRaw() - min) / (double) (max - min), 0.0D, 1.0D)) {
             @Override
             protected void updateMessage() {
                 setMessage(LiteralTextBuilder.literal(name + " : " + getValueRaw()));
@@ -54,14 +53,14 @@ public class IntegerClientOption extends ClientOption<Integer> {
 
             @Override
             protected void applyValue() {
-                IntegerClientOption.this.setValue((int) MathHelper.clamp(value * (max - min) + min, min, max));
+                IntegerClientOption.this.setValue((int) Mth.clamp(value * (max - min) + min, min, max));
                 save.run();
             }
         };
     }
 
     @Override
-    public Text createButtonText(String name) {
+    public Component createButtonText(String name) {
         return LiteralTextBuilder.literal(name + " : " + getValueRaw());
     }
 }

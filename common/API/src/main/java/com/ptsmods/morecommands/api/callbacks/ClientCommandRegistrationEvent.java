@@ -5,11 +5,11 @@ import dev.architectury.event.Event;
 import dev.architectury.event.EventFactory;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 @Environment(EnvType.CLIENT)
 public interface ClientCommandRegistrationEvent {
     Event<ClientCommandRegistrationEvent> EVENT = EventFactory.createLoop();
 
-    void register(CommandDispatcher<ClientCommandSource> dispatcher);
+    void register(CommandDispatcher<ClientSuggestionProvider> dispatcher);
 }

@@ -1,20 +1,19 @@
 package com.ptsmods.morecommands.gui.infohud.variables;
 
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.MathHelper;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.BiConsumer;
+import net.minecraft.util.Mth;
 
 public class IntVariable extends AbstractVariable<Integer> {
     private int min = Integer.MIN_VALUE, max = Integer.MAX_VALUE;
 
-    public IntVariable(String name, Integer defaultValue, BiConsumer<MatrixStack, Integer> applicator) {
+    public IntVariable(String name, Integer defaultValue, BiConsumer<PoseStack, Integer> applicator) {
         super(name, defaultValue, applicator);
     }
 
     @Override
     public Integer fromString(String val) {
-        return MathHelper.clamp(Integer.parseInt(val), min, max);
+        return Mth.clamp(Integer.parseInt(val), min, max);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
@@ -25,17 +25,17 @@ public class MoreCommandsArch {
     }
 
     @ExpectPlatform
-    public static boolean checkPermission(CommandSource source, String permission) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission) {
         throw new AssertionError("This shouldn't happen.");
     }
 
     @ExpectPlatform
-    public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission, boolean fallback) {
         throw new AssertionError("This shouldn't happen.");
     }
 
     @ExpectPlatform
-    public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
+    public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
         throw new AssertionError("This shouldn't happen.");
     }
 

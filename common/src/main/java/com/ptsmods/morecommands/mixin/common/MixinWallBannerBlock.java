@@ -1,10 +1,10 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import net.minecraft.block.WallBannerBlock;
-import net.minecraft.block.WallSignBlock;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.WallBannerBlock;
+import net.minecraft.world.level.block.WallSignBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -17,10 +17,10 @@ public class MixinWallBannerBlock {
      * @reason Causes StackOverflowErrors otherwise
      */
     @Overwrite
-    public String getTranslationKey() {
+    public String getDescriptionId() {
         if (mc_translationKey == null) {
-            Identifier id = Registry.BLOCK.getId(ReflectionHelper.<WallSignBlock>cast(this));
-            mc_translationKey = Registry.BLOCK.get(new Identifier(id.getNamespace(), id.getPath().replace("wall_", ""))).getTranslationKey();
+            ResourceLocation id = Registry.BLOCK.getKey(ReflectionHelper.<WallSignBlock>cast(this));
+            mc_translationKey = Registry.BLOCK.get(new ResourceLocation(id.getNamespace(), id.getPath().replace("wall_", ""))).getDescriptionId();
         }
         return mc_translationKey;
     }

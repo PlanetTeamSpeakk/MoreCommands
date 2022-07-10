@@ -7,17 +7,16 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.util.UsageMonitorer;
-import net.minecraft.server.command.ServerCommandSource;
-
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.minecraft.commands.CommandSourceStack;
 
 public class SysInfoCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("sysinfo")
                 .executes(SysInfoCommand::sendSysInfo));
     }
@@ -32,7 +31,7 @@ public class SysInfoCommand extends Command {
         return "/elevated/sys-info";
     }
 
-    public static int sendSysInfo(CommandContext<ServerCommandSource> ctx) {
+    public static int sendSysInfo(CommandContext<CommandSourceStack> ctx) {
         // Copied from my Discord bot Impulse at https://github.com/PlanetTeamSpeakk/Impulse
         // Copied from Owner#sysinfo.
         String output = "Host PC OS:";

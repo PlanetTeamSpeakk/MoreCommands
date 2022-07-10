@@ -5,70 +5,69 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinClientPlayerEntityAccessor;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.option.ChatVisibility;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.command.CommandSource;
-import net.minecraft.network.Packet;
-import net.minecraft.network.listener.ServerPlayPacketListener;
-import net.minecraft.network.message.ArgumentSignatureDataMap;
-import net.minecraft.network.message.ChatMessageSigner;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Function;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ArgumentSignatures;
+import net.minecraft.network.chat.MessageSigner;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerGamePacketListener;
+import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.ChatVisiblity;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class ClientCompat19 extends ClientCompat17 {
 
     @Override
-    public ChatVisibility getChatVisibility(GameOptions options) {
-        return options.getChatVisibility().getValue();
+    public ChatVisiblity getChatVisibility(Options options) {
+        return options.chatVisibility().get();
     }
 
     @Override
-    public double getChatLineSpacing(GameOptions options) {
-        return options.getChatLineSpacing().getValue();
+    public double getChatLineSpacing(Options options) {
+        return options.chatLineSpacing().get();
     }
 
     @Override
-    public ActionResult interactBlock(ClientPlayerInteractionManager interactionManager, ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hit) {
-        return interactionManager.interactBlock(player, hand, hit);
+    public InteractionResult interactBlock(MultiPlayerGameMode interactionManager, LocalPlayer player, ClientLevel world, InteractionHand hand, BlockHitResult hit) {
+        return interactionManager.useItemOn(player, hand, hit);
     }
 
     @Override
-    public InputStream getResourceStream(ResourceManager manager, Identifier id) throws IOException {
+    public InputStream getResourceStream(ResourceManager manager, ResourceLocation id) throws IOException {
         Resource res = manager.getResource(id).orElse(null);
-        return res == null ? null : res.getInputStream();
+        return res == null ? null : res.open();
     }
 
     @Override
-    public double getGamma(GameOptions options) {
-        return options.getGamma().getValue();
+    public double getGamma(Options options) {
+        return options.gamma().get();
     }
 
     @Override
-    public Packet<ServerPlayPacketListener> newChatMessagePacket(ClientPlayerEntity player, String message, boolean forceChat) {
-        ChatMessageSigner signer = ChatMessageSigner.create(player.getUuid());
+    public Packet<ServerGamePacketListener> newChatMessagePacket(LocalPlayer player, String message, boolean forceChat) {
+        MessageSigner signer = MessageSigner.create(player.getUUID());
         MixinClientPlayerEntityAccessor accessor = (MixinClientPlayerEntityAccessor) player;
 
-        if (!message.startsWith("/")) return new ChatMessageC2SPacket(message, accessor.callSignChatMessage(signer, LiteralTextBuilder.literal(message)), false);
+        if (!message.startsWith("/")) return new ServerboundChatPacket(message, accessor.callSignMessage(signer, LiteralTextBuilder.literal(message)), false);
         else {
             message = message.substring(1);
-            ParseResults<CommandSource> parseResults = player.networkHandler.getCommandDispatcher().parse(message, player.networkHandler.getCommandSource());
-            ArgumentSignatureDataMap argumentSignatures = accessor.callSignArguments(signer, parseResults, null);
-            return new CommandExecutionC2SPacket(message, signer.timeStamp(), argumentSignatures, false);
+            ParseResults<SharedSuggestionProvider> parseResults = player.connection.getCommands().parse(message, player.connection.getSuggestionsProvider());
+            ArgumentSignatures argumentSignatures = accessor.callSignCommandArguments(signer, parseResults, null);
+            return new ServerboundChatCommandPacket(message, signer.timeStamp(), argumentSignatures, false);
         }
     }
 
@@ -85,8 +84,8 @@ public class ClientCompat19 extends ClientCompat17 {
 
     @Override
     public void sendMessageOrCommand(String msg) {
-        ClientPlayerEntity player = Objects.requireNonNull(MinecraftClient.getInstance().player);
-        if (msg.startsWith("/")) player.sendCommand(msg.substring(1));
-        else player.sendChatMessage(msg);
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        if (msg.startsWith("/")) player.command(msg.substring(1));
+        else player.chat(msg);
     }
 }

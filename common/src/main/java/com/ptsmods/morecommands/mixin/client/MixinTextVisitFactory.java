@@ -2,16 +2,16 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.util.Rainbow;
-import net.minecraft.client.font.TextVisitFactory;
-import net.minecraft.text.CharacterVisitor;
-import net.minecraft.text.Style;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.FormattedCharSink;
+import net.minecraft.util.StringDecomposer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(TextVisitFactory.class)
+@Mixin(StringDecomposer.class)
 public class MixinTextVisitFactory {
 
     /**
@@ -19,7 +19,7 @@ public class MixinTextVisitFactory {
      * @reason Modifications were too hard to inject using conventional mixins.
      */
     @Overwrite
-    public static boolean visitFormatted(String text, int startIndex, Style startingStyle, Style rewithStyle, CharacterVisitor visitor) {
+    public static boolean iterateFormatted(String text, int startIndex, Style startingStyle, Style rewithStyle, FormattedCharSink visitor) {
         int i = text.length();
         Style style = startingStyle;
         for (int j = startIndex; j < i; ++j) {
@@ -35,9 +35,9 @@ public class MixinTextVisitFactory {
                     j += 7;
                 } else {
                     e = text.charAt(j + 1);
-                    Formatting formatting = Formatting.byCode(e);
+                    ChatFormatting formatting = ChatFormatting.getByCode(e);
                     if (formatting != null) {
-                        style = formatting == Formatting.RESET ? rewithStyle : style.withExclusiveFormatting(formatting);
+                        style = formatting == ChatFormatting.RESET ? rewithStyle : style.applyLegacyFormat(formatting);
                     }
                     ++j;
                 }
@@ -59,7 +59,7 @@ public class MixinTextVisitFactory {
                 } else if (!visitor.accept(j, style, 65533)) {
                     return false;
                 }
-            } else if (!visitRegularCharacter(style, visitor, j, c)) {
+            } else if (!feedChar(style, visitor, j, c)) {
                 return false;
             }
         }
@@ -67,9 +67,7 @@ public class MixinTextVisitFactory {
         return true;
     }
 
-    @Shadow
-    private static boolean visitRegularCharacter(Style style, CharacterVisitor visitor, int index, char c) {
+    @Shadow private static boolean feedChar(Style style, FormattedCharSink visitor, int index, char c) {
         return false;
     }
-
 }

@@ -1,23 +1,23 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.player.PlayerAbilities;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public interface MixinPlayerEntityAccessor {
 
-    @Accessor("PLAYER_MODEL_PARTS")
-    static TrackedData<Byte> getPlayerModelParts() {
+    @Accessor("DATA_PLAYER_MODE_CUSTOMISATION")
+    static EntityDataAccessor<Byte> getDataPlayerModeCustomisation() {
         throw new AssertionError("This shouldn't happen.");
     }
 
     @Accessor("inventory")
-    PlayerInventory getInventory_();
+    Inventory getInventory_();
 
     @Accessor("abilities")
-    PlayerAbilities getAbilities_();
+    Abilities getAbilities_();
 }

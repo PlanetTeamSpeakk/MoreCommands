@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.forge;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -35,7 +35,7 @@ public class MoreCommandsForge {
     @SubscribeEvent
     public void onPermissionGather(PermissionGatherEvent.Nodes event) {
         MoreCommands.getPermissions().forEach((permission, defaultValue) -> {
-            PermissionNode<Boolean> permissionNode = new PermissionNode<>(new Identifier("morecommands:" + (permission.startsWith("morecommands.") ? permission.substring("morecommands.".length()) : permission)),
+            PermissionNode<Boolean> permissionNode = new PermissionNode<>(new ResourceLocation("morecommands:" + (permission.startsWith("morecommands.") ? permission.substring("morecommands.".length()) : permission)),
                     PermissionTypes.BOOLEAN, (player, uuid, permissionDynamicContexts) -> defaultValue);
             event.addNodes(permissionNode);
             permissionNodes.put(permission, permissionNode);

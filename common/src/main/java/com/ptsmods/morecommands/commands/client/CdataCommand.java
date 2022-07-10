@@ -12,19 +12,18 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.NbtPathArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
-import net.minecraft.predicate.NbtPredicate;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -41,15 +40,15 @@ public class CdataCommand extends ClientCommand {
     private static final List<ClientObjectType> TARGET_OBJECT_TYPES = OBJECT_TYPE_FACTORIES.stream().map((function) -> function.apply("target")).collect(ImmutableList.toImmutableList());
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ClientCommandSource> lab = cLiteral("cdata");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
+        LiteralArgumentBuilder<ClientSuggestionProvider> lab = cLiteral("cdata");
         for (ClientObjectType target : TARGET_OBJECT_TYPES)
             target.addArgumentsToBuilder(lab, (argumentBuilder) -> argumentBuilder
                     .executes(ctx -> executeGet(target.getObject(ctx)))
-                    .then(cArgument("path", NbtPathArgumentType.nbtPath())
-                            .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class)))
+                    .then(cArgument("path", NbtPathArgument.nbtPath())
+                            .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgument.NbtPath.class)))
                             .then(cArgument("scale", DoubleArgumentType.doubleArg())
-                                    .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgumentType.NbtPath.class), DoubleArgumentType.getDouble(ctx, "scale"))))));
+                                    .executes(ctx -> executeGet(target.getObject(ctx), ctx.getArgument("path", NbtPathArgument.NbtPath.class), DoubleArgumentType.getDouble(ctx, "scale"))))));
         dispatcher.register(lab);
     }
 
@@ -58,10 +57,10 @@ public class CdataCommand extends ClientCommand {
         return "/c-data";
     }
 
-    private static NbtElement getTag(NbtPathArgumentType.NbtPath path, ClientDataCommandObject object) throws CommandSyntaxException {
-        Collection<NbtElement> collection = path.get(object.getTag());
-        Iterator<NbtElement> iterator = collection.iterator();
-        NbtElement tag = iterator.next();
+    private static Tag getTag(NbtPathArgument.NbtPath path, ClientDataCommandObject object) throws CommandSyntaxException {
+        Collection<Tag> collection = path.get(object.getTag());
+        Iterator<Tag> iterator = collection.iterator();
+        Tag tag = iterator.next();
         if (iterator.hasNext()) {
             throw GET_MULTIPLE_EXCEPTION.create();
         } else {
@@ -69,33 +68,33 @@ public class CdataCommand extends ClientCommand {
         }
     }
 
-    private static int executeGet(ClientDataCommandObject object, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
-        NbtElement tag = getTag(path, object);
+    private static int executeGet(ClientDataCommandObject object, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+        Tag tag = getTag(path, object);
         int m;
-        if (tag instanceof AbstractNbtNumber) {
-            m = MathHelper.floor(((AbstractNbtNumber) tag).doubleValue());
-        } else if (tag instanceof AbstractNbtList) {
-            m = ((AbstractNbtList<?>) tag).size();
-        } else if (tag instanceof NbtCompound) {
-            m = ((NbtCompound)tag).getSize();
+        if (tag instanceof NumericTag) {
+            m = Mth.floor(((NumericTag) tag).getAsDouble());
+        } else if (tag instanceof CollectionTag) {
+            m = ((CollectionTag<?>) tag).size();
+        } else if (tag instanceof CompoundTag) {
+            m = ((CompoundTag)tag).size();
         } else {
-            if (!(tag instanceof NbtString)) {
+            if (!(tag instanceof StringTag)) {
                 throw GET_UNKNOWN_EXCEPTION.create(path.toString());
             }
 
-            m = tag.asString().length();
+            m = tag.getAsString().length();
         }
 
         sendMsg(object.feedbackQuery(tag));
         return m;
     }
 
-    private static int executeGet(ClientDataCommandObject object, NbtPathArgumentType.NbtPath path, double scale) throws CommandSyntaxException {
-        NbtElement tag = getTag(path, object);
-        if (!(tag instanceof AbstractNbtNumber)) {
+    private static int executeGet(ClientDataCommandObject object, NbtPathArgument.NbtPath path, double scale) throws CommandSyntaxException {
+        Tag tag = getTag(path, object);
+        if (!(tag instanceof NumericTag)) {
             throw GET_INVALID_EXCEPTION.create(path.toString());
         } else {
-            int i = MathHelper.floor(((AbstractNbtNumber)tag).doubleValue() * scale);
+            int i = Mth.floor(((NumericTag)tag).getAsDouble() * scale);
             sendMsg(object.feedbackGet(path, scale, i));
             return i;
         }
@@ -107,23 +106,23 @@ public class CdataCommand extends ClientCommand {
     }
 
     public interface ClientObjectType {
-        ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException;
+        ClientDataCommandObject getObject(CommandContext<ClientSuggestionProvider> context) throws CommandSyntaxException;
 
-        ArgumentBuilder<ClientCommandSource, ?> addArgumentsToBuilder(ArgumentBuilder<ClientCommandSource, ?> argument, Function<ArgumentBuilder<ClientCommandSource, ?>, ArgumentBuilder<ClientCommandSource, ?>> argumentAdder);
+        ArgumentBuilder<ClientSuggestionProvider, ?> addArgumentsToBuilder(ArgumentBuilder<ClientSuggestionProvider, ?> argument, Function<ArgumentBuilder<ClientSuggestionProvider, ?>, ArgumentBuilder<ClientSuggestionProvider, ?>> argumentAdder);
     }
 
     public interface ClientDataCommandObject {
-        NbtCompound getTag() throws CommandSyntaxException;
+        CompoundTag getTag() throws CommandSyntaxException;
 
-        Text feedbackQuery(NbtElement tag);
+        Component feedbackQuery(Tag tag);
 
-        Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result);
+        Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result);
     }
 
     public static class ClientEntityDataObject implements ClientDataCommandObject {
         private static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.entity.invalid").build());
         public static final Function<String, ClientObjectType> TYPE_FACTORY = (string) -> new ClientObjectType() {
-            public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
+            public ClientDataCommandObject getObject(CommandContext<ClientSuggestionProvider> context) throws CommandSyntaxException {
                 try {
                     return new ClientEntityDataObject(getEntity(context, string));
                 } catch (CommandSyntaxException e) {
@@ -131,8 +130,8 @@ public class CdataCommand extends ClientCommand {
                 }
             }
 
-            public ArgumentBuilder<ClientCommandSource, ?> addArgumentsToBuilder(ArgumentBuilder<ClientCommandSource, ?> argument, Function<ArgumentBuilder<ClientCommandSource, ?>, ArgumentBuilder<ClientCommandSource, ?>> argumentAdder) {
-                return argument.then(cLiteral("entity").then(argumentAdder.apply(cArgument(string, EntityArgumentType.entity()))));
+            public ArgumentBuilder<ClientSuggestionProvider, ?> addArgumentsToBuilder(ArgumentBuilder<ClientSuggestionProvider, ?> argument, Function<ArgumentBuilder<ClientSuggestionProvider, ?>, ArgumentBuilder<ClientSuggestionProvider, ?>> argumentAdder) {
+                return argument.then(cLiteral("entity").then(argumentAdder.apply(cArgument(string, EntityArgument.entity()))));
             }
         };
         private final Entity entity;
@@ -141,15 +140,15 @@ public class CdataCommand extends ClientCommand {
             this.entity = entity;
         }
 
-        public NbtCompound getTag() {
-            return NbtPredicate.entityToNbt(this.entity);
+        public CompoundTag getTag() {
+            return NbtPredicate.getEntityTagToCompare(this.entity);
         }
 
-        public Text feedbackQuery(NbtElement tag) {
+        public Component feedbackQuery(Tag tag) {
             return translatableText("commands.data.entity.query", this.entity.getDisplayName(), Compat.get().toText(tag)).build();
         }
 
-        public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
+        public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {
             return translatableText("commands.data.entity.get", nbtPath, this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", scale), result).build();
         }
     }
@@ -157,15 +156,15 @@ public class CdataCommand extends ClientCommand {
     public static class ClientBlockDataObject implements ClientDataCommandObject {
         private static final SimpleCommandExceptionType INVALID_BLOCK_EXCEPTION = new SimpleCommandExceptionType(translatableText("commands.data.block.invalid").build());
         public static final Function<String, ClientObjectType> TYPE_FACTORY = (string) -> new ClientObjectType() {
-            public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
+            public ClientDataCommandObject getObject(CommandContext<ClientSuggestionProvider> context) throws CommandSyntaxException {
                 BlockPos blockPos = getLoadedBlockPos(context, string + "Pos");
                 BlockEntity blockEntity = getWorld().getBlockEntity(blockPos);
                 if (blockEntity == null) throw INVALID_BLOCK_EXCEPTION.create();
                 else return new ClientBlockDataObject(blockEntity, blockPos);
             }
 
-            public ArgumentBuilder<ClientCommandSource, ?> addArgumentsToBuilder(ArgumentBuilder<ClientCommandSource, ?> argument, Function<ArgumentBuilder<ClientCommandSource, ?>, ArgumentBuilder<ClientCommandSource, ?>> argumentAdder) {
-                return argument.then(cLiteral("block").then(argumentAdder.apply(cArgument(string + "Pos", BlockPosArgumentType.blockPos()))));
+            public ArgumentBuilder<ClientSuggestionProvider, ?> addArgumentsToBuilder(ArgumentBuilder<ClientSuggestionProvider, ?> argument, Function<ArgumentBuilder<ClientSuggestionProvider, ?>, ArgumentBuilder<ClientSuggestionProvider, ?>> argumentAdder) {
+                return argument.then(cLiteral("block").then(argumentAdder.apply(cArgument(string + "Pos", BlockPosArgument.blockPos()))));
             }
         };
         private final BlockEntity blockEntity;
@@ -176,15 +175,15 @@ public class CdataCommand extends ClientCommand {
             this.pos = pos;
         }
 
-        public NbtCompound getTag() {
+        public CompoundTag getTag() {
             return Compat.get().writeBENBT(blockEntity);
         }
 
-        public Text feedbackQuery(NbtElement tag) {
+        public Component feedbackQuery(Tag tag) {
             return translatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), Compat.get().toText(tag)).build();
         }
 
-        public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
+        public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {
             return translatableText("commands.data.block.get", nbtPath, this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", scale), result).build();
         }
     }
@@ -193,14 +192,14 @@ public class CdataCommand extends ClientCommand {
         private static final SimpleCommandExceptionType NO_ITEM_EXCEPTION = new SimpleCommandExceptionType(new LiteralMessage("You're not holding an item."));
         private static final SimpleCommandExceptionType NO_DATA_EXCEPTION = new SimpleCommandExceptionType(new LiteralMessage("The item you're holding has no data."));
         public static final Function<String, ClientObjectType> TYPE_FACTORY = (string) -> new ClientObjectType() {
-            public ClientDataCommandObject getObject(CommandContext<ClientCommandSource> context) throws CommandSyntaxException {
-                ItemStack stack = getPlayer().getMainHandStack();
+            public ClientDataCommandObject getObject(CommandContext<ClientSuggestionProvider> context) throws CommandSyntaxException {
+                ItemStack stack = getPlayer().getMainHandItem();
                 if (stack.isEmpty()) throw NO_ITEM_EXCEPTION.create();
-                else if (!stack.hasNbt()) throw NO_DATA_EXCEPTION.create();
-                else return new ClientItemDataObject(getPlayer().getMainHandStack());
+                else if (!stack.hasTag()) throw NO_DATA_EXCEPTION.create();
+                else return new ClientItemDataObject(getPlayer().getMainHandItem());
             }
 
-            public ArgumentBuilder<ClientCommandSource, ?> addArgumentsToBuilder(ArgumentBuilder<ClientCommandSource, ?> argument, Function<ArgumentBuilder<ClientCommandSource, ?>, ArgumentBuilder<ClientCommandSource, ?>> argumentAdder) {
+            public ArgumentBuilder<ClientSuggestionProvider, ?> addArgumentsToBuilder(ArgumentBuilder<ClientSuggestionProvider, ?> argument, Function<ArgumentBuilder<ClientSuggestionProvider, ?>, ArgumentBuilder<ClientSuggestionProvider, ?>> argumentAdder) {
                 return argument.then(argumentAdder.apply(cLiteral("item")));
             }
         };
@@ -210,16 +209,16 @@ public class CdataCommand extends ClientCommand {
             this.stack = stack;
         }
 
-        public NbtCompound getTag() {
-            return this.stack.getNbt();
+        public CompoundTag getTag() {
+            return this.stack.getTag();
         }
 
-        public Text feedbackQuery(NbtElement tag) {
-            return translatableText("commands.data.item.query", stack.getName(), Compat.get().toText(tag)).build();
+        public Component feedbackQuery(Tag tag) {
+            return translatableText("commands.data.item.query", stack.getHoverName(), Compat.get().toText(tag)).build();
         }
 
-        public Text feedbackGet(NbtPathArgumentType.NbtPath nbtPath, double scale, int result) {
-            return translatableText("commands.data.item.get", nbtPath, stack.getName(), String.format(Locale.ROOT, "%.2f", scale), result).build();
+        public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {
+            return translatableText("commands.data.item.get", nbtPath, stack.getHoverName(), String.format(Locale.ROOT, "%.2f", scale), result).build();
         }
     }
 

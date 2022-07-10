@@ -1,12 +1,11 @@
 package com.ptsmods.morecommands.api;
 
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
 
 public interface IDataTrackerHelper {
     @SuppressWarnings("deprecation") // Holder not API
@@ -14,14 +13,14 @@ public interface IDataTrackerHelper {
         return Holder.getDataTrackerHelper();
     }
 
-    TrackedData<Boolean> mayFly();
-    TrackedData<Boolean> invulnerable();
-    TrackedData<Boolean> superpickaxe();
-    TrackedData<Boolean> vanish();
-    TrackedData<Boolean> vanishToggled();
-    TrackedData<Optional<BlockPos>> chair();
-    TrackedData<NbtCompound> vaults();
-    TrackedData<Optional<Text>> nickname();
-    TrackedData<Optional<UUID>> speedModifier();
-    TrackedData<Boolean> jesus();
+    EntityDataAccessor<Boolean> mayFly();
+    EntityDataAccessor<Boolean> invulnerable();
+    EntityDataAccessor<Boolean> superpickaxe();
+    EntityDataAccessor<Boolean> vanish();
+    EntityDataAccessor<Boolean> vanishToggled();
+    EntityDataAccessor<Optional<BlockPos>> chair();
+    EntityDataAccessor<CompoundTag> vaults();
+    EntityDataAccessor<Optional<Component>> nickname();
+    EntityDataAccessor<Optional<UUID>> speedModifier();
+    EntityDataAccessor<Boolean> jesus();
 }

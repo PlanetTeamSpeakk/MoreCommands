@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.miscellaneous.BetterLanguage;
-import net.minecraft.util.Language;
+import net.minecraft.locale.Language;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinLanguage {
     @Shadow private static volatile Language instance;
 
-    @Inject(at = @At("RETURN"), method = "create", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "loadDefault", cancellable = true)
     private static void create(CallbackInfoReturnable<Language> cbi) {
         cbi.setReturnValue(new BetterLanguage(cbi.getReturnValue()));
     }
@@ -23,7 +23,7 @@ public class MixinLanguage {
      * @reason Make it better :)
      */
     @Overwrite
-    public static void setInstance(Language language) {
+    public static void inject(Language language) {
         instance = new BetterLanguage(language);
     }
 }

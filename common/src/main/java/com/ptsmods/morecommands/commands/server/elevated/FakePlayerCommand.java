@@ -16,43 +16,42 @@ import com.ptsmods.morecommands.mixin.common.accessor.MixinClientConnectionAcces
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import io.netty.channel.*;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.UuidArgumentType;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.GameMode;
-
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.UuidArgument;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.level.GameType;
 
 public class FakePlayerCommand extends Command {
     private final List<UUID> fake = new ArrayList<>();
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("fakeplayer")
                 .then(literal("create")
                         .then(argument("name", CrampedStringArgumentType.crampedWord(3, 16))
                                 .executes(ctx -> executeCreate(ctx, null, null))
                                 .then(argument("skinname", CrampedStringArgumentType.crampedWord(3, 16))
                                         .executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), null))
-                                        .then(argument("userid", new UuidArgumentType())
+                                        .then(argument("userid", new UuidArgument())
                                                 .executes(ctx -> executeCreate(ctx, ctx.getArgument("skinname", String.class), ctx.getArgument("userid", UUID.class)))))))
                 .then(literal("kick")
-                        .then(argument("player", EntityArgumentType.player())
+                        .then(argument("player", EntityArgument.player())
                                 .executes(ctx -> {
-                                    ServerPlayerEntity p = EntityArgumentType.getPlayer(ctx, "player");
-                                    if (!fake.contains(p.getUuid())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
+                                    ServerPlayer p = EntityArgument.getPlayer(ctx, "player");
+                                    if (!fake.contains(p.getUUID())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
                                     else {
                                         try {
-                                            p.networkHandler.disconnect(literalText("yeET").build());
+                                            p.connection.disconnect(literalText("yeET").build());
                                             sendMsg(ctx, "The player has been disconnected.");
                                         } catch (Exception e) {
                                             log.catching(e);
@@ -69,11 +68,11 @@ public class FakePlayerCommand extends Command {
     }
 
     @SuppressWarnings("unchecked")
-    private int executeCreate(CommandContext<ServerCommandSource> ctx, String skinname, UUID userId) {
+    private int executeCreate(CommandContext<CommandSourceStack> ctx, String skinname, UUID userId) {
         String username = ctx.getArgument("name", String.class);
         if (skinname == null) skinname = username;
         try {
-            if (ctx.getSource().getServer().getPlayerManager().getPlayer(username) != null || userId != null && ctx.getSource().getServer().getPlayerManager().getPlayer(userId) != null) {
+            if (ctx.getSource().getServer().getPlayerList().getPlayerByName(username) != null || userId != null && ctx.getSource().getServer().getPlayerList().getPlayer(userId) != null) {
                 sendError(ctx, "A player with that name is already logged in.");
                 return 0;
             }
@@ -128,8 +127,8 @@ public class FakePlayerCommand extends Command {
                 }
             }
 
-            ServerPlayerEntity player = Compat.get().newServerPlayerEntity(ctx.getSource().getServer(), ctx.getSource().getWorld(), profile);
-            ClientConnection ccon = new ClientConnection(NetworkSide.SERVERBOUND);
+            ServerPlayer player = Compat.get().newServerPlayerEntity(ctx.getSource().getServer(), ctx.getSource().getLevel(), profile);
+            Connection ccon = new Connection(PacketFlow.SERVERBOUND);
 
             // I beg you, do not look at the following line. Please!
             ((MixinClientConnectionAccessor) ccon).setChannel(new AbstractChannel(null) {@Override public ChannelConfig config() {return new DefaultChannelConfig(this);} @Override public boolean isOpen() {return false;} @Override public boolean isActive() {return false;} @Override public ChannelMetadata metadata() {return new ChannelMetadata(true);} @Override protected AbstractUnsafe newUnsafe() {return null;} @Override protected boolean isCompatible(EventLoop loop) {return false;} @Override protected SocketAddress localAddress0() {return null;} @Override protected SocketAddress remoteAddress0() {return null;} @Override protected void doBind(SocketAddress localAddress) {} @Override protected void doDisconnect() {} @Override protected void doClose() {} @Override protected void doBeginRead() {} @Override protected void doWrite(ChannelOutboundBuffer in) {}});
@@ -139,27 +138,27 @@ public class FakePlayerCommand extends Command {
                 MixinEntityAccessor entityAccessor = (MixinEntityAccessor) ctx.getSource().getEntity();
                 MixinEntityAccessor playerAccessor = (MixinEntityAccessor) player;
 
-                playerAccessor.setYaw_(entityAccessor.getYaw_());
-                playerAccessor.setPitch_(entityAccessor.getPitch_());
+                playerAccessor.setYRot_(entityAccessor.getYRot_());
+                playerAccessor.setXRot_(entityAccessor.getXRot_());
             }
 
             // Making sure all parts of the skin are rendered.
-            player.getDataTracker().set(MixinPlayerEntityAccessor.getPlayerModelParts(), (byte) 255);
+            player.getEntityData().set(MixinPlayerEntityAccessor.getDataPlayerModeCustomisation(), (byte) 255);
 
-            player.networkHandler = new ServerPlayNetworkHandler(ctx.getSource().getServer(), ccon, player);
-            ctx.getSource().getServer().getPlayerManager().onPlayerConnect(ccon, player);
+            player.connection = new ServerGamePacketListenerImpl(ctx.getSource().getServer(), ccon, player);
+            ctx.getSource().getServer().getPlayerList().placeNewPlayer(ccon, player);
 
-            player.updatePosition(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z);
-            player.changeGameMode(GameMode.CREATIVE);
+            player.absMoveTo(ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z);
+            player.setGameMode(GameType.CREATIVE);
 
             ((MixinPlayerEntityAccessor) player).getAbilities_().invulnerable = true;
             player.setInvulnerable(true);
-            player.sendAbilitiesUpdate();
+            player.onUpdateAbilities();
 
-            MoreCommands.teleport(player, ctx.getSource().getWorld(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z,
-                    ((MixinEntityAccessor) player).getYaw_(), ((MixinEntityAccessor) player).getPitch_());
+            MoreCommands.teleport(player, ctx.getSource().getLevel(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z,
+                    ((MixinEntityAccessor) player).getYRot_(), ((MixinEntityAccessor) player).getXRot_());
 
-            fake.add(player.getUuid());
+            fake.add(player.getUUID());
             sendMsg(ctx, "A fake player by the name of " + IMoreCommands.get().textToString(player.getName(), null, true) + " has been spawned.");
             return 1;
         } catch (Exception e) {

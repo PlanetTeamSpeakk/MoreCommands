@@ -15,7 +15,8 @@
     "MixinFarmlandBlock",
     "MixinScreenHandler",
     "MixinServerPlayerEntity",
-    "MixinServerPlayNetworkHandler"
+    "MixinServerPlayNetworkHandler",
+    "MixinHopperBlockEntity"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -8,12 +8,12 @@ import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class ToggleOptionCommand extends ClientCommand {
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ClientCommandSource> toggleoption = cLiteral("toggleoption");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
+        LiteralArgumentBuilder<ClientSuggestionProvider> toggleoption = cLiteral("toggleoption");
 
         ClientOption.getUnmappedOptions().values().stream()
                 .filter(option -> option instanceof BooleanClientOption)

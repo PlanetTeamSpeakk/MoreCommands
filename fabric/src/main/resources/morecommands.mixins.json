@@ -5,7 +5,8 @@
   "client": [
     "MixinCreativeInventoryScreen",
     "MixinItemGroupButtonWidget",
-    "MixinItemGroupButtonWidgetAccessor"
+    "MixinItemGroupButtonWidgetAccessor",
+    "MixinMinecraftClient"
   ],
   "mixins": [
   ],

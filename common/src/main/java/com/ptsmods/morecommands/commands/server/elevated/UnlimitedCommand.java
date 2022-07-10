@@ -3,21 +3,20 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.command.ServerCommandSource;
-
 import java.util.Objects;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class UnlimitedCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("unlimited")
                 .executes(ctx -> {
-                    ItemStack stack = ctx.getSource().getEntityOrThrow().getItemsHand().iterator().next();
+                    ItemStack stack = ctx.getSource().getEntityOrException().getHandSlots().iterator().next();
                     if (stack != null && stack.getItem() != Items.AIR) {
-                        NbtCompound tag = stack.getOrCreateNbt();
+                        CompoundTag tag = stack.getOrCreateTag();
                         if (tag.contains("Unlimited")) tag.remove("Unlimited");
                         else tag.putByte("Unlimited", (byte) 1);
                         stack.setCount(1);
@@ -35,6 +34,6 @@ public class UnlimitedCommand extends Command {
     }
 
     public static boolean isUnlimited(ItemStack stack) {
-        return stack.hasNbt() && Objects.requireNonNull(stack.getNbt()).contains("Unlimited");
+        return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("Unlimited");
     }
 }

@@ -1,24 +1,23 @@
 package com.ptsmods.morecommands.gui;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-
 import java.util.*;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 
 public class ClientOptionsScreen extends Screen {
     private final Screen parent;
-    private final Map<ClickableWidget, ClientOptionCategory> categoryButtons = new HashMap<>();
-    private ButtonWidget wicButton;
+    private final Map<AbstractWidget, ClientOptionCategory> categoryButtons = new HashMap<>();
+    private Button wicButton;
 
     public ClientOptionsScreen(Screen parent) {
         super(LiteralTextBuilder.builder("")
@@ -30,7 +29,7 @@ public class ClientOptionsScreen extends Screen {
 
     @Override
     protected void init() {
-        Objects.requireNonNull(client);
+        Objects.requireNonNull(minecraft);
         categoryButtons.clear();
         ((ScreenAddon) this).mc$clear();
 
@@ -44,44 +43,44 @@ public class ClientOptionsScreen extends Screen {
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24 * (row + 1) - 6;
 
-            categoryButtons.put(addon.mc$addButton(new ButtonWidget(x, y, 150, 20, LiteralTextBuilder.literal(category.getName()),
-                    button -> client.setScreen(new ClientOptionsChildScreen(this, category)))), category);
+            categoryButtons.put(addon.mc$addButton(new Button(x, y, 150, 20, LiteralTextBuilder.literal(category.getName()),
+                    button -> minecraft.setScreen(new ClientOptionsChildScreen(this, category)))), category);
 
             if (right) row++;
             right = !right;
         }
 
-        wicButton = addon.mc$addButton(new ButtonWidget(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.literal("World Init Commands"),
-                button -> client.setScreen(new WorldInitCommandsScreen(this))));
+        wicButton = addon.mc$addButton(new Button(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.literal("World Init Commands"),
+                button -> minecraft.setScreen(new WorldInitCommandsScreen(this))));
 
-        addon.mc$addButton(new ButtonWidget(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), btn -> {
+        addon.mc$addButton(new Button(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), btn -> {
             ClientOptions.reset();
             init();
         }));
-        addon.mc$addButton(new ButtonWidget(width / 2 + 30, height / 6 + 168, 120, 20, ScreenTexts.DONE, buttonWidget -> client.setScreen(parent)));
+        addon.mc$addButton(new Button(width / 2 + 30, height / 6 + 168, 120, 20, CommonComponents.GUI_DONE, buttonWidget -> minecraft.setScreen(parent)));
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
-        drawCenteredText(matrices, textRenderer, getTitle(), width / 2, 10, 0);
+        drawCenteredString(matrices, font, getTitle(), width / 2, 10, 0);
         super.render(matrices, mouseX, mouseY, delta);
 
         categoryButtons.forEach((btn, category) -> {
             if (btn.isMouseOver(mouseX, mouseY) && category.getComments() != null) {
-                List<Text> texts = new ArrayList<>();
+                List<Component> texts = new ArrayList<>();
                 for (String s : category.getComments())
                     texts.add(LiteralTextBuilder.literal(s));
-                renderTooltip(matrices, texts, mouseX, mouseY);
+                renderComponentTooltip(matrices, texts, mouseX, mouseY);
             }
         });
 
         if (wicButton.isMouseOver(mouseX, mouseY))
-            renderTooltip(matrices, Lists.newArrayList(LiteralTextBuilder.literal("Commands that get ran upon creating a world.")), mouseX, mouseY);
+            renderComponentTooltip(matrices, Lists.newArrayList(LiteralTextBuilder.literal("Commands that get ran upon creating a world.")), mouseX, mouseY);
     }
 
     @Override
-    public void close() {
-        Objects.requireNonNull(client).setScreen(parent);
+    public void onClose() {
+        Objects.requireNonNull(minecraft).setScreen(parent);
     }
 }

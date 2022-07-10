@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.forge;
 
 import lombok.SneakyThrows;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -22,19 +22,19 @@ public class MoreCommandsArchImpl {
     }
 
     @SneakyThrows
-    public static boolean checkPermission(CommandSource source, String permission) {
-        return !(source instanceof ServerCommandSource) || !(((ServerCommandSource) source).getEntity() instanceof ServerPlayerEntity) ||
-                MoreCommandsForge.getPermissionNode(permission) == null || PermissionAPI.getPermission(((ServerCommandSource) source).getPlayerOrThrow(), MoreCommandsForge.getPermissionNode(permission));
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission) {
+        return !(source instanceof CommandSourceStack) || !(((CommandSourceStack) source).getEntity() instanceof ServerPlayer) ||
+                MoreCommandsForge.getPermissionNode(permission) == null || PermissionAPI.getPermission(((CommandSourceStack) source).getPlayerOrException(), MoreCommandsForge.getPermissionNode(permission));
     }
 
-    public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission, boolean fallback) {
         return fallback;
     }
 
     public static void doMLSpecificClientInit() {
     }
 
-    public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
-        return source -> source.hasPermissionLevel(defaultRequiredLevel);
+    public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
+        return source -> source.hasPermission(defaultRequiredLevel);
     }
 }

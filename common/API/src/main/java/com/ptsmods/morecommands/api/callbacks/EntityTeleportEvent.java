@@ -2,9 +2,9 @@ package com.ptsmods.morecommands.api.callbacks;
 
 import dev.architectury.event.Event;
 import dev.architectury.event.EventFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public interface EntityTeleportEvent {
     Event<EntityTeleportEvent> EVENT = EventFactory.of(listeners -> (entity, worldFrom, worldTo, from, to) -> {
@@ -12,5 +12,5 @@ public interface EntityTeleportEvent {
         return false;
     });
 
-    boolean onTeleport(Entity entity, World worldFrom, World worldTo, Vec3d from, Vec3d to);
+    boolean onTeleport(Entity entity, Level worldFrom, Level worldTo, Vec3 from, Vec3 to);
 }

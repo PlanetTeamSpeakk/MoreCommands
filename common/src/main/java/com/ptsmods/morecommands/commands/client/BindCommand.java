@@ -11,9 +11,9 @@ import com.ptsmods.morecommands.api.callbacks.MouseEvent;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.arguments.KeyArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class BindCommand extends ClientCommand {
         if (action == 1 && record > 0) {
             record--;
             sendMsg("You just pressed the " + SF + MoreCommandsClient.getKeyForKeyCode(keyCode) + DF + " key.");
-        } else if (action > 0 && MinecraftClient.getInstance().currentScreen == null) { // Either press or hold, but not release.
+        } else if (action > 0 && Minecraft.getInstance().screen == null) { // Either press or hold, but not release.
             String key = MoreCommandsClient.getKeyForKeyCode(keyCode);
             if (key != null && bindings.containsKey(key)) {
                 ClientCompat.get().sendMessageOrCommand(bindings.get(key));
@@ -56,19 +56,19 @@ public class BindCommand extends ClientCommand {
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("bind")
                 .then(cLiteral("set")
                         .then(cArgument("key", KeyArgumentType.key())
                                 .then(cArgument("msg", StringArgumentType.greedyString())
                                         .executes(ctx -> {
                                             String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
-                                            if (bindings.containsKey(key)) sendMsg(Formatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, " +
+                                            if (bindings.containsKey(key)) sendMsg(ChatFormatting.RED + "A binding has already been made with this key, if you want this key to send multiple messages, " +
                                                     "consider using macros, if not, consider removing the binding with /bind remove " + key + " first.");
                                             else {
                                                 bindings.put(key, ctx.getArgument("msg", String.class));
                                                 if (!bindings.get(key).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF +
-                                                        "and " + Formatting.RED + "not " + SF + "a command" + DF + ".");
+                                                        "and " + ChatFormatting.RED + "not " + SF + "a command" + DF + ".");
                                                 saveData();
                                                 sendMsg("A binding for key " + SF + key + DF + " has been saved.");
                                                 return 1;
@@ -79,7 +79,7 @@ public class BindCommand extends ClientCommand {
                         .then(cArgument("key", KeyArgumentType.key())
                                 .executes(ctx -> {
                                     String key = MoreCommandsClient.getKeyForKeyCode(KeyArgumentType.getKey(ctx, "key"));
-                                    if (!bindings.containsKey(key)) sendMsg(Formatting.RED + "No binding has been set for that key yet.");
+                                    if (!bindings.containsKey(key)) sendMsg(ChatFormatting.RED + "No binding has been set for that key yet.");
                                     else {
                                         bindings.remove(key);
                                         saveData();
@@ -90,7 +90,7 @@ public class BindCommand extends ClientCommand {
                                 })))
                 .then(cLiteral("list")
                         .executes(ctx -> {
-                            if (bindings.isEmpty()) sendMsg(Formatting.RED + "You have no bindings set yet, consider setting one with /bind set <key> <msg>.");
+                            if (bindings.isEmpty()) sendMsg(ChatFormatting.RED + "You have no bindings set yet, consider setting one with /bind set <key> <msg>.");
                             else {
                                 sendMsg("You currently have the following bindings:");
                                 bindings.forEach((key, msg) -> sendMsg("  " + key + ": " + SF + msg));

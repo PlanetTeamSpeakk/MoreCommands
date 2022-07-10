@@ -1,15 +1,14 @@
 package com.ptsmods.morecommands.gui.infohud.variables;
 
-import net.minecraft.client.util.math.MatrixStack;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.BiConsumer;
 
 abstract class AbstractVariable<T> implements Variable<T> {
     protected final String name;
     protected final T defaultValue;
-    private final BiConsumer<MatrixStack, T> applicator;
+    private final BiConsumer<PoseStack, T> applicator;
 
-    public AbstractVariable(String name, T defaultValue, BiConsumer<MatrixStack, T> applicator) {
+    public AbstractVariable(String name, T defaultValue, BiConsumer<PoseStack, T> applicator) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.applicator = applicator;
@@ -26,12 +25,12 @@ abstract class AbstractVariable<T> implements Variable<T> {
     }
 
     @Override
-    public void apply(MatrixStack matrixStack, Object value) {
+    public void apply(PoseStack matrixStack, Object value) {
         applicator.accept(matrixStack, upcast(value));
     }
 
     @Override
-    public void applyDefault(MatrixStack matrixStack) {
+    public void applyDefault(PoseStack matrixStack) {
         applicator.accept(matrixStack, getDefaultValue());
     }
 }

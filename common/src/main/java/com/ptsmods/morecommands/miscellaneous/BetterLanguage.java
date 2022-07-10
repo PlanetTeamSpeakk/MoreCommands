@@ -1,11 +1,10 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.util.Language;
-
 import java.util.Objects;
 import java.util.TreeMap;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
 
 public class BetterLanguage extends Language {
     private static final TreeMap<Integer, String> romanNumerals = new TreeMap<>();
@@ -28,26 +27,26 @@ public class BetterLanguage extends Language {
     }
 
     @Override
-    public String get(String key) {
+    public String getOrDefault(String key) {
         return "null".equals(String.valueOf(key)) ?
                 null : key.startsWith("block.minecraft.spawner_") && key.indexOf('_') != key.length()-1 ?
-                get(key.split("_", 2)[1]) + " " + get("block.minecraft.spawner") : key.startsWith("enchantment.level.") ?
-                toRoman(Integer.parseInt(key.split("\\.")[2])) : parent.get(key);
+                getOrDefault(key.split("_", 2)[1]) + " " + getOrDefault("block.minecraft.spawner") : key.startsWith("enchantment.level.") ?
+                toRoman(Integer.parseInt(key.split("\\.")[2])) : parent.getOrDefault(key);
     }
 
     @Override
-    public boolean hasTranslation(String key) {
-        return key != null && (key.startsWith("enchantment.level.") || parent.hasTranslation(key));
+    public boolean has(String key) {
+        return key != null && (key.startsWith("enchantment.level.") || parent.has(key));
     }
 
     @Override
-    public boolean isRightToLeft() {
-        return parent.isRightToLeft();
+    public boolean isDefaultRightToLeft() {
+        return parent.isDefaultRightToLeft();
     }
 
     @Override
-    public OrderedText reorder(StringVisitable text) {
-        return parent.reorder(text);
+    public FormattedCharSequence getVisualOrder(FormattedText text) {
+        return parent.getVisualOrder(text);
     }
 
     private String toRoman(int number) {

@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.mixin.reach.client;
 
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,10 +13,10 @@ import java.util.Objects;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
-    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
-    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
+    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "pick")
     public double updateTargetedEntity_maxReach(double maxReach) {
-        return ReachCommand.getReach(Objects.requireNonNull(client.player), false);
+        return ReachCommand.getReach(Objects.requireNonNull(minecraft.player), false);
     }
 }

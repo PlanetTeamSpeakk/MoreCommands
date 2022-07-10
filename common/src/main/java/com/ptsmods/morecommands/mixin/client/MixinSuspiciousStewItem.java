@@ -1,53 +1,47 @@
 package com.ptsmods.morecommands.mixin.client;
 
-import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.SuspiciousStewItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Mixin(SuspiciousStewItem.class)
 public class MixinSuspiciousStewItem extends Item {
-    public MixinSuspiciousStewItem(Settings settings) {
+    public MixinSuspiciousStewItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level world, @NotNull List<Component> tooltip, @NotNull TooltipFlag context) {
         if (!ClientOptions.Tweaks.suspiciousTooltips.getValue()) return;
 
-        NbtCompound nbt = stack.getNbt();
-        if (nbt == null || !nbt.contains(SuspiciousStewItem.EFFECTS_KEY, NbtElement.LIST_TYPE)) return;
+        CompoundTag nbt = stack.getTag();
+        if (nbt == null || !nbt.contains(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_LIST)) return;
 
-        NbtList effects = nbt.getList(SuspiciousStewItem.EFFECTS_KEY, NbtElement.COMPOUND_TYPE);
+        ListTag effects = nbt.getList(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_COMPOUND);
         ItemStack potionStack = new ItemStack(Items.POTION);
 
-        PotionUtil.setPotion(potionStack, Potions.WATER);
-        PotionUtil.setCustomPotionEffects(potionStack, effects.stream()
-                .map(e -> (NbtCompound) e)
-                .map(nbt0 -> {
-                    StatusEffectInstance effect = new StatusEffectInstance(StatusEffect.byRawId(nbt0.getInt(SuspiciousStewItem.EFFECT_ID_KEY)),
-                            nbt0.contains(SuspiciousStewItem.EFFECT_DURATION_KEY, NbtElement.INT_TYPE) ? nbt0.getInt(SuspiciousStewItem.EFFECT_DURATION_KEY) : 160);
-                    MoreCommandsClient.LOG.info(effect);
-                    return effect;
-                })
+        PotionUtils.setPotion(potionStack, Potions.WATER);
+        PotionUtils.setCustomEffects(potionStack, effects.stream()
+                .map(e -> (CompoundTag) e)
+                .filter( nbt0 -> MobEffect.byId(nbt0.getInt(SuspiciousStewItem.EFFECT_ID_TAG)) != null)
+                .map(nbt0 -> new MobEffectInstance(Objects.requireNonNull(MobEffect.byId(nbt0.getInt(SuspiciousStewItem.EFFECT_ID_TAG))),
+                        nbt0.contains(SuspiciousStewItem.EFFECT_DURATION_TAG, Tag.TAG_INT) ? nbt0.getInt(SuspiciousStewItem.EFFECT_DURATION_TAG) : 160))
                 .collect(Collectors.toList()));
-        PotionUtil.buildTooltip(potionStack, tooltip, 1.0F);
+        PotionUtils.addPotionTooltip(potionStack, tooltip, 1.0F);
     }
 }

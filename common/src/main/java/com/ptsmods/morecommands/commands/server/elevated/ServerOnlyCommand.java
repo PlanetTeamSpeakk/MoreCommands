@@ -5,19 +5,18 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
 
 public class ServerOnlyCommand extends Command {
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
         dispatcher.register(literal("serveronly").requires(IS_OP)
                 .executes(ctx -> {
                     File file = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
@@ -35,7 +34,7 @@ public class ServerOnlyCommand extends Command {
 
                     boolean b = Boolean.parseBoolean(props.getProperty("serverOnly"));
                     sendMsg(ctx, "Server-only mode has been " + Util.formatFromBool(b, "enabled", "disabled") + DF + ". Clients will " + (b ? "now" : "no longer") +
-                            " need to have MoreCommands installed." + (b != MoreCommands.SERVER_ONLY ? "\n" + Formatting.RED + "A server restart is required." : ""));
+                            " need to have MoreCommands installed." + (b != MoreCommands.SERVER_ONLY ? "\n" + ChatFormatting.RED + "A server restart is required." : ""));
                     return b ? 2 : 1;
                 }));
     }

@@ -1,15 +1,15 @@
 package com.ptsmods.morecommands.mixin.compat.compat18.min;
 
 import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingMotive;
+import net.minecraft.world.entity.decoration.Motive;
+import net.minecraft.world.entity.decoration.Painting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(PaintingEntity.class)
+@Mixin(Painting.class)
 public class MixinPaintingEntity implements PaintingEntityAddon {
 
-    @Shadow public PaintingMotive motive;
+    @Shadow public Motive motive;
 
     @Override
     public Object mc$getVariant() {
@@ -18,6 +18,6 @@ public class MixinPaintingEntity implements PaintingEntityAddon {
 
     @Override
     public void mc$setVariant(Object variant) {
-        motive = (PaintingMotive) variant;
+        motive = (Motive) variant;
     }
 }

@@ -7,23 +7,23 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
 
 public class EnderChestCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.getRoot().addChild(MoreCommands.createAlias("ec", dispatcher.register(literalReq("enderchest")
                 .executes(ctx -> execute(ctx, null))
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", EntityArgument.player())
                         .requires(hasPermissionOrOp("morecommands.enderchest.others"))
-                        .executes(ctx -> execute(ctx, EntityArgumentType.getPlayer(ctx, "player")))))));
+                        .executes(ctx -> execute(ctx, EntityArgument.getPlayer(ctx, "player")))))));
     }
 
     @Override
@@ -31,11 +31,11 @@ public class EnderChestCommand extends Command {
         return "/unelevated/ender-chest";
     }
 
-    private int execute(CommandContext<ServerCommandSource> ctx, PlayerEntity p) throws CommandSyntaxException {
-        PlayerEntity player = p == null ? ctx.getSource().getPlayerOrThrow() : p;
-        ctx.getSource().getPlayerOrThrow().openHandledScreen(new NamedScreenHandlerFactory() {
+    private int execute(CommandContext<CommandSourceStack> ctx, Player p) throws CommandSyntaxException {
+        Player player = p == null ? ctx.getSource().getPlayerOrException() : p;
+        ctx.getSource().getPlayerOrException().openMenu(new MenuProvider() {
             @Override
-            public Text getDisplayName() {
+            public Component getDisplayName() {
                 return literalText("")
                         .append(Compat.get().builderFromText(player.getDisplayName()))
                         .append(literalText("'" + (IMoreCommands.get().textToString(player.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " enderchest"))
@@ -43,8 +43,8 @@ public class EnderChestCommand extends Command {
             }
 
             @Override
-            public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                return GenericContainerScreenHandler.createGeneric9x3(syncId, inv, player.getEnderChestInventory());
+            public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
+                return ChestMenu.threeRows(syncId, inv, player.getEnderChestInventory());
             }
         });
         return 1;

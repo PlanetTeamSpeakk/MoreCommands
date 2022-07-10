@@ -35,24 +35,24 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Blocks;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.config.RegistryBuilder;
@@ -81,13 +81,13 @@ import java.util.stream.Collectors;
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient {
     public static final Logger LOG = LogManager.getLogger();
-    public static final KeyBinding toggleInfoHudBinding = new KeyBinding("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
+    public static final KeyMapping toggleInfoHudBinding = new KeyMapping("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
     public static boolean scheduleWorldInitCommands = false;
     private static double speed = 0d;
     private static double avgSpeed = 0d;
     private static final DoubleList lastSpeeds = new DoubleArrayList();
-    private static MovingSoundInstance easterEggSound = null;
-    public static final CommandDispatcher<ClientCommandSource> clientCommandDispatcher = new CommandDispatcher<>();
+    private static AbstractTickableSoundInstance easterEggSound = null;
+    public static final CommandDispatcher<ClientSuggestionProvider> clientCommandDispatcher = new CommandDispatcher<>();
     private static final Map<String, Integer> keys = new LinkedHashMap<>();
     private static final Map<Integer, String> keysReverse = new LinkedHashMap<>();
     private static final List<String> disabledCommands = new ArrayList<>();
@@ -95,7 +95,7 @@ public class MoreCommandsClient {
     private static final File wicFile = MoreCommandsArch.getConfigDirectory().resolve("worldInitCommands.json").toFile();
     private static final Map<String, String> nameMCFriends = new HashMap<>();
     private static final HttpClient sslLenientHttpClient;
-    private static final Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> nodes = new LinkedHashMap<>();
+    private static final Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> nodes = new LinkedHashMap<>();
 
     static {
         for (Field f : GLFW.class.getFields())
@@ -139,13 +139,13 @@ public class MoreCommandsClient {
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
-        List<ParticleTextureSheet> list = new ArrayList<>(MixinParticleManagerAccessor.getParticleTextureSheets());
+        List<ParticleRenderType> list = new ArrayList<>(MixinParticleManagerAccessor.getRenderOrder());
         list.add(VexParticle.pts);
-        MixinParticleManagerAccessor.setParticleTextureSheets(list);
+        MixinParticleManagerAccessor.setRenderOrder(list);
 
-        List<ItemConvertible> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
-        if (Registry.BLOCK.containsId(new Identifier("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new Identifier("water_cauldron")));
-        ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemConvertible[0]));
+        List<ItemLike> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
+        if (Registry.BLOCK.containsKey(new ResourceLocation("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new ResourceLocation("water_cauldron")));
+        ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemLike[0]));
 
         Holder.setDeathTracker(DeathTracker.INSTANCE);
 
@@ -157,7 +157,7 @@ public class MoreCommandsClient {
         });
 
         TickEvent.SERVER_POST.register(server -> {
-            if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommandManager().execute(server.getCommandSource(), cmd));
+            if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommands().performCommand(server.createCommandSourceStack(), cmd));
         });
 
         KeyMappingRegistry.register(toggleInfoHudBinding);
@@ -176,16 +176,16 @@ public class MoreCommandsClient {
 
         Set<Entity> coolKids = new HashSet<>();
         ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-            if (toggleInfoHudBinding.wasPressed()) {
+            if (toggleInfoHudBinding.consumeClick()) {
                 ClientOptions.Tweaks.enableInfoHUD.setValue(!ClientOptions.Tweaks.enableInfoHUD.getValue());
                 ClientOptions.write();
             }
 
-            ClientPlayerEntity p = MinecraftClient.getInstance().player;
+            LocalPlayer p = Minecraft.getInstance().player;
             if (p != null) {
-                double x = p.getX() - p.prevX;
-                double y = p.getY() - p.prevY;
-                double z = p.getZ() - p.prevZ;
+                double x = p.getX() - p.xo;
+                double y = p.getY() - p.yo;
+                double z = p.getZ() - p.zo;
                 speed = Math.sqrt(x * x + y * y + z * z) * 20; // Apparently, Pythagoras' theorem does have some use. Who would've thunk?
 
                 lastSpeeds.add(speed);
@@ -195,26 +195,26 @@ public class MoreCommandsClient {
             }
 
             for (Entity entity : coolKids)
-                if (entity.world == world)
+                if (entity.level == world)
                     for (int i = 0; i < 2; i++)
-                        MinecraftClient.getInstance().particleManager.addParticle(new VexParticle(entity));
+                        Minecraft.getInstance().particleEngine.add(new VexParticle(entity));
         });
 
         ClientEntityEvent.ENTITY_LOAD.register((world, entity) -> {
-            if (entity instanceof PlayerEntity && MoreCommands.isCool(entity)) coolKids.add(entity);
+            if (entity instanceof Player && MoreCommands.isCool(entity)) coolKids.add(entity);
         });
 
         ClientEntityEvent.ENTITY_UNLOAD.register((world, entity) -> coolKids.remove(entity));
 
 
-        Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> nodes = new LinkedHashMap<>();
+        Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> nodes = new LinkedHashMap<>();
         class CommandRegisterer {
-            void registerCommand(ClientCommand cmd, CommandDispatcher<ClientCommandSource> dispatcher) {
+            void registerCommand(ClientCommand cmd, CommandDispatcher<ClientSuggestionProvider> dispatcher) {
                 try {
-                    CommandDispatcher<ClientCommandSource> tempDispatcher = new CommandDispatcher<>();
+                    CommandDispatcher<ClientSuggestionProvider> tempDispatcher = new CommandDispatcher<>();
                     cmd.cRegister(tempDispatcher);
 
-                    for (CommandNode<ClientCommandSource> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                    for (CommandNode<ClientSuggestionProvider> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
                     nodes.put(cmd, tempDispatcher.getRoot().getChildren());
                 } catch (Exception e) {
                     LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
@@ -244,11 +244,11 @@ public class MoreCommandsClient {
             MoreCommandsClient.nodes.putAll(nodes);
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new Identifier("morecommands:formatting_update"), (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new ResourceLocation("morecommands:formatting_update"), (buf, context) -> {
             int id = buf.readByte();
             int index = buf.readByte();
             if (index < 0) return;
-            Formatting colour = FormattingColour.values()[index].asFormatting();
+            ChatFormatting colour = FormattingColour.values()[index].asFormatting();
             switch (id) {
                 case 0:
                     MoreCommands.DF = Command.DF = colour;
@@ -261,26 +261,26 @@ public class MoreCommandsClient {
             }
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new Identifier("morecommands:disable_client_options"), (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new ResourceLocation("morecommands:disable_client_options"), (buf, context) -> {
             ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
             int length = buf.readVarInt();
             for (int i = 0; i < length; i++)
-                Optional.ofNullable(ClientOption.getKeyMappedOptions().get(buf.readString()))
+                Optional.ofNullable(ClientOption.getKeyMappedOptions().get(buf.readUtf()))
                         .ifPresent(option -> option.setDisabled(true));
         });
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new Identifier("morecommands:disable_client_commands"), (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, new ResourceLocation("morecommands:disable_client_commands"), (buf, context) -> {
             disabledCommands.clear();
             int length = buf.readVarInt();
             for (int i = 0; i < length; i++)
-                disabledCommands.add(buf.readString());
+                disabledCommands.add(buf.readUtf());
         });
 
         ChatMessageSendEvent.EVENT.register(message -> {
             if (message.startsWith("/easteregg")) {
-                if (easterEggSound == null) MinecraftClient.getInstance().getSoundManager().play(easterEggSound = new EESound());
+                if (easterEggSound == null) Minecraft.getInstance().getSoundManager().play(easterEggSound = new EESound());
                 else {
-                    MinecraftClient.getInstance().getSoundManager().stop(easterEggSound);
+                    Minecraft.getInstance().getSoundManager().stop(easterEggSound);
                     easterEggSound = null;
                 }
                 return null;
@@ -289,9 +289,9 @@ public class MoreCommandsClient {
         });
 
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
-            if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && player.getStackInHand(hand).isEmpty() &&
-                    Chair.isValid(player.world.getBlockState(pos)) && NetworkManager.canServerReceive(new Identifier("morecommands:sit_on_stairs"))) {
-                NetworkManager.sendToServer(new Identifier("morecommands:sit_on_stairs"), new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
+            if (!Screen.hasShiftDown() && ClientOptions.Tweaks.sitOnStairs.getValue() && player.getItemInHand(hand).isEmpty() &&
+                    Chair.isValid(player.level.getBlockState(pos)) && NetworkManager.canServerReceive(new ResourceLocation("morecommands:sit_on_stairs"))) {
+                NetworkManager.sendToServer(new ResourceLocation("morecommands:sit_on_stairs"), new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos));
                 return EventResult.interruptTrue();
             }
             return EventResult.pass();
@@ -300,7 +300,7 @@ public class MoreCommandsClient {
         MoreCommands.execute(() -> {
             try {
                 @SuppressWarnings("UnstableApiUsage")
-                List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuid() + "/friends"),
+                List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + Minecraft.getInstance().getUser().getUuid() + "/friends"),
                         new TypeToken<List<Map<String, String>>>() {}.getType());
                 // SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
                 nameMCFriends.putAll(friends.stream().collect(Collectors.toMap(friend -> friend.get("uuid"), friend -> friend.get("name"))));
@@ -312,17 +312,17 @@ public class MoreCommandsClient {
 
     public static String getWorldName() {
         // MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
-        return MinecraftClient.getInstance().world == null ? null : MinecraftClient.getInstance().getCurrentServerEntry() == null ?
-                MinecraftClient.getInstance().getServer() == null ? null : Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getSaveProperties().getLevelName() :
-                MinecraftClient.getInstance().getCurrentServerEntry().address;
+        return Minecraft.getInstance().level == null ? null : Minecraft.getInstance().getCurrentServer() == null ?
+                Minecraft.getInstance().getSingleplayerServer() == null ? null : Objects.requireNonNull(Minecraft.getInstance().getSingleplayerServer()).getWorldData().getLevelName() :
+                Minecraft.getInstance().getCurrentServer().ip;
     }
 
     public static void updateTag() {
-        if (NetworkManager.canServerReceive(new Identifier("morecommands:discord_data")) && ClientOptions.Tweaks.discordTag.getValue() != null) {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        if (NetworkManager.canServerReceive(new ResourceLocation("morecommands:discord_data")) && ClientOptions.Tweaks.discordTag.getValue() != null) {
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
             buf.writeBoolean(ClientOptions.Tweaks.askPermission.getValue());
-            buf.writeString(ClientOptions.Tweaks.discordTag.getValue());
-            NetworkManager.sendToServer(new Identifier("morecommands:discord_data"), buf);
+            buf.writeUtf(ClientOptions.Tweaks.discordTag.getValue());
+            NetworkManager.sendToServer(new ResourceLocation("morecommands:discord_data"), buf);
         }
     }
 
@@ -352,24 +352,24 @@ public class MoreCommandsClient {
         final int buttonWidth = 24;
         final int wideButtonWidth = (int) (buttonWidth / 0.75f);
         final int buttonHeight = 20;
-        Formatting[] formattings = Formatting.values();
-        List<ButtonWidget> btns = new ArrayList<>();
+        ChatFormatting[] formattings = ChatFormatting.values();
+        List<Button> btns = new ArrayList<>();
         for (int i = 0; i < formattings.length; i++) {
             int x = i; // Has to be effectively final cuz lambda
-            btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new ButtonWidget(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
+            btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new Button(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
                     yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
                     LiteralTextBuilder.builder(formattings[x].toString().replace('\u00A7', '&'))
-                            .withStyle(Style.EMPTY.withFormatting(formattings[x]))
+                            .withStyle(Style.EMPTY.applyFormat(formattings[x]))
                             .build(),
                     btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
                     /*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
-                    LiteralTextBuilder.literal(Formatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : ButtonWidget.EMPTY) {
+                    LiteralTextBuilder.literal(ChatFormatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : Button.NO_TOOLTIP) {
                 public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
                     return false;
                 }
             }, btn -> btn.visible = initOpened0)));
         }
-        Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new ButtonWidget(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
+        Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new Button(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
                 50, 20, LiteralTextBuilder.literal("Colours", Command.DS), btn -> {
             boolean b = !btns.get(0).visible;
             if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
@@ -422,7 +422,7 @@ public class MoreCommandsClient {
         nameMCFriends.put(id, name);
     }
 
-    public static Map<ClientCommand, Collection<CommandNode<ClientCommandSource>>> getNodes() {
+    public static Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> getNodes() {
         return ImmutableMap.copyOf(nodes);
     }
 }

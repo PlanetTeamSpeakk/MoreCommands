@@ -2,23 +2,23 @@ package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.gui.screen.ingame.BookScreen;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.text.StringVisitable;
+import net.minecraft.client.gui.screens.inventory.BookViewScreen;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.network.chat.FormattedText;
 
 public class FormattingsCommand extends ClientCommand {
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) throws Exception {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) throws Exception {
         dispatcher.register(cLiteral("formattings")
                 .executes(ctx -> {
-                    scheduleScreen(new BookScreen(new BookScreen.Contents() {
+                    scheduleScreen(new BookViewScreen(new BookViewScreen.BookAccess() {
                         @Override
                         public int getPageCount() {
                             return 1;
                         }
 
                         @Override
-                        public StringVisitable getPageUnchecked(int index) {
+                        public FormattedText getPageRaw(int index) {
                             char ss = '\u00A7';
                             return literalText(
                                     ss + "00 " + ss + "11 " + ss + "22 " + ss + "33\n" +

@@ -1,10 +1,9 @@
 package com.ptsmods.morecommands.api.util.text;
 
 import com.ptsmods.morecommands.api.util.compat.Compat;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-
 import java.util.Objects;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBuilder> {
 
@@ -32,19 +31,19 @@ public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBui
         return new TranslatableTextBuilderImpl(key, style, args);
     }
 
-    static MutableText translatable(String key) {
+    static MutableComponent translatable(String key) {
         return builder(key).build();
     }
 
-    static MutableText translatable(String key, Object... args) {
+    static MutableComponent translatable(String key, Object... args) {
         return builder(key, args).build();
     }
 
-    static MutableText translatable(String key, Style style) {
+    static MutableComponent translatable(String key, Style style) {
         return builder(key, style).build();
     }
 
-    static MutableText translatable(String key, Style style, Object... args) {
+    static MutableComponent translatable(String key, Style style, Object... args) {
         return builder(key, style, args).build();
     }
 
@@ -74,7 +73,7 @@ public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBui
         }
 
         @Override
-        public MutableText build() {
+        public MutableComponent build() {
             return Compat.get().buildText(this);
         }
 

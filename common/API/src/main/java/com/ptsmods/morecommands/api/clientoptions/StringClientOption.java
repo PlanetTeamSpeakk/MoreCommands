@@ -4,10 +4,9 @@ import com.ptsmods.morecommands.api.gui.PlaceHolderTextFieldWidget;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -63,9 +62,9 @@ public class StringClientOption extends ClientOption<String> {
 
     @Override
     public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        TextFieldWidget widget = new PlaceHolderTextFieldWidget(MinecraftClient.getInstance().textRenderer, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
-        widget.setText(getValueRaw());
-        widget.setChangedListener(s -> {
+        EditBox widget = new PlaceHolderTextFieldWidget(Minecraft.getInstance().font, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
+        widget.setValue(getValueRaw());
+        widget.setResponder(s -> {
             if (!predicate.test(s)) return;
 
             setValue(s);
@@ -75,7 +74,7 @@ public class StringClientOption extends ClientOption<String> {
     }
 
     @Override
-    public Text createButtonText(String name) {
+    public Component createButtonText(String name) {
         return LiteralTextBuilder.literal(getName());
     }
 }

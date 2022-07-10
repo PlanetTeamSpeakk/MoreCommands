@@ -1,8 +1,8 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.entry.LootPoolEntry;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface MixinLootPoolAccessor {
 
     @Accessor
-    LootPoolEntry[] getEntries();
+    LootPoolEntryContainer[] getEntries();
 
     @Accessor
-    LootCondition[] getConditions();
+    LootItemCondition[] getConditions();
 }

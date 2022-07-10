@@ -11,21 +11,20 @@ import com.mojang.util.UUIDTypeAdapter;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class SkullCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("skull")
                 .then(argument("player", StringArgumentType.word())
                         .executes(ctx -> execute(ctx, 1))
@@ -38,10 +37,10 @@ public class SkullCommand extends Command {
         return "/unelevated/skull";
     }
 
-    private int execute(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
+    private int execute(CommandContext<CommandSourceStack> ctx, int amount) throws CommandSyntaxException {
         ItemStack stack = new ItemStack(Items.PLAYER_HEAD, amount);
         String playername = ctx.getArgument("player", String.class);
-        NbtCompound tag = new NbtCompound();
+        CompoundTag tag = new CompoundTag();
         try {
             UUID id = UUIDTypeAdapter.fromString(playername);
             try {
@@ -53,10 +52,10 @@ public class SkullCommand extends Command {
             }
         } catch (IllegalArgumentException ignored) {} // Given playername is not a UUID.
         tag.putString("SkullOwner", playername);
-        stack.setNbt(tag);
-        if (ctx.getSource().getEntity() instanceof PlayerEntity) Compat.get().getInventory(ctx.getSource().getPlayerOrThrow()).insertStack(stack);
-        else ctx.getSource().getEntityOrThrow().dropStack(stack, ctx.getSource().getEntityOrThrow().getEyeHeight(ctx.getSource().getEntityOrThrow().getPose()));
-        ctx.getSource().getWorld().playSound(null, ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, ((ctx.getSource().getWorld().random.nextFloat() - ctx.getSource().getWorld().random.nextFloat()) * 0.7F + 1.0F) * 2.0F, 1F);
+        stack.setTag(tag);
+        if (ctx.getSource().getEntity() instanceof Player) Compat.get().getInventory(ctx.getSource().getPlayerOrException()).add(stack);
+        else ctx.getSource().getEntityOrException().spawnAtLocation(stack, ctx.getSource().getEntityOrException().getEyeHeight(ctx.getSource().getEntityOrException().getPose()));
+        ctx.getSource().getLevel().playSound(null, ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, ((ctx.getSource().getLevel().random.nextFloat() - ctx.getSource().getLevel().random.nextFloat()) * 0.7F + 1.0F) * 2.0F, 1F);
         sendMsg(ctx, "Your skull" + (stack.getCount() == 1 ? "" : "s") + " ha" + (stack.getCount() == 1 ? "s" : "ve") + " arrived.");
         return 1;
     }

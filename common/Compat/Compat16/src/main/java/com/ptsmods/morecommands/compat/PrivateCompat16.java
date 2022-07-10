@@ -4,46 +4,45 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 // Purely exists for when Java does weird stuff saying it can't find classes that were
 // deleted when loading Compat16 as a result of loading a more recent Compat that
 // extends it.
 class PrivateCompat16 {
-    public static MutableText buildText(LiteralTextBuilder builder) {
-        return buildText(new LiteralText(builder.getLiteral()), builder);
+    public static MutableComponent buildText(LiteralTextBuilder builder) {
+        return buildText(new TextComponent(builder.getLiteral()), builder);
     }
 
-    public static MutableText buildText(TranslatableTextBuilder builder) {
-        return buildText(Objects.requireNonNull(builder.getArgs().length == 0 ? new TranslatableText(builder.getKey()) : new TranslatableText(builder.getKey(), Arrays.stream(builder.getArgs())
+    public static MutableComponent buildText(TranslatableTextBuilder builder) {
+        return buildText(Objects.requireNonNull(builder.getArgs().length == 0 ? new TranslatableComponent(builder.getKey()) : new TranslatableComponent(builder.getKey(), Arrays.stream(builder.getArgs())
                         .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
                         .toArray(Object[]::new))), builder);
     }
 
-    public static MutableText buildText(EmptyTextBuilder builder) {
-        return buildText(LiteralText.EMPTY.shallowCopy(), builder);
+    public static MutableComponent buildText(EmptyTextBuilder builder) {
+        return buildText(TextComponent.EMPTY.copy(), builder);
     }
 
-    private static MutableText buildText(MutableText text, TextBuilder<?> builder) {
+    private static MutableComponent buildText(MutableComponent text, TextBuilder<?> builder) {
         text.setStyle(builder.getStyle());
         builder.getChildren().forEach(child -> text.append(child.build()));
         return text;
     }
 
-    public static TextBuilder<?> builderFromText(Text text) {
+    public static TextBuilder<?> builderFromText(Component text) {
         TextBuilder<?> builder;
-        if (text instanceof LiteralText)
-            builder = LiteralTextBuilder.builder(((LiteralText) text).getRawString());
-        else if (text instanceof TranslatableText)
-            builder = TranslatableTextBuilder.builder(((TranslatableText) text).getKey(), Arrays.stream(((TranslatableText) text).getArgs())
-                    .map(o -> o instanceof Text ? builderFromText((Text) o) : o)
+        if (text instanceof TextComponent)
+            builder = LiteralTextBuilder.builder(((TextComponent) text).getText());
+        else if (text instanceof TranslatableComponent)
+            builder = TranslatableTextBuilder.builder(((TranslatableComponent) text).getKey(), Arrays.stream(((TranslatableComponent) text).getArgs())
+                    .map(o -> o instanceof Component ? builderFromText((Component) o) : o)
                     .toArray(Object[]::new));
         else throw new IllegalArgumentException("Given text was neither literal nor translatable.");
 

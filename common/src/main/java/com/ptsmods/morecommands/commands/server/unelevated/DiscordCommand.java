@@ -8,15 +8,14 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,10 +46,10 @@ public class DiscordCommand extends Command {
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("discord")
                 .executes(ctx -> {
-                    sendMsg(ctx, discordUrl == null ? Formatting.RED + "This server does not have a Discord url set." : "Join our Discord server at " + Formatting.BLUE + Formatting.UNDERLINE + discordUrl + DF + ".");
+                    sendMsg(ctx, discordUrl == null ? ChatFormatting.RED + "This server does not have a Discord url set." : "Join our Discord server at " + ChatFormatting.BLUE + ChatFormatting.UNDERLINE + discordUrl + DF + ".");
                     return 1;
                 })
                 .then(literal("set")
@@ -71,30 +70,30 @@ public class DiscordCommand extends Command {
                                     }
                                     return 0;
                                 })))
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", EntityArgument.player())
                         .executes(ctx -> {
-                            ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+                            ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
                             if (!MoreCommands.discordTags.containsKey(player)) {
                                 sendMsg(ctx, "That player does not have Discord or has not shared their tag.");
                                 return 0;
                             } else if (MoreCommands.discordTagNoPerm.contains(player)) sendDiscordTag(ctx, player);
                             else {
                                 sendMsg(player, literalText("")
-                                        .append(Compat.get().builderFromText(ctx.getSource().getPlayerOrThrow().getDisplayName()))
+                                        .append(Compat.get().builderFromText(ctx.getSource().getPlayerOrException().getDisplayName()))
                                         .append(literalText(" has requested your ", DS))
                                         .append(literalText("Discord tag", SS))
                                         .append(literalText(". Click ")
-                                                .append(literalText("here", SS.withFormatting(Formatting.UNDERLINE)
-                                                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayerOrThrow().getEntityName()))))
+                                                .append(literalText("here", SS.applyFormat(ChatFormatting.UNDERLINE)
+                                                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "discord send " + ctx.getSource().getPlayerOrException().getScoreboardName()))))
                                         .append(literalText(" to send it to them.", DS))));
                                 sendMsg(ctx, "A request has been sent to the player.");
                             }
                             return 1;
                         }))
                 .then(literal("send")
-                        .then(argument("player", EntityArgumentType.player())
+                        .then(argument("player", EntityArgument.player())
                                 .executes(ctx -> {
-                                    PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+                                    Player player = EntityArgument.getPlayer(ctx, "player");
                                     sendDiscordTag(ctx, player);
                                     sendMsg(ctx, IMoreCommands.get().textToString(player.getDisplayName(), SS, true) + DF + " has been sent your Discord tag.");
                                     return 1;
@@ -106,7 +105,7 @@ public class DiscordCommand extends Command {
         return "/unelevated/discord";
     }
 
-    private void sendDiscordTag(CommandContext<ServerCommandSource> ctx, PlayerEntity player) {
+    private void sendDiscordTag(CommandContext<CommandSourceStack> ctx, Player player) {
         String tag = MoreCommands.discordTags.get(player);
         sendMsg(ctx, literalText("")
                 .append(Compat.get().builderFromText(player.getDisplayName()))

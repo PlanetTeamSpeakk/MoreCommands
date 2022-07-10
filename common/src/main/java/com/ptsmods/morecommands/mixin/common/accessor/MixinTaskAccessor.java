@@ -1,15 +1,15 @@
 package com.ptsmods.morecommands.mixin.common.accessor;
 
-import net.minecraft.entity.ai.brain.task.Task;
+import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Task.class)
+@Mixin(Behavior.class)
 public interface MixinTaskAccessor {
 
     @Accessor
-    void setStatus(Task.Status status);
+    void setStatus(Behavior.Status status);
 
     @Accessor
-    void setEndTime(long endTime);
+    void setEndTimestamp(long endTimestamp);
 }

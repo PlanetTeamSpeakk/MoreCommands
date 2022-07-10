@@ -4,9 +4,8 @@ import com.google.gson.JsonObject;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
-import net.minecraft.network.PacketByteBuf;
-
 import java.util.function.Supplier;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class ConstantSerialiser<A extends CompatArgumentType<A, T, ConstantSerialiser.ConstantProperties<A, T>>, T> implements ArgumentTypeSerialiser<A, T, ConstantSerialiser.ConstantProperties<A, T>> {
     private final Supplier<A> instanceSupplier;
@@ -18,7 +17,7 @@ public class ConstantSerialiser<A extends CompatArgumentType<A, T, ConstantSeria
     }
 
     @Override
-    public A fromPacket(PacketByteBuf buf) {
+    public A fromPacket(FriendlyByteBuf buf) {
         return instanceSupplier.get();
     }
 
@@ -49,6 +48,6 @@ public class ConstantSerialiser<A extends CompatArgumentType<A, T, ConstantSeria
         }
 
         @Override
-        public void write(PacketByteBuf buf) {}
+        public void write(FriendlyByteBuf buf) {}
     }
 }

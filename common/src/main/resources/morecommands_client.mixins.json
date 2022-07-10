@@ -20,7 +20,6 @@
     "MixinCreativeInventoryScreen",
     "MixinEntity",
     "MixinEntityRenderer",
-    "MixinFormatting",
     "MixinGameRenderer",
     "MixinInGameHud",
     "MixinInventoryScreen",

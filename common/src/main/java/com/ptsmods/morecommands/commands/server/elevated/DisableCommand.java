@@ -11,13 +11,12 @@ import com.ptsmods.morecommands.MoreCommandsArch;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,7 +27,7 @@ public class DisableCommand extends Command {
     private static final SimpleCommandExceptionType DISABLED = new SimpleCommandExceptionType(literalText("This command is currently disabled.").build());
     private static final Field commandField = ReflectionHelper.getField(CommandNode.class, "command");
     private static final List<UUID> remindedLP = new ArrayList<>();
-    private final Map<String, com.mojang.brigadier.Command<ServerCommandSource>> disabledCommands = new HashMap<>();
+    private final Map<String, com.mojang.brigadier.Command<CommandSourceStack>> disabledCommands = new HashMap<>();
     private final List<String> disabledPaths = new ArrayList<>();
     private static File file = null;
 
@@ -44,12 +43,12 @@ public class DisableCommand extends Command {
                 log.catching(e);
             } catch (NullPointerException ignored) {}
         }
-        CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = server.getCommands().getDispatcher();
         disabledCommands.clear();
         disabledPaths.forEach(path -> {
             String[] parts = path.split("\\.");
-            CommandNode<ServerCommandSource> parent = dispatcher.getRoot();
-            List<CommandNode<ServerCommandSource>> nodes = Lists.newArrayList();
+            CommandNode<CommandSourceStack> parent = dispatcher.getRoot();
+            List<CommandNode<CommandSourceStack>> nodes = Lists.newArrayList();
             for (String part : parts) {
                 nodes.add(parent.getChild(part));
                 parent = nodes.get(nodes.size() - 1);
@@ -59,33 +58,33 @@ public class DisableCommand extends Command {
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReqOp("disable")
                 .then(argument("cmd", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             try {
                                 String cmd = ctx.getArgument("cmd", String.class);
-                                ParseResults<ServerCommandSource> results = dispatcher.parse(cmd, ctx.getSource().getServer().getCommandSource());
+                                ParseResults<CommandSourceStack> results = dispatcher.parse(cmd, ctx.getSource().getServer().createCommandSourceStack());
                                 if (results.getContext().getNodes().isEmpty()) sendError(ctx, "That command could not be found.");
                                 else {
-                                    List<CommandNode<ServerCommandSource>> nodes = new ArrayList<>();
+                                    List<CommandNode<CommandSourceStack>> nodes = new ArrayList<>();
                                     results.getContext().getNodes().forEach(node -> nodes.add(node.getNode()));
                                     sendMsg(ctx, "The command has been " + Util.formatFromBool(!disable(nodes, true), "enabled", "disabled") + ".");
                                     return 1;
                                 }
                                 return 0;
                             } finally {
-                                if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrThrow().getUuid())) {
-                                    sendMsg(ctx, literalText("", Style.EMPTY.withFormatting(Formatting.RED))
+                                if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrException().getUUID())) {
+                                    sendMsg(ctx, literalText("", Style.EMPTY.applyFormat(ChatFormatting.RED))
                                             .append(literalText("This command is deprecated, you should consider using "))
                                             .append(emptyText(Style.EMPTY
-                                                            .withFormatting(Formatting.UNDERLINE, Formatting.BOLD)
+                                                            .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.BOLD)
                                                             .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://luckperms.net/"))
                                                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, literalText("Click to download").build())))
-                                                    .append(literalText("Luck", Style.EMPTY.withFormatting(Formatting.AQUA)))
-                                                    .append(literalText("Perms", Style.EMPTY.withFormatting(Formatting.DARK_AQUA))))
+                                                    .append(literalText("Luck", Style.EMPTY.applyFormat(ChatFormatting.AQUA)))
+                                                    .append(literalText("Perms", Style.EMPTY.applyFormat(ChatFormatting.DARK_AQUA))))
                                             .append(literalText(" instead.")));
-                                    remindedLP.add(ctx.getSource().getEntityOrThrow().getUuid());
+                                    remindedLP.add(ctx.getSource().getEntityOrException().getUUID());
                                 }
                             }
                         })));
@@ -101,8 +100,8 @@ public class DisableCommand extends Command {
         return "/elevated/disable";
     }
 
-    private boolean disable(List<CommandNode<ServerCommandSource>> nodes, boolean update) {
-        CommandNode<ServerCommandSource> node = nodes.get(nodes.size()-1);
+    private boolean disable(List<CommandNode<CommandSourceStack>> nodes, boolean update) {
+        CommandNode<CommandSourceStack> node = nodes.get(nodes.size()-1);
         String path = getPath(nodes);
         if (disabledCommands.containsKey(path)) {
             disabledPaths.remove(path);
@@ -125,15 +124,15 @@ public class DisableCommand extends Command {
         }
     }
 
-    private String getPath(List<CommandNode<ServerCommandSource>> nodes) {
+    private String getPath(List<CommandNode<CommandSourceStack>> nodes) {
         StringBuilder path = new StringBuilder();
-        for (CommandNode<ServerCommandSource> node : nodes)
+        for (CommandNode<CommandSourceStack> node : nodes)
             path.append('.').append(node.getName());
         return path.substring(1);
     }
 
-    private void disableChildren(String parentPath, CommandNode<ServerCommandSource> parent, boolean update) {
-        for (CommandNode<ServerCommandSource> child : parent.getChildren()) {
+    private void disableChildren(String parentPath, CommandNode<CommandSourceStack> parent, boolean update) {
+        for (CommandNode<CommandSourceStack> child : parent.getChildren()) {
             String path = parentPath + "." + child.getName();
             if (disabledCommands.containsKey(path)) {
                 disabledPaths.remove(path);
@@ -156,14 +155,14 @@ public class DisableCommand extends Command {
         }
     }
 
-    private com.mojang.brigadier.Command<ServerCommandSource> createDisabledCommand(com.mojang.brigadier.Command<ServerCommandSource> original) {
+    private com.mojang.brigadier.Command<CommandSourceStack> createDisabledCommand(com.mojang.brigadier.Command<CommandSourceStack> original) {
         return ctx -> {
             if (isOp(ctx)) return original.run(ctx);
             else throw DISABLED.create();
         };
     }
 
-    private void setCommand(CommandNode<ServerCommandSource> node, com.mojang.brigadier.Command<ServerCommandSource> cmd) {
+    private void setCommand(CommandNode<CommandSourceStack> node, com.mojang.brigadier.Command<CommandSourceStack> cmd) {
         ReflectionHelper.setFieldValue(commandField, node, cmd);
     }
 }

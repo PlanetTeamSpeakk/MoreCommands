@@ -3,9 +3,9 @@ package com.ptsmods.morecommands.miscellaneous;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.arguments.EnumArgumentType;
 import lombok.SneakyThrows;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.level.GameRules;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class EnumRule<E extends Enum<E>> extends GameRules.Rule<EnumRule<E>> {
+public final class EnumRule<E extends Enum<E>> extends GameRules.Value<EnumRule<E>> {
     private final Class<E> classType;
     private final List<E> supportedValues;
     private E value;
@@ -48,7 +48,7 @@ public final class EnumRule<E extends Enum<E>> extends GameRules.Rule<EnumRule<E
 
     @Override
     @SneakyThrows
-    protected void setFromArgument(CommandContext<ServerCommandSource> context, String name) {
+    protected void updateFromArgument(CommandContext<CommandSourceStack> context, String name) {
         value = EnumArgumentType.getEnum(context, name);
     }
 
@@ -73,7 +73,7 @@ public final class EnumRule<E extends Enum<E>> extends GameRules.Rule<EnumRule<E
     }
 
     @Override
-    protected EnumRule<E> getThis() {
+    protected EnumRule<E> getSelf() {
         return this;
     }
 
@@ -92,13 +92,11 @@ public final class EnumRule<E extends Enum<E>> extends GameRules.Rule<EnumRule<E
     }
 
     @Override
-    public void setValue(EnumRule<E> rule, MinecraftServer minecraftServer) {
-        if (!this.supports(rule.value)) {
-            throw new IllegalArgumentException(String.format("Rule does not support value: %s", rule.value));
-        }
+    public void setFrom(EnumRule<E> rule, MinecraftServer minecraftServer) {
+        if (!this.supports(rule.value)) throw new IllegalArgumentException(String.format("Rule does not support value: %s", rule.value));
 
         this.value = rule.value;
-        this.changed(minecraftServer);
+        this.onChanged(minecraftServer);
     }
 
     public E get() {
@@ -127,6 +125,6 @@ public final class EnumRule<E extends Enum<E>> extends GameRules.Rule<EnumRule<E
         }
 
         this.value = value;
-        this.changed(server);
+        this.onChanged(server);
     }
 }

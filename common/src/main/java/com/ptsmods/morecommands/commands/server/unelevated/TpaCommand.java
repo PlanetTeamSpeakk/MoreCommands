@@ -9,12 +9,11 @@ import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import dev.architectury.event.events.common.TickEvent;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
 
 public class TpaCommand extends Command {
 
@@ -23,7 +22,7 @@ public class TpaCommand extends Command {
     public void preinit(boolean serverOnly) {
         TickEvent.SERVER_LEVEL_POST.register(world -> {
             for (TpaRequest request : new ArrayList<>(requests))
-                if (world == request.to.getWorld() && world.getTime() - request.creationTick >= world.getGameRules().getInt(MoreGameRules.get().tpaTimeoutRule())) {
+                if (world == request.to.getLevel() && world.getGameTime() - request.creationTick >= world.getGameRules().getInt(MoreGameRules.get().tpaTimeoutRule())) {
                     request.timeout();
                     requests.remove(request);
                 }
@@ -31,13 +30,13 @@ public class TpaCommand extends Command {
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("tpa")
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", EntityArgument.player())
                         .executes(ctx -> executeTpa(ctx, false))));
 
         dispatcher.register(literalReq("tpahere")
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", EntityArgument.player())
                         .executes(ctx -> executeTpa(ctx, true))));
 
         dispatcher.getRoot().addChild(MoreCommands.createAlias("tpyes", dispatcher.register(literalReq("tpaccept")
@@ -52,8 +51,8 @@ public class TpaCommand extends Command {
         return "/unelevated/tpa";
     }
 
-    private int executeResp(CommandContext<ServerCommandSource> ctx, boolean accept) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+    private int executeResp(CommandContext<CommandSourceStack> ctx, boolean accept) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
         for (int i = requests.size()-1; i >= 0; i--)
             if (requests.get(i).to == player) {
                 if (accept) requests.get(i).accept();
@@ -64,8 +63,8 @@ public class TpaCommand extends Command {
         return accept ? 2 : 1;
     }
 
-    private int executeTpa(CommandContext<ServerCommandSource> ctx, boolean here) throws CommandSyntaxException {
-        TpaRequest request = new TpaRequest(ctx.getSource().getPlayerOrThrow(), EntityArgumentType.getPlayer(ctx, "player"), here);
+    private int executeTpa(CommandContext<CommandSourceStack> ctx, boolean here) throws CommandSyntaxException {
+        TpaRequest request = new TpaRequest(ctx.getSource().getPlayerOrException(), EntityArgument.getPlayer(ctx, "player"), here);
         request.informOther();
         requests.add(request);
         sendMsg(ctx, "A teleportation request has been sent.");
@@ -78,12 +77,12 @@ public class TpaCommand extends Command {
     }
 
     private static class TpaRequest {
-        private final ServerPlayerEntity from, to;
+        private final ServerPlayer from, to;
         private final boolean here;
         private final long creationTick;
 
-        private TpaRequest(ServerPlayerEntity from, ServerPlayerEntity to, boolean here) {
-            creationTick = from.getWorld().getTime();
+        private TpaRequest(ServerPlayer from, ServerPlayer to, boolean here) {
+            creationTick = from.getLevel().getGameTime();
             this.from = from;
             this.to = to;
             this.here = here;
@@ -94,9 +93,9 @@ public class TpaCommand extends Command {
         }
 
         private void accept() {
-            ServerPlayerEntity from = here ? this.to : this.from;
-            ServerPlayerEntity to = here ? this.from : this.to;
-            MoreCommands.teleport(from, to.getWorld(), to.getPos(), ((MixinEntityAccessor) to).getYaw_(), ((MixinEntityAccessor) to).getPitch_());
+            ServerPlayer from = here ? this.to : this.from;
+            ServerPlayer to = here ? this.from : this.to;
+            MoreCommands.teleport(from, to.getLevel(), to.position(), ((MixinEntityAccessor) to).getYRot_(), ((MixinEntityAccessor) to).getXRot_());
         }
 
         private void deny() {

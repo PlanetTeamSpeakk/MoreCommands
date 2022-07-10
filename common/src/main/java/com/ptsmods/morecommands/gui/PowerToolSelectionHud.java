@@ -1,50 +1,49 @@
 package com.ptsmods.morecommands.gui;
 
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Pair;
-
 import java.awt.*;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.util.Tuple;
 
-public class PowerToolSelectionHud extends DrawableHelper {
-    public static Pair<Long, Pair<Integer, String>> currentSelection = null;
+public class PowerToolSelectionHud extends GuiComponent {
+    public static Tuple<Long, Tuple<Integer, String>> currentSelection = null;
     public static final int DURATION = 1500, MAX_BOX_WIDTH = 160, FADE_OUT = 500;
 
-    public static void render(MatrixStack matrices, float tickDelta) {
-        if (currentSelection == null || System.currentTimeMillis() - currentSelection.getLeft() >= DURATION) return;
-        Window window = MinecraftClient.getInstance().getWindow();
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+    public static void render(PoseStack matrices, float tickDelta) {
+        if (currentSelection == null || System.currentTimeMillis() - currentSelection.getA() >= DURATION) return;
+        Window window = Minecraft.getInstance().getWindow();
+        Font textRenderer = Minecraft.getInstance().font;
 
-        String line1 = "Selected: " + currentSelection.getRight().getLeft();
-        String line2 = textRenderer.getWidth(currentSelection.getRight().getRight()) > MAX_BOX_WIDTH ?
-                trimToLength(currentSelection.getRight().getRight(), textRenderer) + "..." : currentSelection.getRight().getRight();
+        String line1 = "Selected: " + currentSelection.getB().getA();
+        String line2 = textRenderer.width(currentSelection.getB().getB()) > MAX_BOX_WIDTH ?
+                trimToLength(currentSelection.getB().getB(), textRenderer) + "..." : currentSelection.getB().getB();
 
-        int width = window.getScaledWidth(), height = window.getScaledHeight();
-        int boxWidth = 2 + Math.max(textRenderer.getWidth(line1), textRenderer.getWidth(line2)) + 2;
+        int width = window.getGuiScaledWidth(), height = window.getGuiScaledHeight();
+        int boxWidth = 2 + Math.max(textRenderer.width(line1), textRenderer.width(line2)) + 2;
         final int boxHeight = 2 + 8 + 2 + 8 + 2;
 
-        float alphaMultiplier = Math.min((DURATION - (System.currentTimeMillis() - currentSelection.getLeft())) / (float) FADE_OUT, 1f);
+        float alphaMultiplier = Math.min((DURATION - (System.currentTimeMillis() - currentSelection.getA())) / (float) FADE_OUT, 1f);
 
         fill(matrices, width - boxWidth - 10, height / 2 - boxHeight / 2, width - 10, height / 2 + boxHeight / 2, new Color(0, 0, 0, .5f * alphaMultiplier).getRGB());
 
-        textRenderer.drawWithShadow(matrices, LiteralTextBuilder.literal(line1), (float) (width - boxWidth / 2 - textRenderer.getWidth(line1) / 2 - 10), height / 2f - 9,
-                withAlpha(Objects.requireNonNull(MoreCommands.DF.getColorValue()), alphaMultiplier));
-        textRenderer.drawWithShadow(matrices, LiteralTextBuilder.literal(line2), (float) (width - boxWidth / 2 - textRenderer.getWidth(line2) / 2 - 10), height / 2f + 1,
-                withAlpha(Objects.requireNonNull(MoreCommands.SF.getColorValue()), alphaMultiplier));
+        textRenderer.drawShadow(matrices, LiteralTextBuilder.literal(line1), (float) (width - boxWidth / 2 - textRenderer.width(line1) / 2 - 10), height / 2f - 9,
+                withAlpha(Objects.requireNonNull(MoreCommands.DF.getColor()), alphaMultiplier));
+        textRenderer.drawShadow(matrices, LiteralTextBuilder.literal(line2), (float) (width - boxWidth / 2 - textRenderer.width(line2) / 2 - 10), height / 2f + 1,
+                withAlpha(Objects.requireNonNull(MoreCommands.SF.getColor()), alphaMultiplier));
     }
 
-    public static String trimToLength(String s, TextRenderer renderer) {
+    public static String trimToLength(String s, Font renderer) {
         StringBuilder result = new StringBuilder();
 
         for (char c : s.toCharArray()) {
             result.append(c);
-            if (renderer.getWidth(result.toString()) > MAX_BOX_WIDTH) {
+            if (renderer.width(result.toString()) > MAX_BOX_WIDTH) {
                 result.deleteCharAt(result.length() - 1);
                 break;
             }

@@ -1,9 +1,9 @@
 package com.ptsmods.morecommands.mixin.compat.compat16;
 
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,8 +12,8 @@ import java.util.List;
 
 @Mixin(Screen.class)
 public class MixinScreen implements ScreenAddon {
-    @Shadow protected @Final List<Element> children;
-    @Shadow protected @Final List<ClickableWidget> buttons;
+    @Shadow protected @Final List<GuiEventListener> children;
+    @Shadow protected @Final List<AbstractWidget> buttons;
 
     @Override
     public void mc$clear() {
@@ -22,12 +22,12 @@ public class MixinScreen implements ScreenAddon {
     }
 
     @Override
-    public List<ClickableWidget> mc$getButtons() {
+    public List<AbstractWidget> mc$getButtons() {
         return buttons;
     }
 
     @Override
-    public <T extends ClickableWidget> T mc$addButton(T button) {
+    public <T extends AbstractWidget> T mc$addButton(T button) {
         children.add(button);
         buttons.add(button);
         return button;

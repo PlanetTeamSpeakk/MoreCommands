@@ -2,11 +2,11 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public class GetStrucCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
         // Not viable anymore due to the heavy changes Mojang made to the structure feature registry.
 
 //        dispatcher.register(literalReq("getstruc").executes(ctx -> {

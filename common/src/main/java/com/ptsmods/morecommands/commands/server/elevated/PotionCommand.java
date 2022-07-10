@@ -9,17 +9,17 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.arguments.HexIntegerArgumentType;
 import com.ptsmods.morecommands.arguments.PotionArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.command.argument.StatusEffectArgumentType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Style;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.MobEffectArgument;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -28,10 +28,10 @@ public class PotionCommand extends Command {
     private static final SimpleCommandExceptionType NO_POTION = new SimpleCommandExceptionType(literalText("The item you're holding is not a potion or tipped arrow.").build());
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
          dispatcher.register(literalReqOp("potion")
                  .then(literal("add")
-                         .then(argument("effect", StatusEffectArgumentType.statusEffect())
+                         .then(argument("effect", MobEffectArgument.effect())
                                  .executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true))
                                  .then(argument("duration", IntegerArgumentType.integer(1))
                                          .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true))
@@ -47,12 +47,12 @@ public class PotionCommand extends Command {
                          .then(argument("index", IntegerArgumentType.integer(1))
                                  .executes(ctx -> {
                                     ItemStack stack = checkHeldItem(ctx);
-                                    List<StatusEffectInstance> effects = PotionUtil.getCustomPotionEffects(stack);
+                                    List<MobEffectInstance> effects = PotionUtils.getCustomEffects(stack);
                                     int index = ctx.getArgument("index", Integer.class)-1;
                                     if (index >= effects.size()) sendError(ctx, "The given index was greater than the amount of custom potion effects this potion has (" + SF + effects.size() + DF + ").");
                                     else {
                                         effects.remove(index);
-                                        PotionUtil.setCustomPotionEffects(stack, effects);
+                                        PotionUtils.setCustomEffects(stack, effects);
                                         sendMsg(ctx, "Your potion now has " + SF + effects.size() + DF + " custom potion effect" + (effects.size() == 1 ? "" : "s") + ".");
                                         return effects.size()+1;
                                     }
@@ -62,9 +62,9 @@ public class PotionCommand extends Command {
                          .then(argument("type", PotionArgumentType.potion())
                                  .executes(ctx -> {
                                     ItemStack stack = checkHeldItem(ctx);
-                                    Potion old = PotionUtil.getPotion(stack);
-                                    PotionUtil.setPotion(stack, PotionArgumentType.getPotion(ctx, "type"));
-                                    sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtil.getPotion(stack)) + DF + ".");
+                                    Potion old = PotionUtils.getPotion(stack);
+                                    PotionUtils.setPotion(stack, PotionArgumentType.getPotion(ctx, "type"));
+                                    sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtils.getPotion(stack)) + DF + ".");
                                     return 1;
                                 })))
                  .then(literal("setcolour")
@@ -80,10 +80,10 @@ public class PotionCommand extends Command {
         return "/elevated/potion";
     }
 
-    private int executeSetColour(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private int executeSetColour(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         int colour = HexIntegerArgumentType.getHexInt(ctx, "colour");
         ItemStack stack = checkHeldItem(ctx);
-        stack.getOrCreateNbt().putInt("CustomPotionColor", colour);
+        stack.getOrCreateTag().putInt("CustomPotionColor", colour);
         sendMsg(ctx, literalText("The potion's colour has been set to ", DS)
                 .append(literalText(String.format("#%06X", colour))
                         .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))))
@@ -91,18 +91,18 @@ public class PotionCommand extends Command {
         return colour;
     }
 
-    private int executeAdd(CommandContext<ServerCommandSource> ctx, int duration, byte amplifier, boolean ambient, boolean showParticles) throws CommandSyntaxException {
-        StatusEffect effect = ctx.getArgument("effect", StatusEffect.class);
+    private int executeAdd(CommandContext<CommandSourceStack> ctx, int duration, byte amplifier, boolean ambient, boolean showParticles) throws CommandSyntaxException {
+        MobEffect effect = ctx.getArgument("effect", MobEffect.class);
         ItemStack stack = checkHeldItem(ctx);
-        List<StatusEffectInstance> effects = PotionUtil.getCustomPotionEffects(stack);
-        effects.add(new StatusEffectInstance(effect, duration, amplifier, ambient, showParticles));
-        PotionUtil.setCustomPotionEffects(stack, effects);
+        List<MobEffectInstance> effects = PotionUtils.getCustomEffects(stack);
+        effects.add(new MobEffectInstance(effect, duration, amplifier, ambient, showParticles));
+        PotionUtils.setCustomEffects(stack, effects);
         sendMsg(ctx, "Your potion now has " + SF + effects.size() + DF + " custom potion effect" + (effects.size() == 1 ? "" : "s") + ".");
         return amplifier;
     }
 
-    private ItemStack checkHeldItem(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        Iterator<ItemStack> stacks = ctx.getSource().getEntityOrThrow().getItemsHand().iterator();
+    private ItemStack checkHeldItem(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Iterator<ItemStack> stacks = ctx.getSource().getEntityOrException().getHandSlots().iterator();
         ItemStack stack = ItemStack.EMPTY;
         while (stack.getItem() != Items.POTION && stack.getItem() != Items.TIPPED_ARROW) {
             if (stacks.hasNext()) stack = stacks.next();

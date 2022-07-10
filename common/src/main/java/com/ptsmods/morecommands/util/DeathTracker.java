@@ -6,19 +6,18 @@ import com.ptsmods.morecommands.api.IDeathTracker;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import lombok.SneakyThrows;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class DeathTracker implements IDeathTracker {
     public static final DeathTracker INSTANCE = new DeathTracker();
-    private final List<Pair<Long, Pair<Identifier, Vec3d>>> deaths = new ArrayList<>();
+    private final List<Tuple<Long, Tuple<ResourceLocation, Vec3>>> deaths = new ArrayList<>();
 
     @SneakyThrows
     private DeathTracker() {
@@ -26,16 +25,16 @@ public class DeathTracker implements IDeathTracker {
     }
 
     @Override
-    public void addDeath(World world, Vec3d pos) {
-        deaths.add(new Pair<>(System.currentTimeMillis(), new Pair<>(world.getRegistryKey().getValue(), pos)));
+    public void addDeath(Level world, Vec3 pos) {
+        deaths.add(new Tuple<>(System.currentTimeMillis(), new Tuple<>(world.dimension().location(), pos)));
         if (ClientOptions.Tweaks.trackDeaths.getValue()) log(world, pos);
     }
 
     @Override
-    public void log(World world, Vec3d pos) {
-        Objects.requireNonNull(MinecraftClient.getInstance().player).sendMessage(LiteralTextBuilder.literal(String.format(MoreCommands.DF + "You died at %s%s%s, %s%s%s, %s%s%s in dimension %s%s%s.",
-                MoreCommands.SF, (int) pos.getX(), MoreCommands.DF, MoreCommands.SF, (int) pos.getY(), MoreCommands.DF, MoreCommands.SF, (int) pos.getZ(), MoreCommands.DF,
-                MoreCommands.SF, world.getDimensionKey().getValue(), MoreCommands.DF)));
+    public void log(Level world, Vec3 pos) {
+        Objects.requireNonNull(Minecraft.getInstance().player).sendSystemMessage(LiteralTextBuilder.literal(String.format(MoreCommands.DF + "You died at %s%s%s, %s%s%s, %s%s%s in dimension %s%s%s.",
+                MoreCommands.SF, (int) pos.x(), MoreCommands.DF, MoreCommands.SF, (int) pos.y(), MoreCommands.DF, MoreCommands.SF, (int) pos.z(), MoreCommands.DF,
+                MoreCommands.SF, world.dimensionTypeId().location(), MoreCommands.DF)));
     }
 
     @Override
@@ -44,7 +43,7 @@ public class DeathTracker implements IDeathTracker {
     }
 
     @Override
-    public List<Pair<Long, Pair<Identifier, Vec3d>>> getDeaths() {
+    public List<Tuple<Long, Tuple<ResourceLocation, Vec3>>> getDeaths() {
         return ImmutableList.copyOf(deaths);
     }
 }

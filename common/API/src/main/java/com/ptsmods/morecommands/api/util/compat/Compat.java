@@ -11,39 +11,38 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.command.argument.BlockStateArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
+import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.registry.SimpleRegistry;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.MobSpawnerLogic;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.stream.DoubleStream;
@@ -59,48 +58,48 @@ public interface Compat {
 
     void setRemoved(Entity entity, int reason);
 
-    PlayerInventory getInventory(PlayerEntity player);
+    Inventory getInventory(Player player);
 
-    boolean isInBuildLimit(World world, BlockPos pos);
+    boolean isInBuildLimit(Level world, BlockPos pos);
 
-    Text toText(NbtElement tag);
+    Component toText(Tag tag);
 
-    ServerPlayerEntity newServerPlayerEntity(MinecraftServer server, ServerWorld world, GameProfile profile);
+    ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile);
 
-    NbtCompound writeSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
+    CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
 
-    void readSpawnerLogicNbt(MobSpawnerLogic logic, World world, BlockPos pos, NbtCompound nbt);
+    void readSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
 
-    void setSignEditor(SignBlockEntity sbe, PlayerEntity player);
+    void setSignEditor(SignBlockEntity sbe, Player player);
 
-    <E> Registry<E> getRegistry(DynamicRegistryManager manager, RegistryKey<? extends Registry<E>> key);
+    <E> Registry<E> getRegistry(RegistryAccess manager, ResourceKey<? extends Registry<E>> key);
 
-    int getWorldHeight(BlockView world);
+    int getWorldHeight(BlockGetter world);
 
-    FireballEntity newFireballEntity(World world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
+    LargeFireball newFireballEntity(Level world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
 
     String getProcessorString();
 
-    <T> boolean registryContainsId(SimpleRegistry<T> registry, Identifier id);
+    <T> boolean registryContainsId(MappedRegistry<T> registry, ResourceLocation id);
 
-    void playerSetWorld(ServerPlayerEntity player, ServerWorld world);
+    void playerSetWorld(ServerPlayer player, ServerLevel world);
 
-    PlayerListS2CPacket newPlayerListS2CPacket(int action, ServerPlayerEntity... players);
+    ClientboundPlayerInfoPacket newPlayerListS2CPacket(int action, ServerPlayer... players);
 
-    NbtCompound writeBENBT(BlockEntity be);
+    CompoundTag writeBENBT(BlockEntity be);
 
     <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser);
 
     boolean tagContains(Object tag, Object obj);
 
-    default boolean tagContains(Identifier identifier, Object obj) {
+    default boolean tagContains(ResourceLocation identifier, Object obj) {
         return tagContains(getBlockTags().get(identifier), obj);
     }
 
-    Biome getBiome(World world, BlockPos pos);
+    Biome getBiome(Level world, BlockPos pos);
 
-    BlockStateArgumentType createBlockStateArgumentType();
+    BlockStateArgument createBlockStateArgumentType();
 
     Direction randomDirection();
 
@@ -112,27 +111,27 @@ public interface Compat {
         }
     }
 
-    Map<Identifier, Object> getBlockTags();
+    Map<ResourceLocation, Object> getBlockTags();
 
     DoubleStream doubleStream(DoubleList doubles);
 
-    Object getPaintingVariant(PaintingEntity painting);
+    Object getPaintingVariant(Painting painting);
 
-    void setPaintingVariant(PaintingEntity entity, Object variant);
+    void setPaintingVariant(Painting entity, Object variant);
 
     // Text-related
 
-    MutableText buildText(LiteralTextBuilder builder);
+    MutableComponent buildText(LiteralTextBuilder builder);
 
-    MutableText buildText(TranslatableTextBuilder builder);
+    MutableComponent buildText(TranslatableTextBuilder builder);
 
-    MutableText buildText(EmptyTextBuilder builder);
+    MutableComponent buildText(EmptyTextBuilder builder);
 
-    TextBuilder<?> builderFromText(Text text);
+    TextBuilder<?> builderFromText(Component text);
 
-    void broadcast(PlayerManager playerManager, Pair<Integer, Identifier> type, Text message);
+    void broadcast(PlayerList playerManager, Tuple<Integer, ResourceLocation> type, Component message);
 
-    void onStacksDropped(BlockState state, ServerWorld world, BlockPos pos, ItemStack stack, boolean b);
+    void onStacksDropped(BlockState state, ServerLevel world, BlockPos pos, ItemStack stack, boolean b);
 
-    BlockPos getWorldSpawnPos(ServerWorld world);
+    BlockPos getWorldSpawnPos(ServerLevel world);
 }

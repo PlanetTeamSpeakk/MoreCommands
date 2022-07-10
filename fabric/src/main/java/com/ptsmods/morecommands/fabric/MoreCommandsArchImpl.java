@@ -9,8 +9,8 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.impl.ModContainerImpl;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -37,19 +37,19 @@ public class MoreCommandsArchImpl {
         return FabricLoader.getInstance().isModLoaded(id);
     }
 
-    public static boolean checkPermission(CommandSource source, String permission) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission) {
         return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission);
     }
 
-    public static boolean checkPermission(CommandSource source, String permission, boolean fallback) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission, boolean fallback) {
         return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission, fallback);
     }
 
     public static void doMLSpecificClientInit() {
     }
 
-    public static Predicate<ServerCommandSource> requirePermission(String permission, int defaultRequiredLevel) {
-        return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermissionLevel(defaultRequiredLevel);
+    public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
+        return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermission(defaultRequiredLevel);
     }
 
     public static void addJarToClassPath(Path jar) {

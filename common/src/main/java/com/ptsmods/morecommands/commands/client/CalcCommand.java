@@ -4,12 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class CalcCommand extends ClientCommand {
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("calc")
                 .then(cArgument("equation", StringArgumentType.greedyString())
                         .executes(ctx -> {
@@ -18,7 +18,7 @@ public class CalcCommand extends ClientCommand {
                             try {
                                 d = MoreCommands.eval(equation);
                             } catch (RuntimeException e) {
-                                sendMsg(Formatting.RED + e.getMessage());
+                                sendMsg(ChatFormatting.RED + e.getMessage());
                                 return 0;
                             }
                             sendMsg(SF + equation + DF + " = " + SF + d);

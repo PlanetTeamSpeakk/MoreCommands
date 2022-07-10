@@ -1,34 +1,33 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
-
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 
 // This class is replaced with a dump in a normal environment.
-public class CopySound extends MovingSoundInstance {
+public class CopySound extends AbstractTickableSoundInstance {
     public CopySound() {
-        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new Identifier("morecommands:copy"))), SoundCategory.MASTER, Random.create());
+        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new ResourceLocation("morecommands:copy"))), SoundSource.MASTER, RandomSource.create());
         this.volume = 0.25F;
-        this.repeat = false;
+        this.looping = false;
         this.tick();
     }
 
-    public boolean shouldAlwaysPlay() {
+    public boolean canStartSilent() {
         return true;
     }
 
-    public boolean canPlay() {
+    public boolean canPlaySound() {
         return true;
     }
 
     public void tick() {
-        Vec3d pos = MinecraftClient.getInstance().player.getPos();
+        Vec3 pos = Minecraft.getInstance().player.position();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;

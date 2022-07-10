@@ -3,21 +3,21 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 
 public class AscendCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("ascend")
                 .executes(ctx -> {
-                    Entity entity = ctx.getSource().getEntityOrThrow();
-                    World world = entity.getEntityWorld();
-                    Vec3d pos = entity.getPos();
+                    Entity entity = ctx.getSource().getEntityOrException();
+                    Level world = entity.getCommandSenderWorld();
+                    Vec3 pos = entity.position();
                     double x = pos.x;
                     double y = pos.y + 2;
                     double z = pos.z;
@@ -26,7 +26,7 @@ public class AscendCommand extends Command {
                         Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
                         Block tpblock2 = world.getBlockState(new BlockPos(x, y + 1, z)).getBlock();
                         if (!MoreCommands.blockBlacklist.contains(block) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
-                            entity.teleport(x + 0.5, y, z + 0.5);
+                            entity.teleportToWithTicket(x + 0.5, y, z + 0.5);
                             sendMsg(ctx, "You have been teleported through the roof.");
                             return 1;
                         }

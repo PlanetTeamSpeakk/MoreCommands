@@ -4,12 +4,12 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.AnvilScreenHandler;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.inventory.AnvilMenu;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,48 +20,49 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerGamePacketListenerImpl.class)
 public abstract class MixinServerPlayNetworkHandler {
     @Shadow @Final private MinecraftServer server;
-    @Shadow public ServerPlayerEntity player;
+    @Shadow public ServerPlayer player;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream; map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"), method = "onUpdateSign(Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;)V")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream; map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"), method = "handleSignUpdate")
     public Stream<String> onSignUpdate_map(Stream<String> stream, Function<String, String> func) {
         return stream.map(s -> {
-            ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
-            if (MoreGameRules.get().checkBooleanWithPerm(thiz.player.getWorld().getGameRules(), MoreGameRules.get().doSignColoursRule(), thiz.player)
-                    || player.hasPermissionLevel(server.getOpPermissionLevel())) s = Util.translateFormats(s);
-            else s = Formatting.strip(s);
+            ServerGamePacketListenerImpl thiz = ReflectionHelper.cast(this);
+            if (MoreGameRules.get().checkBooleanWithPerm(thiz.player.getLevel().getGameRules(), MoreGameRules.get().doSignColoursRule(), thiz.player)
+                    || player.hasPermissions(server.getOperatorUserPermissionLevel())) s = Util.translateFormats(s);
+            else s = ChatFormatting.stripFormatting(s);
             return s;
         });
     }
 
+    // TODO
     @Group(name = "bookUpdate1171Compat", min = 1, max = 1)
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtList;getString(I)Ljava/lang/String;"), method = "onBookUpdate(Lnet/minecraft/network/packet/c2s/play/BookUpdateC2SPacket;)V")
-    public String onBookUpdate_getString(NbtList list, int index) {
-        ServerPlayNetworkHandler thiz = ReflectionHelper.cast(this);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtList;getString(I)Ljava/lang/String;"), method = "handleEditBook")
+    public String onBookUpdate_getString(ListTag list, int index) {
+        ServerGamePacketListenerImpl thiz = ReflectionHelper.cast(this);
         String s = list.getString(index);
-        if (MoreGameRules.get().checkBooleanWithPerm(thiz.player.getWorld().getGameRules(), MoreGameRules.get().doBookColoursRule(), thiz.player)
-                || player.hasPermissionLevel(server.getOpPermissionLevel())) s = Util.translateFormats(s);
+        if (MoreGameRules.get().checkBooleanWithPerm(thiz.player.getLevel().getGameRules(), MoreGameRules.get().doBookColoursRule(), thiz.player)
+                || player.hasPermissions(server.getOperatorUserPermissionLevel())) s = Util.translateFormats(s);
         return s;
     }
 
     @Group(name = "bookUpdate1171Compat", min = 1, max = 1)
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;limit(J)Ljava/util/stream/Stream;", remap = false), method = "onBookUpdate")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;limit(J)Ljava/util/stream/Stream;", remap = false), method = "handleEditBook")
     public Stream<String> onBookUpdate_limit(Stream<String> stream, long maxSize) {
-        return MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doBookColoursRule(), player)
-                || player.hasPermissionLevel(server.getOpPermissionLevel()) ? stream.limit(maxSize).map(Util::translateFormats) : stream.limit(maxSize);
+        return MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doBookColoursRule(), player)
+                || player.hasPermissions(server.getOperatorUserPermissionLevel()) ? stream.limit(maxSize).map(Util::translateFormats) : stream.limit(maxSize);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; length()I", remap = false), method = "onRenameItem(Lnet/minecraft/network/packet/c2s/play/RenameItemC2SPacket;)V")
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; length()I", remap = false), method = "handleRenameItem")
     public int onRenameItem_length(String string) {
-        return (MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doItemColoursRule(), player)
-                || player.hasPermissionLevel(server.getOpPermissionLevel()) ? Formatting.strip(MoreCommands.translateFormattings(string)) : string).length();
+        return (MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doItemColoursRule(), player)
+                || player.hasPermissions(server.getOperatorUserPermissionLevel()) ? ChatFormatting.stripFormatting(MoreCommands.translateFormattings(string)) : string).length();
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/AnvilScreenHandler; setNewItemName(Ljava/lang/String;)V"), method = "onRenameItem(Lnet/minecraft/network/packet/c2s/play/RenameItemC2SPacket;)V")
-    public void onRenameItem_setNewName(AnvilScreenHandler anvil, String name) {
-        anvil.setNewItemName(MoreGameRules.get().checkBooleanWithPerm(player.getWorld().getGameRules(), MoreGameRules.get().doItemColoursRule(), player)
-                || player.hasPermissionLevel(server.getOpPermissionLevel()) ? MoreCommands.translateFormattings(name) : name);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AnvilMenu;setItemName(Ljava/lang/String;)V"), method = "handleRenameItem")
+    public void onRenameItem_setNewName(AnvilMenu anvil, String name) {
+        anvil.setItemName(MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doItemColoursRule(), player)
+                || player.hasPermissions(server.getOperatorUserPermissionLevel()) ? MoreCommands.translateFormattings(name) : name);
     }
 }

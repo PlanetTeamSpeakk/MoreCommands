@@ -2,13 +2,12 @@ package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     private final Class<T> type;
@@ -49,7 +48,7 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     @Override
     public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
         AtomicInteger btn = new AtomicInteger();
-        return new ButtonWidget(x, y, 150, 20, createButtonText(name), button -> {
+        return new Button(x, y, 150, 20, createButtonText(name), button -> {
             T[] values = type.getEnumConstants();
             int index = (getValue() == null ? btn.get() == 0 ? -1 : 1 : getValue().ordinal()) + (btn.get() == 0 ? 1 : -1);
             setValue(values[(index + (index < 0 ? values.length : 0)) % values.length]);
@@ -65,8 +64,8 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     }
 
     @Override
-    public Text createButtonText(String name) {
-        return LiteralTextBuilder.builder(name + " : " + (type == Formatting.class ? getValue() : type == FormattingColour.class ?
+    public Component createButtonText(String name) {
+        return LiteralTextBuilder.builder(name + " : " + (type == ChatFormatting.class ? getValue() : type == FormattingColour.class ?
                 ((FormattingColour) getValue()).asFormatting() : "") + getValue().name()).build();
     }
 }

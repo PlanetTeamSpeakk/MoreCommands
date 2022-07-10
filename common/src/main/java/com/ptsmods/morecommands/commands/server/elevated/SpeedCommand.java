@@ -11,11 +11,11 @@ import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerAbilitiesAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.attribute.*;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.*;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -26,21 +26,21 @@ import java.util.function.Function;
 
 public class SpeedCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ServerCommandSource> builder = literalReqOp("speed");
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        LiteralArgumentBuilder<CommandSourceStack> builder = literalReqOp("speed");
         for (SpeedType type : SpeedType.values())
             builder.then(literal(type.name().toLowerCase())
                     .executes(ctx -> getSpeed(ctx, type, null))
-                    .then(argument("target", EntityArgumentType.player())
-                            .executes(ctx -> getSpeed(ctx, type, EntityArgumentType.getPlayer(ctx, "target"))))
+                    .then(argument("target", EntityArgument.player())
+                            .executes(ctx -> getSpeed(ctx, type, EntityArgument.getPlayer(ctx, "target"))))
                     .then(argument("speed", FloatArgumentType.floatArg(0))
                             .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), null))
-                            .then(argument("targets", EntityArgumentType.players())
+                            .then(argument("targets", EntityArgument.players())
                                     .requires(hasPermissionOrOp("morecommands.speed.others"))
-                                    .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgumentType.getPlayers(ctx, "targets"))))));
+                                    .executes(ctx -> setSpeed(ctx, type, ctx.getArgument("speed", Float.class), EntityArgument.getPlayers(ctx, "targets"))))));
         dispatcher.register(builder
                 .then(argument("speed", FloatArgumentType.floatArg(0))
-                        .executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrThrow()), ctx.getArgument("speed", Float.class), null))));
+                        .executes(ctx -> setSpeed(ctx, determineSpeedType(ctx.getSource().getPlayerOrException()), ctx.getArgument("speed", Float.class), null))));
     }
 
     @Override
@@ -48,17 +48,17 @@ public class SpeedCommand extends Command {
         return "/elevated/speed";
     }
 
-    private SpeedType determineSpeedType(ServerPlayerEntity player) {
-        return player.isSubmergedInWater() ? SpeedType.SWIM : ((MixinPlayerEntityAccessor) player).getAbilities_().flying ? SpeedType.FLY : SpeedType.WALK;
+    private SpeedType determineSpeedType(ServerPlayer player) {
+        return player.isUnderWater() ? SpeedType.SWIM : ((MixinPlayerEntityAccessor) player).getAbilities_().flying ? SpeedType.FLY : SpeedType.WALK;
     }
 
-    private int setSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, float speed, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
-        if (players == null) players = Lists.newArrayList(ctx.getSource().getPlayerOrThrow());
+    private int setSpeed(CommandContext<CommandSourceStack> ctx, SpeedType type, float speed, Collection<ServerPlayer> players) throws CommandSyntaxException {
+        if (players == null) players = Lists.newArrayList(ctx.getSource().getPlayerOrException());
         else if (!isOp(ctx)) {
             sendError(ctx, "You must be op to set other's speed.");
             return 0;
         }
-        for (ServerPlayerEntity p : players) {
+        for (ServerPlayer p : players) {
             double old = type.getSpeed(p);
             try {
                 type.setSpeed(p, speed);
@@ -70,50 +70,50 @@ public class SpeedCommand extends Command {
         return players.size();
     }
 
-    private int getSpeed(CommandContext<ServerCommandSource> ctx, SpeedType type, ServerPlayerEntity player) throws CommandSyntaxException {
+    private int getSpeed(CommandContext<CommandSourceStack> ctx, SpeedType type, ServerPlayer player) throws CommandSyntaxException {
         boolean notYou = player != null;
-        if (!notYou) player = ctx.getSource().getPlayerOrThrow();
+        if (!notYou) player = ctx.getSource().getPlayerOrException();
         double speed = type.getSpeed(player);
         String s = IMoreCommands.get().textToString(player.getDisplayName(), SS, true);
-        sendMsg(ctx, (notYou ? s + SF + "'" + (Objects.requireNonNull(Formatting.strip(s)).endsWith("s") ? "" : "s") : "Your") + " " + SF + type.name().toLowerCase() + " speed " + DF + "is currently " + SF + speed + DF + ".");
+        sendMsg(ctx, (notYou ? s + SF + "'" + (Objects.requireNonNull(ChatFormatting.stripFormatting(s)).endsWith("s") ? "" : "s") : "Your") + " " + SF + type.name().toLowerCase() + " speed " + DF + "is currently " + SF + speed + DF + ".");
         return (int) speed;
     }
 
     public enum SpeedType {
         WALK((player, speed) -> {
-            UUID speedModId = player.getDataTracker().get(IDataTrackerHelper.get().speedModifier()).orElseThrow(() -> new AssertionError("This shouldn't happen."));
-            EntityAttributeInstance attr = Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED));
+            UUID speedModId = player.getEntityData().get(IDataTrackerHelper.get().speedModifier()).orElseThrow(() -> new AssertionError("This shouldn't happen."));
+            AttributeInstance attr = Objects.requireNonNull(player.getAttribute(Attributes.MOVEMENT_SPEED));
             attr.removeModifier(speedModId);
-            attr.addPersistentModifier(new EntityAttributeModifier(speedModId, "MoreCommands Speed Modifier", speed - 1, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
-        }, player -> Optional.ofNullable(Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getModifier(player.getDataTracker()
+            attr.addPermanentModifier(new AttributeModifier(speedModId, "MoreCommands Speed Modifier", speed - 1, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        }, player -> Optional.ofNullable(Objects.requireNonNull(player.getAttribute(Attributes.MOVEMENT_SPEED)).getModifier(player.getEntityData()
                 .get(IDataTrackerHelper.get().speedModifier()).orElseThrow(() -> new AssertionError("This shouldn't happen."))))
-                .map(attr -> attr.getValue() + 1).orElse(1D)),
+                .map(attr -> attr.getAmount() + 1).orElse(1D)),
         FLY((player, speed) -> {
-            ((MixinPlayerAbilitiesAccessor) ((MixinPlayerEntityAccessor) player).getAbilities_()).setFlySpeed_((float) (speed / 20));
-            player.sendAbilitiesUpdate();
-        }, player -> ((MixinPlayerEntityAccessor) player).getAbilities_().getFlySpeed() * 20D),
-        SWIM((player, speed) -> Objects.requireNonNull(player.getAttributeInstance(Nested.swimSpeedAttribute)).setBaseValue(speed), player -> player.getAttributeValue(Nested.swimSpeedAttribute));
+            ((MixinPlayerAbilitiesAccessor) ((MixinPlayerEntityAccessor) player).getAbilities_()).setFlyingSpeed_((float) (speed / 20));
+            player.onUpdateAbilities();
+        }, player -> ((MixinPlayerEntityAccessor) player).getAbilities_().getFlyingSpeed() * 20D),
+        SWIM((player, speed) -> Objects.requireNonNull(player.getAttribute(Nested.swimSpeedAttribute)).setBaseValue(speed), player -> player.getAttributeValue(Nested.swimSpeedAttribute));
 
-        public static final EntityAttribute swimSpeedAttribute = Nested.swimSpeedAttribute;
+        public static final Attribute swimSpeedAttribute = Nested.swimSpeedAttribute;
 
-        private final BiConsumer<ServerPlayerEntity, Double> consumer;
-        private final Function<ServerPlayerEntity, Double> supplier;
+        private final BiConsumer<ServerPlayer, Double> consumer;
+        private final Function<ServerPlayer, Double> supplier;
 
-        SpeedType(BiConsumer<ServerPlayerEntity, Double> consumer, Function<ServerPlayerEntity, Double> supplier) {
+        SpeedType(BiConsumer<ServerPlayer, Double> consumer, Function<ServerPlayer, Double> supplier) {
             this.consumer = consumer;
             this.supplier = supplier;
         }
 
-        public void setSpeed(ServerPlayerEntity player, double speed) {
+        public void setSpeed(ServerPlayer player, double speed) {
             consumer.accept(player, speed);
         }
 
-        public double getSpeed(ServerPlayerEntity player) {
+        public double getSpeed(ServerPlayer player) {
             return supplier.apply(player);
         }
 
         private static class Nested { // bla-bla forward references bla-bla ugh
-            public static final EntityAttribute swimSpeedAttribute = new ClampedEntityAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setTracked(true);
+            public static final Attribute swimSpeedAttribute = new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true);
         }
     }
 }

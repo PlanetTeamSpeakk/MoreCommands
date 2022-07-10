@@ -1,19 +1,23 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.Perspective;
+import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.render.*;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,30 +34,30 @@ import java.util.Random;
 public class VexParticle extends Particle {
     private static final Random random = new Random();
     public static final float r = 214f / 255, g = 104f / 255, b = 14f / 255;
-    public static final ParticleTextureSheet pts = new ParticleTextureSheet() {
+    public static final ParticleRenderType pts = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager manager) {
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(770, 771, 1, 0);
             RenderSystem.lineWidth(2.0F);
             RenderSystem.disableTexture();
-            ClientCompat.get().bufferBuilderBegin(builder, 3, VertexFormats.POSITION_COLOR_LIGHT);
+            ClientCompat.get().bufferBuilderBegin(builder, 3, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
         }
 
         @Override
-        public void draw(Tessellator tessellator) {
-            tessellator.draw();
+        public void end(Tesselator tessellator) {
+            tessellator.end();
             RenderSystem.disableBlend();
             RenderSystem.enableTexture();
         }
     };
     private final Entity entity;
     private final List<Direction> directions = new ArrayList<>();
-    private final List<Vec3d> lines = new ArrayList<>();
+    private final List<Vec3> lines = new ArrayList<>();
     private boolean isDying = false;
 
     public VexParticle(Entity entity) {
-        super((ClientWorld) entity.world, entity.getX() + random.nextDouble() - 0.5, entity.getY() + 1f + random.nextInt(200) / 100f, entity.getZ() + random.nextDouble() - 0.5);
+        super((ClientLevel) entity.level, entity.getX() + random.nextDouble() - 0.5, entity.getY() + 1f + random.nextInt(200) / 100f, entity.getZ() + random.nextDouble() - 0.5);
         this.entity = entity;
         Direction prev = Direction.NORTH;
         directions.add(0, prev);
@@ -62,46 +66,46 @@ public class VexParticle extends Particle {
             directions.add(i, random.nextDouble() < 0.05 ? getRandomFacing(prev) : prev);
         }
         calculateLines();
-        maxAge = Integer.MAX_VALUE;
+        lifetime = Integer.MAX_VALUE;
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (entity.getPos().squaredDistanceTo(x, y, z) > 2 || age == 200) isDying = true;
-        if (!isDying && !dead) {
+        if (entity.position().distanceToSqr(x, y, z) > 2 || age == 200) isDying = true;
+        if (!isDying && !removed) {
             directions.add(0, random.nextDouble() < 0.05 ? getRandomFacing(directions.get(0)) : directions.get(0));
             directions.remove(50);
-            Vec3d directionVector = new Vec3d(directions.get(0).getVector().getX(), directions.get(0).getVector().getY(), directions.get(0).getVector().getZ()).multiply(0.01);
+            Vec3 directionVector = new Vec3(directions.get(0).getNormal().getX(), directions.get(0).getNormal().getY(), directions.get(0).getNormal().getZ()).scale(0.01);
             this.setPos(x - directionVector.x, y - directionVector.y, z - directionVector.z);
             calculateLines();
         } else {
             directions.remove(directions.size() - 1);
             calculateLines();
-            if (directions.isEmpty()) this.markDead();
+            if (directions.isEmpty()) this.remove();
         }
     }
 
     @Override
-    public void buildGeometry(VertexConsumer vertex, Camera camera, float tickDelta) {
-        if (entity instanceof ClientPlayerEntity && MinecraftClient.getInstance().player == entity && MinecraftClient.getInstance().options.getPerspective() == Perspective.FIRST_PERSON && entity.getPos().add(0, 1, 0).squaredDistanceTo(x, y, z) < 3)
+    public void render(VertexConsumer vertex, Camera camera, float tickDelta) {
+        if (entity instanceof LocalPlayer && Minecraft.getInstance().player == entity && Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON && entity.position().add(0, 1, 0).distanceToSqr(x, y, z) < 3)
             return;
-        Vec3d cam = camera.getPos();
-        double x = entity.prevX + (cam.x - entity.prevX);
-        double y = entity.prevY + (cam.y - entity.prevY);
-        double z = entity.prevZ + (cam.z - entity.prevZ);
+        Vec3 cam = camera.getPosition();
+        double x = entity.xo + (cam.x - entity.xo);
+        double y = entity.yo + (cam.y - entity.yo);
+        double z = entity.zo + (cam.z - entity.zo);
         for (int i = 0; i < lines.size(); i++) {
-            Vec3d line = lines.get(i);
-            vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 0f).light(240, 240).next();
+            Vec3 line = lines.get(i);
+            vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 0f).uv2(240, 240).endVertex();
             if (i != lines.size() - 1) {
                 line = lines.get(i + 1);
-                vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 1f).light(240, 240).next();
+                vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 1f).uv2(240, 240).endVertex();
             }
         }
     }
 
     @Override
-    public ParticleTextureSheet getType() {
+    public ParticleRenderType getRenderType() {
         return pts;
     }
 
@@ -116,12 +120,12 @@ public class VexParticle extends Particle {
         if (directions.size() == 0) return;
         Direction prev = directions.get(0);
         int currentPosition = 0;
-        Vec3d prevBlockPos = new Vec3d(x, y, z);
+        Vec3 prevBlockPos = new Vec3(x, y, z);
         lines.add(prevBlockPos);
         for (int i = 1; i < directions.size(); i++) {
             if (!directions.get(i).equals(prev) || i == directions.size() - 1) {
-                Vec3d directionVector = new Vec3d(prev.getVector().getX(), prev.getVector().getY(), prev.getVector().getZ()).multiply(0.01);
-                Vec3d endBlockPos = new Vec3d(prevBlockPos.x + directionVector.x * (i - currentPosition), prevBlockPos.y + directionVector.y * (i - currentPosition), prevBlockPos.z + directionVector.z * (i - currentPosition));
+                Vec3 directionVector = new Vec3(prev.getNormal().getX(), prev.getNormal().getY(), prev.getNormal().getZ()).scale(0.01);
+                Vec3 endBlockPos = new Vec3(prevBlockPos.x + directionVector.x * (i - currentPosition), prevBlockPos.y + directionVector.y * (i - currentPosition), prevBlockPos.z + directionVector.z * (i - currentPosition));
                 lines.add(endBlockPos);
                 prev = directions.get(i);
                 currentPosition = i;

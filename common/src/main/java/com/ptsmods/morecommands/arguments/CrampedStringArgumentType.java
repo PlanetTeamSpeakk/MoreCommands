@@ -11,7 +11,7 @@ import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class CrampedStringArgumentType implements CompatArgumentType<CrampedStringArgumentType, String, CrampedStringArgumentType.Properties> {
@@ -55,7 +55,7 @@ public class CrampedStringArgumentType implements CompatArgumentType<CrampedStri
         private Serialiser() {}
 
         @Override
-        public CrampedStringArgumentType fromPacket(PacketByteBuf buf) {
+        public CrampedStringArgumentType fromPacket(FriendlyByteBuf buf) {
             StringArgumentType.StringType type = StringArgumentType.StringType.values()[buf.readByte()];
             return new CrampedStringArgumentType(type == StringArgumentType.StringType.SINGLE_WORD ? StringArgumentType.word() :
                     type == StringArgumentType.StringType.QUOTABLE_PHRASE ? StringArgumentType.string() : StringArgumentType.greedyString(), buf.readVarInt(), buf.readVarInt());
@@ -91,7 +91,7 @@ public class CrampedStringArgumentType implements CompatArgumentType<CrampedStri
         }
 
         @Override
-        public void write(PacketByteBuf buf) {
+        public void write(FriendlyByteBuf buf) {
             buf.writeByte(type.ordinal());
             buf.writeVarInt(minLength);
             buf.writeVarInt(maxLength);

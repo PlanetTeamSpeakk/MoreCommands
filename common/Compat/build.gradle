@@ -4,7 +4,7 @@ architectury {
 
 dependencies {
     minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_build}:v2"
+    mappings loom.officialMojangMappings()
 
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"

@@ -12,11 +12,6 @@ import com.ptsmods.morecommands.arguments.KeyArgumentType;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinMouseAccessor;
 import dev.architectury.event.events.client.ClientTickEvent;
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.Mouse;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -26,6 +21,11 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class EmulateCommand extends ClientCommand {
     private enum Type {
@@ -87,8 +87,8 @@ public class EmulateCommand extends ClientCommand {
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ClientCommandSource> emulate = cLiteral("emulate");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
+        LiteralArgumentBuilder<ClientSuggestionProvider> emulate = cLiteral("emulate");
         for (Type type : Type.values()) {
             emulate.then(cLiteral(type.name().toLowerCase())
                     .then(cLiteral("clear")
@@ -130,7 +130,7 @@ public class EmulateCommand extends ClientCommand {
                                                 if (b0) task.set(task0);
                                                 return b0;
                                             });
-                                            sendMsg(b ? Formatting.RED + "No task with that id could be found." : "Task " + SF + id + " (" + task.get().toString() + ") " + DF + "has been removed.");
+                                            sendMsg(b ? ChatFormatting.RED + "No task with that id could be found." : "Task " + SF + id + " (" + task.get().toString() + ") " + DF + "has been removed.");
                                             return b ? 1 : 0;
                                         }
                                     })))
@@ -162,7 +162,7 @@ public class EmulateCommand extends ClientCommand {
         return "/emulate";
     }
 
-    private int executeTasksAddInterval(Type type, CommandContext<ClientCommandSource> ctx, int button, int count) {
+    private int executeTasksAddInterval(Type type, CommandContext<ClientSuggestionProvider> ctx, int button, int count) {
         return executeTasksAdd(new EmulateTask(type, ctx.getArgument("interval", Integer.class), button, false, count));
     }
 
@@ -220,20 +220,20 @@ public class EmulateCommand extends ClientCommand {
             MoreCommands.execute(() -> {
                 switch (type) {
                     case MOUSE:
-                        Mouse mouse = MinecraftClient.getInstance().mouse;
-                        MinecraftClient.getInstance().execute(() -> {
+                        MouseHandler mouse = Minecraft.getInstance().mouseHandler;
+                        Minecraft.getInstance().execute(() -> {
                             ignoreMouse = true;
-                            ((MixinMouseAccessor) mouse).callOnMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key, action, 0);
+                            ((MixinMouseAccessor) mouse).callOnPress(Minecraft.getInstance().getWindow().getWindow(), key, action, 0);
                         });
-                        if (!hold) MinecraftClient.getInstance().execute(() -> {
+                        if (!hold) Minecraft.getInstance().execute(() -> {
                             ignoreMouse = true;
-                            ((MixinMouseAccessor) mouse).callOnMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), key, 0, 0);
+                            ((MixinMouseAccessor) mouse).callOnPress(Minecraft.getInstance().getWindow().getWindow(), key, 0, 0);
                         });
                         break;
                     case KEYBOARD:
-                        Keyboard keyboard = MinecraftClient.getInstance().keyboard;
-                        keyboard.onKey(MinecraftClient.getInstance().getWindow().getHandle(), key, 0, action, 0);
-                        if (!hold) keyboard.onKey(MinecraftClient.getInstance().getWindow().getHandle(), key, 0, 0, 0);
+                        KeyboardHandler keyboard = Minecraft.getInstance().keyboardHandler;
+                        keyboard.keyPress(Minecraft.getInstance().getWindow().getWindow(), key, 0, action, 0);
+                        if (!hold) keyboard.keyPress(Minecraft.getInstance().getWindow().getWindow(), key, 0, 0, 0);
                         break;
                 }
                 if ((!hold || type == Type.KEYBOARD) && action != 0 && --count != 0 && (!hold || System.currentTimeMillis() < starttime + time - interval)) {

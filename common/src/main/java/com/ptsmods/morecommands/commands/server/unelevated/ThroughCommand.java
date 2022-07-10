@@ -4,31 +4,31 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 
 public class ThroughCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("through")
                 .executes(ctx -> {
-                    Entity entity = ctx.getSource().getEntityOrThrow();
-                    BlockPos pos = entity.getBlockPos();
-                    World world = ctx.getSource().getWorld();
+                    Entity entity = ctx.getSource().getEntityOrException();
+                    BlockPos pos = entity.blockPosition();
+                    Level world = ctx.getSource().getLevel();
                     int x = pos.getX();
                     int y = pos.getY();
                     int z = pos.getZ();
                     boolean yLowered = false;
-                    Vec3d rot = entity.getRotationVector();
+                    Vec3 rot = entity.getLookAngle();
                     while (true) {
                         for (int x1 = 0; x1 < 64; x1++) { // it will look 64 blocks in front of you at most.
-                            switch (Direction.getFacing(rot.x, rot.y, rot.z)) {
+                            switch (Direction.getNearest(rot.x, rot.y, rot.z)) {
                                 case NORTH:
                                     z--;
                                     break;
@@ -42,15 +42,15 @@ public class ThroughCommand extends Command {
                                     x++;
                                     break;
                                 case DOWN:
-                                    return ctx.getSource().getServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getServer().getOpPermissionLevel()), "descend");
+                                    return ctx.getSource().getServer().getCommands().performCommand(ctx.getSource().withPermission(ctx.getSource().getServer().getOperatorUserPermissionLevel()), "descend");
                                 case UP:
-                                    return ctx.getSource().getServer().getCommandManager().execute(ctx.getSource().withLevel(ctx.getSource().getServer().getOpPermissionLevel()), "ascend");
+                                    return ctx.getSource().getServer().getCommands().performCommand(ctx.getSource().withPermission(ctx.getSource().getServer().getOperatorUserPermissionLevel()), "ascend");
                             }
                             Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock(); // Block under your feet.
                             Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock(); // Block at your feet.
                             Block tpblock2 = world.getBlockState(new BlockPos(x, y + 1, z)).getBlock(); // Block at your head.
-                            if ((!MoreCommands.blockBlacklist.contains(block) || entity instanceof PlayerEntity && ((MixinPlayerEntityAccessor) entity).getAbilities_().flying) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
-                                entity.teleport(x + entity.getX() - Math.floor(entity.getX()), y, z + entity.getZ() - Math.floor(entity.getZ()));
+                            if ((!MoreCommands.blockBlacklist.contains(block) || entity instanceof Player && ((MixinPlayerEntityAccessor) entity).getAbilities_().flying) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
+                                entity.teleportToWithTicket(x + entity.getX() - Math.floor(entity.getX()), y, z + entity.getZ() - Math.floor(entity.getZ()));
                                 sendMsg(ctx, "You have been teleported through the wall.");
                                 return 1;
                             }

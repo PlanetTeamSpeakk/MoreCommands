@@ -7,30 +7,29 @@ import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreGameRules;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Util;
-
 import java.util.Locale;
+import net.minecraft.Util;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class DocsCommand extends ClientCommand {
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) throws Exception {
-        LiteralArgumentBuilder<ClientCommandSource> clientCommand = cLiteral("clientcommand");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) throws Exception {
+        LiteralArgumentBuilder<ClientSuggestionProvider> clientCommand = cLiteral("clientcommand");
         MoreCommandsClient.getNodes().forEach((cmd, nodes) -> nodes.forEach(node -> clientCommand
                 .then(cLiteral(node.getName())
                         .executes(ctx -> open("/commands/client" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
 
-        LiteralArgumentBuilder<ClientCommandSource> command = cLiteral("command");
+        LiteralArgumentBuilder<ClientSuggestionProvider> command = cLiteral("command");
         MoreCommands.getNodes().forEach((cmd, nodes) -> nodes.forEach(node -> command
                 .then(cLiteral(node.getName())
                         .executes(ctx -> open("/commands/server" + (cmd.getDocsPath().startsWith("/") ? "" : "/") + cmd.getDocsPath())))));
 
-        LiteralArgumentBuilder<ClientCommandSource> gamerule = cLiteral("gamerule");
+        LiteralArgumentBuilder<ClientSuggestionProvider> gamerule = cLiteral("gamerule");
         IMoreGameRules.get().allRules().forEach((name, key) -> gamerule
                 .then(cLiteral(name)
                         .executes(ctx -> open("/gamerules/" + hyphenCase(name)))));
 
-        LiteralArgumentBuilder<ClientCommandSource> clientOption = cLiteral("clientoption");
+        LiteralArgumentBuilder<ClientSuggestionProvider> clientOption = cLiteral("clientoption");
         ClientOption.getKeyMappedOptions().forEach((key, option) -> clientOption
                 .then(cLiteral(key)
                         .executes(ctx -> open("/client-options/" + option.getCategory().name().toLowerCase(Locale.ROOT).replace('_', '-') + '/' +
@@ -55,7 +54,7 @@ public class DocsCommand extends ClientCommand {
     }
 
     private static int open(String path) {
-        Util.getOperatingSystem().open("https://morecommands.ptsmods.com" + path);
+        Util.getPlatform().openUri("https://morecommands.ptsmods.com" + path);
         return 1;
     }
 

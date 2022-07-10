@@ -3,10 +3,9 @@ package com.ptsmods.morecommands.commands.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.client.world.ClientWorld;
-
 import java.util.function.Consumer;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class PweatherCommand extends ClientCommand {
     public static boolean isRaining = false;
@@ -15,15 +14,15 @@ public class PweatherCommand extends ClientCommand {
     public static WeatherType pweather = WeatherType.OFF;
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ClientCommandSource> cmd = cLiteral("pweather");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
+        LiteralArgumentBuilder<ClientSuggestionProvider> cmd = cLiteral("pweather");
         for (WeatherType type : WeatherType.values()) {
             cmd.then(cLiteral(type.name().toLowerCase())
                     .executes(ctx -> {
                         if (type != WeatherType.OFF) {
-                            rainGradient = getWorld().getRainGradient(1f);
-                            thunderGradient = getWorld().getThunderGradient(1f);
-                            isRaining = getWorld().getLevelProperties().isRaining();
+                            rainGradient = getWorld().getRainLevel(1f);
+                            thunderGradient = getWorld().getThunderLevel(1f);
+                            isRaining = getWorld().getLevelData().isRaining();
                         }
                         pweather = type;
                         pweather.consumer.accept(getWorld());
@@ -42,28 +41,28 @@ public class PweatherCommand extends ClientCommand {
 
     public enum WeatherType {
         OFF("Your personal weather is now synced with the server again.", world -> {
-            world.setRainGradient(rainGradient);
-            world.setThunderGradient(thunderGradient);
-            world.getLevelProperties().setRaining(isRaining);
+            world.setRainLevel(rainGradient);
+            world.setThunderLevel(thunderGradient);
+            world.getLevelData().setRaining(isRaining);
         }),
         CLEAR("Can't you tell I got news for you? The sun is shining and so are you.", world -> {
-            world.setRainGradient(0f);
-            world.getLevelProperties().setRaining(false);
+            world.setRainLevel(0f);
+            world.getLevelData().setRaining(false);
         }),
         RAIN("Purple rain, purple raaiiinn.", world -> {
-            world.setRainGradient(1f);
-            world.getLevelProperties().setRaining(true);
+            world.setRainLevel(1f);
+            world.getLevelData().setRaining(true);
         }),
         THUNDER("I was lightning before the thunder, thun- thunder.", world -> {
-            world.setRainGradient(1f);
-            world.setThunderGradient(1f);
-            world.getLevelProperties().setRaining(true);
+            world.setRainLevel(1f);
+            world.setThunderLevel(1f);
+            world.getLevelData().setRaining(true);
         });
 
         public final String msg;
-        public final Consumer<ClientWorld> consumer;
+        public final Consumer<ClientLevel> consumer;
 
-        WeatherType(String msg, Consumer<ClientWorld> consumer) {
+        WeatherType(String msg, Consumer<ClientLevel> consumer) {
             this.msg = msg;
             this.consumer = consumer;
         }

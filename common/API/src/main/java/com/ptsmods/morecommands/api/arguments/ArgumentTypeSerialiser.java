@@ -2,16 +2,15 @@ package com.ptsmods.morecommands.api.arguments;
 
 import com.google.gson.JsonObject;
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import net.minecraft.network.PacketByteBuf;
-
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface ArgumentTypeSerialiser<A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> {
     Map<ArgumentTypeSerialiser<?, ?, ?>, Object> serialisers = new HashMap<>();
 
-    A fromPacket(PacketByteBuf buf);
+    A fromPacket(FriendlyByteBuf buf);
 
     void writeJson(P properties, JsonObject json);
 
@@ -24,14 +23,14 @@ public interface ArgumentTypeSerialiser<A extends CompatArgumentType<A, T, P>, T
                 case "toPacket":
                 case "func_197072_a":
                 case "serializeToNetwork":
-                    ((A) args[0]).getProperties().write((PacketByteBuf) args[1]);
+                    ((A) args[0]).getProperties().write((FriendlyByteBuf) args[1]);
                     return null;
 
                 case "method_10005":
                 case "fromPacket":
                 case "func_197071_b":
                 case "deserializeFromNetwork":
-                    return fromPacket((PacketByteBuf) args[0]);
+                    return fromPacket((FriendlyByteBuf) args[0]);
 
                 case "method_10006":
                 case "toJson":
@@ -61,13 +60,13 @@ public interface ArgumentTypeSerialiser<A extends CompatArgumentType<A, T, P>, T
                 case "method_10007":
                 case "writePacket":
                 case "serializeToNetwork":
-                    ((P) args[0]).write((PacketByteBuf) args[1]);
+                    ((P) args[0]).write((FriendlyByteBuf) args[1]);
                     return null;
 
                 case "method_10005":
                 case "fromPacket":
                 case "deserializeFromNetwork":
-                    return fromPacket((PacketByteBuf) args[0]).getProperties().toVanillaProperties();
+                    return fromPacket((FriendlyByteBuf) args[0]).getProperties().toVanillaProperties();
 
                 case "method_10006":
                 case "writeJson":

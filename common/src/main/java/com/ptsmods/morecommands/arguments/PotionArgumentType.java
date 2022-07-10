@@ -12,34 +12,33 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.potion.Potion;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.alchemy.Potion;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(staticName = "potion")
-public class PotionArgumentType implements CompatArgumentType<PotionArgumentType, Identifier, ConstantSerialiser.ConstantProperties<PotionArgumentType, Identifier>> {
-    public static final ConstantSerialiser<PotionArgumentType, Identifier> SERIALISER = new ConstantSerialiser<>(PotionArgumentType::new);
+public class PotionArgumentType implements CompatArgumentType<PotionArgumentType, ResourceLocation, ConstantSerialiser.ConstantProperties<PotionArgumentType, ResourceLocation>> {
+    public static final ConstantSerialiser<PotionArgumentType, ResourceLocation> SERIALISER = new ConstantSerialiser<>(PotionArgumentType::new);
     private static final DynamicCommandExceptionType POTION_NOT_FOUND = new DynamicCommandExceptionType(o -> new LiteralMessage("Could not find a potion with an id of " + o + "."));
 
     public static Potion getPotion(CommandContext<?> ctx, String argName) {
-        return Registry.POTION.get(ctx.getArgument(argName, Identifier.class));
+        return Registry.POTION.get(ctx.getArgument(argName, ResourceLocation.class));
     }
 
     @Override
-    public Identifier parse(StringReader reader) throws CommandSyntaxException {
-        Identifier id = Identifier.fromCommandInput(reader);
-        if (!Registry.POTION.containsId(id)) throw POTION_NOT_FOUND.create(id);
+    public ResourceLocation parse(StringReader reader) throws CommandSyntaxException {
+        ResourceLocation id = ResourceLocation.read(reader);
+        if (!Registry.POTION.containsKey(id)) throw POTION_NOT_FOUND.create(id);
         return id;
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestFromIdentifier(Registry.POTION.stream(), builder, Registry.POTION::getId, potion -> LiteralTextBuilder.literal(Registry.POTION.getId(potion).getPath()));
+        return SharedSuggestionProvider.suggestResource(Registry.POTION.stream(), builder, Registry.POTION::getKey, potion -> LiteralTextBuilder.literal(Registry.POTION.getKey(potion).getPath()));
     }
 
     @Override
@@ -48,12 +47,12 @@ public class PotionArgumentType implements CompatArgumentType<PotionArgumentType
     }
 
     @Override
-    public ArgumentType<Identifier> toVanillaArgumentType() {
-        return IdentifierArgumentType.identifier();
+    public ArgumentType<ResourceLocation> toVanillaArgumentType() {
+        return ResourceLocationArgument.id();
     }
 
     @Override
-    public ConstantSerialiser.ConstantProperties<PotionArgumentType, Identifier> getProperties() {
+    public ConstantSerialiser.ConstantProperties<PotionArgumentType, ResourceLocation> getProperties() {
         return SERIALISER.getProperties();
     }
 }

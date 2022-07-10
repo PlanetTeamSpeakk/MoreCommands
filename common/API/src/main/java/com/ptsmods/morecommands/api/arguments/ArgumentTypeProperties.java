@@ -1,9 +1,8 @@
 package com.ptsmods.morecommands.api.arguments;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import net.minecraft.network.PacketByteBuf;
-
 import java.lang.reflect.Proxy;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface ArgumentTypeProperties<A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> {
 
@@ -11,7 +10,7 @@ public interface ArgumentTypeProperties<A extends CompatArgumentType<A, T, P>, T
 
     ArgumentTypeSerialiser<A, T, P> getSerialiser();
 
-    void write(PacketByteBuf buf);
+    void write(FriendlyByteBuf buf);
 
     default Object toVanillaProperties() {
         return Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ReflectionHelper.getMcClass("class_2314$class_7217",

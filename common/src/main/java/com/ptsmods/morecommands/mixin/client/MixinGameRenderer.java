@@ -5,13 +5,13 @@ import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,35 +26,35 @@ import java.util.Objects;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
-    private static final @Unique Identifier entityTargetPacketId = new Identifier("morecommands:entity_target_update");
-    @Shadow @Final private MinecraftClient client;
+    private static final @Unique ResourceLocation entityTargetPacketId = new ResourceLocation("morecommands:entity_target_update");
+    @Shadow @Final private Minecraft minecraft;
     private @Unique Entity lastTargetedEntity = null;
 
-    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "updateTargetedEntity(F)V")
+    @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "pick")
     public double updateTargetedEntity_d(double d) {
-        return ReachCommand.getReach(Objects.requireNonNull(client.player), false);
+        return ReachCommand.getReach(Objects.requireNonNull(minecraft.player), false);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"), method = "updateTargetedEntity(F)V")
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;pick(DFZ)Lnet/minecraft/world/phys/HitResult;"), method = "pick")
     public HitResult updateTargetedEntity_raycast(Entity entity, double reach, float tickDelta, boolean includeFluids) {
-        return entity.raycast(reach, tickDelta, ClientOptions.Tweaks.targetFluids.getValue() || includeFluids);
+        return entity.pick(reach, tickDelta, ClientOptions.Tweaks.targetFluids.getValue() || includeFluids);
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;hasExtendedReach()Z"), method = "updateTargetedEntity(F)V")
-    public boolean updateTargetedEntity_hasExtendedReach(ClientPlayerInteractionManager interactionManager) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasFarPickRange()Z"), method = "pick")
+    public boolean updateTargetedEntity_hasExtendedReach(MultiPlayerGameMode interactionManager) {
         return false;
     }
 
-    @ModifyVariable(at = @At(value = "STORE", ordinal = 1), method = "updateTargetedEntity(F)V")
+    @ModifyVariable(at = @At(value = "STORE", ordinal = 1), method = "pick")
     public boolean updateTargetedEntity_bl(boolean bl) {
         return false;
     }
 
-    @Inject(at = @At("RETURN"), method = "updateTargetedEntity")
+    @Inject(at = @At("RETURN"), method = "pick")
     public void updateTargetedEntity(float tickDelta, CallbackInfo cbi) {
-        if (!NetworkManager.canServerReceive(entityTargetPacketId) || client.targetedEntity == lastTargetedEntity) return;
+        if (!NetworkManager.canServerReceive(entityTargetPacketId) || minecraft.crosshairPickEntity == lastTargetedEntity) return;
 
-        lastTargetedEntity = client.targetedEntity;
-        NetworkManager.sendToServer(entityTargetPacketId, new PacketByteBuf(Unpooled.buffer()).writeVarInt(lastTargetedEntity == null ? -1 : ((MixinEntityAccessor) lastTargetedEntity).getId_()));
+        lastTargetedEntity = minecraft.crosshairPickEntity;
+        NetworkManager.sendToServer(entityTargetPacketId, new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(lastTargetedEntity == null ? -1 : ((MixinEntityAccessor) lastTargetedEntity).getId_()));
     }
 }

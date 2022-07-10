@@ -5,27 +5,26 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.command.ServerCommandSource;
-
 import java.util.Collection;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 
 public class DamageCommand extends Command {
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
-        DamageSource.OUT_OF_WORLD.getName(); // Making sure the class is instantiated.
-        RequiredArgumentBuilder<ServerCommandSource, EntitySelector> entities = argument("entities", EntityArgumentType.entities());
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
+        DamageSource.OUT_OF_WORLD.getMsgId(); // Making sure the class is instantiated.
+        RequiredArgumentBuilder<CommandSourceStack, EntitySelector> entities = argument("entities", EntityArgument.entities());
 
         MoreCommands.DAMAGE_SOURCES.forEach((name, source) -> entities.then(literal(name)
                 .then(argument("damage", FloatArgumentType.floatArg(1f))
                         .executes(ctx -> {
-                            Collection<? extends Entity> entityList = EntityArgumentType.getEntities(ctx, "entities");
+                            Collection<? extends Entity> entityList = EntityArgument.getEntities(ctx, "entities");
                             float damage = ctx.getArgument("damage", float.class);
-                            entityList.forEach(entity -> entity.damage(source, damage));
+                            entityList.forEach(entity -> entity.hurt(source, damage));
 
                             sendMsg(ctx, "Dealt " + SF + damage + DF + " damage to " + SF + entityList.size() + DF + " entities.");
                             return (int) (entityList.size() * damage);

@@ -3,20 +3,19 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.Collection;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
 
 public class HealCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.getRoot().addChild(MoreCommands.createAlias("feed", dispatcher.register(literalReqOp("heal")
-                .executes(ctx -> execute(ctx.getSource().getPlayerOrThrow()))
-                .then(argument("players", EntityArgumentType.players())
+                .executes(ctx -> execute(ctx.getSource().getPlayerOrException()))
+                .then(argument("players", EntityArgument.players())
                         .executes(ctx -> {
-                            Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(ctx, "players");
+                            Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "players");
                             players.forEach(this::execute);
                             sendMsg(ctx, "Healed " + SF + players.size() + DF + " players.");
                             return players.size();
@@ -28,9 +27,9 @@ public class HealCommand extends Command {
         return "/elevated/heal";
     }
 
-    private int execute(ServerPlayerEntity player) {
+    private int execute(ServerPlayer player) {
         player.setHealth(player.getMaxHealth());
-        player.getHungerManager().add(20, 20);
+        player.getFoodData().eat(20, 20);
         sendMsg(player, "You have been healed and fed.");
         return 1;
     }

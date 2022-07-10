@@ -9,10 +9,9 @@ import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.commands.SharedSuggestionProvider;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,18 +39,18 @@ public class AliasCommand extends ClientCommand {
     }
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("alias")
                 .then(cLiteral("create")
                         .then(cArgument("name", StringArgumentType.word())
                                 .then(cArgument("msg", StringArgumentType.greedyString())
                                         .executes(ctx -> {
                                             String name = ctx.getArgument("name", String.class);
-                                            if (aliases.containsKey(name)) sendMsg(Formatting.RED + "An alias by that name already exists.");
+                                            if (aliases.containsKey(name)) sendMsg(ChatFormatting.RED + "An alias by that name already exists.");
                                             else {
                                                 aliases.put(name, ctx.getArgument("msg", String.class));
                                                 if (!aliases.get(name).startsWith("/")) sendMsg("The message does not start with a slash and thus is " + SF + "a normal message " + DF + "and " +
-                                                        Formatting.RED + "not " + SF + "a command" + DF + ".");
+                                                        ChatFormatting.RED + "not " + SF + "a command" + DF + ".");
                                                 register(name);
                                                 saveData();
                                                 sendMsg("An alias by the name of " + SF + name + DF + " has been added.");
@@ -63,10 +62,10 @@ public class AliasCommand extends ClientCommand {
                         .then(cArgument("name", StringArgumentType.word())
                                 .executes(ctx -> {
                                     String name = ctx.getArgument("name", String.class);
-                                    if (!aliases.containsKey(name)) sendMsg(Formatting.RED + "An alias by that name does not exist.");
+                                    if (!aliases.containsKey(name)) sendMsg(ChatFormatting.RED + "An alias by that name does not exist.");
                                     else {
                                         aliases.remove(name);
-                                        CommandDispatcher<CommandSource> disp = getPlayer().networkHandler.getCommandDispatcher();
+                                        CommandDispatcher<SharedSuggestionProvider> disp = getPlayer().connection.getCommands();
                                         MoreCommands.removeNode(disp, disp.getRoot().getChild(name));
                                         saveData();
                                         sendMsg("Alias " + SF + name + DF + " has been removed.");
@@ -76,7 +75,7 @@ public class AliasCommand extends ClientCommand {
                                 })))
                 .then(cLiteral("list")
                         .executes(ctx -> {
-                            if (aliases.isEmpty()) sendMsg(Formatting.RED + "You do not have any aliases yet, consider creating one with /alias create <name> <msg>.");
+                            if (aliases.isEmpty()) sendMsg(ChatFormatting.RED + "You do not have any aliases yet, consider creating one with /alias create <name> <msg>.");
                             else {
                                 sendMsg("You currently have the following aliases:");
                                 aliases.forEach((key, value) -> sendMsg("  " + key + ": " + SF + value));
@@ -100,7 +99,7 @@ public class AliasCommand extends ClientCommand {
     }
 
     private void register(String name) {
-        getPlayer().networkHandler.getCommandDispatcher().register(LiteralArgumentBuilder.<CommandSource>literal(name).executes(ctx0 -> 1));
+        getPlayer().connection.getCommands().register(LiteralArgumentBuilder.<SharedSuggestionProvider>literal(name).executes(ctx0 -> 1));
     }
 
 }

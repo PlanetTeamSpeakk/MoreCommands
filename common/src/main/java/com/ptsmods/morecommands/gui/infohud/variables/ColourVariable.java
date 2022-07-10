@@ -1,13 +1,12 @@
 package com.ptsmods.morecommands.gui.infohud.variables;
 
-import net.minecraft.client.util.math.MatrixStack;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
 import java.util.function.BiConsumer;
 
 public class ColourVariable extends AbstractVariable<Color> {
 
-    public ColourVariable(String name, Color defaultValue, BiConsumer<MatrixStack, Color> applicator) {
+    public ColourVariable(String name, Color defaultValue, BiConsumer<PoseStack, Color> applicator) {
         super(name, defaultValue, applicator);
     }
 

@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IRainbow;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
 import org.apache.logging.log4j.LogManager;
 
 import java.awt.*;
@@ -13,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TextColor;
 
 // Also take a look at MixinTextVisitFactory and MixinTextColor
 public class Rainbow implements IRainbow {
@@ -23,7 +23,7 @@ public class Rainbow implements IRainbow {
         if (checked) return instance;
         checked = true;
         try {
-            Formatting.valueOf("RAINBOW");
+            ChatFormatting.valueOf("RAINBOW");
         } catch (IllegalArgumentException e) {
             LogManager.getLogger("MoreCommands-Rainbow").warn("The RAINBOW formatting could not be found which means the Formatting class was initialised too early, " +
                     "no rainbows will be supported during this session. Are you using MultiMC perhaps?");
@@ -34,7 +34,7 @@ public class Rainbow implements IRainbow {
 
     public int rainbowIndex = 0;
     public final List<Color> rainbowColours;
-    public final Formatting RAINBOW = Formatting.valueOf("RAINBOW"); // Should've been registered in MixinPlugin.
+    public final ChatFormatting RAINBOW = ChatFormatting.valueOf("RAINBOW"); // Should've been registered in MixinPlugin.
     public final TextColor RAINBOW_TC = MixinTextColorAccessor.newInstance(0, "rainbow");
 
     private Rainbow() {
@@ -48,13 +48,13 @@ public class Rainbow implements IRainbow {
         for (int b=100; b>=0; b--) colours.add(new Color(        0,       255, b*255/100));
         rainbowColours = ImmutableList.copyOf(colours); // Looks better than just going through hue with HSB imho.
 
-        Map<Formatting, TextColor> formattingToColor = new HashMap<>(MixinTextColorAccessor.getFormattingToColor());//new HashMap<>(ReflectionHelper.getFieldValue(f, null));
+        Map<ChatFormatting, TextColor> formattingToColor = new HashMap<>(MixinTextColorAccessor.getLegacyFormatToColor());//new HashMap<>(ReflectionHelper.getFieldValue(f, null));
         formattingToColor.put(RAINBOW, RAINBOW_TC);
-        MixinTextColorAccessor.setFormattingToColor(formattingToColor);
+        MixinTextColorAccessor.setLegacyFormatToColor(formattingToColor);
 
-        Map<String, TextColor> byName = new HashMap<>(MixinTextColorAccessor.getByName());
+        Map<String, TextColor> byName = new HashMap<>(MixinTextColorAccessor.getNamedColors());
         byName.put("rainbow", RAINBOW_TC);
-        MixinTextColorAccessor.setByName(byName);
+        MixinTextColorAccessor.setNamedColors(byName);
     }
 
     public int getRainbowColour(boolean includeIndex) {

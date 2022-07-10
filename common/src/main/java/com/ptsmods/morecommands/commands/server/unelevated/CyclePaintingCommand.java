@@ -7,35 +7,35 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.arguments.PaintingVariantArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.decoration.PaintingVariant;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 public class CyclePaintingCommand extends Command {
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("cyclepainting")
                 .executes(ctx -> execute(ctx, null))
                 .then(argument("motive", PaintingVariantArgumentType.paintingVariant())
                         .executes(ctx -> execute(ctx, PaintingVariantArgumentType.getPaintingVariant(ctx, "motive")))));
     }
 
-    private int execute(CommandContext<ServerCommandSource> ctx, PaintingVariant motive) throws CommandSyntaxException {
-        HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrThrow(), 160F, false, true);
-        if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof PaintingEntity) {
-            PaintingEntity painting = (PaintingEntity) ((EntityHitResult) result).getEntity();
+    private int execute(CommandContext<CommandSourceStack> ctx, PaintingVariant motive) throws CommandSyntaxException {
+        HitResult result = MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrException(), 160F, false, true);
+        if (result.getType() == HitResult.Type.ENTITY && ((EntityHitResult) result).getEntity() instanceof Painting) {
+            Painting painting = (Painting) ((EntityHitResult) result).getEntity();
             PaintingVariant oldArt = (PaintingVariant) Compat.get().getPaintingVariant(painting);
-            Compat.get().setPaintingVariant(painting, motive == null ? Registry.PAINTING_VARIANT.get((Registry.PAINTING_VARIANT.getRawId(oldArt)+1) % Registry.PAINTING_VARIANT.size()) : motive);
-            BlockPos pos = painting.getBlockPos();
+            Compat.get().setPaintingVariant(painting, motive == null ? Registry.PAINTING_VARIANT.byId((Registry.PAINTING_VARIANT.getId(oldArt)+1) % Registry.PAINTING_VARIANT.size()) : motive);
+            BlockPos pos = painting.blockPosition();
             Entity painting0 = MoreCommands.cloneEntity(painting, false);
             painting.kill();
-            painting0.setPos(pos.getX(), pos.getY(), pos.getZ());
-            ctx.getSource().getWorld().spawnEntity(painting0);
+            painting0.setPosRaw(pos.getX(), pos.getY(), pos.getZ());
+            ctx.getSource().getLevel().addFreshEntity(painting0);
             return 1;
         } else sendError(ctx, "It appears as if you're not looking at a painting.");
         return 0;

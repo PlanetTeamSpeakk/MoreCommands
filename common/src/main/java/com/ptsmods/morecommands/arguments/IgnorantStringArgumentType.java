@@ -12,8 +12,7 @@ import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.PacketByteBuf;
-
+import net.minecraft.network.FriendlyByteBuf;
 import java.util.Collection;
 
 // Doesn't care what characters you put in an unquoted string.
@@ -66,8 +65,8 @@ public class IgnorantStringArgumentType implements ArgumentType<String>, CompatA
         private Serialiser() {}
 
         @Override
-        public IgnorantStringArgumentType fromPacket(PacketByteBuf buf) {
-            return new IgnorantStringArgumentType(buf.readEnumConstant(StringArgumentType.StringType.class));
+        public IgnorantStringArgumentType fromPacket(FriendlyByteBuf buf) {
+            return new IgnorantStringArgumentType(buf.readEnum(StringArgumentType.StringType.class));
         }
 
         @Override
@@ -94,8 +93,8 @@ public class IgnorantStringArgumentType implements ArgumentType<String>, CompatA
         }
 
         @Override
-        public void write(PacketByteBuf buf) {
-            buf.writeEnumConstant(type);
+        public void write(FriendlyByteBuf buf) {
+            buf.writeEnum(type);
         }
     }
 }

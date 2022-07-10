@@ -4,8 +4,8 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
 
@@ -34,19 +34,19 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
         return builder(literal, style).format(formattings);
     }
 
-    static MutableText literal(String literal) {
+    static MutableComponent literal(String literal) {
         return builder(literal).build();
     }
 
-    static MutableText literal(String literal, Object... formattings) {
+    static MutableComponent literal(String literal, Object... formattings) {
         return builder(literal, formattings).build();
     }
 
-    static MutableText literal(String literal, Style style) {
+    static MutableComponent literal(String literal, Style style) {
         return builder(literal, style).build();
     }
 
-    static MutableText literal(String literal, Style style, Object... formattings) {
+    static MutableComponent literal(String literal, Style style, Object... formattings) {
         return builder(literal, style, formattings).build();
     }
 
@@ -60,7 +60,7 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
         }
 
         @Override
-        public MutableText build() {
+        public MutableComponent build() {
             return Compat.get().buildText(this);
         }
 

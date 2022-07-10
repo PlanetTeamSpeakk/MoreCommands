@@ -7,18 +7,17 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.util.Formatting;
-
 import java.util.List;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 public class DefineCommand extends ClientCommand {
     private static final List<String> languages = ImmutableList.of("en", "hi", "es", "fr", "ja", "ru", "de", "it", "ko", "pt-BR", "ar", "tr");
 
     @Override
-    public void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ClientCommandSource> cmd = cLiteral("define");
+    public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
+        LiteralArgumentBuilder<ClientSuggestionProvider> cmd = cLiteral("define");
         for (String lang : languages) {
             cmd.then(cLiteral(lang)
                     .then(cArgument("query", StringArgumentType.word())
@@ -30,7 +29,7 @@ public class DefineCommand extends ClientCommand {
                                                 new TypeToken<List<Map<String, Object>>>(){}.getType());
                                     } catch (Exception e) {
                                         if (!e.getClass().getSimpleName().toLowerCase().contains("json")) log.catching(e);
-                                        sendMsg(Formatting.RED + "No results were found for the given query.");
+                                        sendMsg(ChatFormatting.RED + "No results were found for the given query.");
                                         return;
                                     }
 
@@ -45,7 +44,7 @@ public class DefineCommand extends ClientCommand {
                                                 Map<String, String> definition = definitions.get(i);
                                                 sendMsg("    " + definition.get("definition"));
                                                 if (definition.containsKey("example") && definition.get("example") != null)
-                                                    sendMsg("    " + SF + Formatting.ITALIC + definition.get("example"));
+                                                    sendMsg("    " + SF + ChatFormatting.ITALIC + definition.get("example"));
                                                 if (i != definitions.size() - 1) sendMsg("\u00A0");
                                             }
                                         }

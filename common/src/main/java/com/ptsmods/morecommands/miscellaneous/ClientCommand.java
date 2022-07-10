@@ -16,27 +16,27 @@ import com.ptsmods.morecommands.mixin.client.accessor.MixinEntitySelectorAccesso
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.PosArgument;
-import net.minecraft.entity.Entity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -52,7 +52,7 @@ public abstract class ClientCommand extends Command {
 
     static {
         ClientTickEvent.CLIENT_POST.register(client -> {
-            if (client.currentScreen == null && scheduledScreen != null) {
+            if (client.screen == null && scheduledScreen != null) {
                 client.setScreen(scheduledScreen);
                 scheduledScreen = null;
             }
@@ -68,12 +68,12 @@ public abstract class ClientCommand extends Command {
     public final void init(boolean serverOnly, MinecraftServer server) {}
 
     @Override
-    public final void register(CommandDispatcher<ServerCommandSource> dispatcher) throws Exception {
+    public final void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
         throw new IllegalAccessException("Client commands can only be registered via the cRegister method.");
     }
 
     @Override
-    public final void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) throws Exception {
+    public final void register(CommandDispatcher<CommandSourceStack> dispatcher, boolean dedicated) throws Exception {
         register(dispatcher);
     }
 
@@ -87,13 +87,13 @@ public abstract class ClientCommand extends Command {
         return Collections.emptyMap();
     }
 
-    public abstract void cRegister(CommandDispatcher<ClientCommandSource> dispatcher) throws Exception;
+    public abstract void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) throws Exception;
 
-    public static LiteralArgumentBuilder<ClientCommandSource> cLiteral(String literal) {
+    public static LiteralArgumentBuilder<ClientSuggestionProvider> cLiteral(String literal) {
         return LiteralArgumentBuilder.literal(literal);
     }
 
-    public static <T> RequiredArgumentBuilder<ClientCommandSource, T> cArgument(String name, ArgumentType<T> argument) {
+    public static <T> RequiredArgumentBuilder<ClientSuggestionProvider, T> cArgument(String name, ArgumentType<T> argument) {
         return RequiredArgumentBuilder.argument(name, argument);
     }
 
@@ -101,12 +101,12 @@ public abstract class ClientCommand extends Command {
         sendMsg(LiteralTextBuilder.literal(fixResets(formatted(s, formats)), DS));
     }
 
-    public static void sendMsg(Text t) {
+    public static void sendMsg(Component t) {
         sendMsg(Compat.get().builderFromText(t));
     }
 
     public static void sendMsg(TextBuilder<?> textBuilder) {
-        getPlayer().sendMessage(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), false);
+        getPlayer().displayClientMessage(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), false);
     }
 
     public static void sendAbMsg(String s, Object... formats) {
@@ -117,117 +117,117 @@ public abstract class ClientCommand extends Command {
         sendAbMsg(textBuilder.build());
     }
 
-    public static void sendAbMsg(Text t) {
-        getPlayer().sendMessage(t, true);
+    public static void sendAbMsg(Component t) {
+        getPlayer().displayClientMessage(t, true);
     }
 
     public static void sendError(String error, Object... formats) {
-        sendError(LiteralTextBuilder.literal(fixResets(formatted(error, formats), Formatting.RED), Style.EMPTY.withColor(Formatting.RED)));
+        sendError(LiteralTextBuilder.literal(fixResets(formatted(error, formats), ChatFormatting.RED), Style.EMPTY.withColor(ChatFormatting.RED)));
     }
 
-    public static void sendError(Text error) {
+    public static void sendError(Component error) {
         sendError(Compat.get().builderFromText(error));
     }
 
     public static void sendError(TextBuilder<?> textBuilder) {
-        getPlayer().sendMessage(textBuilder.copy().withStyle(style -> Style.EMPTY.withFormatting(Formatting.RED)).build(), false);
+        getPlayer().displayClientMessage(textBuilder.copy().withStyle(style -> Style.EMPTY.applyFormat(ChatFormatting.RED)).build(), false);
     }
 
-    public static ClientPlayerEntity getPlayer() {
+    public static LocalPlayer getPlayer() {
         return getClient().player;
     }
 
-    public static ClientWorld getWorld() {
-        return getClient().world;
+    public static ClientLevel getWorld() {
+        return getClient().level;
     }
 
-    public static MinecraftClient getClient() {
-        return MinecraftClient.getInstance();
+    public static Minecraft getClient() {
+        return Minecraft.getInstance();
     }
 
-    public static ServerCommandSource getServerCommandSource() {
-        return new ServerCommandSource(CommandOutput.DUMMY, getPlayer().getPos(), getPlayer().getRotationClient(), null, 0, getPlayer().getEntityName(), getPlayer().getDisplayName(), null, getPlayer());
+    public static CommandSourceStack getServerCommandSource() {
+        return new CommandSourceStack(CommandSource.NULL, getPlayer().position(), getPlayer().getRotationVector(), null, 0, getPlayer().getScoreboardName(), getPlayer().getDisplayName(), null, getPlayer());
     }
 
-    public static PlayerListEntry getEntry() {
-        for (PlayerListEntry entry : getPlayer().networkHandler.getPlayerList())
-            if (entry.getProfile().getId().equals(getPlayer().getUuid())) return entry;
+    public static PlayerInfo getEntry() {
+        for (PlayerInfo entry : getPlayer().connection.getOnlinePlayers())
+            if (entry.getProfile().getId().equals(getPlayer().getUUID())) return entry;
         return null; // Kinda impossible, but you never know.
     }
 
-    public static AbstractClientPlayerEntity getPlayerEntity(PlayerListEntry entry) {
-        for (Entity entity : getWorld().getEntities())
-            if (entity instanceof AbstractClientPlayerEntity && entity.getUuid().equals(entry.getProfile().getId())) return (AbstractClientPlayerEntity) entity;
+    public static AbstractClientPlayer getPlayerEntity(PlayerInfo entry) {
+        for (Entity entity : getWorld().entitiesForRendering())
+            if (entity instanceof AbstractClientPlayer && entity.getUUID().equals(entry.getProfile().getId())) return (AbstractClientPlayer) entity;
         return null;
     }
 
-    public static PlayerListEntry getPlayer(String username) {
-        for (PlayerListEntry entry : getPlayer().networkHandler.getPlayerList())
+    public static PlayerInfo getPlayer(String username) {
+        for (PlayerInfo entry : getPlayer().connection.getOnlinePlayers())
             if (entry.getProfile().getName().equalsIgnoreCase(username)) return entry;
         return null;
     }
 
-    public static PlayerListEntry getPlayer(UUID uuid) {
-        for (PlayerListEntry entry : getPlayer().networkHandler.getPlayerList())
+    public static PlayerInfo getPlayer(UUID uuid) {
+        for (PlayerInfo entry : getPlayer().connection.getOnlinePlayers())
             if (entry.getProfile().getId().equals(uuid)) return entry;
         return null;
     }
 
-    public static PlayerListEntry getPlayer(CommandContext<ClientCommandSource> ctx, String argument) throws CommandSyntaxException {
-        List<PlayerListEntry> entries = getPlayers(ctx, argument);
-        if (entries.size() != 1) throw EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
+    public static PlayerInfo getPlayer(CommandContext<ClientSuggestionProvider> ctx, String argument) throws CommandSyntaxException {
+        List<PlayerInfo> entries = getPlayers(ctx, argument);
+        if (entries.size() != 1) throw EntityArgument.NO_PLAYERS_FOUND.create();
         else return entries.get(0);
     }
 
-    public static List<PlayerListEntry> getPlayers(CommandContext<ClientCommandSource> ctx, String argument) {
+    public static List<PlayerInfo> getPlayers(CommandContext<ClientSuggestionProvider> ctx, String argument) {
         EntitySelector selector = ctx.getArgument(argument, EntitySelector.class);
         MixinEntitySelectorAccessor mselector = ReflectionHelper.cast(selector);
-        PlayerListEntry player;
+        PlayerInfo player;
         if (mselector.getPlayerName() != null) {
             player = getPlayer(mselector.getPlayerName());
             return player == null ? Collections.emptyList() : Lists.newArrayList(player);
-        } else if (mselector.getUuid() != null) {
-            player = getPlayer(mselector.getUuid());
+        } else if (mselector.getEntityUUID() != null) {
+            player = getPlayer(mselector.getEntityUUID());
             return player == null ? Collections.emptyList() : Lists.newArrayList(player);
         } else {
-            Vec3d pos = mselector.getPositionOffset().apply(getPlayer().getPos());
-            Predicate<Entity> predicate = mselector.callGetPositionPredicate(pos);
-            if (mselector.getSenderOnly() && predicate.test(getPlayer())) return Lists.newArrayList(getEntry());
+            Vec3 pos = mselector.getPosition().apply(getPlayer().position());
+            Predicate<Entity> predicate = mselector.callGetPredicate(pos);
+            if (mselector.getCurrentEntity() && predicate.test(getPlayer())) return Lists.newArrayList(getEntry());
             else {
-                ClientWorld world = getWorld();
-                List<? extends Entity> list = world.getPlayers();
-                List<PlayerListEntry> entries = new ArrayList<>();
+                ClientLevel world = getWorld();
+                List<? extends Entity> list = world.players();
+                List<PlayerInfo> entries = new ArrayList<>();
                 if (list.size() > 0)
-                    mselector.getSorter().accept(pos, list);
-                return entries.subList(0, Math.min(list.size(), selector.getLimit()));
+                    mselector.getOrder().accept(pos, list);
+                return entries.subList(0, Math.min(list.size(), selector.getMaxResults()));
             }
         }
     }
 
-    public static Entity getEntity(CommandContext<ClientCommandSource> ctx, String name) throws CommandSyntaxException {
+    public static Entity getEntity(CommandContext<ClientSuggestionProvider> ctx, String name) throws CommandSyntaxException {
         Collection<? extends Entity> entities = getEntities(ctx, name);
-        if (entities.isEmpty()) throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
-        else if (entities.size() > 1) throw EntityArgumentType.TOO_MANY_ENTITIES_EXCEPTION.create();
+        if (entities.isEmpty()) throw EntityArgument.NO_ENTITIES_FOUND.create();
+        else if (entities.size() > 1) throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
         else return entities.iterator().next();
     }
 
-    public static Collection<? extends Entity> getEntities(CommandContext<ClientCommandSource> ctx, String name) throws CommandSyntaxException {
+    public static Collection<? extends Entity> getEntities(CommandContext<ClientSuggestionProvider> ctx, String name) throws CommandSyntaxException {
         EntitySelector selector = ctx.getArgument(name, EntitySelector.class);
         MixinEntitySelectorAccessor mselector = ReflectionHelper.cast(selector);
-        if (!mselector.getIncludesNonPlayers()) {
-            return getPlayers(ctx, name).stream().collect(Collector.<PlayerListEntry, List<AbstractClientPlayerEntity>>of(ArrayList::new, (list, entry) -> list.add(getPlayerEntity(entry)), (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList())));
+        if (!mselector.getIncludesEntities()) {
+            return getPlayers(ctx, name).stream().collect(Collector.<PlayerInfo, List<AbstractClientPlayer>>of(ArrayList::new, (list, entry) -> list.add(getPlayerEntity(entry)), (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList())));
         } else if (mselector.getPlayerName() != null) {
-            AbstractClientPlayerEntity player = getPlayerEntity(getPlayer(mselector.getPlayerName()));
+            AbstractClientPlayer player = getPlayerEntity(getPlayer(mselector.getPlayerName()));
             return (player == null ? Collections.emptyList() : Lists.newArrayList(player));
-        } else if (mselector.getUuid() != null) {
-            for (Entity entity : getWorld().getEntities())
-                if (entity.getUuid().equals(mselector.getUuid()))
+        } else if (mselector.getEntityUUID() != null) {
+            for (Entity entity : getWorld().entitiesForRendering())
+                if (entity.getUUID().equals(mselector.getEntityUUID()))
                     return Lists.newArrayList(entity);
             return Collections.emptyList();
         } else {
-            Vec3d vec3d = mselector.getPositionOffset().apply(getPlayer().getPos());
+            Vec3 vec3d = mselector.getPosition().apply(getPlayer().position());
             Predicate<Entity> predicate = getPositionPredicate(mselector, vec3d);
-            if (mselector.getSenderOnly()) {
+            if (mselector.getCurrentEntity()) {
                 return predicate.test(getPlayer()) ? Lists.newArrayList(getPlayer()) : Collections.emptyList();
             } else {
                 List<Entity> list = Lists.newArrayList();
@@ -237,35 +237,35 @@ public abstract class ClientCommand extends Command {
         }
     }
 
-    private static Predicate<Entity> getPositionPredicate(MixinEntitySelectorAccessor mselector, Vec3d vec3d) {
-        Predicate<Entity> predicate = mselector.getBasePredicate();
-        if (mselector.getBox() != null) predicate = predicate.and((entity) -> mselector.getBox().offset(vec3d).intersects(entity.getBoundingBox()));
-        if (!mselector.getDistance().isDummy()) predicate = predicate.and((entity) -> mselector.getDistance().testSqrt(entity.squaredDistanceTo(vec3d)));
+    private static Predicate<Entity> getPositionPredicate(MixinEntitySelectorAccessor mselector, Vec3 vec3d) {
+        Predicate<Entity> predicate = mselector.getPredicate();
+        if (mselector.getAabb() != null) predicate = predicate.and((entity) -> mselector.getAabb().move(vec3d).intersects(entity.getBoundingBox()));
+        if (!mselector.getRange().isAny()) predicate = predicate.and((entity) -> mselector.getRange().matchesSqr(entity.distanceToSqr(vec3d)));
         return predicate;
     }
 
-    private static void appendEntitiesFromWorld(MixinEntitySelectorAccessor mselector, List<Entity> list, ClientWorld world, Vec3d vec3d, Predicate<Entity> predicate) {
-        List<Entity> entities = Lists.newArrayList(world.getEntities());
-        Box box = mselector.getBox() == null ? new Box(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE) : mselector.getBox().offset(vec3d);
-        entities.removeIf(entity -> !box.contains(entity.getPos()) || !predicate.test(entity));
+    private static void appendEntitiesFromWorld(MixinEntitySelectorAccessor mselector, List<Entity> list, ClientLevel world, Vec3 vec3d, Predicate<Entity> predicate) {
+        List<Entity> entities = Lists.newArrayList(world.entitiesForRendering());
+        AABB box = mselector.getAabb() == null ? new AABB(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE) : mselector.getAabb().move(vec3d);
+        entities.removeIf(entity -> !box.contains(entity.position()) || !predicate.test(entity));
         list.addAll(entities);
     }
 
-    private static <T extends Entity> List<T> getEntities(EntitySelector selector, MixinEntitySelectorAccessor mselector, Vec3d vec3d, List<T> list) {
-        if (list.size() > 1) mselector.getSorter().accept(vec3d, list);
-        return list.subList(0, Math.min(selector.getLimit(), list.size()));
+    private static <T extends Entity> List<T> getEntities(EntitySelector selector, MixinEntitySelectorAccessor mselector, Vec3 vec3d, List<T> list) {
+        if (list.size() > 1) mselector.getOrder().accept(vec3d, list);
+        return list.subList(0, Math.min(selector.getMaxResults(), list.size()));
     }
 
     protected static void scheduleScreen(Screen screen) {
         scheduledScreen = screen;
     }
 
-    public static BlockPos getLoadedBlockPos(CommandContext<ClientCommandSource> context, String name) throws CommandSyntaxException {
-        BlockPos blockPos = context.getArgument(name, PosArgument.class).toAbsoluteBlockPos(getServerCommandSource());
-        if (!getWorld().isChunkLoaded(blockPos))
-            throw BlockPosArgumentType.UNLOADED_EXCEPTION.create();
-        else if (!Compat.get().isInBuildLimit(MinecraftClient.getInstance().world, blockPos))
-            throw BlockPosArgumentType.OUT_OF_WORLD_EXCEPTION.create();
+    public static BlockPos getLoadedBlockPos(CommandContext<ClientSuggestionProvider> context, String name) throws CommandSyntaxException {
+        BlockPos blockPos = context.getArgument(name, Coordinates.class).getBlockPos(getServerCommandSource());
+        if (!getWorld().hasChunkAt(blockPos))
+            throw BlockPosArgument.ERROR_NOT_LOADED.create();
+        else if (!Compat.get().isInBuildLimit(Minecraft.getInstance().level, blockPos))
+            throw BlockPosArgument.ERROR_OUT_OF_WORLD.create();
         else return blockPos;
     }
 }

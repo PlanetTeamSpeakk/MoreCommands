@@ -16,15 +16,14 @@ import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.Location;
 import dev.architectury.event.events.common.TickEvent;
 import lombok.experimental.ExtensionMethod;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -92,33 +91,33 @@ public class WarpCommand extends Command {
         return names;
     }
 
-    public List<Warp> getWarpsOf(ServerPlayerEntity player) {
-        return warps.getOrDefault(player.getUuid(), Collections.emptyList());
+    public List<Warp> getWarpsOf(ServerPlayer player) {
+        return warps.getOrDefault(player.getUUID(), Collections.emptyList());
     }
 
-    public List<String> getWarpNamesOf(ServerPlayerEntity player) {
+    public List<String> getWarpNamesOf(ServerPlayer player) {
         List<String> warps = new ArrayList<>();
         for (Warp warp : getWarpsOf(player))
             warps.add(warp.getName());
         return warps;
     }
 
-    public List<Warp> getWarpsFor(ServerPlayerEntity p) {
+    public List<Warp> getWarpsFor(ServerPlayer p) {
         List<Warp> warps = new ArrayList<>();
         for (Warp warp : getWarps())
-            if (warp.mayTeleport(p.getCommandSource()))
+            if (warp.mayTeleport(p.createCommandSourceStack()))
                 warps.add(warp);
         return warps;
     }
 
-    public List<String> getWarpNamesFor(ServerPlayerEntity player) {
+    public List<String> getWarpNamesFor(ServerPlayer player) {
         List<String> warps = new ArrayList<>();
         for (Warp warp : getWarpsFor(player))
             warps.add(warp.getName());
         return warps;
     }
 
-    public Warp createWarp(String name, UUID owner, Vec3d loc, Vec2f rotation, ServerWorld world, boolean isLimited) {
+    public Warp createWarp(String name, UUID owner, Vec3 loc, Vec2 rotation, ServerLevel world, boolean isLimited) {
         if (getWarp(name) != null) return null;
         Warp warp = new Warp(name, owner, new Location<>(world, loc, rotation), isLimited, 0, new Date());
         warp.setDirty(true);
@@ -161,7 +160,7 @@ public class WarpCommand extends Command {
     }
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literalReq("warp")
                 .executes(ctx -> executeList(ctx, 1))
                 .then(argument("page", IntegerArgumentType.integer(1))
@@ -174,7 +173,7 @@ public class WarpCommand extends Command {
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
                             else if (!warp.mayTeleport(ctx.getSource())) sendError(ctx, "You may not go there, sorry!");
                             else {
-                                warp.teleport(ctx.getSource().getPlayerOrThrow());
+                                warp.teleport(ctx.getSource().getPlayerOrException());
                                 return 1;
                             }
                             return 0;
@@ -186,8 +185,8 @@ public class WarpCommand extends Command {
                             String name = ctx.getArgument("name", String.class);
                             if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
                             else {
-                                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() :
-                                        getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getWorld(), false);
+                                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayer ? ctx.getSource().getPlayerOrException().getUUID() :
+                                        getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getLevel(), false);
                                 sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF +
                                         "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF +
                                         "/limitwarp " + warp.getName() + DF + "." : ""));
@@ -201,7 +200,7 @@ public class WarpCommand extends Command {
                         .executes(ctx -> {
                             String name = ctx.getArgument("name", String.class);
                             Warp warp = getWarp(name);
-                            UUID id = ctx.getSource().getEntity() instanceof ServerPlayerEntity ? ctx.getSource().getPlayerOrThrow().getUuid() : getServerUuid(ctx.getSource().getServer());
+                            UUID id = ctx.getSource().getEntity() instanceof ServerPlayer ? ctx.getSource().getPlayerOrException().getUUID() : getServerUuid(ctx.getSource().getServer());
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
                             else if (hasPermissionOrOp("morecommands.delwarp.others").test(ctx.getSource()) && !warp.getOwner().equals(id))
                                 sendError(ctx, "You have no control over that warp.");
@@ -220,7 +219,7 @@ public class WarpCommand extends Command {
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
                             else {
                                 warp.setLimited(!warp.isLimited());
-                                sendMsg(ctx, "The given warp is now " + Util.formatFromBool(warp.isLimited(), Formatting.GREEN + "limited", Formatting.RED + "unlimited") + DF + ".");
+                                sendMsg(ctx, "The given warp is now " + Util.formatFromBool(warp.isLimited(), ChatFormatting.GREEN + "limited", ChatFormatting.RED + "unlimited") + DF + ".");
                                 return 1;
                             }
                             return 0;
@@ -239,13 +238,13 @@ public class WarpCommand extends Command {
                                         header.append(DF).append("WARPINFO FOR ").append(SF).append(warp.getName());
                                     else header.append(i % 16 % 2 == 0 ? SF + "-" : DF + "=");
                                 sendMsg(ctx, header.toString());
-                                sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerManager().getPlayer(warp.getOwner()) == null ?
-                                        warp.getOwner() : IMoreCommands.get().textToString(Objects.requireNonNull(ctx.getSource().getServer().getPlayerManager()
+                                sendMsg(ctx, "Owner: " + SF + (ctx.getSource().getServer().getPlayerList().getPlayer(warp.getOwner()) == null ?
+                                        warp.getOwner() : IMoreCommands.get().textToString(Objects.requireNonNull(ctx.getSource().getServer().getPlayerList()
                                         .getPlayer(warp.getOwner())).getDisplayName(), null, true)));
                                 sendMsg(ctx, "Created at: " + SF + format.format(warp.getCreationDate()));
                                 sendMsg(ctx, "Location: " + SF + "X: " + warp.getPos().x + DF + ", " + SF + "Y: " + warp.getPos().y + DF + ", " + SF + "Z: " + warp.getPos().z);
                                 sendMsg(ctx, "Rotation: " + SF + "yaw: " + warp.getYaw() + DF + ", " + SF + "pitch: " + warp.getPitch());
-                                sendMsg(ctx, "World: " + SF + warp.getWorld().getRegistryKey().getValue().toString());
+                                sendMsg(ctx, "World: " + SF + warp.getWorld().dimension().location().toString());
                                 sendMsg(ctx, "Limited: " + Util.formatFromBool(warp.isLimited(), "true", "false"));
                                 sendMsg(ctx, "Used: " + SF + warp.getCounter() + " times");
                                 return 1;
@@ -273,8 +272,8 @@ public class WarpCommand extends Command {
         return "/unelevated/warp";
     }
 
-    private int executeList(CommandContext<ServerCommandSource> ctx, int page) throws CommandSyntaxException {
-        List<String> warps = getWarpNamesFor(ctx.getSource().getPlayerOrThrow());
+    private int executeList(CommandContext<CommandSourceStack> ctx, int page) throws CommandSyntaxException {
+        List<String> warps = getWarpNamesFor(ctx.getSource().getPlayerOrException());
         if (warps.isEmpty()) sendError(ctx, "There are no warps set as of right now.");
         else {
             int pages = warps.size() / 15 + 1;
@@ -293,11 +292,11 @@ public class WarpCommand extends Command {
 
     private Warp fromMap(MinecraftServer server, String name, UUID owner, Map<?, ?> data) {
         for (String key : new String[] {"world", "x", "y", "z", "yaw", "pitch", "counter", "creationDate"}) if (!data.containsKey(key)) return null;
-        Identifier worldId = new Identifier((String) data.get("world"));
+        ResourceLocation worldId = new ResourceLocation((String) data.get("world"));
         Warp warp = new Warp(name, owner,
-                new Location<>(server.getWorld(server.getWorldRegistryKeys().stream().filter(key -> key.getValue().equals(worldId)).findFirst().orElse(null)),
-                        new Vec3d((Double) data.get("x"), (Double) data.get("y"), (Double) data.get("z")),
-                        new Vec2f(((Double) data.get("yaw")).floatValue(), ((Double) data.get("pitch")).floatValue())),
+                new Location<>(server.getLevel(server.levelKeys().stream().filter(key -> key.location().equals(worldId)).findFirst().orElse(null)),
+                        new Vec3((Double) data.get("x"), (Double) data.get("y"), (Double) data.get("z")),
+                        new Vec2(((Double) data.get("yaw")).floatValue(), ((Double) data.get("pitch")).floatValue())),
                 data.containsKey("isLimited") && (Boolean) data.get("isLimited"),
                 ((Double) data.get("counter")).intValue(),
                 new Date(((Double) data.get("creationDate")).longValue())
@@ -311,12 +310,12 @@ public class WarpCommand extends Command {
     public class Warp {
         private final String name;
         private final UUID owner;
-        private final Location<ServerWorld> loc;
+        private final Location<ServerLevel> loc;
         private boolean isLimited;
         private int counter;
         private final Date creationDate;
 
-        public Warp(String name, UUID owner, Location<ServerWorld> loc, boolean isLimited, int counter, Date creationDate) {
+        public Warp(String name, UUID owner, Location<ServerLevel> loc, boolean isLimited, int counter, Date creationDate) {
             this.name = name;
             this.owner = owner;
             this.loc = loc;
@@ -334,7 +333,7 @@ public class WarpCommand extends Command {
             return owner;
         }
 
-        public Vec3d getPos() {
+        public Vec3 getPos() {
             return loc.getPos();
         }
 
@@ -346,7 +345,7 @@ public class WarpCommand extends Command {
             return loc.getRot().x;
         }
 
-        public ServerWorld getWorld() {
+        public ServerLevel getWorld() {
             return loc.getWorld();
         }
 
@@ -367,19 +366,19 @@ public class WarpCommand extends Command {
             return creationDate;
         }
 
-        public void teleport(ServerPlayerEntity p) {
+        public void teleport(ServerPlayer p) {
             teleport(p, true);
         }
 
-        public void teleport(ServerPlayerEntity p, boolean count) {
-            if (mayTeleport(p.getCommandSource())) {
+        public void teleport(ServerPlayer p, boolean count) {
+            if (mayTeleport(p.createCommandSourceStack())) {
                 MoreCommands.teleport(p, getWorld(), getPos(), getYaw(), getPitch());
                 if (count) {
-                    sendMsg(p, Formatting.GREEN + "W" + Formatting.BLUE + "h" + Formatting.YELLOW + "oo" + Formatting.RED + "s" + Formatting.LIGHT_PURPLE + "h" + Formatting.WHITE + "!");
+                    sendMsg(p, ChatFormatting.GREEN + "W" + ChatFormatting.BLUE + "h" + ChatFormatting.YELLOW + "oo" + ChatFormatting.RED + "s" + ChatFormatting.LIGHT_PURPLE + "h" + ChatFormatting.WHITE + "!");
                     counter++;
                     setDirty(true);
                 }
-            } else sendMsg(p, Formatting.RED + "You must be an operator to teleport to this warp.");
+            } else sendMsg(p, ChatFormatting.RED + "You must be an operator to teleport to this warp.");
         }
 
         public boolean isDirty() {
@@ -391,7 +390,7 @@ public class WarpCommand extends Command {
             else dirty.remove(getOwner());
         }
 
-        public boolean mayTeleport(ServerCommandSource source) {
+        public boolean mayTeleport(CommandSourceStack source) {
             return !isLimited ||hasPermissionOrOp("morecommands.warp." + getName()).test(source);
         }
 
@@ -405,7 +404,7 @@ public class WarpCommand extends Command {
             if (getWorld() == null) return null; // Cannot use Collections#emptyMap() as that causes issues with gson.
             Map<String, Object> map = new HashMap<>();
             map.put("counter", counter);
-            map.put("world", getWorld().getRegistryKey().getValue().toString());
+            map.put("world", getWorld().dimension().location().toString());
             map.put("x", loc.getPos().x);
             map.put("y", loc.getPos().y);
             map.put("z", loc.getPos().z);
