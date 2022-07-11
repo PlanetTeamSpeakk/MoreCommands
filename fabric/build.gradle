@@ -61,11 +61,6 @@ processResources {
 shadowJar {
     exclude "architectury.common.json"
 
-    // Generated from dumps, leaving these in will cause the wrong classes to load.
-    exclude "com/ptsmods/morecommands/compat/**"
-    exclude "com/ptsmods/morecommands/miscellaneous/CopySound.class"
-    exclude "com/ptsmods/morecommands/miscellaneous/EESound.class"
-
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
 }
