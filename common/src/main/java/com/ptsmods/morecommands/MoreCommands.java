@@ -101,13 +101,11 @@ import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
-import org.objectweb.asm.ClassReader;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
@@ -124,8 +122,6 @@ import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public enum MoreCommands implements IMoreCommands {
     INSTANCE;
@@ -163,8 +159,6 @@ public enum MoreCommands implements IMoreCommands {
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
 
     static {
-        loadDumps();
-
         File serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
         boolean serverOnly = false;
         if (serverOnlyFile.exists()) {
@@ -456,54 +450,6 @@ public enum MoreCommands implements IMoreCommands {
             int targetEntity = buf.readVarInt();
             targetedEntities.put(context.getPlayer(), targetEntity);
         });
-    }
-
-    @SneakyThrows
-    private static void loadDumps() {
-        Map<String, byte[]> dumpClasses = new HashMap<>();
-        List<Class<?>> dumps = ReflectionHelper.getClasses(Object.class, "com.ptsmods.morecommands.dumps");
-        for (Class<?> dumpClass : dumps) {
-            try {
-                byte[] dump = (byte[]) dumpClass.getMethod("dump").invoke(null);
-                ClassReader reader = new ClassReader(dump);
-
-                dumpClasses.put(reader.getClassName(), dump);
-            } catch (NoSuchMethodException ignored) {
-                // Probably not a dump
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                LOG.error("Could not dump class " + dumpClass.getName() + ".", e);
-            }
-        }
-
-        LOG.info("Loading dump classes: " + Command.joinNicely(dumpClasses.keySet().stream()
-                .map(s -> s.substring(s.lastIndexOf('/') + 1))
-                .collect(Collectors.toList()), null, null));
-
-        Path dumpsJar = MoreCommandsArch.getConfigDirectory().resolve("jars/dumps.jar");
-        Files.createDirectories(dumpsJar.getParent());
-        if (Files.exists(dumpsJar))
-            Files.delete(dumpsJar);
-
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(dumpsJar)));
-        for (Map.Entry<String, byte[]> dump : dumpClasses.entrySet()) {
-            out.putNextEntry(new ZipEntry(dump.getKey() + ".class"));
-            out.write(dump.getValue());
-        }
-
-        out.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
-        out.write("Manifest-Version: 1.0".getBytes());
-
-        final String comment = "This JAR file was generated using dumps created by ASMRemapper.\nhttps://github.com/PlanetTeamSpeakk/ASMRemapper";
-        out.putNextEntry(new ZipEntry("README.txt"));
-        out.write(comment.getBytes());
-        out.setComment(comment);
-
-        out.flush();
-        out.close();
-
-        MoreCommandsArch.addJarToClassPath(dumpsJar);
-        dumpsJar.toFile().deleteOnExit();
-        LOG.info("Loaded " + dumpClasses.size() + " classes from dumps.");
     }
 
     @Override
