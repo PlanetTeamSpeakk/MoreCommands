@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinItemGroupButtonWidget {
     private static final @Unique ResourceLocation BUTTON_TEX = new ResourceLocation("morecommands:textures/gui/creative_buttons.png");
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/impl/item/group/FabricCreativeGuiComponents$ItemGroupButtonWidget;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V"), method = "render")
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/impl/item/group/FabricCreativeGuiComponents$ItemGroupButtonWidget;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V"), method = "render")
     private void render_drawTexture_height(FabricCreativeGuiComponents.ItemGroupButtonWidget itemGroupButtonWidget, PoseStack matrices, int x, int y, int u, int v, int width, int height) {
         if (ClientOptions.Rendering.bigTabPager.getValue()) {
             ClientCompat.get().bindTexture(BUTTON_TEX);
