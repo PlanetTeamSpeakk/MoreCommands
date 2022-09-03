@@ -21,6 +21,11 @@ configurations {
     developmentFabric.extendsFrom common
 }
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
     mappings loom.officialMojangMappings()
@@ -30,10 +35,10 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
     modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
-//    modImplementationMapped 'com.ptsmods:devlogin:2.1'
+    modImplementation "com.ptsmods:devlogin:3.0"
 
-    common 'com.ptsmods:mysqlw:1.7'
-    shadowCommon "com.ptsmods:mysqlw:1.7"
+    common "com.ptsmods:mysqlw:1.9.2"
+    shadowCommon "com.ptsmods:mysqlw:1.9.2"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
@@ -61,6 +66,11 @@ processResources {
 shadowJar {
     exclude "architectury.common.json"
 
+    // Generated from dumps, leaving these in will cause the wrong classes to load.
+    //exclude "com/ptsmods/morecommands/compat/**"
+    exclude "com/ptsmods/morecommands/miscellaneous/CopySound.class"
+    exclude "com/ptsmods/morecommands/miscellaneous/EESound.class"
+
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
 }
@@ -87,10 +97,6 @@ sourcesJar {
     sources.stream()
             .map { it.archiveFile.map { zipTree(it) } }
             .forEach { from it }
-}
-
-repositories {
-    mavenCentral()
 }
 
 components.java {
