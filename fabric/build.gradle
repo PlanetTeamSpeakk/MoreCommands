@@ -35,7 +35,7 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
     modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
-    modImplementation "com.ptsmods:devlogin:3.0"
+    modImplementation "com.ptsmods:devlogin:3.1"
 
     common "com.ptsmods:mysqlw:1.9.2"
     shadowCommon "com.ptsmods:mysqlw:1.9.2"

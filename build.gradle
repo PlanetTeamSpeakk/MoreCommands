@@ -30,6 +30,7 @@ allprojects {
     group = rootProject.maven_group
 
     repositories {
+        mavenLocal()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         maven { url 'https://maven.terraformersmc.com/releases/' }
     }
