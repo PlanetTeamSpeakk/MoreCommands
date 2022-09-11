@@ -11,7 +11,6 @@ import com.ptsmods.morecommands.api.addons.GuiMessageAddon;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
-import com.ptsmods.morecommands.miscellaneous.CopySound;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinChatComponentAccessor;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.Minecraft;
@@ -49,24 +48,25 @@ public class MixinChatScreen {
     @Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z", cancellable = true)
     public void mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cbi) {
         boolean b = cbi.getReturnValueZ();
-        if (!b) {
-            ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
-            GuiMessageAddon line = getLine(chatHud, mouseX, mouseY);
-            if (line != null)
-                if (button == 0 && ClientOptions.Chat.chatMsgCopy.getValue()) {
-                    // Copies a message's content when you click on it in the chat.
-                    Component t = line.mc$getRichContent();
-                    if (t != null) {
-                        String s = IMoreCommands.get().textToString(t, null, Screen.hasControlDown());
-                        clipboard.setClipboard(Minecraft.getInstance().getWindow().getWindow(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : MoreCommands.stripFormattings(s));
-                        Minecraft.getInstance().getSoundManager().play(new CopySound());
-                        b = true;
-                    }
-                } else if (button == 1 && ClientOptions.Chat.chatMsgRemove.getValue()) {
-                    MessageHistory.removeMessage(line.mc$getId());
-                    ((ChatComponentAddon) chatHud).mc$removeById(line.mc$getId());
-                    b = true;
-                }
+        if (b) return;
+
+        ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
+        GuiMessageAddon line = getLine(chatHud, mouseX, mouseY);
+        if (line == null) return;
+
+        if (button == 0 && ClientOptions.Chat.chatMsgCopy.getValue()) {
+            // Copies a message's content when you click on it in the chat.
+            Component t = line.mc$getRichContent();
+            if (t != null) {
+                String s = IMoreCommands.get().textToString(t, null, Screen.hasControlDown());
+                clipboard.setClipboard(Minecraft.getInstance().getWindow().getWindow(), Screen.hasControlDown() ? s.replaceAll("\u00a7", "&") : MoreCommands.stripFormattings(s));
+                Minecraft.getInstance().getSoundManager().play(ClientCompat.get().newCopySound());
+                b = true;
+            }
+        } else if (button == 1 && ClientOptions.Chat.chatMsgRemove.getValue()) {
+            MessageHistory.removeMessage(line.mc$getId());
+            ((ChatComponentAddon) chatHud).mc$removeById(line.mc$getId());
+            b = true;
         }
         cbi.setReturnValue(b);
     }
