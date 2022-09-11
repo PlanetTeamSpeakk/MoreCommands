@@ -8,9 +8,10 @@
 
   ],
   "mixins": [
-
+    "plus.MixinLivingEntity"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "MoreCommands-common_Compat_Compat182-refmap.json"
 }

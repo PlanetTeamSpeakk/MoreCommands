@@ -16,5 +16,6 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "MoreCommands-common_Compat_Compat191-refmap.json"
 }
