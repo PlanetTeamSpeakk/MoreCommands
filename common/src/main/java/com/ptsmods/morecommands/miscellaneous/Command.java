@@ -14,7 +14,6 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
-import com.ptsmods.mysqlw.Database;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -116,14 +115,6 @@ public abstract class Command {
     }
 
     // UTILITY METHODS
-
-    public static Database getLocalDb() {
-        return MoreCommands.getLocalDb();
-    }
-
-    public static Database getGlobalDb() {
-        return MoreCommands.getGlobalDb();
-    }
 
     public static int sendMsg(CommandContext<CommandSourceStack> ctx, String msg, Object... formats) {
         return sendMsg(ctx, LiteralTextBuilder.literal(fixResets(formats.length == 0 ? msg : formatted(msg, formats)), DS));

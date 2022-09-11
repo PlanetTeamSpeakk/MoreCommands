@@ -33,7 +33,6 @@ import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.*;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.MixinAccessWidenerImpl;
-import com.ptsmods.mysqlw.Database;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.PlayerEvent;
@@ -56,7 +55,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.ChatDecorator;
@@ -150,7 +148,6 @@ public enum MoreCommands implements IMoreCommands {
     private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
     private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
     private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-    private static Database globalDb, localDb;
     private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
 
@@ -179,10 +176,6 @@ public enum MoreCommands implements IMoreCommands {
 
         Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
         MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ObjectiveCriteria.RenderType.INTEGER));
-
-        Database.registerTypeConverter(UUID.class, id -> Database.enquote(id.toString()), UUID::fromString);
-        Database.registerTypeConverter(CompoundTag.class, nbt -> Database.enquote(nbtToByteString(nbt)), MoreCommands::nbtFromByteString);
-        Database.registerTypeConverter(ResourceLocation.class, id -> Database.enquote(id.toString()), ResourceLocation::new);
     }
 
     MoreCommands() {
@@ -195,12 +188,6 @@ public enum MoreCommands implements IMoreCommands {
 
     @SneakyThrows
     private void doInit() {
-        Path sqLitePath = getConfigDirectory().resolve("jars/sqlite.jar");
-        Database.loadConnector(Database.RDBMS.SQLite, null, sqLitePath.toFile(), true); // Method used to add to classpath doesn't work here, but it does download it.
-        MoreCommandsArch.addJarToClassPath(sqLitePath); // This does work tho. :)
-
-//        globalDb = Database.connect(getConfigDirectory().resolve("globaldata.db").toFile()); // Not sure if this'll be necessary.
-
         MixinFormattingAccessor.setStripFormattingPattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
         Holder.setCompat((Compat) determineCurrentCompat(false));
         Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
@@ -869,7 +856,6 @@ public enum MoreCommands implements IMoreCommands {
     @SneakyThrows // Very unlikely connecting to an SQLite database results in an error.
     public static void setServerInstance(MinecraftServer server) {
         serverInstance = server;
-        localDb = Database.connect(getRelativePath(server).resolve("localdata.db").toFile());
         Command.doInitialisations(server);
 
         File file = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
@@ -1299,38 +1285,6 @@ public enum MoreCommands implements IMoreCommands {
             case 19:
             default:
                 return rev >= 2 ? new ClientCompat192() : rev == 1 ? new ClientCompat191() : rev == 0 ? new ClientCompat190() : new ClientCompat19();
-        }
-    }
-
-    public static Database getGlobalDb() {
-        return globalDb;
-    }
-
-    public static Database getLocalDb() {
-        return localDb;
-    }
-
-    @SneakyThrows // Shouldn't be possible as this is a memory output stream, it's not outputting to a file or whatever.
-    public static String nbtToByteString(CompoundTag tag) {
-        ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
-        NbtIo.writeCompressed(tag, bytestream);
-        return encodeHex(bytestream.toByteArray());
-    }
-
-    public static CompoundTag nbtFromByteString(String byteString) {
-        if (byteString == null) return null;
-        byte[] bytes;
-        try {
-            bytes = decodeHex(byteString);
-        } catch (Exception e) {
-            Command.log.error("Could not decode byte string " + byteString, e);
-            return null;
-        }
-        try {
-            return NbtIo.readCompressed(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
-            Command.log.error("Error reading decoded bytes.", e);
-            return null;
         }
     }
 

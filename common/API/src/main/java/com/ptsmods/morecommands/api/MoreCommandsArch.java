@@ -43,9 +43,4 @@ public class MoreCommandsArch {
     public static Path getJar() {
         throw new AssertionError("This shouldn't happen.");
     }
-
-    @ExpectPlatform
-    public static void addJarToClassPath(Path jar) {
-        throw new AssertionError("This shouldn't happen.");
-    }
 }

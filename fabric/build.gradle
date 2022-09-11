@@ -35,8 +35,6 @@ dependencies {
     modImplementation "com.terraformersmc:modmenu:4.0.6"
     modImplementation "com.ptsmods:devlogin:3.1"
 
-    common "com.ptsmods:mysqlw:1.9.2"
-    shadowCommon "com.ptsmods:mysqlw:1.9.2"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }

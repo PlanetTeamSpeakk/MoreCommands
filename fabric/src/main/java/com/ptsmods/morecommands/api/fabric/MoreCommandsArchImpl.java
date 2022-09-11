@@ -8,7 +8,6 @@ import lombok.experimental.ExtensionMethod;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.impl.ModContainerImpl;
-import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 
@@ -50,9 +49,5 @@ public class MoreCommandsArchImpl {
 
     public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
         return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermission(defaultRequiredLevel);
-    }
-
-    public static void addJarToClassPath(Path jar) {
-        FabricLauncherBase.getLauncher().addToClassPath(jar);
     }
 }
