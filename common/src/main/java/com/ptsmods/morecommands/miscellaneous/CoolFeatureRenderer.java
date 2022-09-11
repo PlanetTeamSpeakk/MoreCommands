@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class CoolFeatureRenderer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
@@ -21,7 +22,7 @@ public class CoolFeatureRenderer extends RenderLayer<AbstractClientPlayer, Playe
     }
 
     @Override
-    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light, AbstractClientPlayer entity,
+    public void render(@NotNull PoseStack matrices, @NotNull MultiBufferSource vertexConsumers, int light, @NotNull AbstractClientPlayer entity,
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
         if (!MoreCommands.isCool(entity)) return;
 
@@ -29,16 +30,16 @@ public class CoolFeatureRenderer extends RenderLayer<AbstractClientPlayer, Playe
         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0);
 
         ModelPart crown = ((PlayerEntityModelAddon) getParentModel()).getCrown();
-        if (crown != null) {
-            matrices.pushPose();
+        if (crown == null) return;
 
-            float scale = 0.6075f;
-            matrices.scale(scale, scale, scale);
+        matrices.pushPose();
 
-            crown.copyFrom(getParentModel().head);
-            crown.render(matrices, vertexConsumer, light, overlay);
+        float scale = 0.6075f;
+        matrices.scale(scale, scale, scale);
 
-            matrices.popPose();
-        }
+        crown.copyFrom(getParentModel().head);
+        crown.render(matrices, vertexConsumer, light, overlay);
+
+        matrices.popPose();
     }
 }

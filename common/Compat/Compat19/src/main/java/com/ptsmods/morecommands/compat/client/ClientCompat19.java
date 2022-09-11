@@ -1,5 +1,7 @@
 package com.ptsmods.morecommands.compat.client;
 
+import com.ptsmods.morecommands.miscellaneous.CopySoundNew;
+import com.ptsmods.morecommands.miscellaneous.EESoundNew;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
 import net.minecraft.client.Minecraft;
@@ -7,6 +9,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -64,5 +67,15 @@ public class ClientCompat19 extends ClientCompat17 {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         if (msg.startsWith("/")) player.command(msg.substring(1));
         else player.chat(msg);
+    }
+
+    @Override
+    public AbstractTickableSoundInstance newCopySound() {
+        return new CopySoundNew();
+    }
+
+    @Override
+    public AbstractTickableSoundInstance newEESound() {
+        return new EESoundNew();
     }
 }

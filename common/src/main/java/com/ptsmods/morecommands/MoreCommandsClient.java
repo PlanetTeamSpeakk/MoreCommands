@@ -17,6 +17,7 @@ import com.ptsmods.morecommands.api.callbacks.ClientEntityEvent;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.gui.infohud.InfoHud;
@@ -284,7 +285,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
         ChatMessageSendEvent.EVENT.register(message -> {
             if (message.startsWith("/easteregg")) {
-                if (easterEggSound == null) Minecraft.getInstance().getSoundManager().play(easterEggSound = new EESound());
+                if (easterEggSound == null) Minecraft.getInstance().getSoundManager().play(easterEggSound = ClientCompat.get().newEESound());
                 else {
                     Minecraft.getInstance().getSoundManager().stop(easterEggSound);
                     easterEggSound = null;

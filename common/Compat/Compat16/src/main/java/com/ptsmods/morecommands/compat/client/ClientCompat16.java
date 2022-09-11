@@ -3,18 +3,17 @@ package com.ptsmods.morecommands.compat.client;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
+import com.ptsmods.morecommands.miscellaneous.CopySoundOld;
+import com.ptsmods.morecommands.miscellaneous.EESoundOld;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.client.ClientChatEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
@@ -24,6 +23,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.phys.BlockHitResult;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.function.Function;
 
 public class ClientCompat16 implements ClientCompat {
 
@@ -84,5 +88,15 @@ public class ClientCompat16 implements ClientCompat {
     @Override
     public void sendMessageOrCommand(String msg) {
         Objects.requireNonNull(Minecraft.getInstance().player).chat(msg);
+    }
+
+    @Override
+    public AbstractTickableSoundInstance newCopySound() {
+        return new CopySoundOld();
+    }
+
+    @Override
+    public AbstractTickableSoundInstance newEESound() {
+        return new EESoundOld();
     }
 }
