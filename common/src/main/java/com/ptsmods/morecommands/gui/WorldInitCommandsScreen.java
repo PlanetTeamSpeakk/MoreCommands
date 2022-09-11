@@ -7,13 +7,7 @@ import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinCommandSuggestorAccessor;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinSuggestionWindowAccessor;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.glfw.GLFW;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import lombok.NonNull;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -25,6 +19,16 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.glfw.GLFW;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class WorldInitCommandsScreen extends Screen {
     private final Screen parent;
@@ -43,7 +47,9 @@ public class WorldInitCommandsScreen extends Screen {
 
     @Override
     protected void init() {
-        fields.stream().filter(pair -> pair.getRight() != null).forEach(pair -> Optional.ofNullable(((MixinCommandSuggestorAccessor) pair.getRight()).getSuggestions()).ifPresent(CommandSuggestions.SuggestionsList::hide));
+        fields.stream()
+                .filter(pair -> pair.getRight() != null)
+                .forEach(pair -> ((MixinCommandSuggestorAccessor) pair.getRight()).setSuggestions(null));
         fields.clear();
         ((ScreenAddon) this).mc$clear();
         MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
@@ -61,9 +67,10 @@ public class WorldInitCommandsScreen extends Screen {
         AtomicReference<Pair<EditBox, CommandSuggestions>> atomicPair = new AtomicReference<>();
         EditBox field = new EditBox(font, 25, fields.size() * 25 + 50, width - 50, 20, LiteralTextBuilder.literal("Insert command here")) {
             @Override
-            public void insertText(String string) {
+            public void insertText(@NonNull String string) {
                 super.insertText(string);
-                if (!StringUtils.isEmpty(getValue()) && fields.size() < 6 && fields.stream().noneMatch(pair0 -> StringUtils.isEmpty(pair0.getLeft().getValue()))) addField("");
+                if (!StringUtils.isEmpty(getValue()) && fields.size() < 6 && fields.stream()
+                        .noneMatch(pair0 -> StringUtils.isEmpty(pair0.getLeft().getValue()))) addField("");
             }
 
             @Override
@@ -93,10 +100,11 @@ public class WorldInitCommandsScreen extends Screen {
                 }
             }
         };
+
         atomicField.set(field);
         field.setValue(content);
         CommandSuggestions suggestor = minecraft == null || minecraft.player == null ? null : new CommandSuggestions(minecraft, this, field, font, true, true, 1, 10, false, -805306368) {
-            public void render(PoseStack matrices, int mouseX, int mouseY) {
+            public void render(@NonNull PoseStack matrices, int mouseX, int mouseY) {
                 CommandSuggestions thiz = this;
                 MixinCommandSuggestorAccessor accessor = (MixinCommandSuggestorAccessor) thiz; // Can't cast directly.
                 if (accessor.getSuggestions() != null) accessor.getSuggestions().render(matrices, mouseX, mouseY);
@@ -121,6 +129,7 @@ public class WorldInitCommandsScreen extends Screen {
                 }
             }
         };
+
         if (suggestor != null) suggestor.updateCommandInfo();
         field.setResponder(s -> {
             if (suggestor != null) {
@@ -128,6 +137,7 @@ public class WorldInitCommandsScreen extends Screen {
                 suggestor.updateCommandInfo();
             }
         });
+
         Pair<EditBox, CommandSuggestions> pair = Pair.of(field, suggestor);
         atomicPair.set(pair);
         ((ScreenAddon) this).mc$addButton(field);
@@ -135,7 +145,7 @@ public class WorldInitCommandsScreen extends Screen {
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(@NonNull PoseStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
         drawCenteredString(matrices, font, title, width / 2, 10, 0);
         super.render(matrices, mouseX, mouseY, delta);
@@ -143,7 +153,7 @@ public class WorldInitCommandsScreen extends Screen {
     }
 
     @Override
-    public void resize(Minecraft client, int width, int height) {
+    public void resize(@NonNull Minecraft client, int width, int height) {
         super.resize(client, width, height);
         fields.stream().filter(pair -> pair.getRight() != null).forEach(pair -> pair.getRight().updateCommandInfo());
     }
@@ -184,8 +194,13 @@ public class WorldInitCommandsScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         fields.forEach(pair -> pair.getLeft().setFocus(false));
-        boolean b = fields.stream().filter(pair -> pair.getLeft().isFocused() && pair.getRight() != null).anyMatch(pair -> pair.getRight().mouseClicked(mouseX, mouseY, button)) || super.mouseClicked(mouseX, mouseY, button);
-        fields.stream().filter(pair -> pair.getLeft().isFocused()).findFirst().ifPresent(pair -> setFocused(pair.getLeft()));
+        boolean b = fields.stream()
+                .filter(pair -> pair.getLeft().isFocused() && pair.getRight() != null)
+                .anyMatch(pair -> pair.getRight().mouseClicked(mouseX, mouseY, button)) || super.mouseClicked(mouseX, mouseY, button);
+        fields.stream()
+                .filter(pair -> pair.getLeft().isFocused())
+                .findFirst()
+                .ifPresent(pair -> setFocused(pair.getLeft()));
         return b;
     }
 }

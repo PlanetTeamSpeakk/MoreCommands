@@ -22,6 +22,9 @@ loom {
         mixinConfig "morecommands_compat18.mixins.json"
         mixinConfig "morecommands_compat182.mixins.json"
         mixinConfig "morecommands_compat19.mixins.json"
+        mixinConfig "morecommands_compat190.mixins.json"
+        mixinConfig "morecommands_compat191.mixins.json"
+        mixinConfig "morecommands_compat192.mixins.json"
     }
 }
 
@@ -47,16 +50,9 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat16", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat16", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat17", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat17", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat18", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat18", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat182", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat182", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat19", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat19", configuration: "transformProductionFabric")) { transitive false }
+
+    project(":common:Compat").subprojects.collect { common(project(path: ":common:Compat:" + it.name,
+            configuration: "namedElements")) { transitive false } }
 }
 
 processResources {
@@ -68,6 +64,7 @@ processResources {
 }
 
 shadowJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     exclude "fabric.mod.json"
     exclude "architectury.common.json"
 
@@ -75,21 +72,33 @@ shadowJar {
     classifier "dev-shadow"
 }
 
+task shadowCompat(type: Jar) {
+    archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FORGE.${archiveExtension.get()}"
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from zipTree(remapJar.archiveFile)
+    from { project(":common:Compat").subprojects.collect { zipTree(it.transformProductionForge.archiveFile) } }
+}
+
+tasks.build.dependsOn(shadowCompat)
+
 remapJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier null
-    archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FORGE.${archiveExtension.get()}"
+    classifier "dev-shadow-remap"
 }
 
 jar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     classifier "dev"
 }
 
 sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
+    def sources = project(":common").subprojects.collect { it.sourcesJar }
+    sources.add project(":common").sourcesJar
+    dependsOn sources
+
+    from { sources.collect { zipTree(it.archiveFile) } }
 }
 
 repositories {

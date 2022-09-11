@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands;
 
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.lib.com.chocohead.mm.EnumExtender;
 import com.ptsmods.morecommands.lib.com.chocohead.mm.api.EnumAdder;
 import org.objectweb.asm.tree.ClassNode;
@@ -12,7 +13,6 @@ import java.util.Set;
 public class MixinPlugin implements IMixinConfigPlugin {
     private static final boolean tweakerooLoaded = MoreCommandsArch.isFabricModLoaded("tweakeroo");
     private static final boolean originsLoaded = MoreCommandsArch.isFabricModLoaded("origins");
-    private static final boolean carpetLoaded = MoreCommandsArch.isFabricModLoaded("carpet");
 
     @Override
     public void onLoad(String mixinPackage) {}
@@ -26,7 +26,6 @@ public class MixinPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (originsLoaded && mixinClassName.contains("OriginsCompat")) return false;
         if (tweakerooLoaded && mixinClassName.contains("TweakerooCompat")) return false;
-        if (carpetLoaded && mixinClassName.contains("CarpetCompat")) return false;
 
         return true;
     }

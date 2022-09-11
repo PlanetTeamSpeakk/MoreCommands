@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.compat.compat19.plus;
+package com.ptsmods.morecommands.mixin.compat.compat190;
 
 import com.mojang.brigadier.ParseResults;
 import net.minecraft.client.player.LocalPlayer;
@@ -13,10 +13,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 import javax.annotation.Nullable;
 
 @Mixin(LocalPlayer.class)
-public interface MixinClientPlayerEntityAccessor {
+public interface MixinLocalPlayerAccessor {
 
-    @Invoker
-    MessageSignature callSignMessage(MessageSigner signer, Component message);
-    @Invoker
-    ArgumentSignatures callSignCommandArguments(MessageSigner signer, ParseResults<SharedSuggestionProvider> parseResults, @Nullable Component preview);
+    @Invoker MessageSignature callSignMessage(MessageSigner signer, Component message);
+    @Invoker ArgumentSignatures callSignCommandArguments(MessageSigner signer, ParseResults<SharedSuggestionProvider> parseResults, @Nullable Component preview);
 }

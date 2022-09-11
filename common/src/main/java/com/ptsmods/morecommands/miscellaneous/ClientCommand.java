@@ -97,16 +97,17 @@ public abstract class ClientCommand extends Command {
         return RequiredArgumentBuilder.argument(name, argument);
     }
 
-    public static void sendMsg(String s, Object... formats) {
-        sendMsg(LiteralTextBuilder.literal(fixResets(formatted(s, formats)), DS));
+    public static int sendMsg(String s, Object... formats) {
+        return sendMsg(LiteralTextBuilder.literal(fixResets(formatted(s, formats)), DS));
     }
 
-    public static void sendMsg(Component t) {
-        sendMsg(Compat.get().builderFromText(t));
+    public static int sendMsg(Component t) {
+        return sendMsg(Compat.get().builderFromText(t));
     }
 
-    public static void sendMsg(TextBuilder<?> textBuilder) {
+    public static int sendMsg(TextBuilder<?> textBuilder) {
         getPlayer().displayClientMessage(textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style).build(), false);
+        return 1;
     }
 
     public static void sendAbMsg(String s, Object... formats) {
@@ -121,16 +122,17 @@ public abstract class ClientCommand extends Command {
         getPlayer().displayClientMessage(t, true);
     }
 
-    public static void sendError(String error, Object... formats) {
-        sendError(LiteralTextBuilder.literal(fixResets(formatted(error, formats), ChatFormatting.RED), Style.EMPTY.withColor(ChatFormatting.RED)));
+    public static int sendError(String error, Object... formats) {
+        return sendError(LiteralTextBuilder.literal(fixResets(formatted(error, formats), ChatFormatting.RED), Style.EMPTY.withColor(ChatFormatting.RED)));
     }
 
-    public static void sendError(Component error) {
-        sendError(Compat.get().builderFromText(error));
+    public static int sendError(Component error) {
+        return sendError(Compat.get().builderFromText(error));
     }
 
-    public static void sendError(TextBuilder<?> textBuilder) {
+    public static int sendError(TextBuilder<?> textBuilder) {
         getPlayer().displayClientMessage(textBuilder.copy().withStyle(style -> Style.EMPTY.applyFormat(ChatFormatting.RED)).build(), false);
+        return 0;
     }
 
     public static LocalPlayer getPlayer() {

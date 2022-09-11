@@ -10,7 +10,6 @@
     "MixinBiome",
     "MixinBookEditScreen",
     "MixinCactusBlock",
-    "MixinChatHud",
     "MixinChatScreen",
     "MixinClickEventAction",
     "MixinClientPlayerEntity",
@@ -43,7 +42,7 @@
     "MixinTextColor",
     "MixinTextVisitFactory",
     "MixinTitleScreen",
-    "accessor.MixinChatHudAccessor",
+    "accessor.MixinChatComponentAccessor",
     "accessor.MixinClickableWidgetAccessor",
     "accessor.MixinCommandSuggestorAccessor",
     "accessor.MixinEntitySelectorAccessor",
@@ -58,7 +57,8 @@
     "MixinAbstractClientPlayerEntity",
     "MixinClickableWidget",
     "accessor.MixinMinecraftClientAccessor",
-    "MixinSuspiciousStewItem"
+    "MixinSuspiciousStewItem",
+    "MixinGuiMessage"
   ],
   "injectors": {
 	"defaultRequire": 1

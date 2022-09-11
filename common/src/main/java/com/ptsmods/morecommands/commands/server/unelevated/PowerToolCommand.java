@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.callbacks.MouseEvent;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
@@ -114,7 +115,7 @@ public class PowerToolCommand extends Command {
         if (player != null) {
             String cmd = getCurrentPowerTool(player, -1);
             if (cmd != null) {
-                Objects.requireNonNull(player.getServer()).getCommands().performCommand(player.createCommandSourceStack(), cmd);
+                Compat.get().performCommand(Objects.requireNonNull(player.getServer()).getCommands(), player.createCommandSourceStack(), cmd);
                 return EventResult.interruptTrue();
             }
         }

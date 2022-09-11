@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.RollingAverage;
 import com.ptsmods.morecommands.util.TickStatistics;

@@ -16,6 +16,8 @@ public class Holder {
     @Getter(AccessLevel.PACKAGE)
     private static IMoreCommands moreCommands;
     @Getter(AccessLevel.PACKAGE)
+    private static IMoreCommandsClient moreCommandsClient;
+    @Getter(AccessLevel.PACKAGE)
     private static IMoreGameRules moreGameRules;
     @Getter(onMethod_ = @Deprecated) // Not API, use Compat#get() instead.
     private static Compat compat;
@@ -34,6 +36,11 @@ public class Holder {
     public static void setMoreCommands(IMoreCommands moreCommands) {
         if (Holder.moreCommands != null) throw new IllegalStateException("MoreCommands instance already set.");
         Holder.moreCommands = moreCommands;
+    }
+
+    public static void setMoreCommandsClient(IMoreCommandsClient moreCommandsClient) {
+        if (Holder.moreCommandsClient != null) throw new IllegalStateException("MoreCommandsClient instance already set.");
+        Holder.moreCommandsClient = moreCommandsClient;
     }
 
     public static void setMoreGameRules(IMoreGameRules moreGameRules) {
@@ -74,6 +81,6 @@ public class Holder {
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
         return mixinClassName.contains(".plus.") ? Version.getCurrent().isNewerThanOrEqual(version) :
                 mixinClassName.contains(".min.") ? Version.getCurrent().isOlderThanOrEqual(version) :
-                        Version.getCurrent().equalsExclRev(version);
+                        Version.getCurrent().equals(version);
     }
 }

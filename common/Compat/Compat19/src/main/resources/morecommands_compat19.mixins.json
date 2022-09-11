@@ -11,8 +11,7 @@
     "plus.MixinLightmapTextureManager",
     "plus.MixinTitleScreen",
     "plus.MixinWorldRenderer",
-    "plus.MixinKeybindTranslationsAccessor",
-    "plus.MixinClientPlayerEntityAccessor"
+    "plus.MixinKeybindTranslationsAccessor"
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",
@@ -20,7 +19,6 @@
     "plus.MixinEnchantmentScreenHandler",
     "plus.MixinSnowBlock",
     "plus.MixinBlock",
-    "plus.MixinServerPlayNetworkHandler",
     "plus.MixinPlayerManager"
   ],
   "injectors": {

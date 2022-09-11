@@ -26,9 +26,7 @@ import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.*;
-import com.ptsmods.morecommands.compat.client.ClientCompat16;
-import com.ptsmods.morecommands.compat.client.ClientCompat17;
-import com.ptsmods.morecommands.compat.client.ClientCompat19;
+import com.ptsmods.morecommands.compat.client.*;
 import com.ptsmods.morecommands.miscellaneous.Chair;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
@@ -37,7 +35,6 @@ import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.MixinAccessWidenerImpl;
 import com.ptsmods.mysqlw.Database;
 import dev.architectury.event.EventResult;
-import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -121,7 +118,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public enum MoreCommands implements IMoreCommands {
     INSTANCE;
@@ -411,7 +407,7 @@ public enum MoreCommands implements IMoreCommands {
         // Only registering them in CommandRegistrationEvent is too late for the docs command.
         MoreCommands.nodes.putAll(nodes);
 
-        CommandRegistrationEvent.EVENT.register((dispatcher, environment) -> {
+        Compat.get().registerCommandRegistrationEventListener((dispatcher, environment) -> {
             boolean dedicated = environment == Commands.CommandSelection.DEDICATED;
             serverCommands.stream()
                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
@@ -956,10 +952,6 @@ public enum MoreCommands implements IMoreCommands {
         return hours + ":" + mm + (muricanClock ? " " + ampm : "");
     }
 
-    public static String formatDouble(double dbl) {
-        return formatDouble(dbl, 2);
-    }
-
     public static String formatDouble(double dbl, int decimals) {
         return new DecimalFormat("0." + multiplyString("#", decimals), new DecimalFormatSymbols(Locale.ROOT)).format(dbl);
     }
@@ -998,7 +990,9 @@ public enum MoreCommands implements IMoreCommands {
 
     // Me
     public static boolean isCool(Entity entity) {
-        return entity instanceof Player && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getStringUUID()) || Platform.isDevelopmentEnvironment());
+        return entity instanceof Player && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getStringUUID()) ||
+                Platform.isDevelopmentEnvironment()) && (Minecraft.getInstance().player == null ||
+                entity.getUUID().equals(Minecraft.getInstance().player.getUUID()));
     }
 
     // My best friend :3
@@ -1283,7 +1277,7 @@ public enum MoreCommands implements IMoreCommands {
 
     private static Object determineCurrentCompat0(boolean client) {
         Version v = Version.getCurrent();
-        int minor = v.minor, rev = v.revision;
+        int minor = v.minor, rev = v.revision == null ? -1 : v.revision;
 
         if (!client) switch (minor) {
             case 16:
@@ -1294,7 +1288,7 @@ public enum MoreCommands implements IMoreCommands {
                 return rev >= 2 ? new Compat182() : new Compat18();
             case 19:
             default:
-                return new Compat19();
+                return rev >= 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
         }
         else switch (minor) {
             case 16:
@@ -1304,7 +1298,7 @@ public enum MoreCommands implements IMoreCommands {
                 return new ClientCompat17();
             case 19:
             default:
-                return new ClientCompat19();
+                return rev >= 2 ? new ClientCompat192() : rev == 1 ? new ClientCompat191() : rev == 0 ? new ClientCompat190() : new ClientCompat19();
         }
     }
 
@@ -1342,12 +1336,6 @@ public enum MoreCommands implements IMoreCommands {
 
     public static Map<Command, Collection<CommandNode<CommandSourceStack>>> getNodes() {
         return ImmutableMap.copyOf(nodes);
-    }
-
-    public static IntStream charStream(char[] chars) {
-        int[] ints = new int[chars.length];
-        for (int i = 0; i < chars.length; i++) ints[i] = chars[i];
-        return IntStream.of(ints);
     }
 
     public static Entity getTargetedEntity(Player entity) {

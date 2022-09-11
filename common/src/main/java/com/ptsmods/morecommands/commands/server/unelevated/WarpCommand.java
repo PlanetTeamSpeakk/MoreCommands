@@ -7,7 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.callbacks.CreateWorldEvent;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;

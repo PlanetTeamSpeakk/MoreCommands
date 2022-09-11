@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.callbacks.KeyEvent;
 import com.ptsmods.morecommands.api.callbacks.MouseEvent;

@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands;
+package com.ptsmods.morecommands.api;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.commands.CommandSourceStack;

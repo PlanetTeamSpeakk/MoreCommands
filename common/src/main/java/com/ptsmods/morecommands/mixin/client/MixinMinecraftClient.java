@@ -3,10 +3,10 @@ package com.ptsmods.morecommands.mixin.client;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IDeathTracker;
+import com.ptsmods.morecommands.api.MessageHistory;
 import com.ptsmods.morecommands.api.callbacks.RenderTickEvent;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.commands.client.SearchCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.Connection;
@@ -23,7 +23,7 @@ public class MixinMinecraftClient {
     public void disconnect(Screen screen, CallbackInfo cbi) {
         // Reset to defaults when leaving the world.
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
-        SearchCommand.lines.clear();
+        MessageHistory.clear();
         ClientOption.getUnmappedOptions().values().forEach(option -> option.setDisabled(false));
         MoreCommandsClient.clearDisabledCommands();
         IDeathTracker.get().reset();

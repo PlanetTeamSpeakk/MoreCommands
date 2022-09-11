@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.reach;
 
 import com.google.common.collect.ImmutableList;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;

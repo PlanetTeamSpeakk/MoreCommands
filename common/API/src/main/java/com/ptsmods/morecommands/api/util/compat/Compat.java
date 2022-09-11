@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.api.util.compat;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
@@ -11,12 +12,10 @@ import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -43,8 +42,10 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.DoubleStream;
 
 public interface Compat {
@@ -134,4 +135,8 @@ public interface Compat {
     void onStacksDropped(BlockState state, ServerLevel world, BlockPos pos, ItemStack stack, boolean b);
 
     BlockPos getWorldSpawnPos(ServerLevel world);
+
+    void registerCommandRegistrationEventListener(BiConsumer<CommandDispatcher<CommandSourceStack>, Commands.CommandSelection> listener);
+
+    int performCommand(Commands commands, CommandSourceStack source, String command);
 }

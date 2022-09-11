@@ -1,6 +1,6 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.compat.compat190.min;
 
-import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
+import com.ptsmods.morecommands.api.IMoreGameRules;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import org.slf4j.Logger;
@@ -22,6 +22,6 @@ public class MixinCommandManagerCarpetCompat {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;isDebugEnabled()Z", remap = false), method = "performCommand", require = 0)
     private boolean execute_isDebugEnabled(Logger logger) {
-        return lastCommandSource.getLevel() != null && lastCommandSource.getLevel().getGameRules().getBoolean(MoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
+        return lastCommandSource.getLevel() != null && lastCommandSource.getLevel().getGameRules().getBoolean(IMoreGameRules.get().doStacktraceRule()) || logger.isDebugEnabled();
     }
 }

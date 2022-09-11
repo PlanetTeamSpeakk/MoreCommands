@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.CollectionExtensions;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;

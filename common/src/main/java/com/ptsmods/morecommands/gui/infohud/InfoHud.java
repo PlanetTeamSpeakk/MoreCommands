@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;

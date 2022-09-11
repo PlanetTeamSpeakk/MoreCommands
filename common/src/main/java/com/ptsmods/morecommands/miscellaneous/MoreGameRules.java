@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.miscellaneous;
 
 import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IMoreGameRules;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;

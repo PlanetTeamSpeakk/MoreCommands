@@ -1,5 +1,3 @@
-import java.util.stream.Collectors
-
 plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
@@ -34,7 +32,7 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
-    modImplementation "com.terraformersmc:modmenu:4.0.0-beta.2"
+    modImplementation "com.terraformersmc:modmenu:4.0.6"
     modImplementation "com.ptsmods:devlogin:3.1"
 
     common "com.ptsmods:mysqlw:1.9.2"
@@ -43,16 +41,9 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat16", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat16", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat17", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat17", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat18", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat18", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat182", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat182", configuration: "transformProductionFabric")) { transitive false }
-    common(project(path: ":common:Compat:Compat19", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:Compat:Compat19", configuration: "transformProductionFabric")) { transitive false }
+
+    project(":common:Compat").subprojects.collect { common(project(path: ":common:Compat:" + it.name,
+            configuration: "namedElements")) { transitive false } }
 }
 
 processResources {
@@ -64,10 +55,9 @@ processResources {
 }
 
 shadowJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     exclude "architectury.common.json"
 
-    // Generated from dumps, leaving these in will cause the wrong classes to load.
-    //exclude "com/ptsmods/morecommands/compat/**"
     exclude "com/ptsmods/morecommands/miscellaneous/CopySound.class"
     exclude "com/ptsmods/morecommands/miscellaneous/EESound.class"
 
@@ -75,28 +65,34 @@ shadowJar {
     classifier "dev-shadow"
 }
 
+task shadowCompat(type: Jar) {
+    archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FABRIC.${archiveExtension.get()}"
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from zipTree(remapJar.archiveFile)
+    from { project(":common:Compat").subprojects.collect { zipTree(it.transformProductionFabric.archiveFile) } }
+}
+
+tasks.build.dependsOn(shadowCompat)
+
 remapJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     injectAccessWidener = true
     inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier null
-    archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FABRIC.${archiveExtension.get()}"
+    classifier "dev-shadow-remap"
 }
 
 jar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     classifier "dev"
 }
 
 sourcesJar {
-    def sources = project(":common").subprojects.stream()
-            .map{ it.sourcesJar }
-            .collect(Collectors.toList())
+    def sources = project(":common").subprojects.collect { it.sourcesJar }
     sources.add project(":common").sourcesJar
     dependsOn sources
 
-    sources.stream()
-            .map { it.archiveFile.map { zipTree(it) } }
-            .forEach { from it }
+    from { sources.collect { zipTree(it.archiveFile) } }
 }
 
 components.java {

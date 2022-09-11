@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.compat.compat192",
+  "plugin": "com.ptsmods.morecommands.plugin.Plugin192",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

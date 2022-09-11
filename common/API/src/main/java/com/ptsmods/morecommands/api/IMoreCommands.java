@@ -26,6 +26,10 @@ public interface IMoreCommands {
 
     Path getConfigDirectory();
 
+    default String textToString(Component text) {
+        return textToString(text, null, true);
+    }
+
     String textToString(Component text, Style parentStyle, boolean includeFormattings);
 
     void setCreatingWorld(boolean creatingWorld);

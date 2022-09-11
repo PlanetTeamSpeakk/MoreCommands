@@ -19,11 +19,8 @@ dependencies {
     implementation 'com.ptsmods:mysqlw:1.9.2'
 
     api project(path: ":common:API", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat16", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat17", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat18", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat182", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat19", configuration: "namedElements")
+    project(":common:Compat").subprojects.collect { implementation project(path: ":common:Compat:" + it.name,
+            configuration: "namedElements") }
 }
 
 project(":common:Compat").subprojects {

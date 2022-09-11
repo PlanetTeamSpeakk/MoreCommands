@@ -9,7 +9,6 @@
     "MixinBlock",
     "MixinBlockItem",
     "MixinClientConnection",
-    "MixinCommandManagerCarpetCompat",
     "MixinCommandSource",
     "MixinDamageSource",
     "MixinEnchantCommand",

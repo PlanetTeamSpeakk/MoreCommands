@@ -1,10 +1,10 @@
-package com.ptsmods.morecommands.forge;
+package com.ptsmods.morecommands.api.forge;
 
+import com.ptsmods.morecommands.forge.MoreCommandsForge;
 import lombok.SneakyThrows;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.server.permission.PermissionAPI;
 
@@ -36,5 +36,12 @@ public class MoreCommandsArchImpl {
 
     public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
         return source -> source.hasPermission(defaultRequiredLevel);
+    }
+
+    public static Path getJar() {
+        return null;
+//        ModList.get().getModContainerById("morecommands")
+//                .orElseThrow(NullPointerException::new)
+//                .getModInfo().;// TODO
     }
 }

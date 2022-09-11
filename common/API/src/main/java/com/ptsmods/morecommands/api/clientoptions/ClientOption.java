@@ -2,13 +2,14 @@ package com.ptsmods.morecommands.api.clientoptions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.network.chat.Component;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import net.minecraft.network.chat.Component;
 
 public abstract class ClientOption<T> {
     private static final Map<ClientOptionCategory, Map<String, ClientOption<?>>> options = new LinkedHashMap<>();
@@ -113,5 +114,9 @@ public abstract class ClientOption<T> {
 
     public static Map<String, ClientOption<?>> getKeyMappedOptions() {
         return getUnmappedOptions().values().stream().collect(Collectors.toMap(ClientOption::getKey, o -> o, (o1, o2) -> o1, LinkedHashMap::new));
+    }
+
+    public static boolean getBoolean(String key) {
+        return (boolean) getKeyMappedOptions().get(key).getValue();
     }
 }

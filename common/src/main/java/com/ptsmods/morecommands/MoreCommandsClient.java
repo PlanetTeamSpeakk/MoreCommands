@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.api.Holder;
+import com.ptsmods.morecommands.api.IMoreCommandsClient;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.callbacks.ChatMessageSendEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
@@ -45,6 +47,7 @@ import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Style;
@@ -79,7 +82,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
-public class MoreCommandsClient {
+public class MoreCommandsClient implements IMoreCommandsClient {
     public static final Logger LOG = LogManager.getLogger();
     public static final KeyMapping toggleInfoHudBinding = new KeyMapping("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
     public static boolean scheduleWorldInitCommands = false;
@@ -136,6 +139,7 @@ public class MoreCommandsClient {
     }
 
     public static void init() {
+        Holder.setMoreCommandsClient(new MoreCommandsClient());
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
@@ -144,7 +148,7 @@ public class MoreCommandsClient {
         MixinParticleManagerAccessor.setRenderOrder(list);
 
         List<ItemLike> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
-        if (Registry.BLOCK.containsKey(new ResourceLocation("water_cauldron"))) waterItems.add(Registry.BLOCK.get(new ResourceLocation("water_cauldron")));
+        Registry.BLOCK.getOptional(new ResourceLocation("water_cauldron")).ifPresent(waterItems::add);
         ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemLike[0]));
 
         Holder.setDeathTracker(DeathTracker.INSTANCE);
@@ -157,7 +161,9 @@ public class MoreCommandsClient {
         });
 
         TickEvent.SERVER_POST.register(server -> {
-            if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands().forEach(cmd -> server.getCommands().performCommand(server.createCommandSourceStack(), cmd));
+            CommandSourceStack source = server.createCommandSourceStack();
+            if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands()
+                    .forEach(cmd -> Compat.get().performCommand(server.getCommands(), source, cmd));
         });
 
         KeyMappingRegistry.register(toggleInfoHudBinding);
@@ -310,6 +316,11 @@ public class MoreCommandsClient {
         });
     }
 
+    @Override
+    public CommandDispatcher<ClientSuggestionProvider> getClientCommandDispatcher() {
+        return clientCommandDispatcher;
+    }
+
     public static String getWorldName() {
         // MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
         return Minecraft.getInstance().level == null ? null : Minecraft.getInstance().getCurrentServer() == null ?
@@ -386,7 +397,7 @@ public class MoreCommandsClient {
         disabledCommands.clear();
     }
 
-    public static boolean isCommandDisabled(String input) {
+    public boolean isCommandDisabled(String input) {
         if (input.startsWith("/")) input = input.substring(1);
         return disabledCommands.contains(input.split(" ")[0]);
     }

@@ -10,15 +10,12 @@ import java.util.List;
 
 @Mixin(CommandSuggestions.class)
 public interface MixinCommandSuggestorAccessor {
-    @Accessor
-    CommandSuggestions.SuggestionsList getSuggestions();
+    @Accessor CommandSuggestions.SuggestionsList getSuggestions();
+    @Accessor void setSuggestions(CommandSuggestions.SuggestionsList suggestions);
 
-    @Accessor
-    List<FormattedCharSequence> getCommandUsage();
+    @Accessor List<FormattedCharSequence> getCommandUsage();
 
-    @Accessor
-    int getCommandUsagePosition();
+    @Accessor int getCommandUsagePosition();
 
-    @Accessor
-    int getCommandUsageWidth();
+    @Accessor int getCommandUsageWidth();
 }

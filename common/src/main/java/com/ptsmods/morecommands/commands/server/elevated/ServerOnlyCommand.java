@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import java.io.File;

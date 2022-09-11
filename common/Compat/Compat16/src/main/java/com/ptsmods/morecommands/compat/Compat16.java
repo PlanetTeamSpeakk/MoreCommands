@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.compat;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
@@ -10,9 +11,12 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.Util;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.synchronization.ArgumentSerializer;
 import net.minecraft.commands.synchronization.ArgumentTypes;
@@ -55,6 +59,7 @@ import oshi.SystemInfo;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.function.BiConsumer;
 import java.util.stream.DoubleStream;
 
 public class Compat16 implements Compat {
@@ -234,5 +239,15 @@ public class Compat16 implements Compat {
     @Override
     public BlockPos getWorldSpawnPos(ServerLevel world) {
         return world.getSharedSpawnPos();
+    }
+
+    @Override
+    public void registerCommandRegistrationEventListener(BiConsumer<CommandDispatcher<CommandSourceStack>, Commands.CommandSelection> listener) {
+        CommandRegistrationEvent.EVENT.register(listener::accept);
+    }
+
+    @Override
+    public int performCommand(Commands commands, CommandSourceStack source, String command) {
+        return commands.performCommand(source, command);
     }
 }

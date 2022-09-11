@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsArch;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.callbacks.PlayerListEvent;
 import com.ptsmods.morecommands.api.util.Util;

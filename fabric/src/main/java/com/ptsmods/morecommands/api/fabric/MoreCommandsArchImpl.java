@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.fabric;
+package com.ptsmods.morecommands.api.fabric;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.extensions.URLExtensions;
