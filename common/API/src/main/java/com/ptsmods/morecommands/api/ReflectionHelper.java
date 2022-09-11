@@ -180,7 +180,8 @@ public class ReflectionHelper {
             try (Stream<Path> files = Files.walk(jar.toAbsolutePath().resolve(String.join(File.separator, pckg.split("\\."))))) {
                 classNames.addAll(files
                         .filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
-                        .map(path -> path.toAbsolutePath().toString().substring(jar.toAbsolutePath().toString().length() + 1, path.toAbsolutePath().toString().lastIndexOf('.')).replace(File.separatorChar, '.'))
+                        .map(path -> path.toAbsolutePath().toString())
+                        .map(path -> path.substring(jar.toAbsolutePath().toString().length() + 1, path.lastIndexOf('.')).replace(File.separatorChar, '.'))
                         .collect(Collectors.toList()));
             }
         else {
@@ -191,7 +192,7 @@ public class ReflectionHelper {
                 ZipEntry entry = entries.nextElement();
                 if (entry.getName().startsWith(pckg.replace(".", "/")) && entry.getName().endsWith(".class") &&
                         !entry.getName().split("/")[entry.getName().split("/").length - 1].contains("$"))
-                    classNames.add(entry.getName().replace('/', '.'));
+                    classNames.add(entry.getName().replace('/', '.').substring(0, entry.getName().lastIndexOf('.')));
             }
 
             zip.close();
