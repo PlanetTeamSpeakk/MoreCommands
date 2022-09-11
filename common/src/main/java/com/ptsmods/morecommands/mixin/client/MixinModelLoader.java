@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.mixin.client;
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
 import com.mojang.math.Vector3f;
-import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
@@ -42,11 +41,9 @@ public abstract class MixinModelLoader {
     @SuppressWarnings("unchecked")
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/ModelBakery;loadBlockModel(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/block/model/BlockModel;"), method = "loadModel")
     private BlockModel loadModel_loadModelFromJson(ModelBakery modelLoader, ResourceLocation id) throws IOException {
-        if (ClientOptions.Tweaks.overrideAirModels.getValue() && "minecraft".equals(id.getNamespace()) && id.getPath().contains("item/") && id.getPath().contains("air")) {
-            MoreCommandsClient.LOG.info(id);
+        if (ClientOptions.Tweaks.overrideAirModels.getValue() && "minecraft".equals(id.getNamespace()) && id.getPath().contains("item/") && id.getPath().contains("air"))
             switch (id.getPath()) {
                 case "item/air":
-                    MoreCommandsClient.LOG.info("Loading air model");
                     return loadBlockModel(new ResourceLocation("morecommands:item/air"));
                 case "item/mcsynthetic_cave_air":
                     return loadBlockModel(new ResourceLocation("morecommands:item/cave_air"));
@@ -55,7 +52,6 @@ public abstract class MixinModelLoader {
                 default:
                     break;
             }
-        }
 
         try {
             return loadBlockModel(id);
