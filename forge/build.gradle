@@ -7,6 +7,7 @@ architectury {
     forge()
 }
 
+def root = project.rootProject
 loom {
     accessWidenerPath = project(":common").loom.accessWidenerPath
 
@@ -14,17 +15,12 @@ loom {
         convertAccessWideners = true
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
 
-        mixinConfig "morecommands_client.mixins.json"
-        mixinConfig "morecommands_common.mixins.json"
-        mixinConfig "morecommands_reach.mixins.json"
-        mixinConfig "morecommands_compat16.mixins.json"
-        mixinConfig "morecommands_compat17.mixins.json"
-        mixinConfig "morecommands_compat18.mixins.json"
-        mixinConfig "morecommands_compat182.mixins.json"
-        mixinConfig "morecommands_compat19.mixins.json"
-        mixinConfig "morecommands_compat190.mixins.json"
-        mixinConfig "morecommands_compat191.mixins.json"
-        mixinConfig "morecommands_compat192.mixins.json"
+        mixinConfig root.subprojects.collect {
+            it.sourceSets.main.output.resourcesDir.list()
+                    .findAll { it.endsWith(".mixins.json") } }
+                .flatten()
+                .unique()
+                .toArray(new String[0])
     }
 }
 
