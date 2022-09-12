@@ -4,15 +4,10 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import lombok.AccessLevel;
 import lombok.Getter;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
 public class Holder {
-    // Trying not to load the Command class, which in turn loads the MoreCommands class, when registering this attribute
-    // in MixinPlayerEntity which is done too early.
-    public static final Attribute REACH_ATTRIBUTE = new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true);
     @Getter(AccessLevel.PACKAGE)
     private static IMoreCommands moreCommands;
     @Getter(AccessLevel.PACKAGE)

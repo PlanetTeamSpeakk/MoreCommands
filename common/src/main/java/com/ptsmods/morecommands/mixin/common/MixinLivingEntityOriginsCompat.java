@@ -14,6 +14,6 @@ public class MixinLivingEntityOriginsCompat {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;moveRelative(FLnet/minecraft/world/phys/Vec3;)V"), method = "travel")
     private void travel_updateVelocity(LivingEntity thiz, float speed, Vec3 movementInput) {
         // Applying swim speed
-        thiz.moveRelative(speed * (thiz instanceof Player ? (float) thiz.getAttributeValue(SpeedCommand.SpeedType.swimSpeedAttribute) : 1f), movementInput);
+        thiz.moveRelative(speed * (thiz instanceof Player ? (float) thiz.getAttributeValue(SpeedCommand.SpeedType.getSwimSpeedAttribute()) : 1f), movementInput);
     }
 }

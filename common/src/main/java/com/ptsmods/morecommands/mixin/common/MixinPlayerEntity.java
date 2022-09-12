@@ -1,12 +1,12 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
 import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import lombok.experimental.ExtensionMethod;
 import net.minecraft.ChatFormatting;
@@ -27,7 +27,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinPlayerEntity {
     @Inject(at = @At("RETURN"), method = "createAttributes", cancellable = true)
     private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cbi) {
-        cbi.setReturnValue(cbi.getReturnValue().add(Holder.REACH_ATTRIBUTE).add(SpeedCommand.SpeedType.swimSpeedAttribute));
+        cbi.setReturnValue(cbi.getReturnValue()
+                .add(ReachCommand.getReachAttribute())
+                .add(SpeedCommand.SpeedType.getSwimSpeedAttribute()));
     }
 
     @Inject(at = @At("RETURN"), method = "getName", cancellable = true)

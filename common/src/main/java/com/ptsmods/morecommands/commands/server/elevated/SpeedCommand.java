@@ -14,6 +14,8 @@ import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.*;
 
@@ -92,9 +94,8 @@ public class SpeedCommand extends Command {
             ((MixinPlayerAbilitiesAccessor) ((MixinPlayerEntityAccessor) player).getAbilities_()).setFlyingSpeed_((float) (speed / 20));
             player.onUpdateAbilities();
         }, player -> ((MixinPlayerEntityAccessor) player).getAbilities_().getFlyingSpeed() * 20D),
-        SWIM((player, speed) -> Objects.requireNonNull(player.getAttribute(Nested.swimSpeedAttribute)).setBaseValue(speed), player -> player.getAttributeValue(Nested.swimSpeedAttribute));
-
-        public static final Attribute swimSpeedAttribute = Nested.swimSpeedAttribute;
+        SWIM((player, speed) -> Objects.requireNonNull(player.getAttribute(getSwimSpeedAttribute()))
+                .setBaseValue(speed), player -> player.getAttributeValue(getSwimSpeedAttribute()));
 
         private final BiConsumer<ServerPlayer, Double> consumer;
         private final Function<ServerPlayer, Double> supplier;
@@ -104,16 +105,16 @@ public class SpeedCommand extends Command {
             this.supplier = supplier;
         }
 
+        public static Attribute getSwimSpeedAttribute() {
+            return Objects.requireNonNull(Registry.ATTRIBUTE.get(new ResourceLocation("morecommands:swim_speed")));
+        }
+
         public void setSpeed(ServerPlayer player, double speed) {
             consumer.accept(player, speed);
         }
 
         public double getSpeed(ServerPlayer player) {
             return supplier.apply(player);
-        }
-
-        private static class Nested { // bla-bla forward references bla-bla ugh
-            public static final Attribute swimSpeedAttribute = new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true);
         }
     }
 }

@@ -44,7 +44,7 @@ public class MixinSignEditScreen {
             mc_updateBtn();
         }) {
             public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                return false; // So you don't trigger the translate formattings button every time you press space after you've pressed it yourself once.
+                return false; // So you don't trigger the 'translate formattings' button every time you press space after you've pressed it yourself once.
             }
         });
         MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, signField::insertText, b -> colourPickerOpen = b);
@@ -62,11 +62,10 @@ public class MixinSignEditScreen {
     }
 
     @Inject(at = @At("HEAD"), method = "charTyped(CI)Z")
-    public boolean charTyped(char chr, int keyCode, CallbackInfoReturnable<Boolean> cbi) {
+    public void charTyped(char chr, int keyCode, CallbackInfoReturnable<Boolean> cbi) {
         if (translateFormattings) {
             translateFormattings = false;
             mc_updateBtn();
         }
-        return false;
     }
 }

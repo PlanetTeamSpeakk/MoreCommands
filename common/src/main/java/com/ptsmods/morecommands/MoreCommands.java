@@ -24,7 +24,6 @@ import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import com.ptsmods.morecommands.compat.*;
 import com.ptsmods.morecommands.compat.client.*;
 import com.ptsmods.morecommands.miscellaneous.Chair;
@@ -76,6 +75,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BlockItem;
@@ -133,10 +133,8 @@ public enum MoreCommands implements IMoreCommands {
     private static final DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_REGISTRY);
     public static final Set<Block> blockBlacklist = new HashSet<>();
     public static final Set<Block> blockWhitelist = new HashSet<>();
-    public static final Block lockedChest = new Block(BlockBehaviour.Properties.of(Material.WOOD));
-    public static final Item lockedChestItem = new BlockItem(lockedChest, new Item.Properties());
-    public static final Item netherPortalItem = new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()); // After all, why not? Why shouldn't a nether portal be fireproof?
-    public static final CreativeModeTab unobtainableItems = CreativeTabRegistry.create(new ResourceLocation("morecommands:unobtainable_items"), () -> new ItemStack(lockedChestItem));
+    public static final CreativeModeTab unobtainableItems = CreativeTabRegistry.create(new ResourceLocation("morecommands:unobtainable_items"),
+        () -> new ItemStack(Registry.ITEM.get(new ResourceLocation("morecommands:locked_chest"))));
     public static MinecraftServer serverInstance = null;
     public static final ObjectiveCriteria LATENCY;
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -228,13 +226,16 @@ public enum MoreCommands implements IMoreCommands {
         });
 
         if (!isServerOnly()) {
+            ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
             soundEventRegistry.register(new ResourceLocation("morecommands:copy"), () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
             soundEventRegistry.register(new ResourceLocation("morecommands:ee"), () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
-            blockRegistry.register(new ResourceLocation("morecommands:locked_chest"), () -> lockedChest);
-            itemRegistry.register(new ResourceLocation("morecommands:locked_chest"), () -> lockedChestItem);
-            itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> netherPortalItem);
-            attributeRegistry.register(new ResourceLocation("morecommands:reach"), () -> ReachCommand.REACH_ATTRIBUTE);
-            attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () -> SpeedCommand.SpeedType.swimSpeedAttribute);
+            blockRegistry.register(lockedChestLocation, () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
+            itemRegistry.register(lockedChestLocation, () -> new BlockItem(blockRegistry.getRegistrar().get(lockedChestLocation), new Item.Properties()));
+            itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
+            attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
+                    new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
+            attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
+                    new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
 
             PlayerEvent.PLAYER_JOIN.register(player -> {
                 if (NetworkManager.canPlayerReceive(player, new ResourceLocation("morecommands:formatting_update"))) sendFormattingUpdates(player);
