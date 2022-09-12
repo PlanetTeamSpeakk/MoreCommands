@@ -10,14 +10,3 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 }
-
-subprojects {
-//    loom {
-//        setGenerateSrgTiny(true)
-//    }
-//
-//    task remapJarSrg(type: RemapJarTask) {
-//        inputFile = jar.archiveFile
-//        targetNamespace = 'srg'
-//    }
-}
