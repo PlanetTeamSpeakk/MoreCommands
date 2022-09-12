@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.MessageHistory;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.addons.ChatComponentAddon;
 import com.ptsmods.morecommands.api.addons.GuiMessageAddon;
+import com.ptsmods.morecommands.api.addons.GuiMessageLineAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
@@ -15,23 +16,15 @@ import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent implements ChatComponentAddon {
@@ -64,8 +57,10 @@ public abstract class MixinChatComponent implements ChatComponentAddon {
             .appendPattern("a")
             .toFormatter(Locale.ENGLISH);
     @Shadow @Final private List<GuiMessage> allMessages;
+    @Shadow @Final private List<GuiMessage.Line> trimmedMessages;
+    private @Unique int wrappedSize = 0;
 
-    @Shadow protected abstract void refreshTrimmedMessage();
+    @Shadow protected abstract void addMessage(Component par1, MessageSignature par2, int par3, GuiMessageTag par4, boolean par5);
 
     @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", cancellable = true)
     public void addMessage(Component message, MessageSignature signature, int addedTime, GuiMessageTag tag, boolean bl, CallbackInfo cbi) {
@@ -109,6 +104,39 @@ public abstract class MixinChatComponent implements ChatComponentAddon {
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V")
     public Object messagesRemove(List<?> messages, int index) {
         return ClientOption.getBoolean("infiniteChat") ? messages.get(messages.size() - 1) : messages.remove(index);
+    }
+
+    // Capturing locals does not seem to work as it gives an error at an opcode, so we do it like this instead.
+    @ModifyVariable(at = @At("STORE"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V")
+    public List<?> addMessage_wrapComponents(List<?> wrapped) {
+        wrappedSize = wrapped.size();
+        return wrapped;
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", shift = At.Shift.AFTER, ordinal = 1),
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V")
+    public void afterMessageAdd(Component component, MessageSignature messageSignature, int i, GuiMessageTag guiMessageTag, boolean bl, CallbackInfo cbi) {
+        GuiMessage message = allMessages.get(0);
+        int id = ((GuiMessageAddon) (Object) message).mc$getId();
+
+        // Set the id of the message the trimmed messages came from so the message can be removed later.
+        for (int i1 = 0; i1 < wrappedSize; i1++)
+            ((GuiMessageLineAddon) (Object) trimmedMessages.get(i1)).mc$setParentId(id);
+    }
+
+    /**
+     * @author PlanetTeamSpeak
+     * @reason Passing true as the boolean parameter to addMessage breaks the id system
+     */
+    @Overwrite
+    private void refreshTrimmedMessage() {
+        this.trimmedMessages.clear();
+        List<GuiMessage> messages = new ArrayList<>(allMessages);
+        Collections.reverse(messages);
+        allMessages.clear();
+
+        for (GuiMessage message : messages)
+            addMessage(message.content(), message.headerSignature(), message.addedTime(), message.tag(), false);
     }
 
     @Override

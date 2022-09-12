@@ -1,8 +1,9 @@
 package com.ptsmods.morecommands.api.arguments;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import java.lang.reflect.Proxy;
 import net.minecraft.network.FriendlyByteBuf;
+
+import java.lang.reflect.Proxy;
 
 public interface ArgumentTypeProperties<A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> {
 
@@ -20,11 +21,13 @@ public interface ArgumentTypeProperties<A extends CompatArgumentType<A, T, P>, T
 
             switch (method.getName()) {
                 case "method_41730":
+                case "m_213879_":
                 case "createType":
                 case "instantiate":
                     return createType();
 
                 case "method_41728":
+                case "m_213709_":
                 case "getSerializer":
                 case "type":
                     return getSerialiser().toVanillaSerialiser();

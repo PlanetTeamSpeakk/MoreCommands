@@ -44,7 +44,15 @@ public abstract class MixinItemStack {
     @Inject(at = @At("RETURN"), method = "getDescriptionId", cancellable = true)
     public void getTranslationKey(CallbackInfoReturnable<String> cbi) {
         ItemStack thiz = ReflectionHelper.cast(this);
-        if (thiz.getItem() == Items.SPAWNER) cbi.setReturnValue("block.minecraft.spawner_" + Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? new ResourceLocation(thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData").getString("id")) : Registry.ENTITY_TYPE.getDefaultKey()).getDescriptionId());
+        if (thiz.getItem() != Items.SPAWNER || thiz.getTag() == null || !thiz.getTag().contains("BlockEntityTag", 10) ||
+                !thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData")) return;
+
+        CompoundTag spawnData = thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData");
+        cbi.setReturnValue("block.minecraft.spawner_" +
+                Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) &&
+                        thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ?
+                        new ResourceLocation(spawnData.contains("entity", 10) ? spawnData.getCompound("entity").getString("id") : spawnData.getString("id")) :
+                        Registry.ENTITY_TYPE.getDefaultKey()).getDescriptionId());
     }
 
     @Inject(at = @At("TAIL"), method = "getHoverName", cancellable = true)

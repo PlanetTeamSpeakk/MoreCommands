@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.compat.compat180",
+  "plugin": "com.ptsmods.morecommands.plugin.Plugin180",
+  "compatibilityLevel": "JAVA_8",
+  "client": [],
+  "mixins": [
+    "min.MixinLivingEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "MoreCommands-common_Compat_Compat180-refmap.json"
+}

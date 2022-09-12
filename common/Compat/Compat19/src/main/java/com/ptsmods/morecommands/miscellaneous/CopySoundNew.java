@@ -1,9 +1,8 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.ptsmods.morecommands.api.IMoreCommands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -13,7 +12,7 @@ import java.util.Objects;
 public class CopySoundNew extends AbstractTickableSoundInstance {
 
     public CopySoundNew() {
-        super(Objects.requireNonNull(Registry.SOUND_EVENT.get(new ResourceLocation("morecommands:copy"))), SoundSource.MASTER, RandomSource.create());
+        super(IMoreCommands.get().getCopySound().get(), SoundSource.MASTER, RandomSource.create());
         volume = .25f;
         looping = false;
         tick();

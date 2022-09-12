@@ -62,7 +62,9 @@
     "accessor.MixinClientConnectionAccessor",
     "accessor.MixinTaskAccessor",
     "MixinEntitySelector",
-    "MixinEntitySelectorReader"
+    "MixinEntitySelectorReader",
+    "accessor.MixinAttributeSupplierAccessor",
+    "accessor.MixinAttributeSupplierBuilderAccessor"
   ],
   "injectors": {
 	"defaultRequire": 1

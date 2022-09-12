@@ -17,7 +17,7 @@ public class MixinLocalPlayer {
         IMoreCommandsClient.handleCommand(message, cbi);
     }
 
-    @Inject(at = @At("HEAD"), method = "sendCommand")
+    @Inject(at = @At("HEAD"), method = "sendCommand", cancellable = true)
     public void sendCommand(String message, Component component, CallbackInfo cbi) {
         IMoreCommandsClient.handleCommand(message, cbi);
     }

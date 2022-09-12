@@ -31,7 +31,8 @@ public class MixinSignEditScreen {
     private @Unique String lastContent;
     private @Unique String lastContentTranslated;
 
-    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Ljava/lang/String;)I"), method = "method_27611(Ljava/lang/String;)Z")
+    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Ljava/lang/String;)I"),
+            method = {"method_27611", "m_169823_"}, require = 1, remap = false)
     private String init_getWidth_s(String s) {
         return ClientOptions.Tweaks.noSignLimit.getValue() ? ChatFormatting.stripFormatting(Util.translateFormats(s)) : s; // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
     }

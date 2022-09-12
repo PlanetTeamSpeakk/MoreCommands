@@ -24,16 +24,16 @@ public class MixinEnchantmentScreenHandler {
         playerInv = playerInventory;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I"), method = "method_17411")
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I"),
+            method = {"method_17411", "m_39483_"}, require = 1)
     private int onContentChanged_calculateRequiredExperienceLevel(RandomSource random, int slotIndex, int bookshelfCount, ItemStack stack) {
         Item item = stack.getItem();
         int i = item.getEnchantmentValue();
         if (i <= 0) return 0;
-        else {
-            if (bookshelfCount > 15 && IMoreGameRules.get().checkBooleanWithPerm(playerInv.player.getLevel().getGameRules(), IMoreGameRules.get().doEnchantLevelLimitRule(), playerInv.player)) bookshelfCount = 15;
-            int j = random.nextInt(8) + 1 + (bookshelfCount >> 1) + random.nextInt(bookshelfCount + 1);
-            if (slotIndex == 0) return Math.max(j / 3, 1);
-            else return slotIndex == 1 ? j * 2 / 3 + 1 : Math.max(j, bookshelfCount * 2);
-        }
+
+        if (bookshelfCount > 15 && IMoreGameRules.get().checkBooleanWithPerm(playerInv.player.getLevel().getGameRules(), IMoreGameRules.get().doEnchantLevelLimitRule(), playerInv.player)) bookshelfCount = 15;
+        int j = random.nextInt(8) + 1 + (bookshelfCount >> 1) + random.nextInt(bookshelfCount + 1);
+        if (slotIndex == 0) return Math.max(j / 3, 1);
+        else return slotIndex == 1 ? j * 2 / 3 + 1 : Math.max(j, bookshelfCount * 2);
     }
 }

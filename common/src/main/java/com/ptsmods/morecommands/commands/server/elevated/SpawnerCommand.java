@@ -4,13 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntitySummonArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +21,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+
+import java.util.Objects;
 
 public class SpawnerCommand extends Command {
     @Override
@@ -43,7 +45,11 @@ public class SpawnerCommand extends Command {
                                         Compat.get().readSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, tag);
                                     logic.setEntityId(type);
                                     (tag = new CompoundTag()).put("BlockEntityTag", Compat.get().writeSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, new CompoundTag()));
-                                    ((CompoundTag) tag.getCompound("BlockEntityTag").getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
+
+                                    ListTag spawnPotentials = tag.getCompound("BlockEntityTag").getList("SpawnPotentials", 10);
+                                    if (spawnPotentials != null && !spawnPotentials.isEmpty())
+                                        ((CompoundTag) spawnPotentials.get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
+
                                     stack.setTag(tag);
                                     sendMsg(ctx, "Poof!");
                                     return 1;
@@ -53,7 +59,11 @@ public class SpawnerCommand extends Command {
                                 BaseSpawner logic = Objects.requireNonNull(be).getSpawner();
                                 logic.setEntityId(type);
                                 CompoundTag tag = Compat.get().writeSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, new CompoundTag());
-                                ((CompoundTag) tag.getList("SpawnPotentials", 10).get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
+
+                                ListTag spawnPotentials = tag.getList("SpawnPotentials", 10);
+                                if (spawnPotentials != null && !spawnPotentials.isEmpty())
+                                    ((CompoundTag) spawnPotentials.get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
+
                                 Compat.get().readSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, tag);
                                 be.setChanged();
                                 ctx.getSource().getLevel().sendBlockUpdated(result.getBlockPos(), state, state, 3);
@@ -87,6 +97,8 @@ public class SpawnerCommand extends Command {
         public void sendStatus(int status) {}
 
         public void method_8273(int status) {}
+
+        public void m_142523_(int status) {}
 
         public void broadcastEvent(int status) {}
 

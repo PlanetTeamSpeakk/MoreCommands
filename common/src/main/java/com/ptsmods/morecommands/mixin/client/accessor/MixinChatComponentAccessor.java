@@ -10,6 +10,6 @@ import java.util.List;
 @Mixin(ChatComponent.class)
 public interface MixinChatComponentAccessor {
     @Accessor List<GuiMessage> getAllMessages();
-    @Accessor List<GuiMessage> getTrimmedMessages();
+    @Accessor List<GuiMessage.Line> getTrimmedMessages();
     @Accessor int getChatScrollbarPos();
 }

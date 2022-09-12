@@ -8,11 +8,13 @@
     "plus.MixinGuiMessage",
     "plus.MixinChatComponent",
     "plus.MixinLocalPlayer",
-    "plus.MixinLocalPlayerAccessor"
+    "plus.MixinLocalPlayerAccessor",
+    "plus.MixinGuiMessageLine"
   ],
   "mixins": [
     "plus.MixinServerGamePacketListenerImpl",
-    "plus.MixinCommandManagerCarpetCompat"
+    "plus.MixinCommandManagerCarpetCompat",
+    "plus.MixinPlayerList"
   ],
   "injectors": {
     "defaultRequire": 1

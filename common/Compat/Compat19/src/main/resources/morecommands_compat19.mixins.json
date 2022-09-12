@@ -18,8 +18,7 @@
     "plus.MixinCommandManager",
     "plus.MixinEnchantmentScreenHandler",
     "plus.MixinSnowBlock",
-    "plus.MixinBlock",
-    "plus.MixinPlayerManager"
+    "plus.MixinBlock"
   ],
   "injectors": {
     "defaultRequire": 1

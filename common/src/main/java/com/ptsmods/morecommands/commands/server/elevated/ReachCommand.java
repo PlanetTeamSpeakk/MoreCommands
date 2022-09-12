@@ -62,10 +62,11 @@ public class ReachCommand extends Command {
     }
 
     public static double getReach(Player player, boolean squared) {
-        return Math.pow(player.getAttributeValue(getReachAttribute()) + (player instanceof ServerPlayer && squared ? 1.5d : 0), squared ? 2 : 1);
+        return player.getAttributes().hasAttribute(getReachAttribute()) ? Math.pow(player.getAttributeValue(getReachAttribute()) +
+                (player instanceof ServerPlayer && squared ? 1.5d : 0), squared ? 2 : 1) : 4.5d * (squared ? 4.5d : 1);
     }
     
     public static Attribute getReachAttribute() {
-        return Registry.ATTRIBUTE.get(new ResourceLocation("morecommands:reach"));
+        return IMoreCommands.get().getReachAttribute().get();
     }
 }

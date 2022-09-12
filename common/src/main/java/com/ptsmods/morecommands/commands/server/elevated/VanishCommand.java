@@ -1,6 +1,5 @@
 package com.ptsmods.morecommands.commands.server.elevated;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -20,10 +19,7 @@ import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class VanishCommand extends Command {
     public static final Map<ServerPlayer, ServerEntity> trackers = new HashMap<>();
@@ -48,40 +44,49 @@ public class VanishCommand extends Command {
     }
 
     private int execute(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> p) throws CommandSyntaxException {
-        if (p == null) p = Lists.newArrayList(ctx.getSource().getPlayerOrException());
+        if (p == null) p = Collections.singletonList(ctx.getSource().getPlayerOrException());
         else if (!isOp(ctx)) {
             sendError(ctx, "You must be op to toggle vanish for others.");
             return 0;
         }
+
         for (ServerPlayer player : p) {
             boolean b = !player.getEntityData().get(IDataTrackerHelper.get().vanish());
             if (b) vanish(player, true);
             else unvanish(player);
             sendMsg(player, "You are " + Util.formatFromBool(b, "now", "no longer") + DF + " vanished.");
         }
+
+        if (p.size() > 1 || !p.stream().allMatch(p0 -> p0 == ctx.getSource().getPlayer()))
+            sendMsg(ctx, p.size() > 1 ? "Toggled vanish for " + SF + p.size() + DF + " players." :
+                    SF + ctx.getSource().getPlayerOrException().getGameProfile().getName() + DF + " is " +
+                            Util.formatFromBool(ctx.getSource().getPlayerOrException().getEntityData().get(IDataTrackerHelper.get().vanish()),
+                                    "now", "no longer") + DF + " vanished.");
+
         return p.size();
     }
 
-    public static void vanish(ServerPlayer player, boolean sendmsg) {
+    public static void vanish(ServerPlayer player, boolean sendMsg) {
         player.getEntityData().set(IDataTrackerHelper.get().vanish(), true);
         player.getEntityData().set(IDataTrackerHelper.get().vanishToggled(), true);
         Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
         player.getLevel().getChunkSource().removeEntity(player);
-        if (sendmsg && MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+
+        if (player.getServer().isDedicatedServer() && sendMsg && MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
             Compat.get().broadcast(player.getServer().getPlayerList(), new Tuple<>(1, new ResourceLocation("system")), translatableText("multiplayer.player.left", player.getDisplayName())
                     .withStyle(Style.EMPTY.applyFormat(ChatFormatting.YELLOW)).build());
     }
 
     public static void unvanish(ServerPlayer player) {
-        if (player.getEntityData().get(IDataTrackerHelper.get().vanish())) {
-            player.getEntityData().set(IDataTrackerHelper.get().vanish(), false);
-            Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
-            trackers.remove(player);
-            player.getLevel().getChunkSource().addEntity(player);
-            if (MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
-                Compat.get().broadcast(player.getServer().getPlayerList(), new Tuple<>(1, new ResourceLocation("system")), translatableText("multiplayer.player.joined",
-                        player.getDisplayName())
-                        .withStyle(Style.EMPTY.applyFormat(ChatFormatting.YELLOW)).build());
-        }
+        if (!player.getEntityData().get(IDataTrackerHelper.get().vanish())) return;
+
+        player.getEntityData().set(IDataTrackerHelper.get().vanish(), false);
+        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
+        trackers.remove(player);
+        player.getLevel().getChunkSource().addEntity(player);
+        if (player.getServer().isDedicatedServer() && MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+            Compat.get().broadcast(player.getServer().getPlayerList(), new Tuple<>(1, new ResourceLocation("system")), translatableText("multiplayer.player.joined",
+                    player.getDisplayName())
+                    .withStyle(Style.EMPTY.applyFormat(ChatFormatting.YELLOW)).build());
     }
 }

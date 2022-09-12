@@ -6,13 +6,10 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
-import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
 import lombok.experimental.ExtensionMethod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
@@ -25,12 +22,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @ExtensionMethod(ObjectExtensions.class)
 @Mixin(Player.class)
 public abstract class MixinPlayerEntity {
-    @Inject(at = @At("RETURN"), method = "createAttributes", cancellable = true)
-    private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cbi) {
-        cbi.setReturnValue(cbi.getReturnValue()
-                .add(ReachCommand.getReachAttribute())
-                .add(SpeedCommand.SpeedType.getSwimSpeedAttribute()));
-    }
 
     @Inject(at = @At("RETURN"), method = "getName", cancellable = true)
     public void getName(CallbackInfoReturnable<Component> cbi) {

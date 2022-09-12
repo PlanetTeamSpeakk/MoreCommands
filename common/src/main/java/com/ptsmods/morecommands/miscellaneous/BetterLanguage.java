@@ -1,10 +1,12 @@
 package com.ptsmods.morecommands.miscellaneous;
 
-import java.util.Objects;
-import java.util.TreeMap;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.TreeMap;
 
 public class BetterLanguage extends Language {
     private static final TreeMap<Integer, String> romanNumerals = new TreeMap<>();
@@ -27,16 +29,16 @@ public class BetterLanguage extends Language {
     }
 
     @Override
-    public String getOrDefault(String key) {
-        return "null".equals(String.valueOf(key)) ?
+    public String getOrDefault(@NotNull String key) {
+        return "null".equals(key) ?
                 null : key.startsWith("block.minecraft.spawner_") && key.indexOf('_') != key.length()-1 ?
                 getOrDefault(key.split("_", 2)[1]) + " " + getOrDefault("block.minecraft.spawner") : key.startsWith("enchantment.level.") ?
                 toRoman(Integer.parseInt(key.split("\\.")[2])) : parent.getOrDefault(key);
     }
 
     @Override
-    public boolean has(String key) {
-        return key != null && (key.startsWith("enchantment.level.") || parent.has(key));
+    public boolean has(@NotNull String key) {
+        return key.startsWith("enchantment.level.") || parent.has(key);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class BetterLanguage extends Language {
     }
 
     @Override
-    public FormattedCharSequence getVisualOrder(FormattedText text) {
+    public FormattedCharSequence getVisualOrder(@NotNull FormattedText text) {
         return parent.getVisualOrder(text);
     }
 

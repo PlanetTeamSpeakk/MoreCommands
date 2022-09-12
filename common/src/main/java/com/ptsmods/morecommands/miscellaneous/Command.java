@@ -147,13 +147,14 @@ public abstract class Command {
     }
 
     public static int sendMsg(Entity entity, Component msg) {
-        return sendMsg(entity, Compat.get().builderFromText(msg));
+        entity.sendSystemMessage(msg);
+        return 1;
     }
 
     public static int sendMsg(Entity entity, TextBuilder<?> textBuilder) {
         TextBuilder<?> copy = textBuilder.copy().withStyle(style -> style.isEmpty() ? DS : style);
 
-        entity.createCommandSourceStack().sendSuccess(copy.build(), false);
+        entity.sendSystemMessage(copy.build());
         return 1;
     }
 

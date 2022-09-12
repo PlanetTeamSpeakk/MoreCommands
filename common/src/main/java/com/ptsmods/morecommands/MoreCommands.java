@@ -39,7 +39,9 @@ import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.CreativeTabRegistry;
+import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import io.netty.buffer.Unpooled;
 import lombok.SneakyThrows;
 import net.fabricmc.api.EnvType;
@@ -74,8 +76,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BlockItem;
@@ -148,6 +149,8 @@ public enum MoreCommands implements IMoreCommands {
     private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
     private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
+    private static RegistrySupplier<SoundEvent> copySound, eeSound;
+    private static RegistrySupplier<Attribute> reachAttribute, swimSpeedAttribute;
 
     static {
         File serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
@@ -227,15 +230,39 @@ public enum MoreCommands implements IMoreCommands {
 
         if (!isServerOnly()) {
             ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
-            soundEventRegistry.register(new ResourceLocation("morecommands:copy"), () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
-            soundEventRegistry.register(new ResourceLocation("morecommands:ee"), () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
-            blockRegistry.register(lockedChestLocation, () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
-            itemRegistry.register(lockedChestLocation, () -> new BlockItem(blockRegistry.getRegistrar().get(lockedChestLocation), new Item.Properties()));
+            copySound = soundEventRegistry.register(new ResourceLocation("morecommands:copy"),
+                    () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
+            eeSound = soundEventRegistry.register(new ResourceLocation("morecommands:ee"),
+                    () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
+            RegistrySupplier<Block> lockedChest = blockRegistry.register(lockedChestLocation,
+                    () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
+            itemRegistry.register(lockedChestLocation, () -> new BlockItem(lockedChest.get(), new Item.Properties()));
             itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
-            attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
+            reachAttribute = attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
                     new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
-            attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
+            swimSpeedAttribute = attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
                     new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
+
+            soundEventRegistry.register();
+            blockRegistry.register();
+            itemRegistry.register();
+            attributeRegistry.register();
+
+            EntityAttributeRegistry.register(() -> EntityType.PLAYER, () -> {
+                // For some reason, the builder returned here overrides the attributes already set
+                // which is a huge problem as that includes stuff like generic max health.
+                // So we copy the old attributes using a pair of accessors.
+                Map<Attribute, AttributeInstance> attributes = Optional.ofNullable(DefaultAttributes.getSupplier(EntityType.PLAYER))
+                        .map(sup -> ((MixinAttributeSupplierAccessor) sup).getInstances())
+                        .orElse(Collections.emptyMap());
+
+                AttributeSupplier.Builder builder = AttributeSupplier.builder()
+                        .add(reachAttribute.get())
+                        .add(swimSpeedAttribute.get());
+                ((MixinAttributeSupplierBuilderAccessor) builder).getBuilder().putAll(attributes);
+
+                return builder;
+            });
 
             PlayerEvent.PLAYER_JOIN.register(player -> {
                 if (NetworkManager.canPlayerReceive(player, new ResourceLocation("morecommands:formatting_update"))) sendFormattingUpdates(player);
@@ -270,6 +297,8 @@ public enum MoreCommands implements IMoreCommands {
             compat.registerArgumentType(argumentTypeRegistry, "morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
             compat.registerArgumentType(argumentTypeRegistry, "morecommands:painting_variant", PaintingVariantArgumentType.class, PaintingVariantArgumentType.SERIALISER);
             compat.registerArgumentType(argumentTypeRegistry, "morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
+
+            if (argumentTypeRegistry != null) argumentTypeRegistry.register();
         } else {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
                 Level world = player.level;
@@ -322,12 +351,6 @@ public enum MoreCommands implements IMoreCommands {
 //            // Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
 //            PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);
 //        }
-
-        if (argumentTypeRegistry != null) argumentTypeRegistry.register();
-        soundEventRegistry.register();
-        blockRegistry.register();
-        itemRegistry.register();
-        attributeRegistry.register();
     }
 
     static <T> List<Class<? extends T>> getCommandClasses(String type, Class<T> clazz) {
@@ -1144,6 +1167,26 @@ public enum MoreCommands implements IMoreCommands {
     @Override
     public Path getJar() {
         return MoreCommandsArch.getJar();
+    }
+
+    @Override
+    public RegistrySupplier<SoundEvent> getCopySound() {
+        return copySound;
+    }
+
+    @Override
+    public RegistrySupplier<SoundEvent> getEESound() {
+        return eeSound;
+    }
+
+    @Override
+    public RegistrySupplier<Attribute> getReachAttribute() {
+        return reachAttribute;
+    }
+
+    @Override
+    public RegistrySupplier<Attribute> getSwimSpeedAttribute() {
+        return swimSpeedAttribute;
     }
 
     public static byte[] decodeHex(String data) {

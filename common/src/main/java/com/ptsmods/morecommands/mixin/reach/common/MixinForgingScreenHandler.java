@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(ItemCombinerMenu.class)
 public class MixinForgingScreenHandler {
-    @ModifyConstant(method = "method_24924", constant = @Constant(doubleValue = 64.0D))
+    @ModifyConstant(method = {"method_24924", "m_39783_"}, constant = @Constant(doubleValue = 64.0D), remap = false, require = 1)
     public double method_24924_maxReach(double d, Player player, Level world, BlockPos pos) {
         return ReachCommand.getReach(player, true);
     }

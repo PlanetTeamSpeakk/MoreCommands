@@ -8,6 +8,7 @@ import com.ptsmods.morecommands.api.MessageHistory;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.addons.ChatComponentAddon;
 import com.ptsmods.morecommands.api.addons.GuiMessageAddon;
+import com.ptsmods.morecommands.api.addons.GuiMessageLineAddon;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.client.SearchCommand;
@@ -74,7 +75,7 @@ public class MixinChatScreen {
     @Unique
     public GuiMessageAddon getLine(ChatComponent hud, double x, double y) {
         Minecraft client = Minecraft.getInstance();
-        List<GuiMessage> visibleMessages = ((MixinChatComponentAccessor) hud).getTrimmedMessages();
+        List<GuiMessage.Line> visibleMessages = ((MixinChatComponentAccessor) hud).getTrimmedMessages();
         List<GuiMessage> messages = ((MixinChatComponentAccessor) hud).getAllMessages();
         int scrolledLines = ((MixinChatComponentAccessor) hud).getChatScrollbarPos();
 
@@ -94,9 +95,9 @@ public class MixinChatScreen {
         int j = (int)(e / 9.0D + (double) scrolledLines);
         if (j < 0 || j >= visibleMessages.size()) return null;
 
-        GuiMessage chatHudLine = visibleMessages.get(j);
+        GuiMessage.Line chatHudLine = visibleMessages.get(j);
         for (GuiMessage line : messages)
-            if (((GuiMessageAddon) (Object) line).mc$getId() == ((GuiMessageAddon) (Object) chatHudLine).mc$getId() )
+            if (((GuiMessageAddon) (Object) line).mc$getId() == ((GuiMessageLineAddon) (Object) chatHudLine).mc$getParentId())
                 return (GuiMessageAddon) (Object) line;
 
         return null;
@@ -108,10 +109,10 @@ public class MixinChatScreen {
             ChatComponent chat = Minecraft.getInstance().gui.getChat();
             int scrolled = ((MixinChatComponentAccessor) chat).getChatScrollbarPos();
             int id = Integer.parseInt(style.getClickEvent().getValue());
-            List<GuiMessage> messages = ((MixinChatComponentAccessor) chat).getTrimmedMessages();
+            List<GuiMessage.Line> messages = ((MixinChatComponentAccessor) chat).getTrimmedMessages();
             int index = -1;
             for (int i = 0; i < messages.size(); i++)
-                if (((GuiMessageAddon) (Object) messages.get(i)).mc$getId() == id) {
+                if (((GuiMessageLineAddon) (Object) messages.get(i)).mc$getParentId() == id) {
                     index = i;
                     break;
                 }

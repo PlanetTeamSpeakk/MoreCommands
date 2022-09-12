@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.compat.client;
 
 import com.mojang.brigadier.ParseResults;
 import com.ptsmods.morecommands.mixin.compat.compat191.plus.MixinLocalPlayerAccessor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ArgumentSignatures;
@@ -14,7 +15,16 @@ import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 
+import java.util.Objects;
+
 public class ClientCompat191 extends ClientCompat190 {
+
+    @Override
+    public void sendMessageOrCommand(String msg) {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        if (msg.startsWith("/")) player.commandSigned(msg.substring(1), null);
+        else player.chatSigned(msg, null);
+    }
 
     @Override
     public Packet<ServerGamePacketListener> newChatMessagePacket(LocalPlayer player, String message, boolean forceChat) {

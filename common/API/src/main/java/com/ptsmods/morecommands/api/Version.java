@@ -18,6 +18,7 @@ public class Version implements Comparable<Version> {
     public static final Version V1_16 = new Version(16);
     public static final Version V1_17 = new Version(17);
     public static final Version V1_18 = new Version(18);
+    public static final Version V1_18_0 = new Version(18, 0);
     public static final Version V1_18_2 = new Version(18, 2);
     public static final Version V1_19 = new Version(19);
     public static final Version V1_19_0 = new Version(19, 0);

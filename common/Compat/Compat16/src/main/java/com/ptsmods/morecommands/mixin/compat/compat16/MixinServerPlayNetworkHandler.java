@@ -16,8 +16,8 @@ public class MixinServerPlayNetworkHandler {
     @Shadow @Final private MinecraftServer server;
     @Shadow public ServerPlayer player;
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "handleChat(Ljava/lang/String;)V", remap = false)
-    public char method_31286_charAt(String string, int index) {
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/String; charAt(I)C", remap = false), method = "handleChat(Ljava/lang/String;)V")
+    public char handleChat_charAt(String string, int index) {
         return MixinAccessWidener.get().serverPlayNetworkHandler$gameMsgCharAt(ReflectionHelper.cast(this), string, index, player, server);
     }
 }

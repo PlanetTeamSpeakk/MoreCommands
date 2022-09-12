@@ -12,7 +12,8 @@
   ],
   "mixins": [
     "MixinServerGamePacketListenerImpl",
-    "min.MixinCommandManagerCarpetCompat"
+    "min.MixinCommandManagerCarpetCompat",
+    "MixinPlayerList"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -14,10 +14,11 @@ import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -106,7 +107,7 @@ public class SpeedCommand extends Command {
         }
 
         public static Attribute getSwimSpeedAttribute() {
-            return Objects.requireNonNull(Registry.ATTRIBUTE.get(new ResourceLocation("morecommands:swim_speed")));
+            return IMoreCommands.get().getSwimSpeedAttribute().get();
         }
 
         public void setSpeed(ServerPlayer player, double speed) {

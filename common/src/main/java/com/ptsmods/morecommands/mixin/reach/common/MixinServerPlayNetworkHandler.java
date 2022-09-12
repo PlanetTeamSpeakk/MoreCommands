@@ -32,6 +32,13 @@ public class MixinServerPlayNetworkHandler {
     }
 
     @Group(name = "modifyReachDistance", min = 1, max = 1)
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;m_20280_(Lnet/minecraft/world/entity/Entity;)D", remap = false, ordinal = 0),
+            method = "handleInteract")
+    public double onPlayerInteractEntity_squaredDistanceToMoj(ServerPlayer player, Entity entity) {
+        return player.distanceToSqr(entity) < ReachCommand.getReach(player, true) ? 0 : 36;
+    }
+
+    @Group(name = "modifyReachDistance", min = 1, max = 1)
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D", ordinal = 0),
             method = "handleInteract")
     public double onPlayerInteractEntity_squaredDistanceTo(Entity entity, Vec3 vector) {
