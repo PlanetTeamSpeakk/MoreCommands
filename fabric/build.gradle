@@ -40,8 +40,8 @@ dependencies {
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
 
-    project(":common:Compat").subprojects.collect { common(project(path: ":common:Compat:" + it.name,
-            configuration: "namedElements")) { transitive false } }
+    project(":common:Compat").subprojects.collect { if (it.parent == project(":common:Compat"))
+        common(project(path: ":common:Compat:" + it.name, configuration: "namedElements")) { transitive false } else null }
 }
 
 processResources {

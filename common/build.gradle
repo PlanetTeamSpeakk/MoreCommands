@@ -15,8 +15,8 @@ dependencies {
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
     api project(path: ":common:API", configuration: "namedElements")
-    project(":common:Compat").subprojects.collect { implementation project(path: ":common:Compat:" + it.name,
-            configuration: "namedElements") }
+    project(":common:Compat").subprojects.collect {if (it.parent == project(":common:Compat"))
+        implementation project(path: ":common:Compat:" + it.name, configuration: "namedElements") else null }
 }
 
 repositories {

@@ -1,0 +1,23 @@
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.19"
+    mappings loom.officialMojangMappings()
+
+    forge "net.minecraftforge:forge:1.19-41.1.0"
+}
+
+remapJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
+    inputFile.set jar.archiveFile
+    classifier "remap"
+}
+
+jar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
+    from zipTree(project(":common:Compat:Compat190").transformProductionForge.archiveFile)
+    classifier null
+}

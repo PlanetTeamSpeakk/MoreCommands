@@ -49,8 +49,8 @@ dependencies {
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
 
-    project(":common:Compat").subprojects.collect { common(project(path: ":common:Compat:" + it.name,
-            configuration: "namedElements")) { transitive false } }
+    project(":common:Compat").subprojects.collect { if (it.parent != project(":common:Compat")) return null
+        common(project(path: ":common:Compat:" + it.name, configuration: "namedElements")) { transitive false } }
 }
 
 processResources {
@@ -74,7 +74,8 @@ task shadowCompat(type: Jar) {
     archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FORGE.${archiveExtension.get()}"
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from zipTree(remapJar.archiveFile)
-    from { project(":common:Compat").subprojects.collect { zipTree(it.remapJar.archiveFile) } }
+    from { project(":common:Compat").subprojects.collect { if (it.getChildProjects().containsKey("forge"))
+        zipTree(it.getChildProjects().get("forge").remapJar.archiveFile) else null } }
 }
 
 tasks.build.dependsOn(shadowCompat)

@@ -18,12 +18,3 @@ dependencies {
     implementation project(path: ":common:Compat:Compat19", configuration: "namedElements")
     implementation project(path: ":common:Compat:Compat190", configuration: "namedElements")
 }
-
-publishing {
-    publications {
-        mavenCommon(MavenPublication) {
-            artifactId = rootProject.archives_base_name
-            from components.java
-        }
-    }
-}

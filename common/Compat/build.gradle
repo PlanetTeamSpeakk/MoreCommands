@@ -11,11 +11,13 @@ dependencies {
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 }
 
-publishing {
-    publications {
-        mavenCommon(MavenPublication) {
-            artifactId = rootProject.archives_base_name
-            from components.java
-        }
-    }
+subprojects {
+//    loom {
+//        setGenerateSrgTiny(true)
+//    }
+//
+//    task remapJarSrg(type: RemapJarTask) {
+//        inputFile = jar.archiveFile
+//        targetNamespace = 'srg'
+//    }
 }

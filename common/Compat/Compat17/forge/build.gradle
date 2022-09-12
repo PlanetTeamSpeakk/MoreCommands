@@ -1,0 +1,27 @@
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.17.1"
+    mappings loom.officialMojangMappings()
+
+    forge "net.minecraftforge:forge:1.17.1-37.1.1"
+}
+
+remapJar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
+    inputFile.set jar.archiveFile
+    classifier "remap"
+}
+
+jar {
+    destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
+    // Forge compiles differently on 1.16, so we cannot make a forge project in there as
+    // the compiled code would be unusable.
+    // However, we still need Compat16 and ClientCompat16 as they're the basis of all compat classes.
+    from zipTree(project(":common:Compat:Compat16").transformProductionForge.archiveFile)
+    from zipTree(project(":common:Compat:Compat17").transformProductionForge.archiveFile)
+    classifier null
+}
