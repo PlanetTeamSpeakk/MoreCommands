@@ -1,9 +1,9 @@
 {
   "required": true,
-  "package": "com.ptsmods.morecommands.forge.mixin",
+  "package": "com.ptsmods.morecommands.mixin.forge",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "com.ptsmods.morecommands.mixin.forge.MixinCreativeInventoryScreen"
+    "MixinCreativeInventoryScreen"
   ],
   "mixins": [
   ],
