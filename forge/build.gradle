@@ -41,9 +41,9 @@ dependencies {
     modImplementation "com.ptsmods:devlogin:3.1"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common:API", configuration: "transformProductionFabric")) { transitive false }
+    shadowCommon(project(path: ":common:API", configuration: "transformProductionForge")) { transitive false }
 
     project(":common:Compat").subprojects.collect { if (it.parent != project(":common:Compat")) return null
         common(project(path: ":common:Compat:" + it.name, configuration: "namedElements")) { transitive false } }
