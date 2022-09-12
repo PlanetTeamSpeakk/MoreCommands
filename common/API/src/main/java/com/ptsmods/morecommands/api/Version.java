@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import net.minecraft.SharedConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +26,8 @@ public class Version implements Comparable<Version> {
 
     static {
         current = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
-                Version.class.getResourceAsStream("/version.json"))), JsonObject.class).get("release_target").getAsString());
+                SharedConstants.class.getClassLoader().getResourceAsStream("version.json"))), JsonObject.class)
+                .get("release_target").getAsString());
     }
 
     public final int major, minor;
