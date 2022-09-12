@@ -63,6 +63,7 @@ shadowJar {
 task shadowCompat(type: Jar) {
     archiveFileName = "${archivesBaseName}-${archiveVersion.get()}_${rootProject.minecraft_version_least}-${rootProject.minecraft_version}_FABRIC.${archiveExtension.get()}"
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    manifest.from jar.manifest
     from zipTree(remapJar.archiveFile)
     from { project(":common:Compat").subprojects.collect { zipTree(it.remapJar.archiveFile) } }
 }
