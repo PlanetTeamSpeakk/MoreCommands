@@ -21,7 +21,10 @@ import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.gui.infohud.InfoHud;
-import com.ptsmods.morecommands.miscellaneous.*;
+import com.ptsmods.morecommands.miscellaneous.Chair;
+import com.ptsmods.morecommands.miscellaneous.ClientCommand;
+import com.ptsmods.morecommands.miscellaneous.Command;
+import com.ptsmods.morecommands.miscellaneous.VexParticle;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinParticleManagerAccessor;
 import com.ptsmods.morecommands.util.DeathTracker;
 import dev.architectury.event.EventResult;
@@ -213,7 +216,6 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         });
 
         ClientEntityEvent.ENTITY_UNLOAD.register((world, entity) -> coolKids.remove(entity));
-
 
         Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> nodes = new LinkedHashMap<>();
         BiConsumer<ClientCommand, CommandDispatcher<ClientSuggestionProvider>> registerer = (cmd, dispatcher) -> {

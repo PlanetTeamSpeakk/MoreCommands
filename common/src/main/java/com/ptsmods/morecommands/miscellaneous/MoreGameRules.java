@@ -62,7 +62,7 @@ public class MoreGameRules implements IMoreGameRules {
     private GameRules.Key<GameRules.BooleanValue> createBooleanRule(String name, GameRules.Category category, boolean defaultValue, boolean doPermCheck) {
         GameRules.Key<GameRules.BooleanValue> key = GameRules.register(name, category, GameRules.BooleanValue.create(defaultValue));
         if (doPermCheck) {
-            pendingPermChecks.add(key); // TODO forge perms
+            pendingPermChecks.add(key);
             MoreCommands.registerPermission("morecommands.gamerule." + key.getId(), true);
         }
 

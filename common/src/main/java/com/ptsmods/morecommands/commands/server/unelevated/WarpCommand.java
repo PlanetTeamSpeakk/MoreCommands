@@ -38,8 +38,6 @@ public class WarpCommand extends Command {
     private final Set<UUID> dirty = new HashSet<>();
 
     public void init(boolean serverOnly, MinecraftServer server) {
-        // TODO migrate to database
-
         File oldDir = MoreCommandsArch.getConfigDirectory().resolve("warps/").toFile();
         if (oldDir.exists()) {
             for (File f : oldDir.listFiles().or(new File[0]))
