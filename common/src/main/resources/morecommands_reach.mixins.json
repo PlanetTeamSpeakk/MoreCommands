@@ -16,8 +16,8 @@
     "common.MixinLootableContainerBlockEntity",
     "common.MixinReachEntityAttributes",
     "common.MixinScreenHandler",
-    "common.MixinServerPlayerInteractionManager",
-    "common.MixinServerPlayNetworkHandler"
+    "common.MixinServerPlayerGameMode",
+    "common.MixinServerGamePacketListenerImpl"
   ],
   "injectors": {
 	"defaultRequire": 1

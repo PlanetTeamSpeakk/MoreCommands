@@ -42,6 +42,7 @@ public class ReachCommand extends Command {
                             Objects.requireNonNull(player.getAttribute(getReachAttribute())).setBaseValue(reach);
                             addModifier("pehkui:reach", player, reach);
                             addModifier("reach-entity-attributes:reach", player, reach);
+                            addModifier("forge:reach_distance", player, reach);
                             sendMsg(ctx, "Your reach has been set from " + SF + oldReach + DF + " to " + SF + reach + DF + ".");
                             return (int) reach;
                         })));

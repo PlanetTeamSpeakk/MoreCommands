@@ -1,9 +1,10 @@
 package com.ptsmods.morecommands.api.util.text;
 
 import com.ptsmods.morecommands.api.util.compat.Compat;
-import java.util.Objects;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+
+import java.util.Objects;
 
 public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBuilder> {
 
@@ -89,6 +90,10 @@ public interface TranslatableTextBuilder extends TextBuilder<TranslatableTextBui
             return this;
         }
 
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
 
         @Override
         public String getKey() {

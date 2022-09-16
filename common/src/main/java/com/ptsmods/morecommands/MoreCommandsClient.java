@@ -79,6 +79,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -215,21 +216,18 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
 
         Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> nodes = new LinkedHashMap<>();
-        class CommandRegisterer {
-            void registerCommand(ClientCommand cmd, CommandDispatcher<ClientSuggestionProvider> dispatcher) {
-                try {
-                    CommandDispatcher<ClientSuggestionProvider> tempDispatcher = new CommandDispatcher<>();
-                    cmd.cRegister(tempDispatcher);
+        BiConsumer<ClientCommand, CommandDispatcher<ClientSuggestionProvider>> registerer = (cmd, dispatcher) -> {
+            try {
+                CommandDispatcher<ClientSuggestionProvider> tempDispatcher = new CommandDispatcher<>();
+                cmd.cRegister(tempDispatcher);
 
-                    for (CommandNode<ClientSuggestionProvider> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
-                    nodes.put(cmd, tempDispatcher.getRoot().getChildren());
-                } catch (Exception e) {
-                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-                }
+                for (CommandNode<ClientSuggestionProvider> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                nodes.put(cmd, tempDispatcher.getRoot().getChildren());
+            } catch (Exception e) {
+                LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
             }
-        }
+        };
 
-        CommandRegisterer registerer = new CommandRegisterer();
         List<? extends ClientCommand> clientCommands = MoreCommands.getCommandClasses("client", ClientCommand.class).stream()
                 .map(MoreCommands::getInstance)
                 .filter(Objects::nonNull)
@@ -238,7 +236,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
             clientCommands
                     .stream()
                     .filter(cmd -> !cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
+                    .forEach(cmd -> registerer.accept(cmd, dispatcher));
 
             MoreCommandsClient.nodes.putAll(nodes);
             nodes.clear();
@@ -246,7 +244,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
             clientCommands
                     .stream()
                     .filter(Command::doLateInit)
-                    .forEach(cmd -> registerer.registerCommand(cmd, dispatcher));
+                    .forEach(cmd -> registerer.accept(cmd, dispatcher));
 
             MoreCommandsClient.nodes.putAll(nodes);
         });

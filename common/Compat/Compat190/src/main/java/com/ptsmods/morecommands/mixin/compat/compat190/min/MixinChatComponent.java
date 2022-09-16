@@ -18,9 +18,11 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +34,7 @@ import java.util.Objects;
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent implements ChatComponentAddon {
     @Unique
-    private int id = 0;
+    private int nextId = 0;
     @Unique private static final DateTimeFormatter twentyfour = new DateTimeFormatterBuilder()
             .appendPattern("HH")
             .appendLiteral(':')
@@ -65,6 +67,8 @@ public abstract class MixinChatComponent implements ChatComponentAddon {
 
     @Shadow protected abstract void removeById(int i);
 
+    @Shadow protected abstract void addMessage(Component component, int i);
+
     @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;)V", cancellable = true)
     public void addMessage(Component message, CallbackInfo cbi) {
         if (ClientOption.getBoolean("ignoreEmptyMsgs") && Objects.requireNonNull(IMoreCommands.get()
@@ -72,11 +76,15 @@ public abstract class MixinChatComponent implements ChatComponentAddon {
             cbi.cancel();
     }
 
-    @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;I)V"), method = "addMessage(Lnet/minecraft/network/chat/Component;)V")
-    public void addMessage_addMessage(Args args) {
-        TextBuilder<?> builder = Compat.get().builderFromText(args.get(0));
-        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral())) args.set(0, EmptyTextBuilder.empty());
-        args.set(1, id++);
+    // @ModifyArgs does not work on Forge as it causes a ClassNotFoundError regarding the synthetic Args$1 class.
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;I)V"),
+            method = "addMessage(Lnet/minecraft/network/chat/Component;)V")
+    public void addMessage_addMessage(ChatComponent chatComponent, Component message, int id) {
+        TextBuilder<?> builder = Compat.get().builderFromText(message);
+        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral()))
+            message = EmptyTextBuilder.empty();
+
+        addMessage(message, nextId++);
     }
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;IIZ)V"), method = "addMessage(Lnet/minecraft/network/chat/Component;I)V")

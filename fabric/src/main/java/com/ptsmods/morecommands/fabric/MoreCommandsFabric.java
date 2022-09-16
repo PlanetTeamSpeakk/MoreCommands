@@ -9,6 +9,7 @@ public class MoreCommandsFabric implements ModInitializer, ClientModInitializer 
     @Override
     public void onInitialize() {
         MoreCommands.init();
+        MoreCommands.registerAttributes(true);
     }
 
     @Override

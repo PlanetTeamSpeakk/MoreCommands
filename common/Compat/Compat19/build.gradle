@@ -8,7 +8,7 @@ dependencies {
 
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    modApi "dev.architectury:architectury:5.12.44"
+    modApi "dev.architectury:architectury:5.12.45"
 
     implementation project(path: ":common:API", configuration: "namedElements")
     implementation project(path: ":common:Compat:Compat16", configuration: "namedElements")

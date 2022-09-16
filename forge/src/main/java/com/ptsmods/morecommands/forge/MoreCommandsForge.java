@@ -3,12 +3,16 @@ package com.ptsmods.morecommands.forge;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import dev.architectury.platform.forge.EventBuses;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.server.permission.events.PermissionGatherEvent;
 import net.minecraftforge.server.permission.nodes.PermissionNode;
 import net.minecraftforge.server.permission.nodes.PermissionTypes;
@@ -22,9 +26,9 @@ public class MoreCommandsForge {
 
     public MoreCommandsForge() {
         EventBuses.registerModEventBus(MoreCommands.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
-        MoreCommands.init();
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
-        MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(this::onPermissionGather);
+        MoreCommands.init();
     }
 
     @SubscribeEvent
@@ -32,17 +36,28 @@ public class MoreCommandsForge {
         MoreCommandsClient.init();
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onRegister(RegisterEvent event) {
+        if (event.getRegistryKey() != Registry.ATTRIBUTE_REGISTRY) return;
+        MoreCommands.registerAttributes(false);
+    }
+
+    public static PermissionNode<Boolean> getPermissionNode(String permission) {
+        return permissionNodes.get(permission);
+    }
+
     public void onPermissionGather(PermissionGatherEvent.Nodes event) {
         MoreCommands.getPermissions().forEach((permission, defaultValue) -> {
-            PermissionNode<Boolean> permissionNode = new PermissionNode<>(new ResourceLocation("morecommands:" + (permission.startsWith("morecommands.") ? permission.substring("morecommands.".length()) : permission)),
+            PermissionNode<Boolean> permissionNode = new PermissionNode<>(new ResourceLocation("morecommands:" +
+                    (permission.startsWith("morecommands.") ? permission.substring("morecommands.".length()) : permission)),
                     PermissionTypes.BOOLEAN, (player, uuid, permissionDynamicContexts) -> defaultValue);
             event.addNodes(permissionNode);
             permissionNodes.put(permission, permissionNode);
         });
     }
 
-    public static PermissionNode<Boolean> getPermissionNode(String permission) {
-        return permissionNodes.get(permission);
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
+        MoreCommands.registerAttributes(true);
     }
 }

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.server.permission.PermissionAPI;
 
@@ -39,9 +40,11 @@ public class MoreCommandsArchImpl {
     }
 
     public static Path getJar() {
-        return null;
-//        ModList.get().getModContainerById("morecommands")
-//                .orElseThrow(NullPointerException::new)
-//                .getModInfo().;// TODO
+        return ModList.get().getModContainerById("morecommands")
+                .orElseThrow(NullPointerException::new)
+                .getModInfo()
+                .getOwningFile()
+                .getFile()
+                .getFilePath();
     }
 }

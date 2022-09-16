@@ -15,7 +15,6 @@
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",
-    "plus.MixinCommandManager",
     "plus.MixinEnchantmentScreenHandler",
     "plus.MixinSnowBlock",
     "plus.MixinBlock"

@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.compat;
 
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.MixinAccessWidener;
 import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
@@ -17,6 +18,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
@@ -27,6 +29,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,6 +39,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Compat19 extends Compat182 {
+
+    @Override
+    public boolean isRemoved(Entity entity) {
+        return entity.isRemoved(); // Method did not change or move, but since 1.19, srg calls it m_213877_ instead of m_146910_.
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -48,7 +56,8 @@ public class Compat19 extends Compat182 {
 
     @Override
     public BlockStateArgument createBlockStateArgumentType() {
-        return BlockStateArgument.block((CommandBuildContext) CommandRegistryAccessHolder.commandRegistryAccess);
+        return BlockStateArgument.block(new CommandBuildContext(IMoreCommands.get().getServer() == null ?
+                RegistryAccess.builtinCopy().freeze() : IMoreCommands.get().getServer().registryAccess()));
     }
 
     @Override

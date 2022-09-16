@@ -17,9 +17,11 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -74,23 +76,24 @@ public abstract class MixinChatComponent implements ChatComponentAddon {
         MessageHistory.putMessage(msg);
     }
 
-    @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;" +
-            "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V"),
+    // @ModifyArgs does not work on Forge as it causes a ClassNotFoundError regarding the synthetic Args$1 class.
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage" +
+            "(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V"),
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V")
-    public void addMessage_addMessage(Args args) {
-        TextBuilder<?> builder = Compat.get().builderFromText(args.get(0));
-        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral())) {
-            args.set(0, EmptyTextBuilder.empty());
-            args.set(1, MessageSignature.EMPTY);
-        } else if (ClientOption.getBoolean("showMsgTime"))
-            args.set(0, EmptyTextBuilder.builder()
+    public void addMessage_addMessage(ChatComponent chatComponent, Component message, MessageSignature signature, int timeAdded, GuiMessageTag tag, boolean b) {
+        TextBuilder<?> builder = Compat.get().builderFromText(message);
+        if (builder instanceof LiteralTextBuilder && "\u00A0".equals(((LiteralTextBuilder) builder).getLiteral()))
+            addMessage(EmptyTextBuilder.empty(), MessageSignature.EMPTY, timeAdded, tag, b);
+        else if (ClientOption.getBoolean("showMsgTime"))
+            addMessage(EmptyTextBuilder.builder()
                     .append(LiteralTextBuilder.builder("[" + (
-                            ClientOption.getBoolean("use12HourClock") ? ClientOption.getBoolean("showSeconds") ? twelveSec : twelve :
-                                    ClientOption.getBoolean("showSeconds") ? twentyfourSec : twentyfour)
+                                    ClientOption.getBoolean("use12HourClock") ? ClientOption.getBoolean("showSeconds") ? twelveSec : twelve :
+                                            ClientOption.getBoolean("showSeconds") ? twentyfourSec : twentyfour)
                                     .format(LocalDateTime.now()) + "] ")
                             .withStyle(style -> style.withColor(IMoreCommands.get().getSecondaryFormatting())))
                     .append(builder)
-                    .build());
+                    .build(), signature, timeAdded, tag, b);
+        else addMessage(message, signature, timeAdded, tag, b);
     }
 
     // Without this redirect the while loop would have no end.

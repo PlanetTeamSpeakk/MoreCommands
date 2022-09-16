@@ -39,7 +39,6 @@ import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.CreativeTabRegistry;
-import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.netty.buffer.Unpooled;
@@ -76,7 +75,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BlockItem;
@@ -248,22 +250,6 @@ public enum MoreCommands implements IMoreCommands {
             itemRegistry.register();
             attributeRegistry.register();
 
-            EntityAttributeRegistry.register(() -> EntityType.PLAYER, () -> {
-                // For some reason, the builder returned here overrides the attributes already set
-                // which is a huge problem as that includes stuff like generic max health.
-                // So we copy the old attributes using a pair of accessors.
-                Map<Attribute, AttributeInstance> attributes = Optional.ofNullable(DefaultAttributes.getSupplier(EntityType.PLAYER))
-                        .map(sup -> ((MixinAttributeSupplierAccessor) sup).getInstances())
-                        .orElse(Collections.emptyMap());
-
-                AttributeSupplier.Builder builder = AttributeSupplier.builder()
-                        .add(reachAttribute.get())
-                        .add(swimSpeedAttribute.get());
-                ((MixinAttributeSupplierBuilderAccessor) builder).getBuilder().putAll(attributes);
-
-                return builder;
-            });
-
             PlayerEvent.PLAYER_JOIN.register(player -> {
                 if (NetworkManager.canPlayerReceive(player, new ResourceLocation("morecommands:formatting_update"))) sendFormattingUpdates(player);
             });
@@ -315,23 +301,30 @@ public enum MoreCommands implements IMoreCommands {
         Set<ServerPlayer> howlingPlayers = new HashSet<>();
         TickEvent.SERVER_PRE.register(server -> {
             // This does absolutely nothing whatsoever, just pass along. :)
-            for (ServerPlayer p : server.getPlayerList().getPlayers())
-                if (p.isShiftKeyDown()) {
-                    float pitch = Mth.wrapDegrees(((MixinEntityAccessor) p).getXRot_());
-                    float yaw = Mth.wrapDegrees(((MixinEntityAccessor) p).getYRot_());
-                    double moonWidth = Math.PI / 32 * -pitch;
-                    long dayTime = p.getLevel().getGameTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-                    if (!howlingPlayers.contains(p) && getMoonPhase(p.getLevel().dayTime()) == 0 && dayTime > 12000 && pitch < 0 && Math.abs(yaw) >= (90 - moonWidth) && Math.abs(yaw) <= (90 + moonWidth)) {
-                        double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
-                        if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
-                            p.getLevel().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1f, 1f);
-                            howlingPlayers.add(p);
-                        }
-                    }
-                } else howlingPlayers.remove(p);
+            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                if (!p.isShiftKeyDown()) {
+                    howlingPlayers.remove(p);
+                    continue;
+                }
+
+                float pitch = Mth.wrapDegrees(((MixinEntityAccessor) p).getXRot_());
+                float yaw = Mth.wrapDegrees(((MixinEntityAccessor) p).getYRot_());
+                double moonWidth = Math.PI / 32 * -pitch;
+                long dayTime = p.getLevel().getGameTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
+                if (howlingPlayers.contains(p) || getMoonPhase(p.getLevel().dayTime()) != 0 || dayTime <= 12000 || !(pitch < 0) ||
+                        !(Math.abs(yaw) >= (90 - moonWidth)) || !(Math.abs(yaw) <= (90 + moonWidth)))
+                    continue;
+
+                double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
+                if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
+                    p.getLevel().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1f, 1f);
+                    howlingPlayers.add(p);
+                }
+            }
         });
 
         if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
+            // TODO change this
             ReflectionHelper.setFieldValue(Arrays.stream(ChatDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
                             new NoSuchElementException("Could not find default decorator field of MessageDecorator class.")),
                     null, (ChatDecorator) (player, text) -> {
@@ -1295,7 +1288,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static void registerPermission(String permission, boolean defaultValue) {
-        permissions.put(permission, defaultValue);
+        permissions.put(permission.toLowerCase(Locale.ROOT), defaultValue);
     }
 
     private static Object determineCurrentCompat(boolean client) {
@@ -1339,5 +1332,25 @@ public enum MoreCommands implements IMoreCommands {
     public static Entity getTargetedEntity(Player entity) {
         int target = targetedEntities.getOrDefault(entity, -1);
         return entity.getLevel().getEntity(target);
+    }
+
+    public static void registerAttributes(boolean addToSupplier) {
+        Attribute reach = reachAttribute.get();
+        Attribute swimSpeed = swimSpeedAttribute.get();
+        if (!addToSupplier) return;
+
+        MixinAttributeSupplierAccessor supplierAccessor = (MixinAttributeSupplierAccessor) DefaultAttributes.getSupplier(EntityType.PLAYER);
+        Map<Attribute, AttributeInstance> instances = new LinkedHashMap<>(supplierAccessor.getInstances());
+
+
+        instances.put(reach, new AttributeInstance(reach, i -> {
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + Registry.ATTRIBUTE.getKey(reach));
+        }));
+
+        instances.put(swimSpeed, new AttributeInstance(swimSpeed, i -> {
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + Registry.ATTRIBUTE.getKey(swimSpeed));
+        }));
+
+        supplierAccessor.setInstances(ImmutableMap.copyOf(instances));
     }
 }

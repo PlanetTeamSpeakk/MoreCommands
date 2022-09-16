@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.reach;
 
 import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
+import dev.architectury.platform.Platform;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -38,6 +39,7 @@ public class ConfigPlugin implements IMixinConfigPlugin {
         if (pehkuiLoaded && (mixinClassName.contains("Furnace") || mixinClassName.contains("BrewingStand") || mixinClassName.contains("LootableContainer") ||
                 mixinClassName.contains("ServerPlayNetworkHandler") || mixinClassName.contains("ServerPlayerInteractionManager"))) return false;
         if (reachAttributesLoaded && incompatibleMixins.contains(mixinClassName.substring(mixinClassName.lastIndexOf('.') + 1))) return false;
+        if (Platform.isForge() && (mixinClassName.contains("MixinServerPlayerGameMode") || mixinClassName.contains("MixinServerGamePacketListenerImpl"))) return false;
         return reachAttributesLoaded || !mixinClassName.endsWith("MixinReachEntityAttributes");
     }
 

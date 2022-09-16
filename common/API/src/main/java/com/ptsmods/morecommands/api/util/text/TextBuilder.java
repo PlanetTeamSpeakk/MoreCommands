@@ -42,6 +42,13 @@ public interface TextBuilder<T extends TextBuilder<T>> {
 
     T withChildren(Collection<TextBuilder<?>> builders);
 
+    /**
+     * @return Whether this builder either is an instance of {@link EmptyTextBuilder}
+     * or {@link LiteralTextBuilder} with an empty literal, and has no children.
+     * Always returns {@code false} for {@link TranslatableTextBuilder}.
+     */
+    boolean isEmpty();
+
     T copy();
 
     T upcast();

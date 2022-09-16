@@ -72,6 +72,11 @@ public interface LiteralTextBuilder extends TextBuilder<LiteralTextBuilder> {
         }
 
         @Override
+        public boolean isEmpty() {
+            return literal.isEmpty() && getChildren().isEmpty();
+        }
+
+        @Override
         public final LiteralTextBuilder upcast() {
             return this;
         }

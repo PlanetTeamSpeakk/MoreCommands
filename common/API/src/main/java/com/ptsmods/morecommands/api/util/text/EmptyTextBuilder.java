@@ -44,6 +44,11 @@ public interface EmptyTextBuilder extends TextBuilder<EmptyTextBuilder> {
         }
 
         @Override
+        public boolean isEmpty() {
+            return getChildren().isEmpty();
+        }
+
+        @Override
         public EmptyTextBuilder upcast() {
             return this;
         }

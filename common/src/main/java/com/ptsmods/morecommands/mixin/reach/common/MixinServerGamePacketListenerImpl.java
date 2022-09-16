@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class MixinServerPlayNetworkHandler {
+public class MixinServerGamePacketListenerImpl {
     @Shadow public ServerPlayer player;
 
     @ModifyConstant(method = "handleUseItemOn", constant = @Constant(doubleValue = 64.0D))
@@ -23,7 +23,6 @@ public class MixinServerPlayNetworkHandler {
         return instance.distanceToSqr(vec) < ReachCommand.getReach(player, true) ? 0 : 65;
     }
 
-    // TODO
     @Group(name = "modifyReachDistance", min = 1, max = 1)
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/class_3222;method_5858(Lnet/minecraft/class_1297;)D", remap = false, ordinal = 0),
             method = "handleInteract")

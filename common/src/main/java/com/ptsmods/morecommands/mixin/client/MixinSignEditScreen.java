@@ -7,20 +7,19 @@ import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 
 @Mixin(SignEditScreen.class)
 public class MixinSignEditScreen {
@@ -31,10 +30,12 @@ public class MixinSignEditScreen {
     private @Unique String lastContent;
     private @Unique String lastContentTranslated;
 
-    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Ljava/lang/String;)I"),
-            method = {"method_27611", "m_169823_"}, require = 1, remap = false)
-    private String init_getWidth_s(String s) {
-        return ClientOptions.Tweaks.noSignLimit.getValue() ? ChatFormatting.stripFormatting(Util.translateFormats(s)) : s; // A limit of 384 characters is hard coded in UpdateSignC2SPacket.
+    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/font/TextFieldHelper;<init>" +
+            "(Ljava/util/function/Supplier;Ljava/util/function/Consumer;Ljava/util/function/Supplier;Ljava/util/function/Consumer;Ljava/util/function/Predicate;)V"),
+            method = "init")
+    private Predicate<String> init_new_TextFieldHelper(Predicate<String> predicate) {
+        return text -> Minecraft.getInstance().font.width(ClientOptions.Tweaks.noSignLimit.getValue() ?
+                Objects.requireNonNull(ChatFormatting.stripFormatting(text)) : text) <= 90;
     }
 
     @Inject(at = @At("RETURN"), method = "init()V")
