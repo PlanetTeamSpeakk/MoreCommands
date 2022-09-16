@@ -63,7 +63,8 @@
     "MixinEntitySelector",
     "MixinEntitySelectorReader",
     "accessor.MixinAttributeSupplierAccessor",
-    "accessor.MixinAttributeSupplierBuilderAccessor"
+    "accessor.MixinAttributeSupplierBuilderAccessor",
+    "MixinChatFormatting"
   ],
   "injectors": {
 	"defaultRequire": 1
