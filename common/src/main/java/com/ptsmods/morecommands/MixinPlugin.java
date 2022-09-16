@@ -40,7 +40,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        if (mixinClassName.endsWith("MixinFormatting"))
+        if (mixinClassName.endsWith("MixinChatFormatting"))
             EnumExtender.makeEnumExtender(new EnumAdder(targetClassName, String.class, char.class, boolean.class)
                     .addEnum("RAINBOW", "RAINBOW", 'u', true)).accept(targetClass);
         else if (mixinClassName.endsWith("MixinClickEventAction"))
