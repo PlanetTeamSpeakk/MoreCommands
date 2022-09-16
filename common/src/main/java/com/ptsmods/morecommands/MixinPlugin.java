@@ -3,6 +3,7 @@ package com.ptsmods.morecommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.lib.com.chocohead.mm.EnumExtender;
 import com.ptsmods.morecommands.lib.com.chocohead.mm.api.EnumAdder;
+import dev.architectury.platform.Platform;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -22,10 +23,12 @@ public class MixinPlugin implements IMixinConfigPlugin {
         return null;
     }
 
+    @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (originsLoaded && mixinClassName.contains("OriginsCompat")) return false;
         if (tweakerooLoaded && mixinClassName.contains("TweakerooCompat")) return false;
+        if (Platform.isForge() && mixinClassName.contains("MixinFlowingFluid")) return false;
 
         return true;
     }

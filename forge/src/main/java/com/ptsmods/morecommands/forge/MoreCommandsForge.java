@@ -2,11 +2,15 @@ package com.ptsmods.morecommands.forge;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +32,7 @@ public class MoreCommandsForge {
         EventBuses.registerModEventBus(MoreCommands.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
         MinecraftForge.EVENT_BUS.addListener(this::onPermissionGather);
+        MinecraftForge.EVENT_BUS.addListener(this::onCreateFluidSource);
         MoreCommands.init();
     }
 
@@ -54,6 +59,11 @@ public class MoreCommandsForge {
             event.addNodes(permissionNode);
             permissionNodes.put(permission, permissionNode);
         });
+    }
+
+    public void onCreateFluidSource(BlockEvent.CreateFluidSourceEvent event) {
+        if (event.getLevel() instanceof Level && ((Level) event.getLevel()).getGameRules().getBoolean(MoreGameRules.get().fluidsInfiniteRule()))
+            event.setResult(Event.Result.ALLOW);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

@@ -15,7 +15,7 @@
     "MixinEntity",
     "MixinEntityTrackerEntry",
     "MixinExplosion",
-    "MixinFlowableFluid",
+    "MixinFlowingFluid",
     "MixinFluidBlock",
     "MixinGoalSelector",
     "MixinHopperBlockEntity",
