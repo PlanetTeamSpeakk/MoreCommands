@@ -51,7 +51,7 @@ public class InfoHud extends GuiComponent {
     private static final List<String> lines = new ArrayList<>();
     private static List<Tuple<Integer, String>> parsedLines = Collections.emptyList();
     private static HitResult result;
-    private static long lastRead = 0;
+    private static long lastRead = -1;
     private static int width = 0, height = 0;
     private static int decimals = 2;
 
@@ -191,10 +191,11 @@ public class InfoHud extends GuiComponent {
         lines.add("{DF}Facing: {SF}{facing}");
         lines.add("{DF}Biome: {SF}{biome}");
         lines.add("{DF}Speed: {SF}{avgSpeed}");
+
         try {
             saveLines();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            MoreCommandsClient.LOG.catching(e);
         }
     }
 
@@ -205,6 +206,7 @@ public class InfoHud extends GuiComponent {
             lines.clear();
             lines.addAll(Files.readAllLines(file.toPath()));
         }
+
         if (lines.isEmpty()) setupDefaultLines();
     }
 
