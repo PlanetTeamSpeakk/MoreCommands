@@ -5,20 +5,20 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.gui.infohud.variables.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinMinecraftClientAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Registry;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -49,7 +49,7 @@ public class InfoHud extends GuiComponent {
     private static final Map<String, Object> variableValues = new HashMap<>();
     private static final Minecraft client = Minecraft.getInstance();
     private static final List<String> lines = new ArrayList<>();
-    private static List<Tuple<Integer, String>> parsedLines = Collections.emptyList();
+    private static List<IntObjectPair<String>> parsedLines = Collections.emptyList();
     private static HitResult result;
     private static long lastRead = -1;
     private static int width = 0, height = 0;
@@ -75,16 +75,16 @@ public class InfoHud extends GuiComponent {
             }
 
             for (int i = 0; i < parsedLines.size(); i++) {
-                Tuple<Integer, String> line = parsedLines.get(i);
-                if (line.getA() == 0) continue;
-                boolean topPadding = i == 0 || parsedLines.get(i - 1).getA() == 0; // First line or above line is empty.
+                IntObjectPair<String> line = parsedLines.get(i);
+                if (line.leftInt() == 0) continue;
+                boolean topPadding = i == 0 || parsedLines.get(i - 1).leftInt() == 0; // First line or above line is empty.
 
-                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.getA() + 2, (i + 1) * 10, c);
+                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.leftInt() + 2, (i + 1) * 10, c);
                 if (topPadding) continue;
 
-                int prevWidth = parsedLines.get(i - 1).getA();
-                if (prevWidth < line.getA())
-                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.getA() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
+                int prevWidth = parsedLines.get(i - 1).leftInt();
+                if (prevWidth < line.leftInt())
+                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.leftInt() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
             }
         }));
 
@@ -156,7 +156,7 @@ public class InfoHud extends GuiComponent {
 
         parsedLines = parseLines();
         width = parsedLines.stream()
-                .mapToInt(Tuple::getA)
+                .mapToInt(IntObjectPair::leftInt)
                 .max()
                 .orElse(0);
         height = parsedLines.size() * 10;
@@ -168,8 +168,8 @@ public class InfoHud extends GuiComponent {
         });
 
         int row = 0;
-        for (Tuple<Integer, String> line : parsedLines)
-            drawString(matrices, line.getB(), row++);
+        for (IntObjectPair<String> line : parsedLines)
+            drawString(matrices, line.right(), row++);
 
         matrices.popPose();
     }
@@ -219,10 +219,10 @@ public class InfoHud extends GuiComponent {
         }
     }
 
-    private List<Tuple<Integer, String>> parseLines() {
+    private List<IntObjectPair<String>> parseLines() {
         variableValues.clear();
 
-        List<Tuple<Integer, String>> output = new ArrayList<>();
+        List<IntObjectPair<String>> output = new ArrayList<>();
         for (String line : lines) {
             Matcher varMatcher = varPattern.matcher(line);
             if (varMatcher.matches()) {
@@ -250,7 +250,7 @@ public class InfoHud extends GuiComponent {
 
                 String parsedLine = s.toString();
                 line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // Handling comments in the config, this should be exactly the same as how
-                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(new Tuple<>(client.font.width(line), line)); // normal, non-multiline Java comments work.
+                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(IntObjectPair.of(client.font.width(line), line)); // normal, non-multiline Java comments work.
             }
         }
         return output;
