@@ -148,22 +148,34 @@ public enum MoreCommands implements IMoreCommands {
     private static final Executor executor = Executors.newCachedThreadPool();
     private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
     private static final Map<String, Boolean> permissions = new LinkedHashMap<>();
-    private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    private static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
     private static RegistrySupplier<SoundEvent> copySound, eeSound;
     private static RegistrySupplier<Attribute> reachAttribute, swimSpeedAttribute;
 
     static {
-        File serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt").toFile();
+        Path serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt");
         boolean serverOnly = false;
-        if (serverOnlyFile.exists()) {
+        if (Files.exists(serverOnlyFile)) {
             Properties props = new Properties();
             try {
-                props.load(new FileReader(serverOnlyFile));
+                props.load(Files.newBufferedReader(serverOnlyFile));
                 serverOnly = Boolean.parseBoolean(props.getProperty("serverOnly", "false"));
             } catch (IOException e) {
                 LOG.error("Could not read server-only state.", e);
+            }
+        } else {
+            Properties props = new Properties();
+            props.setProperty("serverOnly", "false");
+
+            try {
+                PrintWriter writer = new PrintWriter(Files.newOutputStream(serverOnlyFile));
+                props.store(writer, "https://morecommands.ptsmods.com/server-only");
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                LOG.error("Could not save SERVERONLY.txt", e);
             }
         }
         SERVER_ONLY = serverOnly;
