@@ -112,6 +112,7 @@ public class InfoHud extends GuiComponent {
                 .getKey(Compat.get().getBiome(ctx.getWorld(), ctx.getPlayer().blockPosition()))));
         keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelData().getDifficulty().name());
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
+        keysBuilder.put("speed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("avgSpeed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("toggleKey", ctx -> IMoreCommands.get().textToString(MoreCommandsClient.toggleInfoHudBinding.getTranslatedKeyMessage(), null, true));
         keysBuilder.put("configFile", ctx -> file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
@@ -269,14 +270,16 @@ public class InfoHud extends GuiComponent {
         try {
             output = String.valueOf(keys.get(key).apply(ctx));
         } catch (Exception e) {
-            if (e.getStackTrace().length != 0) {
-                StackTraceElement element = e.getStackTrace()[0];
-                if (!printedExceptions.contains(element)) {
-                    MoreCommands.LOG.error("An error occurred while translating key " + key, e);
-                    printedExceptions.add(element);
-                }
+            if (e.getStackTrace().length == 0) {
+                return "ERROR";
             }
-            output = "ERROR";
+
+            StackTraceElement element = e.getStackTrace()[0];
+            if (!printedExceptions.contains(element)) {
+                MoreCommands.LOG.error("An error occurred while translating key " + key, e);
+                printedExceptions.add(element);
+            }
+            return "ERROR";
         }
 
         return output;
