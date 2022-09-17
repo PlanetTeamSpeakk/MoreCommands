@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
+import com.google.common.base.Suppliers;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -53,47 +54,47 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @ExtensionMethod(ObjectExtensions.class)
 public class PowerToolCommand extends Command {
     private static final SimpleCommandExceptionType TOO_MANY_COMMANDS = new SimpleCommandExceptionType(LiteralTextBuilder.literal("A powertool may only have at most 127 entries."));
-    private static final KeyMapping cycleKeyBinding = new KeyMapping("key.morecommands.powerToolCycle", GLFW.GLFW_KEY_G, DF + "MoreCommands");
+    private static final Supplier<Object> cycleKeyBinding = Suppliers.memoize(() -> new KeyMapping("key.morecommands.powerToolCycle", GLFW.GLFW_KEY_G, DF + "MoreCommands"));
 
     @Override
     public void preinit(boolean serverOnly) {
-        if (Platform.getEnv() == EnvType.CLIENT) MouseEvent.EVENT.register((button, action, mods) -> checkPowerToolClient(button, action));
-        else if (serverOnly) {
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            MouseEvent.EVENT.register((button, action, mods) -> checkPowerToolClient(button, action));
+            KeyMappingRegistry.register((KeyMapping) cycleKeyBinding.get());
+
+            AtomicBoolean pressed = new AtomicBoolean();
+            AtomicInteger lastSelected = new AtomicInteger();
+            ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
+                if (((KeyMapping) cycleKeyBinding.get()).consumeClick()) {
+                    //noinspection StatementWithEmptyBody
+                    while (((KeyMapping) cycleKeyBinding.get()).consumeClick()); // Clearing pressed counter
+                    if (!pressed.get()) {
+                        cycleCommand();
+                        pressed.set(true);
+                    }
+                } else pressed.set(false);
+
+                Inventory inventory = Objects.requireNonNull(Minecraft.getInstance().player).getInventory();
+                if (inventory.selected != lastSelected.get()) {
+                    ItemStack stack = inventory.getItem(inventory.selected);
+                    if (isPowerTool(stack)) displaySelection(stack);
+                    lastSelected.set(inventory.selected);
+                }
+            });
+
+            ClientGuiEvent.RENDER_HUD.register(PowerToolSelectionHud::render);
+        } else if (serverOnly) {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> checkPowerToolServer(player));
             InteractionEvent.RIGHT_CLICK_ITEM.register((player, hand) -> checkPowerToolServer(player).isTrue() ?
                     CompoundEventResult.interruptTrue(player.getItemInHand(hand)) : CompoundEventResult.pass());
-        }
-
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:powertool_cycle"), (buf, context) ->
+        } else NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:powertool_cycle"), (buf, context) ->
                 doCycleCommand(context.getPlayer(), InteractionHand.values()[buf.readByte()], buf.readByte()));
-        KeyMappingRegistry.register(cycleKeyBinding);
-
-        AtomicBoolean pressed = new AtomicBoolean();
-        AtomicInteger lastSelected = new AtomicInteger();
-        ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-            if (cycleKeyBinding.consumeClick()) {
-                //noinspection StatementWithEmptyBody
-                while (cycleKeyBinding.consumeClick()); // Clearing pressed counter
-                if (!pressed.get()) {
-                    cycleCommand();
-                    pressed.set(true);
-                }
-            } else pressed.set(false);
-
-            Inventory inventory = Objects.requireNonNull(Minecraft.getInstance().player).getInventory();
-            if (inventory.selected != lastSelected.get()) {
-                ItemStack stack = inventory.getItem(inventory.selected);
-                if (isPowerTool(stack)) displaySelection(stack);
-                lastSelected.set(inventory.selected);
-            }
-        });
-
-        ClientGuiEvent.RENDER_HUD.register(PowerToolSelectionHud::render);
     }
 
     @Environment(EnvType.CLIENT)
@@ -103,7 +104,7 @@ public class PowerToolCommand extends Command {
             String cmd = getCurrentPowerTool(player, button);
             if (cmd != null) {
                 ClientCompat.get().sendMessageOrCommand("/" + cmd);
-                player.swing(getPowerToolHand(player));
+                player.swing(Objects.requireNonNull(getPowerToolHand(player)));
                 return true;
             }
         }

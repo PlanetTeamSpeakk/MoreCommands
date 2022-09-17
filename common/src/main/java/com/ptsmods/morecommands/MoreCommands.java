@@ -205,7 +205,7 @@ public enum MoreCommands implements IMoreCommands {
     private void doInit() {
         MixinFormattingAccessor.setStripFormattingPattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
         Holder.setCompat((Compat) determineCurrentCompat(false));
-        Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
+        if (Platform.getEnv() == EnvType.CLIENT) Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
         MoreGameRules.init();
         DataTrackerHelper.init();
 
@@ -276,7 +276,8 @@ public enum MoreCommands implements IMoreCommands {
 
                 for (Block block : Registry.BLOCK) {
                     ResourceLocation id = Registry.BLOCK.getKey(block);
-                    if (!Compat.get().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM, new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
+                    if (!Compat.get().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM,
+                            new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
                 }
 
                 for (Item item : Registry.ITEM)
@@ -378,61 +379,61 @@ public enum MoreCommands implements IMoreCommands {
     }
 
      private static void doCommandRegistration() {
-        List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
+         List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
                 .map(MoreCommands::getInstance)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
+         Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
 
-        // Lomboks @Helper straight up doesn't work.
-        // Complaining about it only being legal on method-local classes even though this is one.
-        class CommandRegisterer {
-            void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<CommandSourceStack> dispatcher, boolean dryRun) {
-                Collection<String> registeredNodes = cmd.getRegisteredNodes();
+         // Lomboks @Helper straight up doesn't work.
+         // Complaining about it only being legal on method-local classes even though this is one.
+         class CommandRegisterer {
+             void registerCommand(Command cmd, boolean dedicated, CommandDispatcher<CommandSourceStack> dispatcher, boolean dryRun) {
+                 Collection<String> registeredNodes = cmd.getRegisteredNodes();
 
-                // Some commands cannot yet be registered at this stage
-                // E.g. commands using CommandRegistryAccess
-                if (dryRun && registeredNodes != null) {
-                    nodes.put(cmd, registeredNodes.stream()
-                            .map(node -> Command.literal(node).build())
-                            .collect(ImmutableList.toImmutableList()));
-                    return;
-                }
+                 // Some commands cannot yet be registered at this stage
+                 // E.g. commands using CommandRegistryAccess
+                 if (dryRun && registeredNodes != null) {
+                     nodes.put(cmd, registeredNodes.stream()
+                             .map(node -> Command.literal(node).build())
+                             .collect(ImmutableList.toImmutableList()));
+                     return;
+                 }
 
-                try {
-                    CommandDispatcher<CommandSourceStack> tempDispatcher = new CommandDispatcher<>();
-                    cmd.register(tempDispatcher, dedicated);
+                 try {
+                     CommandDispatcher<CommandSourceStack> tempDispatcher = new CommandDispatcher<>();
+                     cmd.register(tempDispatcher, dedicated);
 
-                    for (CommandNode<CommandSourceStack> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
-                    nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
-                    permissions.putAll(cmd.getExtraPermissions());
-                } catch (Exception e) {
-                    LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
-                }
-            }
-        }
+                     for (CommandNode<CommandSourceStack> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
+                     nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
+                     permissions.putAll(cmd.getExtraPermissions());
+                 } catch (Exception e) {
+                     LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);
+                 }
+             }
+         }
 
-        CommandRegisterer registerer = new CommandRegisterer();
-        CommandDispatcher<CommandSourceStack> nilDispatcher = new CommandDispatcher<>();
+         CommandRegisterer registerer = new CommandRegisterer();
+         CommandDispatcher<CommandSourceStack> nilDispatcher = new CommandDispatcher<>();
 
-        serverCommands.stream()
-                .filter(cmd -> !cmd.doLateInit())
-                .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher, true));
+         serverCommands.stream()
+                 .filter(cmd -> !cmd.doLateInit())
+                 .forEach(cmd -> registerer.registerCommand(cmd, Platform.getEnv() == EnvType.SERVER, nilDispatcher, true));
 
-        // Only registering them in CommandRegistrationEvent is too late for the docs command.
-        MoreCommands.nodes.putAll(nodes);
+         // Only registering them in CommandRegistrationEvent is too late for the docs command.
+         MoreCommands.nodes.putAll(nodes);
 
-        Compat.get().registerCommandRegistrationEventListener((dispatcher, environment) -> {
-            boolean dedicated = environment == Commands.CommandSelection.DEDICATED;
-            serverCommands.stream()
-                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
+         Compat.get().registerCommandRegistrationEventListener((dispatcher, environment) -> {
+             boolean dedicated = environment == Commands.CommandSelection.DEDICATED;
+             serverCommands.stream()
+                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && !cmd.doLateInit())
+                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
 
-            serverCommands.stream()
-                    .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
-                    .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
-        });
+             serverCommands.stream()
+                     .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
+                     .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
+         });
     }
 
     private static void registerPacketReceivers() {
@@ -1347,6 +1348,8 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static void registerAttributes(boolean addToSupplier) {
+        if (INSTANCE.isServerOnly()) return;
+
         Attribute reach = reachAttribute.get();
         Attribute swimSpeed = swimSpeedAttribute.get();
         if (!addToSupplier) return;

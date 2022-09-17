@@ -1,7 +1,6 @@
 package com.ptsmods.morecommands.compat;
 
 import com.ptsmods.morecommands.api.IMoreCommands;
-import com.ptsmods.morecommands.api.MixinAccessWidener;
 import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
@@ -10,6 +9,7 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinArgumentTypesAccessor;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindTranslationsAccessor;
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.commands.CommandBuildContext;
@@ -35,7 +35,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Compat19 extends Compat182 {
@@ -51,7 +50,7 @@ public class Compat19 extends Compat182 {
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
         ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>> serializer = (ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>>) serialiser.toVanillaSerialiser();
         ((DeferredRegister<ArgumentTypeInfo<?, ?>>) registry).register(new ResourceLocation(identifier), () -> serializer);
-        ((Map<Class<?>, ArgumentTypeInfo<?, ?>>) MixinAccessWidener.get().argumentTypes$getClassMap()).put(clazz, serializer);
+        MixinArgumentTypesAccessor.getClassMap().put(clazz, serializer);
     }
 
     @Override

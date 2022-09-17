@@ -7,7 +7,6 @@ import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinServerPlayerEntityAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinSignBlockEntityAccessor;
-import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinArgumentTypesAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -29,15 +28,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
-
 public class MixinAccessWidenerImpl implements MixinAccessWidener {
     private static boolean ignoreInteract;
-
-    @Override
-    public Map<Class<?>, ?> argumentTypes$getClassMap() {
-        return MixinArgumentTypesAccessor.getClassMap();
-    }
 
     @Override
     public void serverPlayerEntity$setSyncedExperience(ServerPlayer player, int experience) {

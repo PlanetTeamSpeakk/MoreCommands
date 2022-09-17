@@ -20,7 +20,8 @@
     "min.MixinServerPlayNetworkHandler",
     "min.MixinBlock",
     "min.MixinServerPlayNetworkHandler",
-    "min.MixinPlayerManager"
+    "min.MixinPlayerManager",
+    "min.MixinClientboundCommandsPacket"
   ],
   "injectors": {
     "defaultRequire": 1

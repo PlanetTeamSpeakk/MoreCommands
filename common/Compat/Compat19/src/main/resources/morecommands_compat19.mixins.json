@@ -17,7 +17,9 @@
     "plus.MixinArgumentTypesAccessor",
     "plus.MixinEnchantmentScreenHandler",
     "plus.MixinSnowBlock",
-    "plus.MixinBlock"
+    "plus.MixinBlock",
+    "plus.MixinClientboundCommandsPacketArgumentNodeStub",
+    "plus.MixinClientboundCommandsPacket"
   ],
   "injectors": {
     "defaultRequire": 1

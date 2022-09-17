@@ -13,16 +13,13 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
-
 // Utility class so Compat subprojects may use certain mixins from the main project.
 public interface MixinAccessWidener {
 
+    @SuppressWarnings("deprecation")
     static MixinAccessWidener get() {
         return Holder.getMixinAccessWidener();
     }
-
-    Map<Class<?>, ?> argumentTypes$getClassMap();
 
     void serverPlayerEntity$setSyncedExperience(ServerPlayer player, int experience);
 

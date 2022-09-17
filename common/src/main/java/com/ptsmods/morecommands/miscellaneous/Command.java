@@ -7,8 +7,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
-import com.ptsmods.morecommands.api.IMoreCommands;
-import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
@@ -190,11 +188,7 @@ public abstract class Command {
     }
 
     public static <T> RequiredArgumentBuilder<CommandSourceStack, T> argument(String name, ArgumentType<T> type) {
-        RequiredArgumentBuilder<CommandSourceStack, T> builder = Commands.argument(name, type instanceof CompatArgumentType<?, ?, ?> && IMoreCommands.get().isServerOnly() ?
-                ((CompatArgumentType<?, T, ?>) type).toVanillaArgumentType() : type);
-
-        if (IMoreCommands.get().isServerOnly()) builder.suggests(type::listSuggestions);
-        return builder;
+        return Commands.argument(name, type);
     }
 
     public static String joinNicely(Collection<String> strings) {

@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -48,12 +49,12 @@ public final class EnumRule<E extends Enum<E>> extends GameRules.Value<EnumRule<
 
     @Override
     @SneakyThrows
-    protected void updateFromArgument(CommandContext<CommandSourceStack> context, String name) {
+    protected void updateFromArgument(@NotNull CommandContext<CommandSourceStack> context, @NotNull String name) {
         value = EnumArgumentType.getEnum(context, name);
     }
 
     @Override
-    protected void deserialize(String value) {
+    protected void deserialize(@NotNull String value) {
         try {
             E deserialized = Enum.valueOf(this.classType, value);
 
