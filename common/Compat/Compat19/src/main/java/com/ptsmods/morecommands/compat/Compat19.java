@@ -9,6 +9,8 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.miscellaneous.ArgumentTypePropertiesImpl;
+import com.ptsmods.morecommands.miscellaneous.ModernCompatArgumentSerializer;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinArgumentTypesAccessor;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindTranslationsAccessor;
 import dev.architectury.registry.registries.DeferredRegister;
@@ -134,5 +136,15 @@ public class Compat19 extends Compat182 {
     @Override
     public BlockPos getWorldSpawnPos(ServerLevel world) {
         return world.getSharedSpawnPos();
+    }
+
+    @Override
+    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentTypePropertiesImpl(ArgumentTypeProperties<A, T, P> properties) {
+        return new ArgumentTypePropertiesImpl<>(properties);
+    }
+
+    @Override
+    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentSerialiserImpl(ArgumentTypeSerialiser<A, T, P> serialiser) {
+        return new ModernCompatArgumentSerializer<>(serialiser);
     }
 }

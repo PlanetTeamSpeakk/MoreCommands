@@ -11,6 +11,7 @@ import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.miscellaneous.LegacyCompatArgumentSerializer;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -159,7 +160,7 @@ public class Compat16 implements Compat {
     @Override
     public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-        ArgumentTypes.register(identifier, clazz, (ArgumentSerializer<A>) serialiser.toLegacyVanillaSerialiser());
+        ArgumentTypes.register(identifier, clazz, (ArgumentSerializer<A>) serialiser.toVanillaSerialiser());
     }
 
     @SuppressWarnings("unchecked")
@@ -249,5 +250,15 @@ public class Compat16 implements Compat {
     @Override
     public int performCommand(Commands commands, CommandSourceStack source, String command) {
         return commands.performCommand(source, command);
+    }
+
+    @Override
+    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentTypePropertiesImpl(ArgumentTypeProperties<A, T, P> properties) {
+        throw new UnsupportedOperationException("This operation is not supported on this version.");
+    }
+
+    @Override
+    public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentSerialiserImpl(ArgumentTypeSerialiser<A, T, P> serialiser) {
+        return new LegacyCompatArgumentSerializer<>(serialiser);
     }
 }
