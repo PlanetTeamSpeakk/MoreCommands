@@ -8,7 +8,9 @@
     "min.MixinChatComponent",
     "min.MixinGuiMessage",
     "min.MixinLocalPlayer",
-    "MixinLocalPlayerAccessor"
+    "MixinLocalPlayerAccessor",
+    "min.MixinChatScreen",
+    "min.MixinChatComponentAccessor"
   ],
   "mixins": [
     "MixinServerGamePacketListenerImpl",

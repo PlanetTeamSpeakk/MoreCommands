@@ -42,7 +42,6 @@
     "MixinTextColor",
     "MixinTextVisitFactory",
     "MixinTitleScreen",
-    "accessor.MixinChatComponentAccessor",
     "accessor.MixinClickableWidgetAccessor",
     "accessor.MixinCommandSuggestorAccessor",
     "accessor.MixinEntitySelectorAccessor",

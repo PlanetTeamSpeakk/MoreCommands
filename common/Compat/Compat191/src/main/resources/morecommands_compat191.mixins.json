@@ -9,7 +9,9 @@
     "plus.MixinChatComponent",
     "plus.MixinLocalPlayer",
     "plus.MixinLocalPlayerAccessor",
-    "plus.MixinGuiMessageLine"
+    "plus.MixinGuiMessageLine",
+    "plus.MixinChatScreen",
+    "plus.MixinChatComponentAccessor"
   ],
   "mixins": [
     "plus.MixinServerGamePacketListenerImpl",

@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.client;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.MessageHistory;
 import com.ptsmods.morecommands.api.addons.GuiMessageAddon;
 import com.ptsmods.morecommands.api.util.compat.Compat;
@@ -17,7 +18,7 @@ public class SearchCommand extends ClientCommand {
     public static ClickEvent.Action SCROLL_ACTION = null;
 
     public void preinit() {
-        if (SCROLL_ACTION == null) SCROLL_ACTION = ClickEvent.Action.valueOf("SCROLL"); // Should've been registered in EarlyRiser.
+        if (SCROLL_ACTION == null) SCROLL_ACTION = Holder.getScrollAction();
     }
 
     @Override

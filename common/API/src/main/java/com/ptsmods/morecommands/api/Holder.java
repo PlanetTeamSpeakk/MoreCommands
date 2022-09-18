@@ -4,6 +4,7 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.minecraft.network.chat.ClickEvent;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
@@ -27,6 +28,8 @@ public class Holder {
 
     @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IDeathTracker#get() instead.
     private static IDeathTracker deathTracker;
+    @Getter(lazy = true)
+    private static final ClickEvent.Action scrollAction = ClickEvent.Action.valueOf("SCROLL");
 
     public static void setMoreCommands(IMoreCommands moreCommands) {
         if (Holder.moreCommands != null) throw new IllegalStateException("MoreCommands instance already set.");

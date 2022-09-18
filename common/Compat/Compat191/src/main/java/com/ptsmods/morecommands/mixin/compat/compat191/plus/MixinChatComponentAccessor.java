@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.client.accessor;
+package com.ptsmods.morecommands.mixin.compat.compat191.plus;
 
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.components.ChatComponent;

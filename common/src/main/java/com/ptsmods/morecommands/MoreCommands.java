@@ -168,6 +168,7 @@ public enum MoreCommands implements IMoreCommands {
             props.setProperty("serverOnly", "false");
 
             try {
+                Files.createDirectories(serverOnlyFile.getParent());
                 PrintWriter writer = new PrintWriter(Files.newOutputStream(serverOnlyFile));
                 props.store(writer, "https://morecommands.ptsmods.com/server-only");
                 writer.flush();
@@ -334,7 +335,7 @@ public enum MoreCommands implements IMoreCommands {
             }
         });
 
-        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19))
+        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19_2))
             ChatEvent.DECORATE.register((player, component) -> component.set(Component.literal(translateFormattings(INSTANCE.textToString(component.get())))));
 
 //        if (MoreCommandsArch.isFabricModLoaded("placeholder-api")) {

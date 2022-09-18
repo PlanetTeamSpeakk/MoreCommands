@@ -66,6 +66,7 @@ public abstract class MixinModelLoader {
                             .findFirst()
                             .map(m -> m.get("model"))
                             .orElseThrow(() -> new IOException("Couldn't find block model for block " + id.toString().replace("item/", "blockstates/"))) :
+                            // FIXME it's not always a List, sometimes it's a Map.
                             ((List<Map<String, Object>>) blockstate.get("multipart")).stream()
                                     .map(m -> (List<Map<String, String>>) m.get("apply"))
                                     .findFirst()
