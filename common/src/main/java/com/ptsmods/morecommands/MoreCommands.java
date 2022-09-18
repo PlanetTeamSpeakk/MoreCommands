@@ -14,7 +14,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.ptsmods.morecommands.api.*;
 import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
-import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
@@ -33,6 +32,7 @@ import com.ptsmods.morecommands.mixin.common.accessor.*;
 import com.ptsmods.morecommands.util.DataTrackerHelper;
 import com.ptsmods.morecommands.util.MixinAccessWidenerImpl;
 import dev.architectury.event.EventResult;
+import dev.architectury.event.events.common.ChatEvent;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -57,7 +57,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -114,7 +113,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -336,17 +334,8 @@ public enum MoreCommands implements IMoreCommands {
             }
         });
 
-        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) {
-            // TODO change this
-            ReflectionHelper.setFieldValue(Arrays.stream(ChatDecorator.class.getDeclaredFields()).filter(f -> f.getType() == f.getDeclaringClass()).findFirst().orElseThrow(() ->
-                            new NoSuchElementException("Could not find default decorator field of MessageDecorator class.")),
-                    null, (ChatDecorator) (player, text) -> {
-                        TextBuilder<?> builder = Compat.get().builderFromText(text);
-                        return CompletableFuture.completedFuture((IMoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), IMoreGameRules.get().doChatColoursRule(), player)
-                                || player.hasPermissions(Objects.requireNonNull(player.getServer()).getOperatorUserPermissionLevel())) && builder instanceof LiteralTextBuilder ?
-                                LiteralTextBuilder.literal(Util.translateFormats(((LiteralTextBuilder) builder).getLiteral())) : text);
-                    });
-        }
+        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19))
+            ChatEvent.DECORATE.register((player, component) -> component.set(Component.literal(translateFormattings(INSTANCE.textToString(component.get())))));
 
 //        if (MoreCommandsArch.isFabricModLoaded("placeholder-api")) {
 //            // Example: %morecommands:reach/1%
