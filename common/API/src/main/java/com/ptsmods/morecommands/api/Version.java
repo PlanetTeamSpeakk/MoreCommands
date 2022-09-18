@@ -119,7 +119,8 @@ public class Version implements Comparable<Version> {
         IntStream.Builder builder = IntStream.builder()
                 .add(Integer.compare(version.major, major))
                 .add(Integer.compare(version.minor, minor));
-        if (includeRev && revision != null && version.revision != null) builder.add(Integer.compare(version.revision, revision));
+        if (includeRev && (revision != null || version.revision != null))
+            builder.add(Integer.compare(version.revision == null ? 0 : version.revision, revision == null ? 0 : revision));
 
         return builder.build();
     }
