@@ -43,6 +43,7 @@ public class ReachCommand extends Command {
                             addModifier("pehkui:reach", player, reach);
                             addModifier("reach-entity-attributes:reach", player, reach);
                             addModifier("forge:reach_distance", player, reach);
+                            addModifier("forge:attack_range", player, reach);
                             sendMsg(ctx, "Your reach has been set from " + SF + oldReach + DF + " to " + SF + reach + DF + ".");
                             return (int) reach;
                         })));

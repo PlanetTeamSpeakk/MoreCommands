@@ -1,5 +1,6 @@
 {
   "required": true,
+  "plugin": "com.ptsmods.morecommands.forge.ConfigPlugin",
   "package": "com.ptsmods.morecommands.mixin.forge",
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.8",
@@ -7,6 +8,8 @@
     "MixinCreativeInventoryScreen"
   ],
   "mixins": [
+    "MixinServerGamePacketListenerImpl",
+    "MixinServerGamePacketListenerImpl$1"
   ],
   "injectors": {
     "defaultRequire": 1
