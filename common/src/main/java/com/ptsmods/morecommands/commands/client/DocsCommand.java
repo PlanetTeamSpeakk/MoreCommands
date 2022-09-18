@@ -7,9 +7,10 @@ import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreGameRules;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
-import java.util.Locale;
 import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+
+import java.util.Locale;
 
 public class DocsCommand extends ClientCommand {
     @Override
@@ -36,6 +37,7 @@ public class DocsCommand extends ClientCommand {
                                 option.getName().toLowerCase(Locale.ROOT).replace(' ', '-')))));
 
         dispatcher.register(cLiteral("mcdocs")
+                .executes(ctx -> open(""))
                 .then(clientCommand)
                 .then(command)
                 .then(gamerule)
