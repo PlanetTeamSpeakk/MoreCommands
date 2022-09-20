@@ -120,7 +120,7 @@ public class Version implements Comparable<Version> {
     }
 
     public IntStream compareToAll(@NotNull Version version) {
-        return compareToAll(version, true);
+        return compareToAll(version, revision != null && version.revision != null);
     }
 
     public IntStream compareToAll(@NotNull Version version, boolean includeRev) {
