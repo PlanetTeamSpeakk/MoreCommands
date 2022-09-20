@@ -447,4 +447,9 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     public List<KeyMapping> getKeyMappings() {
         return ImmutableList.of(TOGGLE_INFO_HUD_BINDING, (KeyMapping) PowerToolCommand.CYCLE_KEY_BINDING.get());
     }
+
+    @Override
+    public void setScheduleWorldInitCommands(boolean scheduleWorldInitCommands) {
+        MoreCommandsClient.scheduleWorldInitCommands = scheduleWorldInitCommands;
+    }
 }

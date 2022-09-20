@@ -35,6 +35,8 @@ public interface IMoreCommands {
 
     String textToString(Component text, Style parentStyle, boolean includeFormattings);
 
+    boolean isCreatingWorld();
+
     void setCreatingWorld(boolean creatingWorld);
 
     Path getJar();

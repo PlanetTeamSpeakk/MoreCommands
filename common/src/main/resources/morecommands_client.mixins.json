@@ -27,7 +27,7 @@
     "MixinKeyboard",
     "MixinLanguage",
     "MixinLivingEntityRenderer",
-    "MixinMinecraftClient",
+    "MixinMinecraft",
     "MixinModelLoader",
     "MixinMoreOptionsDialog",
     "MixinMouse",

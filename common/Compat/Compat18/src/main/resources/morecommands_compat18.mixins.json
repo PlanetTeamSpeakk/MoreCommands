@@ -8,7 +8,7 @@
     "min.MixinBackgroundRenderer",
     "min.MixinClientPlayerInteractionManager",
     "min.MixinLightmapTextureManager",
-    "min.MixinMinecraftClient",
+    "min.MixinMinecraft",
     "min.MixinTitleScreen",
     "min.MixinWorldRenderer"
   ],

@@ -1153,6 +1153,11 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     @Override
+    public boolean isCreatingWorld() {
+        return creatingWorld;
+    }
+
+    @Override
     public void setCreatingWorld(boolean creatingWorld) {
         MoreCommands.creatingWorld = creatingWorld;
     }

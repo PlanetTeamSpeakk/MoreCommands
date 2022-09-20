@@ -11,7 +11,8 @@
     "plus.MixinLightmapTextureManager",
     "plus.MixinTitleScreen",
     "plus.MixinWorldRenderer",
-    "plus.MixinKeybindTranslationsAccessor"
+    "plus.MixinKeybindTranslationsAccessor",
+    "plus.MixinMinecraft"
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",

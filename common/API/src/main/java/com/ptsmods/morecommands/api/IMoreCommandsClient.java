@@ -49,4 +49,6 @@ public interface IMoreCommandsClient {
     boolean isCommandDisabled(String command);
 
     List<KeyMapping> getKeyMappings();
+
+    void setScheduleWorldInitCommands(boolean scheduleWorldInitCommands);
 }

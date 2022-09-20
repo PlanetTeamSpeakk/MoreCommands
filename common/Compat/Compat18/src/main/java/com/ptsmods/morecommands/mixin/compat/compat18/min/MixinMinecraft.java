@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
-public class MixinMinecraftClient {
+public class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "createLevel")
     private void createWorldPre(String worldName, LevelSettings levelInfo, RegistryAccess.RegistryHolder registryTracker, WorldGenSettings generatorOptions, CallbackInfo ci) {
