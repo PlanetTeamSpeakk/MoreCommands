@@ -5,12 +5,14 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
 import java.util.Objects;
 
 public interface IMoreCommandsClient {
@@ -43,5 +45,8 @@ public interface IMoreCommandsClient {
     }
 
     CommandDispatcher<ClientSuggestionProvider> getClientCommandDispatcher();
+
     boolean isCommandDisabled(String command);
+
+    List<KeyMapping> getKeyMappings();
 }

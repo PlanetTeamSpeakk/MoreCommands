@@ -8,6 +8,7 @@ dependencies {
     mappings loom.officialMojangMappings()
 
     forge "net.minecraftforge:forge:1.18.2-40.1.80"
+    implementation project(path: ":common:API", configuration: "namedElements")
 }
 
 remapJar {

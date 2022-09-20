@@ -114,7 +114,7 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("speed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("avgSpeed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getAvgSpeed(), decimals) + " blocks/sec");
-        keysBuilder.put("toggleKey", ctx -> IMoreCommands.get().textToString(MoreCommandsClient.toggleInfoHudBinding.getTranslatedKeyMessage(), null, true));
+        keysBuilder.put("toggleKey", ctx -> IMoreCommands.get().textToString(MoreCommandsClient.TOGGLE_INFO_HUD_BINDING.getTranslatedKeyMessage(), null, true));
         keysBuilder.put("configFile", ctx -> file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
         keysBuilder.put("facing", ctx -> MoreCommands.getLookDirection(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), ((MixinEntityAccessor) ctx.getPlayer()).getXRot_()));
         keysBuilder.put("time", ctx -> MoreCommands.parseTime(ctx.getWorld().getGameTime() % 24000L, false));

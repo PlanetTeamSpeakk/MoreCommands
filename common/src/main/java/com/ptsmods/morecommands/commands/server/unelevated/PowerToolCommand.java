@@ -60,20 +60,20 @@ import java.util.stream.Collectors;
 @ExtensionMethod(ObjectExtensions.class)
 public class PowerToolCommand extends Command {
     private static final SimpleCommandExceptionType TOO_MANY_COMMANDS = new SimpleCommandExceptionType(LiteralTextBuilder.literal("A powertool may only have at most 127 entries."));
-    private static final Supplier<Object> cycleKeyBinding = Suppliers.memoize(() -> new KeyMapping("key.morecommands.powerToolCycle", GLFW.GLFW_KEY_G, DF + "MoreCommands"));
+    public static final Supplier<Object> CYCLE_KEY_BINDING = Suppliers.memoize(() -> new KeyMapping("key.morecommands.powerToolCycle", GLFW.GLFW_KEY_G, DF + "MoreCommands"));
 
     @Override
     public void preinit(boolean serverOnly) {
         if (Platform.getEnv() == EnvType.CLIENT) {
             MouseEvent.EVENT.register((button, action, mods) -> checkPowerToolClient(button, action));
-            KeyMappingRegistry.register((KeyMapping) cycleKeyBinding.get());
+            if (!Platform.isForge()) KeyMappingRegistry.register((KeyMapping) CYCLE_KEY_BINDING.get());
 
             AtomicBoolean pressed = new AtomicBoolean();
             AtomicInteger lastSelected = new AtomicInteger();
             ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-                if (((KeyMapping) cycleKeyBinding.get()).consumeClick()) {
+                if (((KeyMapping) CYCLE_KEY_BINDING.get()).consumeClick()) {
                     //noinspection StatementWithEmptyBody
-                    while (((KeyMapping) cycleKeyBinding.get()).consumeClick()); // Clearing pressed counter
+                    while (((KeyMapping) CYCLE_KEY_BINDING.get()).consumeClick()); // Clearing pressed counter
                     if (!pressed.get()) {
                         cycleCommand();
                         pressed.set(true);

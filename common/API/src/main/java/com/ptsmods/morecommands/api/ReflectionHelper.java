@@ -1,9 +1,11 @@
 package com.ptsmods.morecommands.api;
 
 import dev.architectury.platform.Platform;
+import lombok.SneakyThrows;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,7 +146,9 @@ public class ReflectionHelper {
         });
     }
 
+    @Contract("null, _ -> null; !null, _ -> _")
     public static <T> T newInstance(Constructor<T> ctor, Object... params) {
+        if (ctor == null) return null;
         try {
             return ctor.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -209,5 +213,11 @@ public class ReflectionHelper {
                 .filter(c -> superClass.isAssignableFrom(c) && c != superClass)
                 .map(c -> (Class<? extends T>) c)
                 .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public static <T> Class<T> getClass(String name) {
+        return (Class<T>) Class.forName(name);
     }
 }

@@ -62,24 +62,32 @@ public class Version implements Comparable<Version> {
     }
 
     public boolean isNewerThan(Version version) {
-        return !equals(version) && isNewerThanOrEqual(version);
+        return  major > version.major ||
+                major == version.major && minor >  version.minor ||
+                major == version.major && minor == version.minor &&
+                        (revision != null && version.revision == null && revision != 0 ||
+                                revision != null && version.revision != null && revision > version.revision);
     }
 
     public boolean isNewerThanOrEqual(Version version) {
-        return version.compareToAll(this).allMatch(i -> i >= 0);
+        return equals(version) || isNewerThan(version);
     }
 
     public boolean isOlderThanOrEqual(Version version) {
-        return version.compareToAll(this).allMatch(i -> i <= 0);
+        return equals(version) || isOlderThan(version);
     }
 
     public boolean isOlderThan(Version version) {
-        return !equals(version) && isOlderThanOrEqual(version);
+        return  major <  version.major ||
+                major == version.major && minor <  version.minor ||
+                major == version.major && minor == version.minor &&
+                        (revision == null && version.revision != null && version.revision != 0 ||
+                                revision != null && version.revision != null && revision < version.revision);
     }
 
     @Override
     public String toString() {
-        return String.format("%d.%d.%d", major, minor, revision);
+        return revision == null ? major + "." + minor : String.format("%d.%d.%d", major, minor, revision);
     }
 
     @Override

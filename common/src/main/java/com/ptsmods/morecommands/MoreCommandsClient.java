@@ -20,6 +20,7 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
+import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
 import com.ptsmods.morecommands.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.miscellaneous.Chair;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
@@ -34,6 +35,7 @@ import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
 import io.netty.buffer.Unpooled;
@@ -89,7 +91,7 @@ import java.util.stream.Collectors;
 @Environment(EnvType.CLIENT)
 public class MoreCommandsClient implements IMoreCommandsClient {
     public static final Logger LOG = LogManager.getLogger();
-    public static final KeyMapping toggleInfoHudBinding = new KeyMapping("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
+    public static final KeyMapping TOGGLE_INFO_HUD_BINDING = new KeyMapping("key.morecommands.toggleInfoHud", GLFW.GLFW_KEY_O, ClientCommand.DF + "MoreCommands");
     public static boolean scheduleWorldInitCommands = false;
     private static double speed = 0d;
     private static double avgSpeed = 0d;
@@ -143,8 +145,11 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         return MoreCommands.readInputStream(sslLenientHttpClient.execute(new HttpGet(url)).getEntity().getContent());
     }
 
-    public static void init() {
+    public static void setInstance() {
         Holder.setMoreCommandsClient(new MoreCommandsClient());
+    }
+
+    public static void init() {
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
@@ -171,7 +176,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
                     .forEach(cmd -> Compat.get().performCommand(server.getCommands(), source, cmd));
         });
 
-        KeyMappingRegistry.register(toggleInfoHudBinding);
+        if (!Platform.isForge()) KeyMappingRegistry.register(TOGGLE_INFO_HUD_BINDING);
 
         if (!wicFile.exists()) saveWorldInitCommands();
         try {
@@ -187,7 +192,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
         Set<Entity> coolKids = new HashSet<>();
         ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-            if (toggleInfoHudBinding.consumeClick()) {
+            if (TOGGLE_INFO_HUD_BINDING.consumeClick()) {
                 ClientOptions.Tweaks.enableInfoHUD.setValue(!ClientOptions.Tweaks.enableInfoHUD.getValue());
                 ClientOptions.write();
             }
@@ -436,5 +441,10 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
     public static Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> getNodes() {
         return ImmutableMap.copyOf(nodes);
+    }
+
+    @Override
+    public List<KeyMapping> getKeyMappings() {
+        return ImmutableList.of(TOGGLE_INFO_HUD_BINDING, (KeyMapping) PowerToolCommand.CYCLE_KEY_BINDING.get());
     }
 }

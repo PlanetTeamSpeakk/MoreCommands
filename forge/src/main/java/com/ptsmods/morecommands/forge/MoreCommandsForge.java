@@ -2,10 +2,10 @@ package com.ptsmods.morecommands.forge;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.forge.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -15,24 +15,25 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.server.permission.events.PermissionGatherEvent;
-import net.minecraftforge.server.permission.nodes.PermissionNode;
-import net.minecraftforge.server.permission.nodes.PermissionTypes;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Mod(MoreCommands.MOD_ID)
 public class MoreCommandsForge {
-    private static final Map<String, PermissionNode<Boolean>> permissionNodes = new LinkedHashMap<>();
-
     public MoreCommandsForge() {
         EventBuses.registerModEventBus(MoreCommands.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
-        MinecraftForge.EVENT_BUS.addListener(this::onPermissionGather);
         MinecraftForge.EVENT_BUS.addListener(this::onCreateFluidSource);
+
+        MoreCommands.registerStuff(); // Make sure reachAttribute and swimSpeedAttribute are initialised.
+        MoreCommandsClient.setInstance();
+
+        Compat.INSTANCE.registerListeners();
+    }
+
+    @SubscribeEvent
+    public void onInit(FMLCommonSetupEvent event) {
         MoreCommands.init();
     }
 
@@ -41,24 +42,13 @@ public class MoreCommandsForge {
         MoreCommandsClient.init();
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onRegister(RegisterEvent event) {
-        if (event.getRegistryKey() != Registry.ATTRIBUTE_REGISTRY) return;
-        MoreCommands.registerAttributes(false);
+    @SubscribeEvent
+    public void onPostInit(FMLLoadCompleteEvent event) {
+        MoreCommands.getPermissions().forEach((permission, defaultValue) -> Compat.INSTANCE.registerPermission(permission, defaultValue ? 0 : 2, ""));
     }
 
-    public static PermissionNode<Boolean> getPermissionNode(String permission) {
-        return permissionNodes.get(permission);
-    }
-
-    public void onPermissionGather(PermissionGatherEvent.Nodes event) {
-        MoreCommands.getPermissions().forEach((permission, defaultValue) -> {
-            PermissionNode<Boolean> permissionNode = new PermissionNode<>(new ResourceLocation("morecommands:" +
-                    (permission.startsWith("morecommands.") ? permission.substring("morecommands.".length()) : permission)),
-                    PermissionTypes.BOOLEAN, (player, uuid, permissionDynamicContexts) -> defaultValue);
-            event.addNodes(permissionNode);
-            permissionNodes.put(permission, permissionNode);
-        });
+    public static boolean checkPermission(ServerPlayer player, String permission) {
+        return Compat.INSTANCE.checkPermission(player, permission);
     }
 
     public void onCreateFluidSource(BlockEvent.CreateFluidSourceEvent event) {
@@ -68,6 +58,6 @@ public class MoreCommandsForge {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
-        MoreCommands.registerAttributes(true);
+        MoreCommands.INSTANCE.registerAttributes(true);
     }
 }

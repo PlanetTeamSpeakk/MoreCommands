@@ -45,4 +45,6 @@ public interface IMoreCommands {
     RegistrySupplier<Attribute> getReachAttribute();
 
     RegistrySupplier<Attribute> getSwimSpeedAttribute();
+
+    void registerAttributes(boolean addToSupplier);
 }

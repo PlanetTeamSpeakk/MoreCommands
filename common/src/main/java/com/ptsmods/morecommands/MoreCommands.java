@@ -149,6 +149,7 @@ public enum MoreCommands implements IMoreCommands {
     private static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
+    private static boolean registeredStuff = false;
     private static RegistrySupplier<SoundEvent> copySound, eeSound;
     private static RegistrySupplier<Attribute> reachAttribute, swimSpeedAttribute;
 
@@ -194,6 +195,9 @@ public enum MoreCommands implements IMoreCommands {
 
     MoreCommands() {
         Holder.setMoreCommands(this);
+
+        Holder.setCompat((Compat) determineCurrentCompat(false));
+        if (Platform.getEnv() == EnvType.CLIENT) Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
     }
 
     public static void init() {
@@ -203,8 +207,6 @@ public enum MoreCommands implements IMoreCommands {
     @SneakyThrows
     private void doInit() {
         MixinFormattingAccessor.setStripFormattingPattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
-        Holder.setCompat((Compat) determineCurrentCompat(false));
-        if (Platform.getEnv() == EnvType.CLIENT) Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
         MoreGameRules.init();
         DataTrackerHelper.init();
 
@@ -242,24 +244,7 @@ public enum MoreCommands implements IMoreCommands {
         });
 
         if (!isServerOnly()) {
-            ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
-            copySound = soundEventRegistry.register(new ResourceLocation("morecommands:copy"),
-                    () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
-            eeSound = soundEventRegistry.register(new ResourceLocation("morecommands:ee"),
-                    () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
-            RegistrySupplier<Block> lockedChest = blockRegistry.register(lockedChestLocation,
-                    () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
-            itemRegistry.register(lockedChestLocation, () -> new BlockItem(lockedChest.get(), new Item.Properties()));
-            itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
-            reachAttribute = attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
-                    new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
-            swimSpeedAttribute = attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
-                    new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
-
-            soundEventRegistry.register();
-            blockRegistry.register();
-            itemRegistry.register();
-            attributeRegistry.register();
+            registerStuff();
 
             PlayerEvent.PLAYER_JOIN.register(player -> {
                 if (NetworkManager.canPlayerReceive(player, new ResourceLocation("morecommands:formatting_update"))) sendFormattingUpdates(player);
@@ -285,18 +270,6 @@ public enum MoreCommands implements IMoreCommands {
                 defaultedList = NonNullList.create();
                 for (Item item : Registry.ITEM) item.fillItemCategory(CreativeModeTab.TAB_SEARCH, defaultedList);
             });
-
-            Compat compat = Compat.get();
-
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:painting_variant", PaintingVariantArgumentType.class, PaintingVariantArgumentType.SERIALISER);
-            compat.registerArgumentType(argumentTypeRegistry, "morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
-
-            if (argumentTypeRegistry != null) argumentTypeRegistry.register();
         } else {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
                 Level world = player.level;
@@ -347,6 +320,42 @@ public enum MoreCommands implements IMoreCommands {
 //            // Example: %morecommands:gradient/#FFAA00-#FF0000;This text will be a gradient from orange to red.%, %morecommands:gradient/6-c;This text too will be a gradient from orange to red.%
 //            PlaceholderAPI.register(new Identifier("morecommands:gradient"), MoreCommands::gradientPlaceholder);
 //        }
+    }
+
+    public static void registerStuff() {
+        if (INSTANCE.isServerOnly() || registeredStuff) return;
+
+        ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
+        copySound = soundEventRegistry.register(new ResourceLocation("morecommands:copy"),
+                () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
+        eeSound = soundEventRegistry.register(new ResourceLocation("morecommands:ee"),
+                () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
+        RegistrySupplier<Block> lockedChest = blockRegistry.register(lockedChestLocation,
+                () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
+        itemRegistry.register(lockedChestLocation, () -> new BlockItem(lockedChest.get(), new Item.Properties()));
+        itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
+        reachAttribute = attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
+                new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
+        swimSpeedAttribute = attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
+                new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
+
+        soundEventRegistry.register();
+        blockRegistry.register();
+        itemRegistry.register();
+        attributeRegistry.register();
+
+        Compat compat = Compat.get();
+
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:painting_variant", PaintingVariantArgumentType.class, PaintingVariantArgumentType.SERIALISER);
+        compat.registerArgumentType(argumentTypeRegistry, "morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
+
+        if (argumentTypeRegistry != null) argumentTypeRegistry.register();
+        registeredStuff = true;
     }
 
     static <T> List<Class<? extends T>> getCommandClasses(String type, Class<T> clazz) {
@@ -1337,8 +1346,8 @@ public enum MoreCommands implements IMoreCommands {
         return entity.getLevel().getEntity(target);
     }
 
-    public static void registerAttributes(boolean addToSupplier) {
-        if (INSTANCE.isServerOnly()) return;
+    public void registerAttributes(boolean addToSupplier) {
+        if (isServerOnly()) return;
 
         Attribute reach = reachAttribute.get();
         Attribute swimSpeed = swimSpeedAttribute.get();

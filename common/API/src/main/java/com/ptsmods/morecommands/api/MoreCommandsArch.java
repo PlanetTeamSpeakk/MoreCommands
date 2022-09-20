@@ -15,11 +15,6 @@ public class MoreCommandsArch {
     }
 
     @ExpectPlatform
-    public static void doMLSpecificClientInit() {
-        throw new AssertionError("This shouldn't happen.");
-    }
-
-    @ExpectPlatform
     public static boolean isFabricModLoaded(String id) {
         throw new AssertionError("This shouldn't happen.");
     }
