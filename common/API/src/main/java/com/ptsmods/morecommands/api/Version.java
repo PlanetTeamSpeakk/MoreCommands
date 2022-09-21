@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import lombok.With;
 import net.minecraft.SharedConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,9 @@ public class Version implements Comparable<Version> {
                 .get("release_target").getAsString());
     }
 
+    @With
     public final int major, minor;
+    @With
     public final @Nullable Integer revision;
 
     public Version(int minor) {
@@ -120,7 +123,7 @@ public class Version implements Comparable<Version> {
     }
 
     public IntStream compareToAll(@NotNull Version version) {
-        return compareToAll(version, revision != null && version.revision != null);
+        return compareToAll(version, true);
     }
 
     public IntStream compareToAll(@NotNull Version version, boolean includeRev) {

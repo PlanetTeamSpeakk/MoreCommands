@@ -2,14 +2,14 @@
   "required": true,
   "plugin": "com.ptsmods.morecommands.forge.ConfigPlugin",
   "package": "com.ptsmods.morecommands.mixin.forge",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "minVersion": "0.8",
   "client": [
     "MixinCreativeInventoryScreen"
   ],
   "mixins": [
     "MixinServerGamePacketListenerImpl",
-    "MixinServerGamePacketListenerImpl$1"
+    "MixinHopperBlockEntity"
   ],
   "injectors": {
     "defaultRequire": 1

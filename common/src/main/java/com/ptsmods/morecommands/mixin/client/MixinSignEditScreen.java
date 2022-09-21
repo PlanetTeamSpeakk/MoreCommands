@@ -1,6 +1,8 @@
 package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.MixinAccessWidener;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.util.Util;
@@ -11,6 +13,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,6 +34,14 @@ public class MixinSignEditScreen {
     @Shadow private TextFieldHelper signField;
     private @Unique String lastContent;
     private @Unique String lastContentTranslated;
+    @Shadow @Final private String[] messages;
+
+    @Inject(at = @At("RETURN"), method = "<init>")
+    private void init(SignBlockEntity sbe, boolean filtered, CallbackInfo cbi) {
+        Component[] text = MixinAccessWidener.get().signBlockEntity$getTexts(sbe);
+        for (int i = 0; i < text.length; i++)
+            this.messages[i] = IMoreCommands.get().textToString(text[i], null, true).replace("\u00A7", "&");
+    }
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/font/TextFieldHelper;<init>" +
             "(Ljava/util/function/Supplier;Ljava/util/function/Consumer;Ljava/util/function/Supplier;Ljava/util/function/Consumer;Ljava/util/function/Predicate;)V"),

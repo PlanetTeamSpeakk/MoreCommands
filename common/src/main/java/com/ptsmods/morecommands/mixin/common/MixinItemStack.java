@@ -15,27 +15,22 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack {
-    @Unique private int level;
+    private @Unique int level;
 
     @Inject(at = @At("HEAD"), method = "enchant")
     public void addEnchantment(Enchantment enchantment, int level, CallbackInfo cbi) {
         this.level = level;
     }
 
-    // TODO
-    @Group(name = "enchantmentLevel1171Compat", min = 1, max = 1)
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;putShort(Ljava/lang/String;S)V"), method = "enchant")
-    public void addEnchantment_putShort(CompoundTag nbt, String key, short value) {
-        nbt.putInt(key, level);
-    }
 
-    @Group(name = "enchantmentLevel1171Compat", min = 1, max = 1)
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;storeEnchantment(Lnet/minecraft/resources/ResourceLocation;I)Lnet/minecraft/nbt/CompoundTag;"), method = "enchant")
     public int addEnchantment_createNbt_lvl(int lvl) {
         return level;

@@ -115,6 +115,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -127,11 +128,6 @@ public enum MoreCommands implements IMoreCommands {
     public static Style DS = Style.EMPTY.withColor(DF);
     public static Style SS = Style.EMPTY.withColor(SF);
     public static final boolean SERVER_ONLY;
-    private static final DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegistry;
-    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, Registry.SOUND_EVENT_REGISTRY);
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, Registry.BLOCK_REGISTRY);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, Registry.ITEM_REGISTRY);
-    private static final DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_REGISTRY);
     public static final Set<Block> blockBlacklist = new HashSet<>();
     public static final Set<Block> blockWhitelist = new HashSet<>();
     public static final CreativeModeTab unobtainableItems = CreativeTabRegistry.create(new ResourceLocation("morecommands:unobtainable_items"),
@@ -150,8 +146,8 @@ public enum MoreCommands implements IMoreCommands {
     private static final Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
     private static final Map<Player, Integer> targetedEntities = new HashMap<>();
     private static boolean registeredStuff = false;
-    private static RegistrySupplier<SoundEvent> copySound, eeSound;
-    private static RegistrySupplier<Attribute> reachAttribute, swimSpeedAttribute;
+    private static Supplier<SoundEvent> copySound, eeSound;
+    private static Supplier<Attribute> reachAttribute, swimSpeedAttribute;
 
     static {
         Path serverOnlyFile = MoreCommandsArch.getConfigDirectory().resolve("SERVERONLY.txt");
@@ -187,8 +183,6 @@ public enum MoreCommands implements IMoreCommands {
             LOG.info("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
         }
 
-        argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_REGISTRY) : null;
-
         Holder.setMixinAccessWidener(new MixinAccessWidenerImpl());
         MixinScoreboardCriterionAccessor.getCriteria().put("latency", LATENCY = MixinScoreboardCriterionAccessor.newInstance("latency", true, ObjectiveCriteria.RenderType.INTEGER));
     }
@@ -209,6 +203,7 @@ public enum MoreCommands implements IMoreCommands {
         MixinFormattingAccessor.setStripFormattingPattern(Pattern.compile("(?i)\u00A7[0-9A-FK-ORU]")); // Adding the 'U' for the rainbow formatting.
         MoreGameRules.init();
         DataTrackerHelper.init();
+        Locale.setDefault(Locale.Category.FORMAT, Locale.ROOT);
 
         File dir = new File("config/MoreCommands");
         if (!dir.exists() && !dir.mkdirs()) throw new RuntimeException("Could not make config dir.");
@@ -295,14 +290,14 @@ public enum MoreCommands implements IMoreCommands {
                 float pitch = Mth.wrapDegrees(((MixinEntityAccessor) p).getXRot_());
                 float yaw = Mth.wrapDegrees(((MixinEntityAccessor) p).getYRot_());
                 double moonWidth = Math.PI / 32 * -pitch;
-                long dayTime = p.getLevel().getGameTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
-                if (howlingPlayers.contains(p) || getMoonPhase(p.getLevel().dayTime()) != 0 || dayTime <= 12000 || !(pitch < 0) ||
+                long dayTime = p.getCommandSenderWorld().getGameTime() % 24000; // getTimeOfDay() does not return a value between 0 and 24000 when using the /time add command.
+                if (howlingPlayers.contains(p) || getMoonPhase(p.getCommandSenderWorld().dayTime()) != 0 || dayTime <= 12000 || !(pitch < 0) ||
                         !(Math.abs(yaw) >= (90 - moonWidth)) || !(Math.abs(yaw) <= (90 + moonWidth)))
                     continue;
 
                 double moonPitch = -90 + Math.abs(dayTime - 18000) * 0.0175;
                 if (pitch >= moonPitch-3 && pitch <= moonPitch+3) {
-                    p.getLevel().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1f, 1f);
+                    p.getCommandSenderWorld().playSound(null, Compat.get().blockPosition(p), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1f, 1f);
                     howlingPlayers.add(p);
                 }
             }
@@ -324,6 +319,10 @@ public enum MoreCommands implements IMoreCommands {
 
     public static void registerStuff() {
         if (INSTANCE.isServerOnly() || registeredStuff) return;
+        DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, Registry.SOUND_EVENT_REGISTRY);
+        DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, Registry.BLOCK_REGISTRY);
+        DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, Registry.ITEM_REGISTRY);
+        DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_REGISTRY);
 
         ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
         copySound = soundEventRegistry.register(new ResourceLocation("morecommands:copy"),
@@ -333,11 +332,12 @@ public enum MoreCommands implements IMoreCommands {
         RegistrySupplier<Block> lockedChest = blockRegistry.register(lockedChestLocation,
                 () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
         itemRegistry.register(lockedChestLocation, () -> new BlockItem(lockedChest.get(), new Item.Properties()));
-        itemRegistry.register(new ResourceLocation("minecraft:nether_portal"), () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
-        reachAttribute = attributeRegistry.register(new ResourceLocation("morecommands:reach"), () ->
-                new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
-        swimSpeedAttribute = attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"), () ->
-                new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
+        itemRegistry.register(new ResourceLocation("minecraft:nether_portal"),
+                () -> new BlockItem(Blocks.NETHER_PORTAL, new Item.Properties().fireResistant()));
+        reachAttribute = attributeRegistry.register(new ResourceLocation("morecommands:reach"),
+                () -> new RangedAttribute("attribute.morecommands.reach", 4.5d, 1d, 160d).setSyncable(true));
+        swimSpeedAttribute = attributeRegistry.register(new ResourceLocation("morecommands:swim_speed"),
+                () -> new RangedAttribute("attribute.morecommands.swim_speed", 1f, 0f, Float.MAX_VALUE).setSyncable(true));
 
         soundEventRegistry.register();
         blockRegistry.register();
@@ -345,6 +345,7 @@ public enum MoreCommands implements IMoreCommands {
         attributeRegistry.register();
 
         Compat compat = Compat.get();
+        DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_REGISTRY) : null;
 
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
@@ -369,7 +370,7 @@ public enum MoreCommands implements IMoreCommands {
 
         try {
             classes = ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands." + type);
-            LOG.info("Found " + classes.size() + " commands to load for type " + type + ". Took " + (System.currentTimeMillis() - start));
+            LOG.info("Found " + classes.size() + " commands to load for type " + type + ". Took " + (System.currentTimeMillis() - start) + " ms.");
         } catch (IOException e) {
             LOG.error("Couldn't find commands for type " + type + ". This means none of said type will be loaded.", e);
         }
@@ -443,9 +444,9 @@ public enum MoreCommands implements IMoreCommands {
             if (player.position().distanceToSqr(new Vec3(pos.getX(), pos.getY(), pos.getZ())) > ReachCommand.getReach(player, true))
                 return; // Out of reach
 
-            BlockState state = player.getLevel().getBlockState(pos);
-            if (MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
-                Chair.createAndPlace(pos, player, player.getLevel());
+            BlockState state = player.getCommandSenderWorld().getBlockState(pos);
+            if (MoreGameRules.get().checkBooleanWithPerm(player.getCommandSenderWorld().getGameRules(), MoreGameRules.get().doChairsRule(), player) && Chair.isValid(state))
+                Chair.createAndPlace(pos, player, player.getCommandSenderWorld());
         });
 
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:discord_data"), (buf, context) -> {
@@ -789,7 +790,7 @@ public enum MoreCommands implements IMoreCommands {
         e *= e;
         Vec3 vec3d2 = entity.getViewVector(td);
         Vec3 vec3d3 = vec3d.add(vec3d2.x * reach, vec3d2.y * reach, vec3d2.z * reach);
-        AABB box = entity.getBoundingBox().expandTowards(vec3d2.scale(reach)).inflate(1.0D, 1.0D, 1.0D);
+        AABB box = Compat.get().getBoundingBox(entity).expandTowards(vec3d2.scale(reach)).inflate(1.0D, 1.0D, 1.0D);
         return ProjectileUtil.getEntityHitResult(entity, vec3d, vec3d3, box, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), e);
     }
 
@@ -845,7 +846,7 @@ public enum MoreCommands implements IMoreCommands {
                 target.moveTo(x, y, z, f, g);
                 target.setYHeadRot(f);
                 world.addDuringTeleport(target);
-                Compat.get().setRemoved(entity, 4); // CHANGED_DIMENSION
+                entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
             }
         }
         if (!(target instanceof LivingEntity) || !((LivingEntity) target).isFallFlying()) {
@@ -1004,14 +1005,14 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     // Me
-    public static boolean isCool(Entity entity) {
+    public boolean isCool(Entity entity) {
         return entity instanceof Player && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getStringUUID()) ||
                 Platform.isDevelopmentEnvironment()) && (Minecraft.getInstance().player == null ||
-                entity.getUUID().equals(Minecraft.getInstance().player.getUUID()));
+                Compat.get().getUUID(entity).equals(Compat.get().getUUID(Minecraft.getInstance().player)));
     }
 
     // My best friend :3
-    public static boolean isCute(Entity entity) {
+    public boolean isCute(Entity entity) {
         return entity instanceof Player && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getStringUUID());
     }
 
@@ -1049,7 +1050,7 @@ public enum MoreCommands implements IMoreCommands {
         double y;
         double z = entity.position().z;
         boolean found = false;
-        boolean blockAbove = world.canSeeSky(entity.blockPosition());
+        boolean blockAbove = world.canSeeSky(Compat.get().blockPosition(entity));
         if (!world.isClientSide) while (!found && !blockAbove) {
             for (y = entity.position().y + 1; y < entity.getCommandSenderWorld().getHeight(); y += 1) {
                 Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
@@ -1068,7 +1069,7 @@ public enum MoreCommands implements IMoreCommands {
 
     // Copied from SpreadPlayersCommand$Pile#getY(BlockView, int)
     public static int getY(BlockGetter blockView, double x, double z) {
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, Compat.get().getWorldHeight(blockView), z);
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, blockView.getHeight(), z);
         boolean bl = blockView.getBlockState(mutable).isAir();
         mutable.move(Direction.DOWN);
         boolean bl3;
@@ -1180,22 +1181,22 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     @Override
-    public RegistrySupplier<SoundEvent> getCopySound() {
+    public Supplier<SoundEvent> getCopySound() {
         return copySound;
     }
 
     @Override
-    public RegistrySupplier<SoundEvent> getEESound() {
+    public Supplier<SoundEvent> getEESound() {
         return eeSound;
     }
 
     @Override
-    public RegistrySupplier<Attribute> getReachAttribute() {
+    public Supplier<Attribute> getReachAttribute() {
         return reachAttribute;
     }
 
     @Override
-    public RegistrySupplier<Attribute> getSwimSpeedAttribute() {
+    public Supplier<Attribute> getSwimSpeedAttribute() {
         return swimSpeedAttribute;
     }
 
@@ -1320,8 +1321,6 @@ public enum MoreCommands implements IMoreCommands {
         int minor = v.minor, rev = v.revision == null ? -1 : v.revision;
 
         if (!client) switch (minor) {
-            case 16:
-                return new Compat16();
             case 17:
                 return new Compat17();
             case 18:
@@ -1331,8 +1330,6 @@ public enum MoreCommands implements IMoreCommands {
                 return rev >= 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
         }
         else switch (minor) {
-            case 16:
-                return new ClientCompat16();
             case 17:
             case 18:
                 return new ClientCompat17();
@@ -1348,7 +1345,7 @@ public enum MoreCommands implements IMoreCommands {
 
     public static Entity getTargetedEntity(Player entity) {
         int target = targetedEntities.getOrDefault(entity, -1);
-        return entity.getLevel().getEntity(target);
+        return entity.getCommandSenderWorld().getEntity(target);
     }
 
     public void registerAttributes(boolean addToSupplier) {

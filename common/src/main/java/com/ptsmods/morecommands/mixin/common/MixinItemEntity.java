@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -26,7 +27,7 @@ public abstract class MixinItemEntity extends Entity {
         if (cbi.getReturnValueZ()) return;
 
         Entity thrower = this.thrower == null ? null : level.getEntitiesOfClass(Entity.class, level.getWorldBorder().getCollisionShape().bounds(),
-                e -> this.thrower.equals(e.getUUID())).stream().findAny().orElse(null);
+                e -> this.thrower.equals(Compat.get().getUUID(e))).stream().findAny().orElse(null);
 
         if ((thrower == null ? !level.getGameRules().getBoolean(MoreGameRules.get().doItemsFireDamageRule())
                 : MoreGameRules.get().checkBooleanWithPerm(level.getGameRules(), MoreGameRules.get().doItemsFireDamageRule(), thrower)))

@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import java.util.*;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
@@ -19,6 +18,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
+
+import java.util.*;
 
 public class DropstoreCommand extends Command {
     @Override
@@ -43,9 +44,9 @@ public class DropstoreCommand extends Command {
 
     private int execute(CommandContext<CommandSourceStack> ctx, BlockPos pos, boolean clear) throws CommandSyntaxException {
         Player player = ctx.getSource().getPlayerOrException();
-        if (pos == null) pos = player.blockPosition();
+        if (pos == null) pos = Compat.get().blockPosition(player);
 
-        Inventory inventory = Compat.get().getInventory(player);
+        Inventory inventory = player.getInventory();
         boolean chests = hasPermissionOrOp("morecommands.dropstore.chests").test(ctx.getSource());
 
         if (!chests) {
@@ -70,7 +71,7 @@ public class DropstoreCommand extends Command {
         for (int i = 0; i < 9; i++, i0++)
             chest.setItem(i0, inventory.getItem(i));
 
-        List<ItemStack> armorInv = new ArrayList<>(Compat.get().getInventory(player).armor);
+        List<ItemStack> armorInv = new ArrayList<>(player.getInventory().armor);
         Collections.reverse(armorInv);
         for (ItemStack stack : armorInv)
             chest.setItem(i0++, stack);

@@ -3,14 +3,15 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.compat.compat190",
   "plugin": "com.ptsmods.morecommands.plugin.Plugin190",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "client": [
     "min.MixinChatComponent",
     "min.MixinGuiMessage",
     "min.MixinLocalPlayer",
     "MixinLocalPlayerAccessor",
     "min.MixinChatScreen",
-    "min.MixinChatComponentAccessor"
+    "min.MixinChatComponentAccessor",
+    "MixinLocalPlayer"
   ],
   "mixins": [
     "MixinServerGamePacketListenerImpl",

@@ -8,14 +8,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import org.apache.commons.lang3.tuple.Triple;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
@@ -26,6 +20,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FireballCommand extends Command {
     public static final Map<LargeFireball, Triple<Vec3, AtomicInteger, Integer>> fireballs = new HashMap<>();
@@ -64,10 +63,10 @@ public class FireballCommand extends Command {
                 else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult) result);
                 if (!this.level.isClientSide) {
                     this.level.explode(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.BlockInteraction.DESTROY);
-                    if (impactsDone.addAndGet(1) >= impacts) Compat.get().setRemoved(this, 1);
+                    if (impactsDone.addAndGet(1) >= impacts) setRemoved(RemovalReason.DISCARDED);
                 }
             }
-        } : Compat.get().newFireballEntity(ctx.getSource().getLevel(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
+        } : new LargeFireball(ctx.getSource().getLevel(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
         fireball.setDeltaMovement(velocity0);
 
         MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;

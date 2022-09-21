@@ -17,7 +17,7 @@ public class ForgeCompat182 extends ForgeCompatAdapater {
     private final Map<String, PermissionNode<?>> permissions = new HashMap<>();
 
     @Override
-    public boolean shouldRegisterListener() {
+    public boolean shouldRegisterListeners() {
         return Version.getCurrent().isNewerThanOrEqual(Version.V1_18_2);
     }
 

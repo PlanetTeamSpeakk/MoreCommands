@@ -3,12 +3,11 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.compat.compat18",
   "plugin": "com.ptsmods.morecommands.plugin.Plugin18",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "client": [
     "min.MixinBackgroundRenderer",
     "min.MixinClientPlayerInteractionManager",
     "min.MixinLightmapTextureManager",
-    "min.MixinMinecraft",
     "min.MixinTitleScreen",
     "min.MixinWorldRenderer"
   ],
@@ -21,7 +20,8 @@
     "min.MixinBlock",
     "min.MixinServerPlayNetworkHandler",
     "min.MixinPlayerManager",
-    "min.MixinClientboundCommandsPacket"
+    "min.MixinClientboundCommandsPacket",
+    "min.MixinServerGamePacketListenerImpl"
   ],
   "injectors": {
     "defaultRequire": 1

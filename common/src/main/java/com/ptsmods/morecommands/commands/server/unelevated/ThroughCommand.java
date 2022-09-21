@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,7 +20,7 @@ public class ThroughCommand extends Command {
         dispatcher.register(literalReq("through")
                 .executes(ctx -> {
                     Entity entity = ctx.getSource().getEntityOrException();
-                    BlockPos pos = entity.blockPosition();
+                    BlockPos pos = Compat.get().blockPosition(entity);
                     Level world = ctx.getSource().getLevel();
                     int x = pos.getX();
                     int y = pos.getY();

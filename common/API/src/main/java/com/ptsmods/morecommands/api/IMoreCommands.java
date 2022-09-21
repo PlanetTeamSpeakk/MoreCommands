@@ -1,16 +1,17 @@
 package com.ptsmods.morecommands.api;
 
-import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public interface IMoreCommands {
     Logger LOG = LogManager.getLogger("MoreCommands");
@@ -41,12 +42,16 @@ public interface IMoreCommands {
 
     Path getJar();
 
-    RegistrySupplier<SoundEvent> getCopySound();
-    RegistrySupplier<SoundEvent> getEESound();
+    Supplier<SoundEvent> getCopySound();
+    Supplier<SoundEvent> getEESound();
 
-    RegistrySupplier<Attribute> getReachAttribute();
+    Supplier<Attribute> getReachAttribute();
 
-    RegistrySupplier<Attribute> getSwimSpeedAttribute();
+    Supplier<Attribute> getSwimSpeedAttribute();
 
     void registerAttributes(boolean addToSupplier);
+
+    boolean isCool(Entity entity);
+
+    boolean isCute(Entity entity);
 }

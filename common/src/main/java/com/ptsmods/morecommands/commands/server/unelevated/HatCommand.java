@@ -1,7 +1,6 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,8 +15,8 @@ public class HatCommand extends Command {
                 .executes(ctx -> {
                     Player player = ctx.getSource().getPlayerOrException();
                     ItemStack stack = player.getItemBySlot(EquipmentSlot.HEAD);
-                    Compat.get().getInventory(player).armor.set(EquipmentSlot.HEAD.getIndex(), player.getMainHandItem());
-                    if (Inventory.isHotbarSlot(Compat.get().getInventory(player).selected)) Compat.get().getInventory(player).items.set(Compat.get().getInventory(player).selected, stack);
+                    player.getInventory().armor.set(EquipmentSlot.HEAD.getIndex(), player.getMainHandItem());
+                    if (Inventory.isHotbarSlot(player.getInventory().selected)) player.getInventory().items.set(player.getInventory().selected, stack);
                     return 1;
                 }));
     }

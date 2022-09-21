@@ -153,13 +153,14 @@ public abstract class ClientCommand extends Command {
 
     public static PlayerInfo getEntry() {
         for (PlayerInfo entry : getPlayer().connection.getOnlinePlayers())
-            if (entry.getProfile().getId().equals(getPlayer().getUUID())) return entry;
+            if (entry.getProfile().getId().equals(Compat.get().getUUID(getPlayer()))) return entry;
         return null; // Kinda impossible, but you never know.
     }
 
     public static AbstractClientPlayer getPlayerEntity(PlayerInfo entry) {
         for (Entity entity : getWorld().entitiesForRendering())
-            if (entity instanceof AbstractClientPlayer && entity.getUUID().equals(entry.getProfile().getId())) return (AbstractClientPlayer) entity;
+            if (entity instanceof AbstractClientPlayer && Compat.get().getUUID(entity).equals(entry.getProfile().getId()))
+                return (AbstractClientPlayer) entity;
         return null;
     }
 
@@ -217,13 +218,16 @@ public abstract class ClientCommand extends Command {
         EntitySelector selector = ctx.getArgument(name, EntitySelector.class);
         MixinEntitySelectorAccessor mselector = ReflectionHelper.cast(selector);
         if (!mselector.getIncludesEntities()) {
-            return getPlayers(ctx, name).stream().collect(Collector.<PlayerInfo, List<AbstractClientPlayer>>of(ArrayList::new, (list, entry) -> list.add(getPlayerEntity(entry)), (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList())));
+            return getPlayers(ctx, name).stream()
+                    .collect(Collector.<PlayerInfo, List<AbstractClientPlayer>>
+                            of(ArrayList::new, (list, entry) -> list.add(getPlayerEntity(entry)), (list1, list2) ->
+                            Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList())));
         } else if (mselector.getPlayerName() != null) {
             AbstractClientPlayer player = getPlayerEntity(getPlayer(mselector.getPlayerName()));
             return (player == null ? Collections.emptyList() : Lists.newArrayList(player));
         } else if (mselector.getEntityUUID() != null) {
             for (Entity entity : getWorld().entitiesForRendering())
-                if (entity.getUUID().equals(mselector.getEntityUUID()))
+                if (Compat.get().getUUID(entity).equals(mselector.getEntityUUID()))
                     return Lists.newArrayList(entity);
             return Collections.emptyList();
         } else {
@@ -241,8 +245,8 @@ public abstract class ClientCommand extends Command {
 
     private static Predicate<Entity> getPositionPredicate(MixinEntitySelectorAccessor mselector, Vec3 vec3d) {
         Predicate<Entity> predicate = mselector.getPredicate();
-        if (mselector.getAabb() != null) predicate = predicate.and((entity) -> mselector.getAabb().move(vec3d).intersects(entity.getBoundingBox()));
-        if (!mselector.getRange().isAny()) predicate = predicate.and((entity) -> mselector.getRange().matchesSqr(entity.distanceToSqr(vec3d)));
+        if (mselector.getAabb() != null) predicate = predicate.and(entity -> mselector.getAabb().move(vec3d).intersects(Compat.get().getBoundingBox(entity)));
+        if (!mselector.getRange().isAny()) predicate = predicate.and(entity -> mselector.getRange().matchesSqr(entity.distanceToSqr(vec3d)));
         return predicate;
     }
 
@@ -266,7 +270,7 @@ public abstract class ClientCommand extends Command {
         BlockPos blockPos = context.getArgument(name, Coordinates.class).getBlockPos(getServerCommandSource());
         if (!getWorld().hasChunkAt(blockPos))
             throw BlockPosArgument.ERROR_NOT_LOADED.create();
-        else if (!Compat.get().isInBuildLimit(Minecraft.getInstance().level, blockPos))
+        else if (!Objects.requireNonNull(Minecraft.getInstance().level).isInWorldBounds(blockPos))
             throw BlockPosArgument.ERROR_OUT_OF_WORLD.create();
         else return blockPos;
     }

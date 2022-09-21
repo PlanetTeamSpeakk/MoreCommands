@@ -10,6 +10,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.callbacks.CreateWorldEvent;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
@@ -90,7 +91,7 @@ public class WarpCommand extends Command {
     }
 
     public List<Warp> getWarpsOf(ServerPlayer player) {
-        return warps.getOrDefault(player.getUUID(), Collections.emptyList());
+        return warps.getOrDefault(Compat.get().getUUID(player), Collections.emptyList());
     }
 
     public List<String> getWarpNamesOf(ServerPlayer player) {
@@ -183,7 +184,7 @@ public class WarpCommand extends Command {
                             String name = ctx.getArgument("name", String.class);
                             if (getWarp(name) != null) sendError(ctx, "A warp by that name already exists, please delete it first.");
                             else {
-                                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayer ? ctx.getSource().getPlayerOrException().getUUID() :
+                                Warp warp = createWarp(name, ctx.getSource().getEntity() instanceof ServerPlayer ? Compat.get().getUUID(ctx.getSource().getPlayerOrException()) :
                                         getServerUuid(ctx.getSource().getServer()), ctx.getSource().getPosition(), ctx.getSource().getRotation(), ctx.getSource().getLevel(), false);
                                 sendMsg(ctx, "The warp has been created! You can teleport to it with " + SF + "/warp " + warp.getName() + DF + " and view its stats with " + SF +
                                         "/warpinfo " + warp.getName() + DF + "." + (isOp(ctx) ? " You can also limit it to only be allowed to be used by operators with " + SF +
@@ -198,7 +199,7 @@ public class WarpCommand extends Command {
                         .executes(ctx -> {
                             String name = ctx.getArgument("name", String.class);
                             Warp warp = getWarp(name);
-                            UUID id = ctx.getSource().getEntity() instanceof ServerPlayer ? ctx.getSource().getPlayerOrException().getUUID() : getServerUuid(ctx.getSource().getServer());
+                            UUID id = ctx.getSource().getEntity() instanceof ServerPlayer ? Compat.get().getUUID(ctx.getSource().getPlayerOrException()) : getServerUuid(ctx.getSource().getServer());
                             if (warp == null) sendError(ctx, "A warp by that name could not be found.");
                             else if (hasPermissionOrOp("morecommands.delwarp.others").test(ctx.getSource()) && !warp.getOwner().equals(id))
                                 sendError(ctx, "You have no control over that warp.");

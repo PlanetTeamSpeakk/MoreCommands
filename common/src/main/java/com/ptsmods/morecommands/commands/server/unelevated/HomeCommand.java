@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
@@ -67,16 +68,14 @@ public class HomeCommand extends Command {
                         .executes(ctx -> {
                             Player p = ctx.getSource().getPlayerOrException();
                             Home home = getHome(p, ctx.getArgument("home", String.class));
-                            if (!homes.containsKey(p.getUUID())) sendHomes(p); // Will send error msg.
-                            else if (home == null) sendError(ctx, "Could not find a home by that name.");
-                            else {
-                                getHomes(p).remove(home);
-                                if (getHomes(p).isEmpty()) homes.remove(p.getUUID());
-                                saveData();
-                                sendMsg(ctx, "Your home " + SF + home.name + DF + " was removed.");
-                                return 1;
-                            }
-                            return 0;
+                            if (!homes.containsKey(Compat.get().getUUID(p))) return sendHomes(p); // Will send error msg.
+                            else if (home == null) return sendError(ctx, "Could not find a home by that name.");
+
+                            getHomes(p).remove(home);
+                            if (getHomes(p).isEmpty()) homes.remove(p.getUUID());
+                            saveData();
+                            sendMsg(ctx, "Your home " + SF + home.name + DF + " was removed.");
+                            return 1;
                         })));
     }
 
@@ -90,29 +89,28 @@ public class HomeCommand extends Command {
         int globalMax = p.getCommandSenderWorld().getGameRules().getInt(MoreGameRules.get().maxHomesRule());
         int max = getCountFromPerms(ctx.getSource(), "morecommands.sethome.", globalMax);
         if (max < 0) max = Integer.MAX_VALUE;
+
         boolean bypass = isOp(ctx);
-        if (max == 0 && !bypass) sendError(ctx, "Homes are currently disabled" + (globalMax > 0 ? " (for you)" : "") + ".");
-        else if (getHomes(p).size() >= max && !bypass) sendError(ctx, "You cannot set more than " + max + " homes.");
-        else {
-            if (!homes.containsKey(p.getUUID())) homes.put(p.getUUID(), new ArrayList<>());
-            getHomes(p).add(new Home(name, p.position().x, p.position().y, p.position().z, ((MixinEntityAccessor) p).getXRot_(),
-                    ((MixinEntityAccessor) p).getYRot_(), p.getLevel().dimension().location()));
-            saveData();
-            sendMsg(ctx, "A home by the name of " + SF + name + DF + " has been set.");
-        }
-        return homes.get(p.getUUID()).size();
+        if (max == 0 && !bypass) return sendError(ctx, "Homes are currently disabled" + (globalMax > 0 ? " (for you)" : "") + ".");
+        if (getHomes(p).size() >= max && !bypass) return sendError(ctx, "You cannot set more than " + max + " homes.");
+
+        homes.computeIfAbsent(Compat.get().getUUID(p), u -> new ArrayList<>())
+                .add(new Home(name, p.position().x, p.position().y, p.position().z, ((MixinEntityAccessor) p).getXRot_(),
+                        ((MixinEntityAccessor) p).getYRot_(), p.getCommandSenderWorld().dimension().location()));
+        saveData();
+        sendMsg(ctx, "A home by the name of " + SF + name + DF + " has been set.");
+
+        return homes.get(Compat.get().getUUID(p)).size();
     }
 
     private int executeHome(CommandContext<CommandSourceStack> ctx, String name) throws CommandSyntaxException {
         Player player = ctx.getSource().getPlayerOrException();
-        if (getHomes(player).isEmpty() || name == null && getHomes(player).size() > 1) sendHomes(player);
-        else {
-            // Get home named 'home' if no home was given or, if that does not exist, get the first set home.
-            Home home = getHome(player, name == null ? getHome(player, "home") == null ? getHomes(player).get(0).name : "home" : name);
-            if (home == null) sendHomes(player);
-            else return tpHome(player, home);
-        }
-        return 0;
+        if (getHomes(player).isEmpty() || name == null && getHomes(player).size() > 1) return sendHomes(player);
+
+        // Get home named 'home' if no home was given or, if that does not exist, get the first set home.
+        Home home = getHome(player, name == null ? getHome(player, "home") == null ? getHomes(player).get(0).name : "home" : name);
+        if (home == null) return sendHomes(player);
+        return tpHome(player, home);
     }
 
     private int sendHomes(Player player) {
@@ -124,7 +122,7 @@ public class HomeCommand extends Command {
 
     private int tpHome(Player player, Home home) {
         MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
-        ResourceKey<Level> registryKey = player.getLevel().dimension();
+        ResourceKey<Level> registryKey = player.getCommandSenderWorld().dimension();
         if (Level.NETHER.equals(registryKey)) return 9;
         else if (Level.OVERWORLD.equals(registryKey)) return 10;
         else if (Level.END.equals(registryKey)) return 11;
@@ -132,14 +130,14 @@ public class HomeCommand extends Command {
     }
 
     private Home getHome(Player player, String name) {
-        for (Home home : getHomes(player))
-            if (home.name.equalsIgnoreCase(name))
-                return home;
-        return null;
+        return getHomes(player).stream()
+                .filter(home -> home.name.equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
     private List<Home> getHomes(Player player) {
-        return homes.getOrDefault(player.getUUID(), Collections.emptyList());
+        return homes.getOrDefault(Compat.get().getUUID(player), Collections.emptyList());
     }
 
     private void saveData() {

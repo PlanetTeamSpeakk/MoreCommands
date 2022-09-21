@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.datafixers.util.Pair;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.CollectionExtensions;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
 import net.minecraft.ChatFormatting;
@@ -41,7 +41,7 @@ public class KitCommand extends Command {
 		kits.putAll(MoreCommands.<Map<String, Map<String, Object>>>readJson(MoreCommands.getRelativePath(server).resolve("kits.json").toFile())
 				.or(new HashMap<String, Map<String, Object>>()).entrySet().stream()
 				.map(entry -> Pair.of(entry.getKey(), Kit.deserialise(entry.getValue())))
-				.collect(Collectors.toMap(Pair::left, Pair::right)));
+				.collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class KitCommand extends Command {
 									String name = ctx.getArgument("name", String.class);
 									if (kits.containsKey(name.toLowerCase(Locale.ROOT))) sendError(ctx, "A kit with that name already exists.");
 									else {
-										Inventory inv = Compat.get().getInventory(ctx.getSource().getPlayer());
+										Inventory inv = ctx.getSource().getPlayerOrException().getInventory();
 										kits.put(name.toLowerCase(Locale.ROOT), new Kit(name, ctx.getArgument("cooldown", Integer.class),
 												Lists.newArrayList(inv.items, inv.armor, inv.offhand).stream()
 														.flatMap(List::stream)
@@ -182,10 +182,10 @@ public class KitCommand extends Command {
 			if (!onCooldown(player)) {
 				for (ItemStack stack : items) {
 					ItemStack stack0 = stack.copy();
-					if (!Compat.get().getInventory(player).add(stack0)) player.drop(stack0, false);
+					if (!player.getInventory().add(stack0)) player.drop(stack0, false);
 				}
 				if (cooldown > 0) {
-					cooldowns.put(player.getUUID(), System.currentTimeMillis() + cooldown * 1000L);
+					cooldowns.put(Compat.get().getUUID(player), System.currentTimeMillis() + cooldown * 1000L);
 					saveKits();
 				}
 			}
@@ -196,7 +196,7 @@ public class KitCommand extends Command {
 		}
 
 		public long getRemainingCooldown(Player player) {
-			return cooldowns.containsKey(player.getUUID()) ? cooldowns.get(player.getUUID()) - System.currentTimeMillis() : 0;
+			return cooldowns.containsKey(Compat.get().getUUID(player)) ? cooldowns.get(Compat.get().getUUID(player)) - System.currentTimeMillis() : 0;
 		}
 
 		public Map<String, Object> serialise() {
@@ -205,8 +205,8 @@ public class KitCommand extends Command {
 			data.put("cooldown", cooldown);
 			data.put("cooldowns", cooldowns.entrySet().stream()
 					.map(entry -> Pair.of(entry.getKey().toString(), entry.getValue()))
-					.filter(pair -> pair.right() - System.currentTimeMillis() > 0)
-					.collect(Collectors.toMap(Pair::left, Pair::right)));
+					.filter(pair -> pair.getSecond() - System.currentTimeMillis() > 0)
+					.collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
 			data.put("items", items.stream().filter(stack -> !stack.isEmpty()).map(KitCommand::serialiseItemStack).collect(Collectors.toList()));
 			return data;
 		}
@@ -216,7 +216,7 @@ public class KitCommand extends Command {
 			int cooldown = ((Double) data.get("cooldown")).intValue();
 			Map<UUID, Long> cooldowns = ((Map<String, Long>) data.get("cooldowns")).entrySet().stream()
 					.map(entry -> Pair.of(UUID.fromString(entry.getKey()), entry.getValue()))
-					.collect(Collectors.toMap(Pair::left, Pair::right));
+					.collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 			List<ItemStack> items = ((List<Map<String, Object>>) data.get("items")).stream().map(KitCommand::deserialiseItemStack).collect(Collectors.toList());
 			Kit kit = new Kit(name, cooldown, items);
 			kit.cooldowns.putAll(cooldowns);

@@ -25,7 +25,7 @@ public class ForgeCompat17 extends ForgeCompatAdapater {
     private final Queue<Triple<String, Integer, String>> permissionQueue = new ConcurrentLinkedQueue<>();
 
     @Override
-    public boolean shouldRegisterListener() {
+    public boolean shouldRegisterListeners() {
         return Version.getCurrent().isOlderThanOrEqual(Version.V1_18);
     }
 
@@ -33,7 +33,7 @@ public class ForgeCompat17 extends ForgeCompatAdapater {
     public void registerListeners() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         Listener listener = new Listener();
-        modEventBus.addListener(listener::registerAttributes);
+        modEventBus.addGenericListener(Attribute.class, listener::registerAttributes);
         modEventBus.addListener(listener::onInit);
         modEventBus.addListener(listener::onClientInit);
     }
@@ -52,10 +52,16 @@ public class ForgeCompat17 extends ForgeCompatAdapater {
 
     private class Listener {
         public void registerAttributes(RegistryEvent.Register<Attribute> event) {
-            event.getRegistry().register(IMoreCommands.get().getReachAttribute().get()
-                    .setRegistryName(new ResourceLocation("morecommands", "reach")));
-            event.getRegistry().register(IMoreCommands.get().getSwimSpeedAttribute().get()
-                    .setRegistryName(new ResourceLocation("morecommands", "swim_speed")));
+            Attribute reachAttribute = IMoreCommands.get().getReachAttribute().get();
+            if (reachAttribute.getRegistryName() == null)
+                reachAttribute.setRegistryName(new ResourceLocation("morecommands", "reach"));
+
+            Attribute swimSpeedAttribute = IMoreCommands.get().getSwimSpeedAttribute().get();
+            if (swimSpeedAttribute.getRegistryName() == null)
+                swimSpeedAttribute.setRegistryName(new ResourceLocation("morecommands", "swim_speed"));
+
+            event.getRegistry().register(reachAttribute);
+            event.getRegistry().register(swimSpeedAttribute);
         }
 
         public void onInit(FMLCommonSetupEvent event) {

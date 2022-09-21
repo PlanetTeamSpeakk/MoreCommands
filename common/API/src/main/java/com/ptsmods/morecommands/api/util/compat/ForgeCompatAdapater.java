@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class ForgeCompatAdapater implements ForgeCompat {
     @Override
-    public boolean shouldRegisterListener() {
+    public boolean shouldRegisterListeners() {
         return false;
     }
 

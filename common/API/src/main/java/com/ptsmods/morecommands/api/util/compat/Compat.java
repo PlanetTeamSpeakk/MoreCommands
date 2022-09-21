@@ -17,10 +17,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -29,22 +27,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.Painting;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BaseSpawner;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.DoubleStream;
 
@@ -57,35 +51,13 @@ public interface Compat {
 
     boolean isRemoved(Entity entity);
 
-    void setRemoved(Entity entity, int reason);
-
-    Inventory getInventory(Player player);
-
-    boolean isInBuildLimit(Level world, BlockPos pos);
-
-    Component toText(Tag tag);
-
     ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile);
 
     CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
 
-    void readSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
-
-    void setSignEditor(SignBlockEntity sbe, Player player);
-
     <E> Registry<E> getRegistry(RegistryAccess manager, ResourceKey<? extends Registry<E>> key);
 
-    int getWorldHeight(BlockGetter world);
-
-    LargeFireball newFireballEntity(Level world, LivingEntity owner, double velocityX, double velocityY, double velocityZ, int explosionPower);
-
-    String getProcessorString();
-
     <T> boolean registryContainsId(MappedRegistry<T> registry, ResourceLocation id);
-
-    void playerSetWorld(ServerPlayer player, ServerLevel world);
-
-    ClientboundPlayerInfoPacket newPlayerListS2CPacket(int action, ServerPlayer... players);
 
     CompoundTag writeBENBT(BlockEntity be);
 
@@ -143,4 +115,10 @@ public interface Compat {
     <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentTypePropertiesImpl(ArgumentTypeProperties<A, T, P> properties);
 
     <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentSerialiserImpl(ArgumentTypeSerialiser<A, T, P> serialiser);
+
+    UUID getUUID(Entity entity); // Srg has the nerve to rename Entity#getUUID() from m_142081_ to m_20148_ in 1.19.
+
+    AABB getBoundingBox(Entity entity); // Same thing, renamed in srg in 1.19.
+
+    BlockPos blockPosition(Entity entity); // Same thing
 }

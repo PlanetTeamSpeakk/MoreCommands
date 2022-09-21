@@ -13,7 +13,7 @@ import net.minecraftforge.registries.RegisterEvent;
 public class ForgeCompat19 extends ForgeCompatAdapater {
 
     @Override
-    public boolean shouldRegisterListener() {
+    public boolean shouldRegisterListeners() {
         return Version.getCurrent().isNewerThanOrEqual(Version.V1_19);
     }
 

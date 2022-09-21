@@ -1,12 +1,8 @@
 package com.ptsmods.morecommands.miscellaneous;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.*;
 import com.ptsmods.morecommands.api.util.compat.Compat;
-import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -41,7 +37,7 @@ public class VexParticle extends Particle {
             RenderSystem.blendFuncSeparate(770, 771, 1, 0);
             RenderSystem.lineWidth(2.0F);
             RenderSystem.disableTexture();
-            ClientCompat.get().bufferBuilderBegin(builder, 3, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
+            builder.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
         }
 
         @Override

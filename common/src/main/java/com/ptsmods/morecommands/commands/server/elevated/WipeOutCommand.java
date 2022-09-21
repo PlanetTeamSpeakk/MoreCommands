@@ -2,12 +2,7 @@ package com.ptsmods.morecommands.commands.server.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,6 +10,11 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class WipeOutCommand extends Command {
     @Override
@@ -48,7 +48,7 @@ public class WipeOutCommand extends Command {
                 .flatMap(world -> StreamSupport.stream(world.getAllEntities().spliterator(), false))
                 .filter(predicate)
                 .collect(Collectors.toList());
-        entities.forEach(entity -> Compat.get().setRemoved(entity, 1));
+        entities.forEach(entity -> entity.setRemoved(Entity.RemovalReason.DISCARDED));
         sendMsg(ctx, SF.toString() + entities.size() + " " + DF + "entities have been killed.");
         return entities.size();
     }

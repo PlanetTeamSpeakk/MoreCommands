@@ -31,7 +31,7 @@ public class CyclePaintingCommand extends Command {
             Painting painting = (Painting) ((EntityHitResult) result).getEntity();
             PaintingVariant oldArt = (PaintingVariant) Compat.get().getPaintingVariant(painting);
             Compat.get().setPaintingVariant(painting, motive == null ? Registry.PAINTING_VARIANT.byId((Registry.PAINTING_VARIANT.getId(oldArt)+1) % Registry.PAINTING_VARIANT.size()) : motive);
-            BlockPos pos = painting.blockPosition();
+            BlockPos pos = Compat.get().blockPosition(painting);
             Entity painting0 = MoreCommands.cloneEntity(painting, false);
             painting.kill();
             painting0.setPosRaw(pos.getX(), pos.getY(), pos.getZ());

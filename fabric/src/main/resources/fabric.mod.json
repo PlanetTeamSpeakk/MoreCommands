@@ -32,7 +32,6 @@
     "morecommands_client.mixins.json",
     "morecommands_common.mixins.json",
     "morecommands_reach.mixins.json",
-    "morecommands_compat16.mixins.json",
     "morecommands_compat17.mixins.json",
     "morecommands_compat18.mixins.json",
     "morecommands_compat180.mixins.json",
@@ -45,8 +44,8 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*",
-    "minecraft": ">=1.16",
-    "architectury": ">=4.2.50"
+    "minecraft": ">=1.17",
+    "architectury": ">=2.10.0"
   },
   "recommends": {
     "luckperms": "*"

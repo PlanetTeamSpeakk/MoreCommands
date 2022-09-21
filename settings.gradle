@@ -17,7 +17,6 @@ if (platforms.contains("forge"))
     include("forge")
 include 'common:API'
 include 'common:Compat'
-include 'common:Compat:Compat16'
 include 'common:Compat:Compat17'
 include 'common:Compat:Compat17:forge'
 include 'common:Compat:Compat18'

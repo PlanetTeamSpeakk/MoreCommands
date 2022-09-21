@@ -25,7 +25,7 @@ public class MixinEnchantmentScreenHandler {
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Ljava/util/Random;IILnet/minecraft/world/item/ItemStack;)I"),
-            method = {"method_17411", "m_39483_"}, require = 1, remap = false)
+            method = {"method_17411", "m_39483_"}, require = 1)
     private int onContentChanged_calculateRequiredExperienceLevel(Random random, int slotIndex, int bookshelfCount, ItemStack stack) {
         Item item = stack.getItem();
         int i = item.getEnchantmentValue();

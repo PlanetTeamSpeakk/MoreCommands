@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.Version;
 import com.ptsmods.morecommands.api.util.compat.ForgeCompat;
@@ -21,14 +20,11 @@ import java.util.Optional;
 public enum Compat implements ForgeCompat {
     INSTANCE;
 
-    private final LoadingCache<String, Optional<ForgeCompat>> compats = CacheBuilder.newBuilder().build(CacheLoader.from(version -> {
-        Optional<ForgeCompat> res = Optional.ofNullable(ReflectionHelper.newInstance(ReflectionHelper.getCtor(ReflectionHelper.getClass("com.ptsmods.morecommands.forge.compat.ForgeCompat" + version))));
-        IMoreCommands.LOG.info("com.ptsmods.morecommands.forge.compat.ForgeCompat" + version + ", " + res.isPresent());
-        return res;
-    }));
+    private final LoadingCache<String, Optional<ForgeCompat>> compats = CacheBuilder.newBuilder().build(CacheLoader.from(version ->
+            Optional.ofNullable(ReflectionHelper.newInstance(ReflectionHelper.getCtor(ReflectionHelper.getClass("com.ptsmods.morecommands.forge.compat.ForgeCompat" + version))))));
 
     @Override
-    public boolean shouldRegisterListener() {
+    public boolean shouldRegisterListeners() {
         return true;
     }
 
@@ -39,7 +35,7 @@ public enum Compat implements ForgeCompat {
                 .map(this::getCompat)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .filter(ForgeCompat::shouldRegisterListener)
+                .filter(ForgeCompat::shouldRegisterListeners)
                 .forEach(ForgeCompat::registerListeners);
     }
 
@@ -54,7 +50,6 @@ public enum Compat implements ForgeCompat {
     }
 
     private Optional<ForgeCompat> getCompat(Version version) {
-        IMoreCommands.LOG.info("Getting compat for version " + version + " " + Version.getCurrent().isNewerThanOrEqual(version));
         return Version.getCurrent().isNewerThanOrEqual(version) ? compats.getUnchecked("" + version.minor +
                 (version.revision == null ? "" : version.revision)) : Optional.empty();
     }

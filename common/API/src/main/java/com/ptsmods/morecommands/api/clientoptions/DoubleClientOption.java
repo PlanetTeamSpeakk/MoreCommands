@@ -1,11 +1,12 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import java.text.DecimalFormat;
-import java.util.function.BiConsumer;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+
+import java.text.DecimalFormat;
+import java.util.function.BiConsumer;
 
 public class DoubleClientOption extends ClientOption<Double> {
     private final double min, max;
@@ -42,7 +43,7 @@ public class DoubleClientOption extends ClientOption<Double> {
 
     @Override
     public void setValueString(String s) {
-        setValue(Double.parseDouble(s));
+        setValue(Double.parseDouble(s.replace(',', '.')));
     }
 
     @Override

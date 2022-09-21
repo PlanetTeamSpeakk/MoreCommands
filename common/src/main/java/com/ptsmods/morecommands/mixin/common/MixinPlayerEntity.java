@@ -25,7 +25,7 @@ public abstract class MixinPlayerEntity {
 
     @Inject(at = @At("RETURN"), method = "getName", cancellable = true)
     public void getName(CallbackInfoReturnable<Component> cbi) {
-        if (!MoreCommands.isCute(ReflectionHelper.cast(this))) return;
+        if (!MoreCommands.INSTANCE.isCute(ReflectionHelper.cast(this))) return;
         TextBuilder<?> builder = Compat.get().builderFromText(cbi.getReturnValue());
         cbi.setReturnValue(builder.withStyle(style -> style.applyFormat(ChatFormatting.LIGHT_PURPLE)).build());
     }

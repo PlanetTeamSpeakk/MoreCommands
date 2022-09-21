@@ -52,9 +52,11 @@ public class MixinGameRenderer {
 
     @Inject(at = @At("RETURN"), method = "pick")
     public void updateTargetedEntity(float tickDelta, CallbackInfo cbi) {
-        if (!NetworkManager.canServerReceive(entityTargetPacketId) || minecraft.crosshairPickEntity == lastTargetedEntity) return;
+        try {
+            if (!NetworkManager.canServerReceive(entityTargetPacketId) || minecraft.crosshairPickEntity == lastTargetedEntity) return;
 
-        lastTargetedEntity = minecraft.crosshairPickEntity;
-        NetworkManager.sendToServer(entityTargetPacketId, new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(lastTargetedEntity == null ? -1 : ((MixinEntityAccessor) lastTargetedEntity).getId_()));
+            lastTargetedEntity = minecraft.crosshairPickEntity;
+            NetworkManager.sendToServer(entityTargetPacketId, new FriendlyByteBuf(Unpooled.buffer()).writeVarInt(lastTargetedEntity == null ? -1 : ((MixinEntityAccessor) lastTargetedEntity).getId_()));
+        } catch (IllegalStateException ignored) {} // Server is not yet ready, we're in a setup phase.
     }
 }

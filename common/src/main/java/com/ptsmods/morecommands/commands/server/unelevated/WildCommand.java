@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.commands.CommandSourceStack;
@@ -21,7 +22,8 @@ public class WildCommand extends Command {
                         double x = Math.random()*limit + border.getCenterX();
                         double z = Math.random()*limit + border.getCenterZ();
                         ctx.getSource().getEntityOrException().teleportToWithTicket(x, MoreCommands.getY(ctx.getSource().getLevel(), x, z), z);
-                        sendMsg(ctx, "You have been teleported! Your new coords are " + SF + (int) x + DF + ", " + SF + entity.blockPosition().getY() + DF + ", " + SF + (int) z + DF + ".");
+                        sendMsg(ctx, "You have been teleported! Your new coords are " + SF + (int) x + DF + ", " +
+                                SF + Compat.get().blockPosition(entity).getY() + DF + ", " + SF + (int) z + DF + ".");
                         return 1;
                     }
                     return 0;

@@ -2,16 +2,20 @@ package com.ptsmods.morecommands.miscellaneous;
 
 import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IMoreGameRules;
+import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinBooleanValueAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinGameRulesAccessor;
+import com.ptsmods.morecommands.mixin.common.accessor.MixinIntegerValueAccessor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameRules;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +64,7 @@ public class MoreGameRules implements IMoreGameRules {
     private MoreGameRules() {}
 
     private GameRules.Key<GameRules.BooleanValue> createBooleanRule(String name, GameRules.Category category, boolean defaultValue, boolean doPermCheck) {
-        GameRules.Key<GameRules.BooleanValue> key = GameRules.register(name, category, GameRules.BooleanValue.create(defaultValue));
+        GameRules.Key<GameRules.BooleanValue> key = MixinGameRulesAccessor.callRegister(name, category, MixinBooleanValueAccessor.callCreate(defaultValue));
         if (doPermCheck) {
             pendingPermChecks.add(key);
             MoreCommands.registerPermission("morecommands.gamerule." + key.getId(), true);
@@ -71,13 +75,13 @@ public class MoreGameRules implements IMoreGameRules {
     }
 
     private GameRules.Key<GameRules.IntegerValue> createIntRule(String name, GameRules.Category category, int defaultValue) {
-        GameRules.Key<GameRules.IntegerValue> key = GameRules.register(name, category, GameRules.IntegerValue.create(defaultValue));
+        GameRules.Key<GameRules.IntegerValue> key = MixinGameRulesAccessor.callRegister(name, category, MixinIntegerValueAccessor.callCreate(defaultValue));
         allRules.put(name, key);
         return key;
     }
 
     private <E extends Enum<E>> GameRules.Key<EnumRule<E>> createEnumRule(String name, Class<E> clazz, E defaultValue, BiConsumer<MinecraftServer, EnumRule<E>> changeListener) {
-        GameRules.Key<EnumRule<E>> key = GameRules.register(name, GameRules.Category.MISC, EnumRule.createEnumRule(clazz, defaultValue, changeListener));
+        GameRules.Key<EnumRule<E>> key = MixinGameRulesAccessor.callRegister(name, GameRules.Category.MISC, EnumRule.createEnumRule(clazz, defaultValue, changeListener));
         allRules.put(name, key);
         return key;
     }

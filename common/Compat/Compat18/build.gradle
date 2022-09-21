@@ -11,6 +11,5 @@ dependencies {
     modApi "dev.architectury:architectury:4.9.83"
 
     implementation project(path: ":common:API", configuration: "namedElements")
-    implementation project(path: ":common:Compat:Compat16", configuration: "namedElements")
     implementation project(path: ":common:Compat:Compat17", configuration: "namedElements")
 }

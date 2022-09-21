@@ -16,12 +16,6 @@ import com.ptsmods.morecommands.mixin.common.accessor.MixinClientConnectionAcces
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinPlayerEntityAccessor;
 import io.netty.channel.*;
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.UuidArgument;
@@ -30,6 +24,13 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.GameType;
+
+import java.io.IOException;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class FakePlayerCommand extends Command {
     private final List<UUID> fake = new ArrayList<>();
@@ -48,17 +49,15 @@ public class FakePlayerCommand extends Command {
                         .then(argument("player", EntityArgument.player())
                                 .executes(ctx -> {
                                     ServerPlayer p = EntityArgument.getPlayer(ctx, "player");
-                                    if (!fake.contains(p.getUUID())) sendError(ctx, "To kick normal players, please use the /kick command instead.");
-                                    else {
-                                        try {
-                                            p.connection.disconnect(literalText("yeET").build());
-                                            sendMsg(ctx, "The player has been disconnected.");
-                                        } catch (Exception e) {
-                                            log.catching(e);
-                                        }
-                                        return 1;
+                                    if (!fake.contains(Compat.get().getUUID(p))) return sendError(ctx, "To kick normal players, please use the /kick command instead.");
+
+                                    try {
+                                        p.connection.disconnect(literalText("yeET").build());
+                                        sendMsg(ctx, "The player has been disconnected.");
+                                    } catch (Exception e) {
+                                        log.catching(e);
                                     }
-                                    return 0;
+                                    return 1;
                                 }))));
     }
 
@@ -158,7 +157,7 @@ public class FakePlayerCommand extends Command {
             MoreCommands.teleport(player, ctx.getSource().getLevel(), ctx.getSource().getPosition().x, ctx.getSource().getPosition().y, ctx.getSource().getPosition().z,
                     ((MixinEntityAccessor) player).getYRot_(), ((MixinEntityAccessor) player).getXRot_());
 
-            fake.add(player.getUUID());
+            fake.add(Compat.get().getUUID(player));
             sendMsg(ctx, "A fake player by the name of " + IMoreCommands.get().textToString(player.getName(), null, true) + " has been spawned.");
             return 1;
         } catch (Exception e) {

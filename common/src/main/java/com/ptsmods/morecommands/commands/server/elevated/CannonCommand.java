@@ -4,9 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.MoverType;
@@ -14,6 +12,8 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Objects;
 
 public class CannonCommand extends Command {
     @Override
@@ -53,7 +53,7 @@ public class CannonCommand extends Command {
 
                 --this.fuseTimer;
                 if (this.fuseTimer <= 0) {
-                    Compat.get().setRemoved(this, 0);
+                    setRemoved(RemovalReason.KILLED);
                     if (!level.isClientSide)
                         level.explode(this, this.getX(), this.getY(0.0625D), this.getZ(), power, Explosion.BlockInteraction.BREAK);
                 } else {

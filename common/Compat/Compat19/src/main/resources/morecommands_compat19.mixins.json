@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.compat.compat19",
   "plugin": "com.ptsmods.morecommands.plugin.Plugin19",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "client": [
     "plus.MixinBackgroundRenderer",
     "plus.MixinClientPlayerInteractionManager",
@@ -12,7 +12,8 @@
     "plus.MixinTitleScreen",
     "plus.MixinWorldRenderer",
     "plus.MixinKeybindTranslationsAccessor",
-    "plus.MixinMinecraft"
+    "plus.MixinMinecraft",
+    "plus.MixinWorldOpenFlows"
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",

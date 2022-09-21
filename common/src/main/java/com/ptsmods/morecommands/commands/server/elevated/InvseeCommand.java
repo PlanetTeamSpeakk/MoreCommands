@@ -43,7 +43,7 @@ public class InvseeCommand extends Command {
 
             @Override
             public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-                return new InvSeeScreenHandler(syncId, inv, Compat.get().getInventory(target), player);
+                return new InvSeeScreenHandler(syncId, inv, player.getInventory(), player);
             }
         });
     }

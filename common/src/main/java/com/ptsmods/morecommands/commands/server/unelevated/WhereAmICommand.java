@@ -14,7 +14,7 @@ public class WhereAmICommand extends Command {
         dispatcher.register(literalReq("whereami")
                 .executes(ctx -> {
                     Level world = ctx.getSource().getEntityOrException().getCommandSenderWorld();
-                    BlockPos pos = ctx.getSource().getEntityOrException().blockPosition();
+                    BlockPos pos = Compat.get().blockPosition(ctx.getSource().getEntityOrException());
                     sendMsg(ctx, "You're currently in world " + SF + world.dimension().location().toString() + DF + " at " +
                             SF + pos.getX() + DF + ", " + SF + pos.getY() + DF + ", " + SF + pos.getZ() + DF + " in biome " + SF +
                             Compat.get().getRegistry(world.registryAccess(), Registry.BIOME_REGISTRY).getKey(Compat.get().getBiome(world, pos)) + DF + ".");

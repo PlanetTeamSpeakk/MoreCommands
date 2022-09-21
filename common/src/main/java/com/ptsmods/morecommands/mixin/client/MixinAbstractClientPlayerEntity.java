@@ -14,7 +14,7 @@ public class MixinAbstractClientPlayerEntity {
 
     @Inject(at = @At("RETURN"), method = "getCloakTextureLocation", cancellable = true)
     private void getCapeTexture(CallbackInfoReturnable<ResourceLocation> cbi) {
-        if (MoreCommands.isCool(ReflectionHelper.cast(this)))
+        if (MoreCommands.INSTANCE.isCool(ReflectionHelper.cast(this)))
             cbi.setReturnValue(new ResourceLocation("morecommands:textures/cape.png"));
     }
 }

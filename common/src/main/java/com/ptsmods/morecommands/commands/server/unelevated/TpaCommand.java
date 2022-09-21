@@ -9,11 +9,13 @@ import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import dev.architectury.event.events.common.TickEvent;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TpaCommand extends Command {
 
@@ -22,7 +24,7 @@ public class TpaCommand extends Command {
     public void preinit(boolean serverOnly) {
         TickEvent.SERVER_LEVEL_POST.register(world -> {
             for (TpaRequest request : new ArrayList<>(requests))
-                if (world == request.to.getLevel() && world.getGameTime() - request.creationTick >= world.getGameRules().getInt(MoreGameRules.get().tpaTimeoutRule())) {
+                if (world == request.to.getCommandSenderWorld() && world.getGameTime() - request.creationTick >= world.getGameRules().getInt(MoreGameRules.get().tpaTimeoutRule())) {
                     request.timeout();
                     requests.remove(request);
                 }
@@ -82,7 +84,7 @@ public class TpaCommand extends Command {
         private final long creationTick;
 
         private TpaRequest(ServerPlayer from, ServerPlayer to, boolean here) {
-            creationTick = from.getLevel().getGameTime();
+            creationTick = from.getCommandSenderWorld().getGameTime();
             this.from = from;
             this.to = to;
             this.here = here;
@@ -95,7 +97,7 @@ public class TpaCommand extends Command {
         private void accept() {
             ServerPlayer from = here ? this.to : this.from;
             ServerPlayer to = here ? this.from : this.to;
-            MoreCommands.teleport(from, to.getLevel(), to.position(), ((MixinEntityAccessor) to).getYRot_(), ((MixinEntityAccessor) to).getXRot_());
+            MoreCommands.teleport(from, (ServerLevel) to.getCommandSenderWorld(), to.position(), ((MixinEntityAccessor) to).getYRot_(), ((MixinEntityAccessor) to).getXRot_());
         }
 
         private void deny() {

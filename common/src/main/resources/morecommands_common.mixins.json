@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.common",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "plugin": "com.ptsmods.morecommands.MixinPlugin",
   "mixins": [
     "MixinAnvilScreenHandler",
@@ -31,9 +31,9 @@
     "MixinRuleListWidgetVisitor",
     "MixinServerCommandSource",
     "MixinServerNetworkIo",
-    "MixinServerPlayerEntity",
+    "MixinServerPlayer",
     "MixinServerPlayerInteractionManager",
-    "MixinServerPlayNetworkHandler",
+    "MixinServerGamePacketListenerImpl",
     "MixinTargetPredicate",
     "MixinThreadedAnvilChunkStorage",
     "MixinTimeCommand",
@@ -64,7 +64,15 @@
     "MixinEntitySelectorReader",
     "accessor.MixinAttributeSupplierAccessor",
     "accessor.MixinAttributeSupplierBuilderAccessor",
-    "MixinChatFormatting"
+    "MixinChatFormatting",
+    "accessor.MixinGameRulesAccessor",
+    "accessor.MixinBooleanValueAccessor",
+    "accessor.MixinIntegerValueAccessor",
+    "MixinEntityCallbacks",
+    "MixinFarmBlock",
+    "MixinRandomPos",
+    "accessor.MixinHopperBlockEntityAccessor",
+    "MixinAbstractContainerMenu"
   ],
   "injectors": {
 	"defaultRequire": 1

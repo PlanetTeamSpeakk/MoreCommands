@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.commands.server.unelevated;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +17,7 @@ public class CraftCommand extends Command {
                 .executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
                     ctx.getSource().getPlayerOrException().openMenu(new SimpleMenuProvider((i, playerInventory, playerEntity) ->
-                            new CraftingMenu(i, playerInventory, ContainerLevelAccess.create(player.getLevel(), player.blockPosition())) {
+                            new CraftingMenu(i, playerInventory, ContainerLevelAccess.create(player.getCommandSenderWorld(), Compat.get().blockPosition(player))) {
                                 public boolean stillValid(Player player) {
                                     return true;
                                 }

@@ -217,7 +217,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         });
 
         ClientEntityEvent.ENTITY_LOAD.register((world, entity) -> {
-            if (entity instanceof Player && MoreCommands.isCool(entity)) coolKids.add(entity);
+            if (entity instanceof Player && MoreCommands.INSTANCE.isCool(entity)) coolKids.add(entity);
         });
 
         ClientEntityEvent.ENTITY_UNLOAD.register((world, entity) -> coolKids.remove(entity));

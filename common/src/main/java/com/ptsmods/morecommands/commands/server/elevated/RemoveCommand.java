@@ -3,17 +3,17 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinLivingEntityAccessor;
-import java.util.Collection;
-import java.util.stream.Collectors;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class RemoveCommand extends Command {
     @Override
@@ -35,7 +35,7 @@ public class RemoveCommand extends Command {
                 .collect(Collectors.toList());
 
         for (Entity entity : targets) {
-            Compat.get().setRemoved(entity, 1);
+            entity.setRemoved(Entity.RemovalReason.DISCARDED);
             if (entity instanceof LivingEntity)
                 ((MixinLivingEntityAccessor) entity).setDead(true);
         }

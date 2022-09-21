@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,7 @@ public class DescendCommand extends Command {
 
     public static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Entity entity = ctx.getSource().getEntityOrException();
-        BlockPos pos = entity.blockPosition();
+        BlockPos pos = Compat.get().blockPosition(entity);
         Level world = entity.getCommandSenderWorld();
         int x = pos.getX();
         int y = pos.getY() - 2;

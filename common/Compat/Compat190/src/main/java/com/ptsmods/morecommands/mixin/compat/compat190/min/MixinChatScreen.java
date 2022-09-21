@@ -37,7 +37,7 @@ public class MixinChatScreen implements ChatScreenAddon {
         double f = x - 2.0;
         double g = (double) client.getWindow().getGuiScaledHeight() - y - 40.0;
         f = Mth.floor(f / hud.getScale());
-        g = Mth.floor(g / (hud.getScale() * (client.options.chatLineSpacing().get() + 1.0)));
+        g = Mth.floor(g / (hud.getScale() * (ClientCompat.get().getChatLineSpacing(client.options) + 1.0)));
 
         if (f < 0.0 || g < 0.0) return null;
 

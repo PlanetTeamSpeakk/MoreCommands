@@ -3,21 +3,9 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.compat.compat17",
   "plugin": "com.ptsmods.morecommands.plugin.Plugin17",
-  "compatibilityLevel": "JAVA_8",
-  "client": [
-    "plus.MixinScreen",
-    "plus.MixinSignEditScreen",
-    "plus.MixinClientPlayNetworkHandler"
-  ],
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "min.MixinServerWorld",
-    "plus.MixinFarmlandBlock",
-    "plus.MixinFuzzyPositions",
-    "plus.MixinHopperBlockEntity",
-    "plus.MixinHopperBlockEntityAccessor",
-    "plus.MixinScreenHandler",
-    "plus.MixinServerPlayerEntity",
-    "plus.MixinServerPlayNetworkHandler"
+    "MixinServerWorld"
   ],
   "injectors": {
     "defaultRequire": 1

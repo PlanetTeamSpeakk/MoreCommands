@@ -10,6 +10,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.Util;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -74,7 +75,7 @@ public class DisableCommand extends Command {
                                 }
                                 return 0;
                             } finally {
-                                if (ctx.getSource().getEntity() != null && !remindedLP.contains(ctx.getSource().getEntityOrException().getUUID())) {
+                                if (ctx.getSource().getEntity() != null && !remindedLP.contains(Compat.get().getUUID(ctx.getSource().getEntityOrException()))) {
                                     sendMsg(ctx, literalText("", Style.EMPTY.applyFormat(ChatFormatting.RED))
                                             .append(literalText("This command is deprecated, you should consider using "))
                                             .append(emptyText(Style.EMPTY
@@ -84,7 +85,7 @@ public class DisableCommand extends Command {
                                                     .append(literalText("Luck", Style.EMPTY.applyFormat(ChatFormatting.AQUA)))
                                                     .append(literalText("Perms", Style.EMPTY.applyFormat(ChatFormatting.DARK_AQUA))))
                                             .append(literalText(" instead.")));
-                                    remindedLP.add(ctx.getSource().getEntityOrException().getUUID());
+                                    remindedLP.add(Compat.get().getUUID(ctx.getSource().getEntityOrException()));
                                 }
                             }
                         })));

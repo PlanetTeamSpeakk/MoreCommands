@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.*;
 public class MixinServerPlayerGameMode {
     @Shadow @Final protected ServerPlayer player;
 
-    @Group(name = "maxReach", min = 1, max = 1)
-    @ModifyConstant(method = "handleBlockBreakAction", constant = @Constant(doubleValue = 36.0D))
+    @Group(name = "maxReach", min = 1, max = 1) // They added an int to the parameters in 1.19 and this mixin doesn't get loaded on Forge anyway.
+    @ModifyConstant(method = "method_14263", constant = @Constant(doubleValue = 36.0D), remap = false)
     public double handleBlockBreakAction_maxDistance(double reach) {
         return ReachCommand.getReach(player, true);
     }

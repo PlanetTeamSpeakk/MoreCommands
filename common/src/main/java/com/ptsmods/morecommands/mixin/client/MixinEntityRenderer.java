@@ -24,7 +24,7 @@ public class MixinEntityRenderer<T extends Entity> {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;renderNameTag(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"), method = "render")
     public void render_renderLabelIfPresent(EntityRenderer<?> thiz, T entity, Component text, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
-        if (MoreCommands.isCute(entity))
+        if (MoreCommands.INSTANCE.isCute(entity))
             text = Compat.get().builderFromText(text)
                     .append(LiteralTextBuilder.builder(" \u2764")
                             .withStyle(Style.EMPTY.applyFormat(ChatFormatting.DARK_PURPLE)))

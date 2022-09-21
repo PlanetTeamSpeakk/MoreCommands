@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[40,)"
+loaderVersion = "[35,)"
 issueTrackerURL = "https://github.com/PlanetTeamSpeakk/MoreCommands/issues"
 license = "CC0-1.0"
 
@@ -30,6 +30,6 @@ side = "BOTH"
 [[dependencies.morecommands]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.2.50,)"
+versionRange = "[2.10.0,)"
 ordering = "AFTER"
 side = "BOTH"

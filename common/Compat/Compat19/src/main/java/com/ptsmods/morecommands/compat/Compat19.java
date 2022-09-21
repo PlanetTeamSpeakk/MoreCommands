@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.compat;
 
+import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
@@ -27,7 +28,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
@@ -35,8 +38,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Compat19 extends Compat182 {
@@ -146,5 +151,25 @@ public class Compat19 extends Compat182 {
     @Override
     public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> Object newArgumentSerialiserImpl(ArgumentTypeSerialiser<A, T, P> serialiser) {
         return new ModernCompatArgumentSerializer<>(serialiser);
+    }
+
+    @Override
+    public UUID getUUID(Entity entity) {
+        return entity.getUUID();
+    }
+
+    @Override
+    public AABB getBoundingBox(Entity entity) {
+        return entity.getBoundingBox();
+    }
+
+    @Override
+    public BlockPos blockPosition(Entity entity) {
+        return entity.blockPosition();
+    }
+
+    @Override
+    public ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile) {
+        return new ServerPlayer(server, world, profile, null);
     }
 }

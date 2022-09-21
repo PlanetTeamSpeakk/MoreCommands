@@ -13,6 +13,6 @@ public class MixinEntity {
 
     @Inject(at = @At("RETURN"), method = "getBbHeight", cancellable = true)
     public final void getHeight(CallbackInfoReturnable<Float> cbi) {
-        if (MoreCommands.isCool(ReflectionHelper.cast(this))) cbi.setReturnValue(cbi.getReturnValueF() * 1.5f);
+        if (MoreCommands.INSTANCE.isCool(ReflectionHelper.cast(this))) cbi.setReturnValue(cbi.getReturnValueF() * 1.5f);
     }
 }

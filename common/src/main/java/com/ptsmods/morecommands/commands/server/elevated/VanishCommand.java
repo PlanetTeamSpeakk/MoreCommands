@@ -14,7 +14,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -69,10 +71,10 @@ public class VanishCommand extends Command {
     public static void vanish(ServerPlayer player, boolean sendMsg) {
         player.getEntityData().set(IDataTrackerHelper.get().vanish(), true);
         player.getEntityData().set(IDataTrackerHelper.get().vanishToggled(), true);
-        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newPlayerListS2CPacket(4, player)); // REMOVE_PLAYER
-        player.getLevel().getChunkSource().removeEntity(player);
+        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, player));
+        ((ServerChunkCache) player.getCommandSenderWorld().getChunkSource()).removeEntity(player);
 
-        if (player.getServer().isDedicatedServer() && sendMsg && MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+        if (player.getServer().isDedicatedServer() && sendMsg && MoreGameRules.get().checkBooleanWithPerm(player.getCommandSenderWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
             Compat.get().broadcast(player.getServer().getPlayerList(), new Tuple<>(1, new ResourceLocation("system")), translatableText("multiplayer.player.left", player.getDisplayName())
                     .withStyle(Style.EMPTY.applyFormat(ChatFormatting.YELLOW)).build());
     }
@@ -81,10 +83,10 @@ public class VanishCommand extends Command {
         if (!player.getEntityData().get(IDataTrackerHelper.get().vanish())) return;
 
         player.getEntityData().set(IDataTrackerHelper.get().vanish(), false);
-        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newPlayerListS2CPacket(0, player)); // ADD_PLAYER
+        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, player));
         trackers.remove(player);
-        player.getLevel().getChunkSource().addEntity(player);
-        if (player.getServer().isDedicatedServer() && MoreGameRules.get().checkBooleanWithPerm(player.getLevel().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
+        ((ServerChunkCache) player.getCommandSenderWorld().getChunkSource()).addEntity(player);
+        if (player.getServer().isDedicatedServer() && MoreGameRules.get().checkBooleanWithPerm(player.getCommandSenderWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
             Compat.get().broadcast(player.getServer().getPlayerList(), new Tuple<>(1, new ResourceLocation("system")), translatableText("multiplayer.player.joined",
                     player.getDisplayName())
                     .withStyle(Style.EMPTY.applyFormat(ChatFormatting.YELLOW)).build());

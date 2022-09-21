@@ -42,7 +42,7 @@ public class SpawnerCommand extends Command {
                                     ItemStack stack = ctx.getSource().getPlayerOrException().getMainHandItem();
                                     CompoundTag tag = stack.getOrCreateTag();
                                     if (tag != null && (tag = tag.getCompound("BlockEntityTag")).contains("Delay"))
-                                        Compat.get().readSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, tag);
+                                        logic.load(ctx.getSource().getLevel(), pos, tag);
                                     logic.setEntityId(type);
                                     (tag = new CompoundTag()).put("BlockEntityTag", Compat.get().writeSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, new CompoundTag()));
 
@@ -64,7 +64,7 @@ public class SpawnerCommand extends Command {
                                 if (spawnPotentials != null && !spawnPotentials.isEmpty())
                                     ((CompoundTag) spawnPotentials.get(0)).getCompound("Entity").putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
 
-                                Compat.get().readSpawnerLogicNbt(logic, ctx.getSource().getLevel(), pos, tag);
+                                logic.load(ctx.getSource().getLevel(), pos, tag);
                                 be.setChanged();
                                 ctx.getSource().getLevel().sendBlockUpdated(result.getBlockPos(), state, state, 3);
                                 sendMsg(ctx, "Poof!");

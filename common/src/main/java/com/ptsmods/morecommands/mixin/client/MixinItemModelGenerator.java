@@ -2,7 +2,6 @@ package com.ptsmods.morecommands.mixin.client;
 
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
-import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinJsonUnbakedModelAccessor;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -47,7 +46,7 @@ public abstract class MixinItemModelGenerator {
                 break;
             }
 
-        return !ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || ClientCompat.get().getFrameCount(sprite) == 1) ?
+        return !ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || sprite.getUniqueFrames().max().orElse(1) == 1) ?
                 createSideElements(sprite, key, layer) : processFrames(layer, key, sprite); // Skip front and back layer, those are created as subcomponents now too.
     }
 
@@ -57,13 +56,13 @@ public abstract class MixinItemModelGenerator {
      */
     @Inject(at = @At("HEAD"), method = "createSideElements", cancellable = true)
     private void createSideElements(TextureAtlasSprite sprite, String key, int layer, CallbackInfoReturnable<List<BlockElement>> cbi) {
-        if (!ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || ClientCompat.get().getFrameCount(sprite) == 1)) {
+        if (!ignoreNext && ClientOptions.Rendering.fixItemSeams.getValue() && (ClientOptions.Rendering.fixAnimItemSeams.getValue() || sprite.getUniqueFrames().max().orElse(1) == 1)) {
             // Basically just does what the Vanilla Tweaks resource pack does programmatically.
             int width = sprite.getWidth();
             int height = sprite.getHeight();
             List<BlockElement> list = Lists.newArrayList();
 
-            for (int frame = 0; frame < ClientCompat.get().getFrameCount(sprite); frame++) {
+            for (int frame = 0; frame < sprite.getUniqueFrames().max().orElse(1); frame++) {
                 for (int y = 0; y < height; y++)
                     for (int x = 0; x < width; x++) {
                         if (sprite.isTransparent(frame, x, y)) continue;

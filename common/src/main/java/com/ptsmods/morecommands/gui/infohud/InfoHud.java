@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreCommands;
@@ -13,7 +14,6 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.gui.infohud.variables.*;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinMinecraftClientAccessor;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
-import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.resources.language.I18n;
@@ -49,7 +49,7 @@ public class InfoHud extends GuiComponent {
     private static final Map<String, Object> variableValues = new HashMap<>();
     private static final Minecraft client = Minecraft.getInstance();
     private static final List<String> lines = new ArrayList<>();
-    private static List<IntObjectPair<String>> parsedLines = Collections.emptyList();
+    private static List<Pair<Integer, String>> parsedLines = Collections.emptyList();
     private static HitResult result;
     private static long lastRead = -1;
     private static int width = 0, height = 0;
@@ -75,16 +75,16 @@ public class InfoHud extends GuiComponent {
             }
 
             for (int i = 0; i < parsedLines.size(); i++) {
-                IntObjectPair<String> line = parsedLines.get(i);
-                if (line.leftInt() == 0) continue;
-                boolean topPadding = i == 0 || parsedLines.get(i - 1).leftInt() == 0; // First line or above line is empty.
+                Pair<Integer, String> line = parsedLines.get(i);
+                if (line.getFirst() == 0) continue;
+                boolean topPadding = i == 0 || parsedLines.get(i - 1).getFirst() == 0; // First line or above line is empty.
 
-                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.leftInt() + 2, (i + 1) * 10, c);
+                fill(matrixStack, -2, topPadding ? i * 10 - 2 : i * 10, line.getFirst() + 2, (i + 1) * 10, c);
                 if (topPadding) continue;
 
-                int prevWidth = parsedLines.get(i - 1).leftInt();
-                if (prevWidth < line.leftInt())
-                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.leftInt() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
+                int prevWidth = parsedLines.get(i - 1).getFirst();
+                if (prevWidth < line.getFirst())
+                    fill(matrixStack, prevWidth + 2, i * 10 - 2, line.getFirst() + 2, i * 10, c); // Draw rest of top padding if above line is shorter than this one.
             }
         }));
 
@@ -103,13 +103,13 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("x", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().x(), decimals));
         keysBuilder.put("y", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().y(), decimals));
         keysBuilder.put("z", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().z(), decimals));
-        keysBuilder.put("chunkX", ctx -> (ctx.getPlayer().blockPosition().getX()) >> 4);
-        keysBuilder.put("chunkY", ctx -> (ctx.getPlayer().blockPosition().getY()) >> 4);
-        keysBuilder.put("chunkZ", ctx -> (ctx.getPlayer().blockPosition().getZ()) >> 4);
+        keysBuilder.put("chunkX", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getX()) >> 4);
+        keysBuilder.put("chunkY", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getY()) >> 4);
+        keysBuilder.put("chunkZ", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getZ()) >> 4);
         keysBuilder.put("yaw", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), decimals));
         keysBuilder.put("pitch", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getXRot_()), decimals));
         keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().registryAccess(), Registry.BIOME_REGISTRY)
-                .getKey(Compat.get().getBiome(ctx.getWorld(), ctx.getPlayer().blockPosition()))));
+                .getKey(Compat.get().getBiome(ctx.getWorld(), Compat.get().blockPosition(ctx.getPlayer())))));
         keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelData().getDifficulty().name());
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("speed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
@@ -125,8 +125,8 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("xpLevel", ctx -> ctx.getPlayer().experienceLevel);
         keysBuilder.put("gamemode", ctx -> ctx.getInteractionManager().getPlayerMode().name());
         keysBuilder.put("fps", ctx -> MixinMinecraftClientAccessor.getFps());
-        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(ctx.getPlayer().blockPosition()));
-        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(ctx.getPlayer().blockPosition()));
+        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(Compat.get().blockPosition(ctx.getPlayer())));
+        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(Compat.get().blockPosition(ctx.getPlayer())));
         keysBuilder.put("lookingAtX", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getX(), eHit -> eHit.getLocation().x()));
         keysBuilder.put("lookingAtY", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getY(), eHit -> eHit.getLocation().y()));
         keysBuilder.put("lookingAtZ", ctx -> ctx.getHit().map(bHit -> bHit.getBlockPos().getZ(), eHit -> eHit.getLocation().z()));
@@ -140,7 +140,7 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("lookingVecZ", ctx -> result.getLocation().z());
         keysBuilder.put("entities", ctx -> StreamSupport.stream(ctx.getWorld().entitiesForRendering().spliterator(), false).count());
 
-        return keysBuilder.buildOrThrow();
+        return keysBuilder.build();
     }
 
     public void render(PoseStack matrices) {
@@ -157,7 +157,7 @@ public class InfoHud extends GuiComponent {
 
         parsedLines = parseLines();
         width = parsedLines.stream()
-                .mapToInt(IntObjectPair::leftInt)
+                .mapToInt(Pair::getFirst)
                 .max()
                 .orElse(0);
         height = parsedLines.size() * 10;
@@ -169,8 +169,8 @@ public class InfoHud extends GuiComponent {
         });
 
         int row = 0;
-        for (IntObjectPair<String> line : parsedLines)
-            drawString(matrices, line.right(), row++);
+        for (Pair<Integer, String> line : parsedLines)
+            drawString(matrices, line.getSecond(), row++);
 
         matrices.popPose();
     }
@@ -220,10 +220,10 @@ public class InfoHud extends GuiComponent {
         }
     }
 
-    private List<IntObjectPair<String>> parseLines() {
+    private List<Pair<Integer, String>> parseLines() {
         variableValues.clear();
 
-        List<IntObjectPair<String>> output = new ArrayList<>();
+        List<Pair<Integer, String>> output = new ArrayList<>();
         for (String line : lines) {
             Matcher varMatcher = varPattern.matcher(line);
             if (varMatcher.matches()) {
@@ -251,7 +251,7 @@ public class InfoHud extends GuiComponent {
 
                 String parsedLine = s.toString();
                 line = Arrays.stream(s.toString().split("//")).findFirst().orElse(""); // Handling comments in the config, this should be exactly the same as how
-                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(IntObjectPair.of(client.font.width(line), line)); // normal, non-multiline Java comments work.
+                if (parsedLine.equals("") && !output.isEmpty() || !line.equals("")) output.add(Pair.of(client.font.width(line), line)); // normal, non-multiline Java comments work.
             }
         }
         return output;

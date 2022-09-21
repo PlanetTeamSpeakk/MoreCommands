@@ -3,16 +3,17 @@ package com.ptsmods.morecommands.commands.server.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.util.UsageMonitorer;
+import net.minecraft.commands.CommandSourceStack;
+import oshi.SystemInfo;
+
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import net.minecraft.commands.CommandSourceStack;
 
 public class SysInfoCommand extends Command {
     @Override
@@ -68,7 +69,7 @@ public class SysInfoCommand extends Command {
                 "\n    Total RAM used by host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamUsage()) +
                 "\n    Total RAM of host pc: " + SF + MoreCommands.formatFileSize(UsageMonitorer.getTotalSystemRamMax());
         output += "\n\nCPU:" +
-                "\n    Unit: " + SF + Compat.get().getProcessorString() +
+                "\n    Unit: " + SF + new SystemInfo().getHardware().getProcessor() +
                 "\n    Cores: " + SF + UsageMonitorer.getProcessorCount() +
                 "\n    Used by process: " + SF + UsageMonitorer.getProcessCpuLoad()*100 +
                 "\n    Used by system: " + SF + UsageMonitorer.getSystemCpuLoad()*100;

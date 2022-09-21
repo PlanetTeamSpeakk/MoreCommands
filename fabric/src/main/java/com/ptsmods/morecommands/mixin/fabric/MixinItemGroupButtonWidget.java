@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.fabric;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +17,7 @@ public class MixinItemGroupButtonWidget {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/impl/item/group/FabricCreativeGuiComponents$ItemGroupButtonWidget;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V"), method = "render")
     private void render_drawTexture_height(FabricCreativeGuiComponents.ItemGroupButtonWidget itemGroupButtonWidget, PoseStack matrices, int x, int y, int u, int v, int width, int height) {
         if (ClientOptions.Rendering.bigTabPager.getValue()) {
-            ClientCompat.get().bindTexture(BUTTON_TEX);
+            RenderSystem.setShaderTexture(0, BUTTON_TEX);
             itemGroupButtonWidget.blit(matrices, x, y, (itemGroupButtonWidget.active && itemGroupButtonWidget.isHoveredOrFocused() ? 44 : 0) +
                     (((MixinItemGroupButtonWidgetAccessor) itemGroupButtonWidget).getType() == FabricCreativeGuiComponents.Type.NEXT ? 22 : 0), itemGroupButtonWidget.active ? 0 : 22, 22, 22);
         } else itemGroupButtonWidget.blit(matrices, x, y, u, v, width, height);

@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.api.util.compat;
 import net.minecraft.server.level.ServerPlayer;
 
 public interface ForgeCompat {
-    boolean shouldRegisterListener();
+    boolean shouldRegisterListeners();
 
     void registerListeners();
 

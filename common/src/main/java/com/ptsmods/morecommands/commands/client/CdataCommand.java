@@ -145,7 +145,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Component feedbackQuery(Tag tag) {
-            return translatableText("commands.data.entity.query", this.entity.getDisplayName(), Compat.get().toText(tag)).build();
+            return translatableText("commands.data.entity.query", this.entity.getDisplayName(), NbtUtils.toPrettyComponent(tag)).build();
         }
 
         public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {
@@ -180,7 +180,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Component feedbackQuery(Tag tag) {
-            return translatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), Compat.get().toText(tag)).build();
+            return translatableText("commands.data.block.query", this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtUtils.toPrettyComponent(tag)).build();
         }
 
         public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {
@@ -214,7 +214,7 @@ public class CdataCommand extends ClientCommand {
         }
 
         public Component feedbackQuery(Tag tag) {
-            return translatableText("commands.data.item.query", stack.getHoverName(), Compat.get().toText(tag)).build();
+            return translatableText("commands.data.item.query", stack.getHoverName(), NbtUtils.toPrettyComponent(tag)).build();
         }
 
         public Component feedbackGet(NbtPathArgument.NbtPath nbtPath, double scale, int result) {

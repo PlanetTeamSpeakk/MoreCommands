@@ -3,8 +3,10 @@
   "minVersion": "0.8",
   "package": "com.ptsmods.morecommands.mixin.compat.compat180",
   "plugin": "com.ptsmods.morecommands.plugin.Plugin180",
-  "compatibilityLevel": "JAVA_8",
-  "client": [],
+  "compatibilityLevel": "JAVA_16",
+  "client": [
+    "MixinMinecraft"
+  ],
   "mixins": [
     "min.MixinLivingEntity"
   ],

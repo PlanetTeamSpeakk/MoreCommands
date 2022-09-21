@@ -21,7 +21,7 @@ public class SignCommand extends Command {
                     if (Compat.get().tagContains(new ResourceLocation("minecraft:signs"), ctx.getSource().getLevel().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
                         SignBlockEntity sbe = (SignBlockEntity) be;
                         ((MixinSignBlockEntityAccessor) sbe).setIsEditable(true);
-                        Compat.get().setSignEditor(sbe, ctx.getSource().getPlayerOrException());
+                        sbe.setAllowedPlayerEditor(Compat.get().getUUID(ctx.getSource().getPlayerOrException()));
                         ctx.getSource().getPlayerOrException().openTextEdit(sbe); // Copying content onto edit screen is handled in MixinSignEditScreen.
                         return 1;
                     }

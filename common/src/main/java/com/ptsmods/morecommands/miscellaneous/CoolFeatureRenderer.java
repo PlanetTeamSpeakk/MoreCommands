@@ -24,7 +24,7 @@ public class CoolFeatureRenderer extends RenderLayer<AbstractClientPlayer, Playe
     @Override
     public void render(@NotNull PoseStack matrices, @NotNull MultiBufferSource vertexConsumers, int light, @NotNull AbstractClientPlayer entity,
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
-        if (!MoreCommands.isCool(entity)) return;
+        if (!MoreCommands.INSTANCE.isCool(entity)) return;
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderType.entitySolid(new ResourceLocation("morecommands:textures/crown.png")));
         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0);

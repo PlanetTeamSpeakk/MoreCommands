@@ -78,7 +78,7 @@ public class Holder {
 
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
         return mixinClassName.contains(".plus.") ? Version.getCurrent().isNewerThanOrEqual(version) :
-                mixinClassName.contains(".min.") ? Version.getCurrent().isOlderThanOrEqual(version) :
+                mixinClassName.contains(".min.") ? Version.getCurrent().isOlderThanOrEqual(version.revision == null ? version.withRevision(9999) : version) :
                         Version.getCurrent().equals(version);
     }
 }
