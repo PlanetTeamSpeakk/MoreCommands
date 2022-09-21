@@ -2,7 +2,8 @@ plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
     id "io.freefair.lombok" version "6.4.3" apply false
-    id 'io.github.juuxel.loom-quiltflower' version '1.7.1' apply false
+    id "io.github.juuxel.loom-quiltflower" version "1.7.1" apply false
+    id "io.github.pacifistmc.forgix" version "1.2.6"
 }
 
 architectury {
@@ -41,3 +42,19 @@ allprojects {
         withSourcesJar()
     }
 }
+
+forgix {
+    group = "com.ptsmods.morecommands"
+    outputDir = "build/libs"
+    mergedJarName = "${archivesBaseName}-${project.version}_${project.minecraft_version_least}-${project.minecraft_version}.jar"
+
+    fabric {
+        jarLocation = "build/libs/${archivesBaseName}-${project.version}_${project.minecraft_version_least}-${project.minecraft_version}_FABRIC.jar"
+    }
+
+    forge {
+        jarLocation = "build/libs/${archivesBaseName}-${project.version}_${project.minecraft_version_least}-${project.minecraft_version}_FORGE.jar"
+    }
+}
+
+tasks.build.dependsOn(tasks.mergeJars)
