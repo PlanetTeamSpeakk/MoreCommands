@@ -38,4 +38,9 @@ public class MoreCommandsArch {
     public static Path getJar() {
         throw new AssertionError("This shouldn't happen.");
     }
+
+    @ExpectPlatform
+    public static Path getMinecraftJar() {
+        throw new AssertionError("This shouldn't happen.");
+    }
 }

@@ -22,11 +22,15 @@ import java.util.function.Predicate;
 public class MoreCommandsArchImpl {
     @Getter(lazy = true, onMethod_ = @SneakyThrows)
     private static final Path jar = Optional.of(new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer(MoreCommands.MOD_ID)
-                    .orElseThrow(NullPointerException::new)).getOriginUrl().toURISneaky().getPath()).toPath())
+                    .orElseThrow())
+                    .getOriginUrl()
+                    .toURISneaky()
+                    .getPath())
+                    .toPath())
             .map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
                     Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
                             .toAbsolutePath().toString(), "common", "build", "classes", "java", "main", "")) : jar)
-            .orElseThrow(NullPointerException::new);
+            .orElseThrow();
 
     public static Path getConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir().resolve("MoreCommands");
@@ -44,10 +48,16 @@ public class MoreCommandsArchImpl {
         return !isFabricModLoaded("fabric-permissions-api-v0") || Permissions.check(source, permission, fallback);
     }
 
-    public static void doMLSpecificClientInit() {
-    }
-
     public static Predicate<CommandSourceStack> requirePermission(String permission, int defaultRequiredLevel) {
         return isFabricModLoaded("fabric-permissions-api-v0") ? Permissions.require(permission, defaultRequiredLevel) : source -> source.hasPermission(defaultRequiredLevel);
+    }
+
+    public static Path getMinecraftJar() {
+        return new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer("minecraft")
+                .orElseThrow())
+                .getOriginUrl()
+                .toURISneaky()
+                .getPath())
+                .toPath();
     }
 }

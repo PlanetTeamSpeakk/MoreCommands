@@ -2,16 +2,25 @@ package com.ptsmods.morecommands.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.ptsmods.morecommands.api.util.extensions.URLExtensions;
 import lombok.With;
+import lombok.experimental.ExtensionMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
+@ExtensionMethod(URLExtensions.class)
 public class Version implements Comparable<Version> {
     private static final Version current;
 
@@ -25,9 +34,50 @@ public class Version implements Comparable<Version> {
     public static final Version V1_19_2 = new Version(19, 2);
 
     static {
-        current = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
-                ClassLoader.getSystemResourceAsStream("version.json"))), JsonObject.class)
-                .get("release_target").getAsString());
+        Version current0;
+        try {
+            Path minecraftJar = MoreCommandsArch.getMinecraftJar();
+            Stream<Path> jarStream = Files.list(minecraftJar.getParent());
+            // With Forge, at least on MultiMC, the jar is split into two files,
+            // one containing assets, data and the version file, the other containing code.
+            // The one containing code is the one returned by #getMinecraftJar(), but we need the other one.
+            ZipFile jar = jarStream.filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .map(p -> {
+                        try {
+                            return new ZipFile(p.toFile());
+                        } catch (IOException e) {
+                            IMoreCommands.LOG.warn("Could not read jar file " + p);
+                            IMoreCommands.LOG.catching(e);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .filter(zip -> {
+                        boolean hasVersion = zip.getEntry("version.json") != null;
+                        if (!hasVersion) try {
+                            zip.close();
+                        } catch (IOException e) {
+                            IMoreCommands.LOG.warn("Could not close zip file.");
+                            IMoreCommands.LOG.catching(e);
+                        }
+
+                        return hasVersion;
+                    })
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("Could not find jar containing version.json, MoreCommands cannot be loaded."));
+            jarStream.close();
+
+            current0 = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
+                            jar.getInputStream(jar.getEntry("version.json")))), JsonObject.class)
+                    .get("release_target").getAsString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (AssertionError e) {
+            // Only happens when running tests.
+            current0 = V1_19_2;
+        }
+
+        current = current0;
     }
 
     @With
@@ -96,18 +146,6 @@ public class Version implements Comparable<Version> {
         if (this == o) return true;
         if (!(o instanceof Version)) return false;
         return compareToAll((Version) o).allMatch(i -> i == 0);
-    }
-
-    public boolean equalsExclRev(Version v) {
-        return v == this || major == v.major && minor == v.minor;
-    }
-
-    public boolean isCurrent() {
-        return equalsExclRev(getCurrent());
-    }
-
-    public boolean isCurrentExact() {
-        return equals(getCurrent());
     }
 
     @Override

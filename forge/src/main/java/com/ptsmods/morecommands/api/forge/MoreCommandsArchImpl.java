@@ -7,7 +7,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
@@ -41,6 +43,18 @@ public class MoreCommandsArchImpl {
                 .orElseThrow(NullPointerException::new)
                 .getModInfo()
                 .getOwningFile()
+                .getFile()
+                .getFilePath();
+    }
+
+    public static Path getMinecraftJar() {
+        System.out.println("Mods: " + FMLLoader.getLoadingModList().getMods().stream()
+                .map(ModInfo::getNamespace)
+                .toList());
+        System.out.println("Path: " + FMLLoader.getLoadingModList().getModFileById("minecraft")
+                .getFile()
+                .getFilePath());
+        return FMLLoader.getLoadingModList().getModFileById("minecraft")
                 .getFile()
                 .getFilePath();
     }
