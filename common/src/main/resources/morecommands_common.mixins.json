@@ -68,7 +68,6 @@
     "accessor.MixinGameRulesAccessor",
     "accessor.MixinBooleanValueAccessor",
     "accessor.MixinIntegerValueAccessor",
-    "MixinEntityCallbacks",
     "MixinFarmBlock",
     "MixinRandomPos",
     "accessor.MixinHopperBlockEntityAccessor",
