@@ -3,7 +3,6 @@ package com.ptsmods.morecommands.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.With;
-import net.minecraft.SharedConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +15,6 @@ import java.util.stream.IntStream;
 public class Version implements Comparable<Version> {
     private static final Version current;
 
-    public static final Version V1_16 = new Version(16);
     public static final Version V1_17 = new Version(17);
     public static final Version V1_18 = new Version(18);
     public static final Version V1_18_0 = new Version(18, 0);
@@ -28,7 +26,7 @@ public class Version implements Comparable<Version> {
 
     static {
         current = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
-                SharedConstants.class.getClassLoader().getResourceAsStream("version.json"))), JsonObject.class)
+                ClassLoader.getSystemResourceAsStream("version.json"))), JsonObject.class)
                 .get("release_target").getAsString());
     }
 
