@@ -57,4 +57,9 @@ forgix {
     }
 }
 
-tasks.build.dependsOn(tasks.mergeJars)
+task doMerge {
+    dependsOn(":fabric:build", ":forge:build")
+    finalizedBy(mergeJars)
+}
+
+tasks.build.dependsOn(tasks.doMerge)
