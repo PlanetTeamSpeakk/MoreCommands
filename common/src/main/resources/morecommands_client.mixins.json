@@ -58,7 +58,8 @@
     "accessor.MixinMinecraftClientAccessor",
     "MixinSuspiciousStewItem",
     "MixinGuiMessage",
-    "MixinEntityCallbacks"
+    "MixinEntityCallbacks",
+    "MixinRuleListVisitor"
   ],
   "injectors": {
 	"defaultRequire": 1

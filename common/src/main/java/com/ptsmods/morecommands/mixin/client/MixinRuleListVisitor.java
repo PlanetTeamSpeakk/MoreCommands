@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.client;
 
 import com.ptsmods.morecommands.gui.EnumRuleWidget;
 import com.ptsmods.morecommands.miscellaneous.EnumRule;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(targets = "net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen$RuleList$1")
-public abstract class MixinRuleListWidgetVisitor implements GameRules.GameRuleTypeVisitor, MoreCommandsGameRuleVisitor {
+public abstract class MixinRuleListVisitor implements GameRules.GameRuleTypeVisitor, MoreCommandsGameRuleVisitor {
 
     @Shadow @Final EditGameRulesScreen this$0;
     @Shadow protected abstract <T extends GameRules.Value<T>> void createRuleWidget(GameRules.Key<T> key, EditGameRulesScreen.EntryFactory<T> ruleWidgetFactory);

@@ -28,7 +28,6 @@
     "MixinPlayerEntity",
     "MixinPlayerInventory",
     "MixinPlayerManager",
-    "MixinRuleListWidgetVisitor",
     "MixinServerCommandSource",
     "MixinServerNetworkIo",
     "MixinServerPlayer",
