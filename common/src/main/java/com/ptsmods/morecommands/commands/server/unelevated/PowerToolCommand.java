@@ -66,14 +66,15 @@ public class PowerToolCommand extends Command {
     public void preinit(boolean serverOnly) {
         if (Platform.getEnv() == EnvType.CLIENT) {
             MouseEvent.EVENT.register((button, action, mods) -> checkPowerToolClient(button, action));
-            if (!Platform.isForge()) KeyMappingRegistry.register((KeyMapping) CYCLE_KEY_BINDING.get());
+            KeyMapping cycleKey = (KeyMapping) CYCLE_KEY_BINDING.get();
+            if (!Platform.isForge()) KeyMappingRegistry.register(cycleKey);
 
             AtomicBoolean pressed = new AtomicBoolean();
             AtomicInteger lastSelected = new AtomicInteger();
             ClientTickEvent.CLIENT_LEVEL_PRE.register(world -> {
-                if (((KeyMapping) CYCLE_KEY_BINDING.get()).consumeClick()) {
+                if (cycleKey.consumeClick()) {
                     //noinspection StatementWithEmptyBody
-                    while (((KeyMapping) CYCLE_KEY_BINDING.get()).consumeClick()); // Clearing pressed counter
+                    while (cycleKey.consumeClick()); // Clearing pressed counter
                     if (!pressed.get()) {
                         cycleCommand();
                         pressed.set(true);
@@ -93,7 +94,9 @@ public class PowerToolCommand extends Command {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> checkPowerToolServer(player));
             InteractionEvent.RIGHT_CLICK_ITEM.register((player, hand) -> checkPowerToolServer(player).isTrue() ?
                     CompoundEventResult.interruptTrue(player.getItemInHand(hand)) : CompoundEventResult.pass());
-        } else NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:powertool_cycle"), (buf, context) ->
+        }
+
+        if (!serverOnly) NetworkManager.registerReceiver(NetworkManager.Side.C2S, new ResourceLocation("morecommands:powertool_cycle"), (buf, context) ->
                 doCycleCommand(context.getPlayer(), InteractionHand.values()[buf.readByte()], buf.readByte()));
     }
 
@@ -304,15 +307,9 @@ public class PowerToolCommand extends Command {
                 .append(LiteralTextBuilder.builder("Selected (%d): ", DS, index + 1));
 
         switch (mode) {
-            case HUD:
-                PowerToolSelectionHud.currentSelection = new Tuple<>(System.currentTimeMillis(), new Tuple<>(index + 1, command));
-                break;
-            case CHAT:
-                ClientCommand.sendMsg(text.append(LiteralTextBuilder.builder(command, SS)));
-                break;
-            case ACTION_BAR:
-                ClientCommand.sendAbMsg(text.append(LiteralTextBuilder.builder(trimmedCommand, SS)));
-                break;
+            case HUD -> PowerToolSelectionHud.currentSelection = new Tuple<>(System.currentTimeMillis(), new Tuple<>(index + 1, command));
+            case CHAT -> ClientCommand.sendMsg(text.append(LiteralTextBuilder.builder(command, SS)));
+            case ACTION_BAR -> ClientCommand.sendAbMsg(text.append(LiteralTextBuilder.builder(trimmedCommand, SS)));
         }
     }
 
