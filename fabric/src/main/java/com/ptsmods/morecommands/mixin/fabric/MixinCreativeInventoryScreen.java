@@ -5,7 +5,7 @@ import com.ptsmods.morecommands.api.addons.CreativeInventoryScreenAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.mixin.client.accessor.MixinClickableWidgetAccessor;
-import net.fabricmc.fabric.impl.item.group.FabricCreativeGuiComponents;
+import net.fabricmc.fabric.impl.client.item.group.FabricCreativeGuiComponents;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;

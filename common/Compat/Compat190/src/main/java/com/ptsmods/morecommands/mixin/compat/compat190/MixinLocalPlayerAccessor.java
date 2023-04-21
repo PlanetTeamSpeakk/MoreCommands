@@ -10,11 +10,9 @@ import net.minecraft.network.chat.MessageSigner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import javax.annotation.Nullable;
-
 @Mixin(LocalPlayer.class)
 public interface MixinLocalPlayerAccessor {
 
     @Invoker MessageSignature callSignMessage(MessageSigner signer, Component message);
-    @Invoker ArgumentSignatures callSignCommandArguments(MessageSigner signer, ParseResults<SharedSuggestionProvider> parseResults, @Nullable Component preview);
+    @Invoker ArgumentSignatures callSignCommandArguments(MessageSigner signer, ParseResults<SharedSuggestionProvider> parseResults, Component preview);
 }

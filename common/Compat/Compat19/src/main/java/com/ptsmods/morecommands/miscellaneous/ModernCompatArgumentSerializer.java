@@ -6,10 +6,8 @@ import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 public class ModernCompatArgumentSerializer<A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> implements ArgumentTypeInfo<A, ArgumentTypePropertiesImpl<A, T, P>> {
     private final ArgumentTypeSerialiser<A, T, P> serialiser;
 
@@ -24,7 +22,7 @@ public class ModernCompatArgumentSerializer<A extends CompatArgumentType<A, T, P
 
     @SuppressWarnings("unchecked")
     @Override
-    public ArgumentTypePropertiesImpl<A, T, P> deserializeFromNetwork(FriendlyByteBuf buf) {
+    public @NotNull ArgumentTypePropertiesImpl<A, T, P> deserializeFromNetwork(FriendlyByteBuf buf) {
         return (ArgumentTypePropertiesImpl<A, T, P>) serialiser.fromPacket(buf).getProperties().toVanillaProperties();
     }
 
@@ -36,7 +34,7 @@ public class ModernCompatArgumentSerializer<A extends CompatArgumentType<A, T, P
 
     @SuppressWarnings("unchecked")
     @Override
-    public ArgumentTypePropertiesImpl<A, T, P> unpack(A argumentType) {
+    public @NotNull ArgumentTypePropertiesImpl<A, T, P> unpack(A argumentType) {
         return (ArgumentTypePropertiesImpl<A, T, P>) argumentType.getProperties().toVanillaProperties();
     }
 }

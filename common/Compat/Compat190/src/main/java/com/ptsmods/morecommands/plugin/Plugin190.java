@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.plugin;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Version;
+import lombok.Getter;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Plugin190 implements IMixinConfigPlugin {
+    @Getter(lazy = true)
     private static final boolean carpetLoaded = MoreCommandsArch.isFabricModLoaded("carpet");
 
     @Override
@@ -23,7 +25,7 @@ public class Plugin190 implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (carpetLoaded && mixinClassName.contains("CarpetCompat")) return false;
+        if (isCarpetLoaded() && mixinClassName.contains("CarpetCompat")) return false;
         return Holder.shouldApplyMixin(Version.V1_19_0, mixinClassName);
     }
 

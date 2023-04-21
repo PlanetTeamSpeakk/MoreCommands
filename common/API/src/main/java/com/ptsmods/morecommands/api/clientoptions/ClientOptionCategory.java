@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
