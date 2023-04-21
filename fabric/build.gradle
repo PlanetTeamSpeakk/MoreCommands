@@ -33,7 +33,7 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
     modImplementation "com.terraformersmc:modmenu:4.0.6"
-    modImplementation "com.ptsmods:devlogin:3.1"
+    modImplementation "com.ptsmods:devlogin:3.2.2"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
