@@ -80,7 +80,7 @@ public class ClientOptions {
                 "Whether you want to automatically opt your friends", "on NameMC in for join notifications.", "(Get a message when they join/leave)");
         public static final DoubleClientOption brightnessMultiplier = new DoubleClientOption(TWEAKS, "Brightness Multiplier", 1d, 0d, 10d,
                 "Multiply the brightness to go above and beyond!", "For best effect, set brightness to max.",
-                "\u00A7Make sure your brightness is not set to moody!");
+                "\u00A7cMake sure your brightness is not set to moody!");
 
         public static final StringClientOption discordTag = new StringClientOption(TWEAKS, "Discord Tag", null, s -> s.contains("#") && s.lastIndexOf('#') == s.length() - 5 &&
                 MoreCommands.isInteger(s.substring(s.lastIndexOf('#') + 1)), "The tag to send people when they request your tag.");
