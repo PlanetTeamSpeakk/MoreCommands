@@ -21,17 +21,19 @@
       "com.ptsmods.morecommands.fabric.MoreCommandsFabric"
     ],
     "client": [
-      "com.ptsmods.morecommands.fabric.MoreCommandsFabric"
+      "com.ptsmods.morecommands.client.fabric.MoreCommandsClientFabric"
     ],
     "modmenu": [
-      "com.ptsmods.morecommands.fabric.ModMenuIntegration"
+      "com.ptsmods.morecommands.client.fabric.ModMenuIntegration"
     ]
   },
   "mixins": [
     "morecommands.mixins.json",
+    "morecommands_client_fabric.mixins.json",
     "morecommands_client.mixins.json",
     "morecommands_common.mixins.json",
     "morecommands_reach.mixins.json",
+    "morecommands_reach-client.mixins.json",
     "morecommands_compat17.mixins.json",
     "morecommands_compat18.mixins.json",
     "morecommands_compat180.mixins.json",

@@ -2,12 +2,9 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
-import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import lombok.experimental.ExtensionMethod;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
@@ -22,13 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @ExtensionMethod(ObjectExtensions.class)
 @Mixin(Player.class)
 public abstract class MixinPlayerEntity {
-
-    @Inject(at = @At("RETURN"), method = "getName", cancellable = true)
-    public void getName(CallbackInfoReturnable<Component> cbi) {
-        if (!MoreCommands.INSTANCE.isCute(ReflectionHelper.cast(this))) return;
-        TextBuilder<?> builder = Compat.get().builderFromText(cbi.getReturnValue());
-        cbi.setReturnValue(builder.withStyle(style -> style.applyFormat(ChatFormatting.LIGHT_PURPLE)).build());
-    }
 
     @Inject(at = @At("HEAD"), method = "tryToStartFallFlying", cancellable = true)
     public void checkFallFlying(CallbackInfoReturnable<Boolean> cbi) {

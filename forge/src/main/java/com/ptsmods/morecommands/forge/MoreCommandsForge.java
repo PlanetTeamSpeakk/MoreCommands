@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.forge;
 
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.MoreCommandsClient;
+import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.forge.compat.Compat;
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.server.level.ServerPlayer;

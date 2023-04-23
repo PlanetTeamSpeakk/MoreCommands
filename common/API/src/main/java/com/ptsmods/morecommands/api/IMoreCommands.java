@@ -5,7 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,8 +49,4 @@ public interface IMoreCommands {
     Supplier<Attribute> getSwimSpeedAttribute();
 
     void registerAttributes(boolean addToSupplier);
-
-    boolean isCool(Entity entity);
-
-    boolean isCute(Entity entity);
 }

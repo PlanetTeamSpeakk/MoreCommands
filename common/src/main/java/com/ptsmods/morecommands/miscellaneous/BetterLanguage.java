@@ -47,7 +47,7 @@ public class BetterLanguage extends Language {
     }
 
     @Override
-    public FormattedCharSequence getVisualOrder(@NotNull FormattedText text) {
+    public @NotNull FormattedCharSequence getVisualOrder(@NotNull FormattedText text) {
         return parent.getVisualOrder(text);
     }
 

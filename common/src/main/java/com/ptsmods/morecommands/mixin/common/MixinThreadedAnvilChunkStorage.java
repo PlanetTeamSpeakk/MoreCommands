@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
-import com.ptsmods.morecommands.commands.server.elevated.VanishCommand;
+import com.ptsmods.morecommands.commands.elevated.VanishCommand;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityTrackerAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.server.level.ChunkMap;

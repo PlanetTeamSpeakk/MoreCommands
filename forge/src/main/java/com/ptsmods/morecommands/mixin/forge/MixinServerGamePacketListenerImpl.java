@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.forge;
 
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.commands.elevated.ReachCommand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;

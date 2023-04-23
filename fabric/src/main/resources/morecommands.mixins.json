@@ -4,12 +4,6 @@
   "package": "com.ptsmods.morecommands.mixin.fabric",
   "compatibilityLevel": "JAVA_16",
   "minVersion": "0.8",
-  "client": [
-    "MixinCreativeInventoryScreen",
-    "MixinItemGroupButtonWidget",
-    "MixinItemGroupButtonWidgetAccessor",
-    "MixinMinecraftClient"
-  ],
   "mixins": [
     "MixinHopperBlockEntity"
   ],

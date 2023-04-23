@@ -19,6 +19,8 @@ public class Holder {
     private static Compat compat;
     @Getter(onMethod_ = @Deprecated) // Not API, use ClientCompat#get() instead.
     private static ClientCompat clientCompat;
+    @Getter(onMethod_ = @Deprecated) // Not API, use ClientOnly#get() instead.
+    private static ClientOnly clientOnly;
     @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated)
     private static MixinAccessWidener mixinAccessWidener;
     @Getter(value = AccessLevel.PACKAGE, onMethod_ = @Deprecated) // Not API, use IRainbow#get() instead.
@@ -54,6 +56,11 @@ public class Holder {
     public static void setClientCompat(ClientCompat clientCompat) {
         if (Holder.clientCompat != null) throw new IllegalStateException("ClientCompat instance already set.");
         Holder.clientCompat = clientCompat;
+    }
+
+    public static void setClientOnly(ClientOnly clientOnly) {
+        if (Holder.clientOnly != null) throw new IllegalStateException("ClientOnly instance already set.");
+        Holder.clientOnly = clientOnly;
     }
 
     public static void setMixinAccessWidener(MixinAccessWidener mixinAccessWidener) {

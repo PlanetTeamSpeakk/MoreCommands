@@ -9,6 +9,15 @@ architectury {
 
 loom {
     accessWidenerPath = project(":common").loom.accessWidenerPath
+
+    splitEnvironmentSourceSets()
+
+    mods {
+        morecommands {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
 }
 
 configurations {
@@ -35,6 +44,7 @@ dependencies {
     modImplementation "com.terraformersmc:modmenu:4.0.6"
     modImplementation "com.ptsmods:devlogin:3.2.2"
 
+    clientImplementation project(":common").sourceSets.client.output
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
     common(project(path: ":common:API", configuration: "namedElements")) { transitive false }

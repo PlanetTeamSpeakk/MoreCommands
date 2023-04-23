@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import com.ptsmods.morecommands.commands.server.elevated.FireballCommand;
+import com.ptsmods.morecommands.commands.elevated.FireballCommand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.LargeFireball;

@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.commands.server.elevated.UnlimitedCommand;
+import com.ptsmods.morecommands.commands.elevated.UnlimitedCommand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;

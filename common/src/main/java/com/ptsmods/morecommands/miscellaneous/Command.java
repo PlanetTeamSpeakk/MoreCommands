@@ -165,11 +165,11 @@ public abstract class Command {
             sendMsg(player, msg);
     }
 
-    static String fixResets(String s) {
+    protected static String fixResets(String s) {
         return fixResets(s, DF);
     }
 
-    static String fixResets(String s, ChatFormatting formatting) {
+    protected static String fixResets(String s, ChatFormatting formatting) {
         return s.replace(ChatFormatting.RESET.toString(), ChatFormatting.RESET.toString() + formatting).replaceAll("\n", "\n" + formatting);
     }
 

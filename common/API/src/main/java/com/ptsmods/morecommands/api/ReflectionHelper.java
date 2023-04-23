@@ -15,7 +15,6 @@ import java.lang.reflect.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -173,11 +172,8 @@ public class ReflectionHelper {
         }
     }
 
-    // TODO this is incredibly slow in a dev env (4.5 seconds), but finishes in at most 200 ms in a normal env.
     @SuppressWarnings("unchecked")
-    public static <T> List<Class<? extends T>> getClasses(Class<T> superClass, String pckg) throws IOException {
-        Path jar = IMoreCommands.get().getJar();
-
+    public static <T> List<? extends Class<? extends T>> getClasses(Path jar, Class<T> superClass, String pckg) throws IOException {
         List<String> classNames = new ArrayList<>();
         // It should only be a directory in the case of a dev environment, otherwise it should always be a jar file.
         if (Files.isDirectory(jar))
@@ -186,7 +182,7 @@ public class ReflectionHelper {
                         .filter(path -> Files.isRegularFile(path) && !path.getFileName().toString().contains("$"))
                         .map(path -> path.toAbsolutePath().toString())
                         .map(path -> path.substring(jar.toAbsolutePath().toString().length() + 1, path.lastIndexOf('.')).replace(File.separatorChar, '.'))
-                        .collect(Collectors.toList()));
+                        .toList());
             }
         else {
             ZipFile zip = new ZipFile(jar.toFile());
@@ -212,7 +208,7 @@ public class ReflectionHelper {
                 })
                 .filter(c -> superClass.isAssignableFrom(c) && c != superClass)
                 .map(c -> (Class<? extends T>) c)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @SuppressWarnings("unchecked")

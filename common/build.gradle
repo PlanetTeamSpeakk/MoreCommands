@@ -4,6 +4,15 @@ architectury {
 
 loom {
     accessWidenerPath = file("src/main/resources/morecommands.accesswidener")
+
+    splitEnvironmentSourceSets()
+
+    mods {
+        morecommands {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
 }
 
 dependencies {

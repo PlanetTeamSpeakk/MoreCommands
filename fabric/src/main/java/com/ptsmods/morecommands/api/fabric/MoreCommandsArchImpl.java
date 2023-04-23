@@ -21,16 +21,22 @@ import java.util.function.Predicate;
 @ExtensionMethod(URLExtensions.class)
 public class MoreCommandsArchImpl {
     @Getter(lazy = true, onMethod_ = @SneakyThrows)
-    private static final Path jar = Optional.of(new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer(MoreCommands.MOD_ID)
-                    .orElseThrow())
-                    .getOriginUrl()
-                    .toURISneaky()
-                    .getPath())
-                    .toPath())
-            .map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
-                    Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
-                            .toAbsolutePath().toString(), "common", "build", "classes", "java", "main", "")) : jar)
-            .orElseThrow();
+    private static final Path jar = getJar("main");
+    @Getter(lazy = true, onMethod_ = @SneakyThrows)
+    private static final Path clientJar = getJar("client");
+
+    private static Path getJar(String sourceSet) {
+        return Optional.of(new File(((ModContainerImpl) FabricLoader.getInstance().getModContainer(MoreCommands.MOD_ID)
+                        .orElseThrow())
+                        .getOriginUrl()
+                        .toURISneaky()
+                        .getPath())
+                        .toPath())
+                .map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
+                        Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
+                                .toAbsolutePath().toString(), "common", "build", "classes", "java", sourceSet, "")) : jar)
+                .orElseThrow();
+    }
 
     public static Path getConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir().resolve("MoreCommands");

@@ -4,7 +4,7 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.clientoptions.*;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
-import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
+import com.ptsmods.morecommands.commands.unelevated.PowerToolCommand;
 import dev.architectury.platform.Platform;
 
 import java.io.File;

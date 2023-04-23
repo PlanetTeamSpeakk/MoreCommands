@@ -15,16 +15,14 @@ import com.ptsmods.morecommands.api.*;
 import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
-import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.arguments.*;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.commands.server.elevated.ReachCommand;
+import com.ptsmods.morecommands.commands.elevated.ReachCommand;
 import com.ptsmods.morecommands.compat.*;
-import com.ptsmods.morecommands.compat.client.*;
 import com.ptsmods.morecommands.miscellaneous.Chair;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
@@ -45,8 +43,6 @@ import io.netty.buffer.Unpooled;
 import lombok.SneakyThrows;
 import net.fabricmc.api.EnvType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
@@ -189,9 +185,8 @@ public enum MoreCommands implements IMoreCommands {
 
     MoreCommands() {
         Holder.setMoreCommands(this);
-
-        Holder.setCompat((Compat) determineCurrentCompat(false));
-        if (Platform.getEnv() == EnvType.CLIENT) Holder.setClientCompat((ClientCompat) determineCurrentCompat(true));
+        Holder.setCompat(determineCurrentCompat());
+        if (Platform.getEnv() == EnvType.SERVER) Holder.setClientOnly(new ClientOnlyDummyImpl()); // MoreCommandsClient handles this on clients
     }
 
     public static void init() {
@@ -359,17 +354,17 @@ public enum MoreCommands implements IMoreCommands {
         registeredStuff = true;
     }
 
-    static <T> List<Class<? extends T>> getCommandClasses(String type, Class<T> clazz) {
+    public static <T> List<? extends Class<? extends T>> getCommandClasses(EnvType type, Class<T> clazz) {
         long start = System.currentTimeMillis();
-        List<Class<? extends T>> classes = new ArrayList<>();
-        Path jar = MoreCommandsArch.getJar();
+        List<? extends Class<? extends T>> classes = new ArrayList<>();
+        Path jar = type == EnvType.CLIENT ? MoreCommandsArch.getClientJar() : MoreCommandsArch.getJar();
         if (jar == null) {
             LOG.error("Could not find the jarfile of the mod, no commands will be registered.");
             return classes;
         }
 
         try {
-            classes = ReflectionHelper.getClasses(clazz, "com.ptsmods.morecommands.commands." + type);
+            classes = ReflectionHelper.getClasses(jar, clazz, "com.ptsmods.morecommands." + (type == EnvType.CLIENT ? "client." : "") + "commands.");
             LOG.info("Found " + classes.size() + " commands to load for type " + type + ". Took " + (System.currentTimeMillis() - start) + " ms.");
         } catch (IOException e) {
             LOG.error("Couldn't find commands for type " + type + ". This means none of said type will be loaded.", e);
@@ -379,7 +374,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
      private static void doCommandRegistration() {
-         List<Command> serverCommands = getCommandClasses("server", Command.class).stream()
+         List<Command> serverCommands = getCommandClasses(EnvType.SERVER, Command.class).stream()
                 .map(MoreCommands::getInstance)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -528,7 +523,7 @@ public enum MoreCommands implements IMoreCommands {
         if (NetworkManager.canPlayerReceive(p, new ResourceLocation("morecommands:formatting_update"))) NetworkManager.sendToPlayer(p, new ResourceLocation("morecommands:formatting_update"), buf);
     }
 
-    static <T extends Command> T getInstance(Class<T> cmd) {
+    public static <T extends Command> T getInstance(Class<T> cmd) {
         T instance;
         try {
             Constructor<T> con = cmd.getDeclaredConstructor();
@@ -555,7 +550,7 @@ public enum MoreCommands implements IMoreCommands {
         if (parentStyle == null) parentStyle = Style.EMPTY;
 
         TextBuilder<?> builder = Compat.get().builderFromText(text);
-        StringBuilder s = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         Style style = text.getStyle();
         style = (style == null ? Style.EMPTY : style).applyTo(parentStyle);
 
@@ -572,44 +567,32 @@ public enum MoreCommands implements IMoreCommands {
                         break;
                     }
 
-                if (f != null) s.append(f);
+                if (f != null) sb.append(f);
                 else {
                     Color colour = new Color(rgb);
-                    s.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
+                    sb.append("\u00A7").append(String.format("#%02x%02x%02x", colour.getRed(), colour.getGreen(), colour.getBlue()));
                 }
             }
 
-            if (style.isBold()) s.append(ChatFormatting.BOLD);
-            if (style.isStrikethrough()) s.append(ChatFormatting.STRIKETHROUGH);
-            if (style.isUnderlined()) s.append(ChatFormatting.UNDERLINE);
-            if (style.isItalic()) s.append(ChatFormatting.ITALIC);
-            if (style.isObfuscated()) s.append(ChatFormatting.OBFUSCATED);
+            if (style.isBold()) sb.append(ChatFormatting.BOLD);
+            if (style.isStrikethrough()) sb.append(ChatFormatting.STRIKETHROUGH);
+            if (style.isUnderlined()) sb.append(ChatFormatting.UNDERLINE);
+            if (style.isItalic()) sb.append(ChatFormatting.ITALIC);
+            if (style.isObfuscated()) sb.append(ChatFormatting.OBFUSCATED);
         }
 
-        if (builder instanceof TranslatableTextBuilder && translate) {
-            TranslatableTextBuilder tt = (TranslatableTextBuilder) builder;
-            Object[] args = new Object[tt.getArgs().length];
-
-            for (int i = 0; i < args.length; i++) {
-                Object arg = tt.getArgs()[i];
-                if (arg instanceof Component || arg instanceof TextBuilder)
-                    args[i] = textToString(arg instanceof Component ? (Component) arg : ((TextBuilder<?>) arg).build(), style, true, includeFormattings);
-                else args[i] = arg;
-            }
-
-            s.append(I18n.get(tt.getKey(), Arrays.stream(args)
-                    .map(o -> o instanceof TextBuilder ? ((TextBuilder<?>) o).build() : o)
-                    .collect(Collectors.toList())));
-        } else s.append(builder instanceof EmptyTextBuilder ? "" :
+        if (builder instanceof TranslatableTextBuilder tt && translate) {
+            ClientOnly.get().translateTranslatableText(tt, style, includeFormattings, sb);
+        } else sb.append(builder instanceof EmptyTextBuilder ? "" :
                 builder instanceof LiteralTextBuilder ? ((LiteralTextBuilder) builder).getLiteral() :
                 builder instanceof TranslatableTextBuilder ? ((TranslatableTextBuilder) builder).getKey() :
                         text);
 
         if (!text.getSiblings().isEmpty())
             for (Component t : text.getSiblings())
-                s.append(textToString(t, style, translate, includeFormattings));
+                sb.append(textToString(t, style, translate, includeFormattings));
 
-        return s.toString();
+        return sb.toString();
     }
 
     public static String stripFormattings(String s) {
@@ -774,7 +757,7 @@ public enum MoreCommands implements IMoreCommands {
     public static HitResult getRayTraceTarget(Entity entity, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
         if (entity == null) return null;
 
-        float td = Platform.getEnv() == EnvType.CLIENT ? Minecraft.getInstance().getFrameTime() : 1f;
+        float td = ClientOnly.get().getFrameTime();
         HitResult crosshairTarget = entity.pick(reach, td, !ignoreLiquids);
         if (ignoreEntities) return crosshairTarget;
 
@@ -784,7 +767,7 @@ public enum MoreCommands implements IMoreCommands {
     }
 
     public static EntityHitResult getEntityRayTraceTarget(Entity entity, double reach) {
-        float td = Platform.getEnv() == EnvType.CLIENT ? Minecraft.getInstance().getFrameTime() : 1f;
+        float td = ClientOnly.get().getFrameTime();
         Vec3 vec3d = entity.getEyePosition(td);
         double e = reach;
         e *= e;
@@ -1004,18 +987,6 @@ public enum MoreCommands implements IMoreCommands {
         }
     }
 
-    // Me
-    public boolean isCool(Entity entity) {
-        return entity instanceof Player && ("1aa35f31-0881-4959-bd14-21e8a72ba0c1".equals(entity.getStringUUID()) ||
-                Platform.isDevelopmentEnvironment()) && (Minecraft.getInstance().player == null ||
-                Compat.get().getUUID(entity).equals(Compat.get().getUUID(Minecraft.getInstance().player)));
-    }
-
-    // My best friend :3
-    public boolean isCute(Entity entity) {
-        return entity instanceof Player && "b8760dc9-19fd-4d01-a5c7-25268a677deb".equals(entity.getStringUUID());
-    }
-
     public static CompoundTag getDefaultTag(EntityType<?> type) {
         CompoundTag tag = new CompoundTag();
         tag.putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
@@ -1117,11 +1088,6 @@ public enum MoreCommands implements IMoreCommands {
         } catch (IOException e) {
             LOG.catching(e);
         }
-    }
-
-    public static boolean isSingleplayer() {
-        return Platform.getEnv() != EnvType.SERVER && Minecraft.getInstance() != null &&
-                Minecraft.getInstance().getCurrentServer() == null && Minecraft.getInstance().level != null;
     }
 
     public static String formatSeconds(long seconds, ChatFormatting mainColour, ChatFormatting commaColour) {
@@ -1309,34 +1275,18 @@ public enum MoreCommands implements IMoreCommands {
         permissions.put(permission.toLowerCase(Locale.ROOT), defaultValue);
     }
 
-    private static Object determineCurrentCompat(boolean client) {
-        Object compat = determineCurrentCompat0(client);
-        LOG.info("Determined " + (client ? "client " : "") + "compat: " + compat.getClass().getSimpleName());
-
-        return compat;
-    }
-
-    private static Object determineCurrentCompat0(boolean client) {
+    private static Compat determineCurrentCompat() {
         Version v = Version.getCurrent();
         int minor = v.minor, rev = v.revision == null ? -1 : v.revision;
 
-        if (!client) switch (minor) {
-            case 17:
-                return new Compat17();
-            case 18:
-                return rev >= 2 ? new Compat182() : new Compat18();
-            case 19:
-            default:
-                return rev >= 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
-        }
-        else switch (minor) {
-            case 17:
-            case 18:
-                return new ClientCompat17();
-            case 19:
-            default:
-                return rev >= 2 ? new ClientCompat192() : rev == 1 ? new ClientCompat191() : rev == 0 ? new ClientCompat190() : new ClientCompat19();
-        }
+        Compat compat = switch (minor) {
+            case 17 -> new Compat17();
+            case 18 -> rev >= 2 ? new Compat182() : new Compat18();
+            default -> rev >= 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
+        };
+        LOG.info("Determined compat: " + compat.getClass().getSimpleName());
+
+        return compat;
     }
 
     public static Map<Command, Collection<CommandNode<CommandSourceStack>>> getNodes() {

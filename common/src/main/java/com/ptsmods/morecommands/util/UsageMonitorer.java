@@ -26,7 +26,7 @@ public class UsageMonitorer {
 
     public static float getSystemCpuLoad() {
         try {
-            return (float) getOSMXB().getSystemCpuLoad();
+            return (float) getOSMXB().getCpuLoad();
         } catch (Exception e) {
             return -1;
         }
@@ -57,11 +57,11 @@ public class UsageMonitorer {
     }
 
     public static long getSystemRamUsage() {
-        return getSystemRamMax() - getOSMXB().getFreePhysicalMemorySize();
+        return getSystemRamMax() - getOSMXB().getFreeMemorySize();
     }
 
     public static long getSystemRamMax() {
-        return getOSMXB().getTotalPhysicalMemorySize();
+        return getOSMXB().getTotalMemorySize();
     }
 
     public static long getSystemSwapUsage() {

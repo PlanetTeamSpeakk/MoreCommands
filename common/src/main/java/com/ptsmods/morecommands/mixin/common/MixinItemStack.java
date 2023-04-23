@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.mixin.common;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import com.ptsmods.morecommands.commands.server.unelevated.PowerToolCommand;
+import com.ptsmods.morecommands.commands.unelevated.PowerToolCommand;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;

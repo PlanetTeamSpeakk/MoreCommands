@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.mixin.common;
 
-import com.ptsmods.morecommands.commands.server.elevated.SpeedCommand;
+import com.ptsmods.morecommands.commands.elevated.SpeedCommand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;

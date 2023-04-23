@@ -115,7 +115,7 @@ public class TickStatistics {
      *
      * <p>This code is taken from PaperMC/Paper, licensed under MIT.</p>
      *
-     * @author aikar (PaperMC) https://github.com/PaperMC/Paper/blob/master/Spigot-Server-Patches/0021-Further-improve-server-tick-loop.patch
+     * @author aikar (PaperMC) <a href="https://github.com/PaperMC/Paper/blob/master/Spigot-Server-Patches/0021-Further-improve-server-tick-loop.patch">source</a>
      */
     public static final class TpsRollingAverage {
         private final int size;

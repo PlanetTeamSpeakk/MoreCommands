@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class MixinServerCommandSource {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/CommandSourceStack;broadcastToAdmins(Lnet/minecraft/network/chat/Component;)V"), method = "sendSuccess")
     private void sendFeedback_sendToOps(CommandSourceStack source, Component message) {
-        if (source.getLevel() == null || MoreGameRules.get().checkBooleanWithPerm(source.getLevel().getGameRules(), MoreGameRules.get().sendCommandFeedbackToOpsRule(), source.getEntity()))
+        if (MoreGameRules.get().checkBooleanWithPerm(source.getLevel().getGameRules(), MoreGameRules.get().sendCommandFeedbackToOpsRule(), source.getEntity()))
             broadcastToAdmins(Compat.get().builderFromText(message).withStyle(Style.EMPTY).build());
     }
 

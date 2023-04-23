@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
-import com.ptsmods.morecommands.commands.server.elevated.VanishCommand;
+import com.ptsmods.morecommands.commands.elevated.VanishCommand;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
