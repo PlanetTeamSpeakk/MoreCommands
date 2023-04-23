@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "plugin": "com.ptsmods.morecommands.fabric.MixinPlugin",
+  "package": "com.ptsmods.morecommands.client.mixin.fabric",
+  "compatibilityLevel": "JAVA_16",
+  "minVersion": "0.8",
+  "client": [
+    "MixinCreativeInventoryScreen",
+    "MixinItemGroupButtonWidget",
+    "MixinItemGroupButtonWidgetAccessor",
+    "MixinMinecraftClient"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
