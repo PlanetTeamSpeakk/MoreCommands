@@ -47,7 +47,6 @@
     "accessor.MixinFormattingAccessor",
     "accessor.MixinItemAccessor",
     "accessor.MixinLivingEntityAccessor",
-    "accessor.MixinLootPoolAccessor",
     "accessor.MixinPlayerAbilitiesAccessor",
     "accessor.MixinPlayerEntityAccessor",
     "accessor.MixinRegistryAccessor",
