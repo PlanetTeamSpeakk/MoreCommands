@@ -33,7 +33,7 @@ public class MoreCommandsArchImpl {
                         .getPath())
                         .toPath())
                 .map(jar -> Files.isDirectory(jar) && jar.getFileName().toString().equals("main") ?
-                        Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent()
+                        Paths.get(String.join(File.separator, jar.getParent().getParent().getParent().getParent().getParent()
                                 .toAbsolutePath().toString(), "common", "build", "classes", "java", sourceSet, "")) : jar)
                 .orElseThrow();
     }
