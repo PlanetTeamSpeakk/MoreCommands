@@ -29,8 +29,14 @@
   },
   "mixins": [
     "morecommands.mixins.json",
-    "morecommands_client_fabric.mixins.json",
-    "morecommands_client.mixins.json",
+    {
+      "config": "morecommands_client_fabric.mixins.json",
+      "environment": "client"
+    },
+    {
+      "config": "morecommands_client.mixins.json",
+      "environment": "client"
+    },
     "morecommands_common.mixins.json",
     "morecommands_reach.mixins.json",
     "morecommands_reach-client.mixins.json",
