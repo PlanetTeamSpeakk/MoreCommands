@@ -151,7 +151,6 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     public static void init() {
         Holder.setMoreCommandsClient(new MoreCommandsClient());
         Holder.setClientCompat(determineCurrentCompat());
-        Holder.setClientOnly(new ClientOnlyImpl());
 
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());

@@ -186,7 +186,12 @@ public enum MoreCommands implements IMoreCommands {
     MoreCommands() {
         Holder.setMoreCommands(this);
         Holder.setCompat(determineCurrentCompat());
-        if (Platform.getEnv() == EnvType.SERVER) Holder.setClientOnly(new ClientOnlyDummyImpl()); // MoreCommandsClient handles this on clients
+        if (Platform.getEnv() == EnvType.SERVER) Holder.setClientOnly(new ClientOnlyDummyImpl());
+        // The init method of this class gets called before the init method of MoreCommandsClient,
+        // hence we must set the ClientOnly instance here seeing as some classes initialized by this
+        // class's init method need it.
+        else Holder.setClientOnly(ReflectionHelper.newInstance(ReflectionHelper.getCtor(
+                ReflectionHelper.getClass("com.ptsmods.morecommands.client.ClientOnlyImpl"))));
     }
 
     public static void init() {
