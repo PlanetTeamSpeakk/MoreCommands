@@ -9,7 +9,7 @@ public class CSysInfoCommand extends ClientCommand {
     @Override
     public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) {
         dispatcher.register(cLiteral("csysinfo")
-                .executes(ctx -> SysInfoCommand.sendSysInfo(null, ClientCommand::sendMsg)));
+                .executes(ctx -> SysInfoCommand.sendSysInfo(ClientCommand::sendMsg)));
     }
 
     @Override
