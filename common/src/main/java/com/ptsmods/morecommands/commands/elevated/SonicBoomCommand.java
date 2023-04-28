@@ -7,10 +7,6 @@ import com.ptsmods.morecommands.api.Version;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinTaskAccessor;
 import dev.architectury.event.events.common.TickEvent;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +26,11 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class SonicBoomCommand extends Command {
     private final Map<ServerLevel, StaticSonicBoomTask> tasks = new HashMap<>();
 
@@ -45,7 +46,7 @@ public class SonicBoomCommand extends Command {
                 task.getValue().tickOrStop(task.getKey(), null, task.getKey().getGameTime());
                 this.tasks.put(task.getKey(), task.getValue());
             }
-        });
+        }); // TODO
     }
 
     @Override
@@ -98,11 +99,8 @@ public class SonicBoomCommand extends Command {
             run(world, null, time);
         }
 
-        protected boolean shouldRun(ServerLevel serverWorld, Warden wardenEntity) {
-            return true;
-        }
-
-        protected boolean shouldKeepRunning(ServerLevel serverWorld, Warden wardenEntity, long l) {
+        @Override
+        protected boolean canStillUse(ServerLevel serverWorld, Warden wardenEntity, long l) {
             return true;
         }
 
@@ -111,7 +109,8 @@ public class SonicBoomCommand extends Command {
                     SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 3.0F, 1.0F);
         }
 
-        protected void keepRunning(ServerLevel serverWorld, Warden wardenEntity, long l) {
+        @Override
+        protected void tick(ServerLevel serverWorld, Warden wardenEntity, long l) {
             if (delay-- != 0) return;
 
             Vec3 vec3d = pos.add(0.0, 1.6, 0.0);

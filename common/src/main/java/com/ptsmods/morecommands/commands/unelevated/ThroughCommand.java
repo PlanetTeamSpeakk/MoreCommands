@@ -30,22 +30,16 @@ public class ThroughCommand extends Command {
                     while (true) {
                         for (int x1 = 0; x1 < 64; x1++) { // it will look 64 blocks in front of you at most.
                             switch (Direction.getNearest(rot.x, rot.y, rot.z)) {
-                                case NORTH:
-                                    z--;
-                                    break;
-                                case WEST:
-                                    x--;
-                                    break;
-                                case SOUTH:
-                                    z++;
-                                    break;
-                                case EAST:
-                                    x++;
-                                    break;
-                                case DOWN:
+                                case NORTH -> z--;
+                                case WEST -> x--;
+                                case SOUTH -> z++;
+                                case EAST -> x++;
+                                case DOWN -> {
                                     return DescendCommand.execute(ctx);
-                                case UP:
+                                }
+                                case UP -> {
                                     return AscendCommand.execute(ctx);
+                                }
                             }
 
                             Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock(); // Block under your feet.

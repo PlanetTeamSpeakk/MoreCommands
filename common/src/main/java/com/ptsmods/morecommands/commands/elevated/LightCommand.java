@@ -36,7 +36,7 @@ public class LightCommand extends Command {
     private int execute(CommandContext<CommandSourceStack> ctx, int level, int count) throws CommandSyntaxException {
         ItemStack stack = new ItemStack(Items.LIGHT, count);
         CompoundTag nbt = new CompoundTag();
-        nbt.putString("level", "" + level);
+        nbt.putString("level", String.valueOf(level));
         stack.addTagElement("BlockStateTag", nbt);
 
         CommandSourceStack source = ctx.getSource();

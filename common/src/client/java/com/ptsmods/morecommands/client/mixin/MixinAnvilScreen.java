@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.client.mixin;
 
-import com.ptsmods.morecommands.client.MoreCommandsClient;
+import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,6 +20,7 @@ public class MixinAnvilScreen {
     @Inject(at = @At("TAIL"), method = "subInit")
     protected void setup(CallbackInfo cbi) {
         Screen thiz = ReflectionHelper.cast(this);
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87, true, colourPickerOpen, name::insertText, b -> colourPickerOpen = b);
+        IMoreCommandsClient.get().addColourPicker(thiz, thiz.width - 117, thiz.height/2 - 87,
+                true, colourPickerOpen, name::insertText, b -> colourPickerOpen = b);
     }
 }

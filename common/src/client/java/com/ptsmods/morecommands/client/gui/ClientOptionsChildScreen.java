@@ -6,19 +6,20 @@ import com.ptsmods.morecommands.api.addons.ScalableClickableWidget;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Tuple;
+
+import java.util.*;
 
 public class ClientOptionsChildScreen extends Screen {
     private final ClientOptionCategory category;
@@ -57,7 +58,7 @@ public class ClientOptionsChildScreen extends Screen {
 
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24*(row+1) - 6;
-            AbstractWidget btn = addon.mc$addButton((AbstractWidget) option.getValue().createButton(x, y, option.getKey(), () -> {
+            AbstractWidget btn = addon.mc$addButton((AbstractWidget) option.getValue().createButton(this, x, y, option.getKey(), () -> {
                 parent.init();
                 init();
             }, ClientOptions::write));
@@ -74,32 +75,27 @@ public class ClientOptionsChildScreen extends Screen {
 
         if (!page.isEmpty()) pages.add(page);
         if (pages.size() > 1) {
-            seekLeft = addon.mc$addButton(new Button(width / 2 - 150, height / 6 + 145, 120, 20, LiteralTextBuilder.literal("<---"), button -> {
-                this.page -= 1;
-                updatePage();
-            }) {
-                @Override
-                protected MutableComponent createNarrationMessage() {
-                    return TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("previous page")).build();
-                }
-            });
-            seekRight = addon.mc$addButton(new Button(width / 2 + 30, height / 6 + 145, 120, 20, LiteralTextBuilder.literal("--->"), button -> {
-                this.page += 1;
-                updatePage();
-            }) {
-                @Override
-                protected MutableComponent createNarrationMessage() {
-                    return TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("next page")).build();
-                }
-            });
+            seekLeft = addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 - 150, height / 6 + 145, 120, 20,
+                    LiteralTextBuilder.literal("<---"), button -> {
+                        this.page -= 1;
+                        updatePage();
+                    }, null, TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("previous page")).build()));
+
+            seekRight = addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 + 30, height / 6 + 145, 120, 20,
+                    LiteralTextBuilder.literal("--->"), button -> {
+                        this.page += 1;
+                        updatePage();
+                    }, null, TranslatableTextBuilder.builder("gui.narrate.button", LiteralTextBuilder.builder("next page")).build()));
         }
         updatePage();
 
-        addon.mc$addButton(new Button(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), button -> {
-            ClientOptions.reset();
-            init();
-        }));
-        addon.mc$addButton(new Button(width / 2 + 30, height / 6 + 168, 120, 20, CommonComponents.GUI_DONE, button -> Objects.requireNonNull(minecraft).setScreen(this.parent)));
+        addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 - 150, height / 6 + 168, 120, 20,
+                LiteralTextBuilder.literal("Reset"), button -> {
+                    ClientOptions.reset();
+                    init();
+                }, null));
+        addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 + 30, height / 6 + 168, 120, 20,
+                CommonComponents.GUI_DONE, button -> Objects.requireNonNull(minecraft).setScreen(this.parent), null));
     }
 
     @Override

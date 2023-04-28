@@ -15,13 +15,13 @@ import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.io.ByteArrayInputStream;
@@ -110,14 +110,14 @@ public class KitCommand extends Command {
 
 	private static Map<String, Object> serialiseItemStack(ItemStack stack) {
 		Map<String, Object> data = new HashMap<>();
-		data.put("item", Registry.ITEM.getKey(stack.getItem()).toString());
+		data.put("item", Objects.requireNonNull(Compat.get().<Item>getBuiltInRegistry("item").getKey(stack.getItem())).toString());
 		data.put("count", stack.getCount());
 		data.put("tag", stack.hasTag() ? nbtToByteString(stack.getTag()) : null);
 		return data;
 	}
 
 	private static ItemStack deserialiseItemStack(Map<String, Object> data) {
-		ItemStack stack = new ItemStack(Registry.ITEM.get(new ResourceLocation((String) data.get("item"))), ((Double) data.get("count")).intValue());
+		ItemStack stack = new ItemStack(Compat.get().<Item>getBuiltInRegistry("item").get(new ResourceLocation((String) data.get("item"))), ((Double) data.get("count")).intValue());
 		stack.setTag(nbtFromByteString((String) data.get("tag")));
 		return stack;
 	}

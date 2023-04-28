@@ -41,21 +41,20 @@ public abstract class MixinCreativeInventoryScreen extends EffectRenderingInvent
 
     @Inject(at = @At("HEAD"), method = "keyPressed", cancellable = true)
     private void keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cbi) {
-        if (!searchBox.isFocused() && ClientOptions.Tweaks.creativeKeyPager.getValue()) {
-            CreativeInventoryScreenAddon addon = (CreativeInventoryScreenAddon) this;
-            Options options = Minecraft.getInstance().options;
-            Button btn = null;
-            if ((options.keyLeft.matches(keyCode, scanCode) || options.keyDown.matches(keyCode, scanCode) ||
-                    keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && addon.mc$getPagerPrev() != null && addon.mc$getPagerPrev().active)
-                btn = addon.mc$getPagerPrev();
-            else if ((options.keyRight.matches(keyCode, scanCode) || options.keyUp.matches(keyCode, scanCode) ||
-                    keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && addon.mc$getPagerNext() != null && addon.mc$getPagerNext().active)
-                btn = addon.mc$getPagerNext();
-            if (btn != null) {
-                btn.onPress();
-                btn.playDownSound(Minecraft.getInstance().getSoundManager());
-                cbi.setReturnValue(true);
-            }
+        if (searchBox.isFocused() || !ClientOptions.Tweaks.creativeKeyPager.getValue() || !(this instanceof CreativeInventoryScreenAddon addon)) return;
+
+        Options options = Minecraft.getInstance().options;
+        Button btn = null;
+        if ((options.keyLeft.matches(keyCode, scanCode) || options.keyDown.matches(keyCode, scanCode) ||
+                keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN) && addon.mc$getPagerPrev() != null && addon.mc$getPagerPrev().active)
+            btn = addon.mc$getPagerPrev();
+        else if ((options.keyRight.matches(keyCode, scanCode) || options.keyUp.matches(keyCode, scanCode) ||
+                keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_UP) && addon.mc$getPagerNext() != null && addon.mc$getPagerNext().active)
+            btn = addon.mc$getPagerNext();
+        if (btn != null) {
+            btn.onPress();
+            btn.playDownSound(Minecraft.getInstance().getSoundManager());
+            cbi.setReturnValue(true);
         }
     }
 }

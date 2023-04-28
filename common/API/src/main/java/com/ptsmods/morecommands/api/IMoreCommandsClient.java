@@ -7,6 +7,7 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Style;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public interface IMoreCommandsClient {
     static IMoreCommandsClient get() {
@@ -51,4 +53,6 @@ public interface IMoreCommandsClient {
     List<KeyMapping> getKeyMappings();
 
     void setScheduleWorldInitCommands(boolean scheduleWorldInitCommands);
+
+    void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener);
 }

@@ -7,13 +7,13 @@ import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.Util;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.arguments.IgnorantStringArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Objects;
@@ -51,7 +51,7 @@ public class NicknameCommand extends Command {
                     " characters which is exceeded by the length of the given nickname (" + stripped.length() + ").");
         else {
             player.getEntityData().set(IDataTrackerHelper.get().nickname(), nickname == null ? Optional.empty() : Optional.of(literalText(nickname).build()));
-            ctx.getSource().getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.UPDATE_DISPLAY_NAME, player));
+            ctx.getSource().getServer().getPlayerList().broadcastAll(Compat.get().newClientboundPlayerInfoUpdatePacket("UPDATE_DISPLAY_NAME", player));
             sendMsg(ctx, (self ? "Your" : IMoreCommands.get().textToString(player.getName(), SS, true) + "'s") + (nickname == null ? " nickname has been " + ChatFormatting.RED + "disabled" + DF + "." :
                     " nickname has been set to " + SF + IMoreCommands.get().textToString(MoreCommands.getNickname(player), null, true) + DF + "."));
             return 1;

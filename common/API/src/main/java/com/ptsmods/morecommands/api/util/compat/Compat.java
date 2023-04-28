@@ -19,24 +19,28 @@ import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -53,7 +57,11 @@ public interface Compat {
 
     ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile);
 
-    CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
+    CompoundTag writeBaseSpawnerNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt);
+
+    default <E> Registry<E> getRegistry(RegistryAccess access, String name) {
+        return getRegistry(access, ResourceKey.createRegistryKey(new ResourceLocation(name)));
+    }
 
     <E> Registry<E> getRegistry(RegistryAccess manager, ResourceKey<? extends Registry<E>> key);
 
@@ -76,21 +84,15 @@ public interface Compat {
 
     Direction randomDirection();
 
-    default <T> T newInstance(Class<T> clazz) {
-        try {
-            return clazz.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     Map<ResourceLocation, Object> getBlockTags();
 
     DoubleStream doubleStream(DoubleList doubles);
 
-    Object getPaintingVariant(Painting painting);
+    ResourceLocation getPaintingVariant(Painting painting);
 
-    void setPaintingVariant(Painting entity, Object variant);
+    ResourceLocation nextPaintingVariant(ResourceLocation variant);
+
+    void setPaintingVariant(Painting entity, ResourceLocation variant);
 
     // Text-related
 
@@ -121,4 +123,20 @@ public interface Compat {
     AABB getBoundingBox(Entity entity); // Same thing, renamed in srg in 1.19.
 
     BlockPos blockPosition(Entity entity); // Same thing
+
+    <T> MappedRegistry<T> getBuiltInRegistry(String name);
+
+    SoundEvent newSoundEvent(ResourceLocation resource);
+
+    void setBaseSpawnerEntityId(BaseSpawner baseSpawner, EntityType<?> type, Level level, BlockPos pos);
+
+    Packet<ClientGamePacketListener> newClientboundPlayerInfoUpdatePacket(String action, ServerPlayer... players);
+
+    Packet<ClientGamePacketListener> newClientboundPlayerInfoRemovePacket(ServerPlayer... players);
+
+    default Object newCommandBuildContext() {
+        throw new IllegalStateException("Not available on this version."); // Only a thing in 1.19+
+    }
+
+    Explosion explode(Level level, Entity entity, double x, double y, double z, float power, boolean fire, Explosion.BlockInteraction interaction);
 }

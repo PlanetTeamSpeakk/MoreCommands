@@ -4,15 +4,17 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
-import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
+import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import java.util.*;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+
+import java.util.*;
 
 public class ClientOptionsScreen extends Screen {
     private final Screen parent;
@@ -43,21 +45,25 @@ public class ClientOptionsScreen extends Screen {
             int x = width / 2 + (right ? 5 : -155);
             int y = height / 6 + 24 * (row + 1) - 6;
 
-            categoryButtons.put(addon.mc$addButton(new Button(x, y, 150, 20, LiteralTextBuilder.literal(category.getName()),
-                    button -> minecraft.setScreen(new ClientOptionsChildScreen(this, category)))), category);
+            categoryButtons.put(addon.mc$addButton(ClientCompat.get().newButton(this, x, y, 150, 20,
+                    LiteralTextBuilder.literal(category.getName()),
+                    button -> minecraft.setScreen(new ClientOptionsChildScreen(this, category)), null)), category);
 
             if (right) row++;
             right = !right;
         }
 
-        wicButton = addon.mc$addButton(new Button(width / 2 + (right ? 5 : -155), height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.literal("World Init Commands"),
-                button -> minecraft.setScreen(new WorldInitCommandsScreen(this))));
+        wicButton = addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 + (right ? 5 : -155),
+                height / 6 + 24 * (row + 1) - 6, 150, 20, LiteralTextBuilder.literal("World Init Commands"),
+                button -> minecraft.setScreen(new WorldInitCommandsScreen(this)), null));
 
-        addon.mc$addButton(new Button(width / 2 - 150, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), btn -> {
-            ClientOptions.reset();
-            init();
-        }));
-        addon.mc$addButton(new Button(width / 2 + 30, height / 6 + 168, 120, 20, CommonComponents.GUI_DONE, buttonWidget -> minecraft.setScreen(parent)));
+        addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 - 150, height / 6 + 168, 120, 20,
+                LiteralTextBuilder.literal("Reset"), btn -> {
+                    ClientOptions.reset();
+                    init();
+                }, null));
+        addon.mc$addButton(ClientCompat.get().newButton(this, width / 2 + 30, height / 6 + 168, 120, 20,
+                CommonComponents.GUI_DONE, buttonWidget -> minecraft.setScreen(parent), null));
     }
 
     @Override

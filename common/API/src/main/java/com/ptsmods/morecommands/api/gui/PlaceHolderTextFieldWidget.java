@@ -1,17 +1,19 @@
 package com.ptsmods.morecommands.api.gui;
 
-import org.jetbrains.annotations.Nullable;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.function.BiFunction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.BiFunction;
 
 public class PlaceHolderTextFieldWidget extends EditBox {
     private final Font textRenderer;
-    private Component placeholder;
+    private final Component placeholder;
     private boolean drawsBackground = true;
+    private int x, y;
 
     public PlaceHolderTextFieldWidget(Font textRenderer, int x, int y, int width, int height, Component placeholder) {
         this(textRenderer, x, y, width, height, null, placeholder);
@@ -21,6 +23,9 @@ public class PlaceHolderTextFieldWidget extends EditBox {
         super(textRenderer, x, y, width, height, copyFrom, placeholder);
         this.textRenderer = textRenderer;
         this.placeholder = placeholder;
+
+        this.x = x;
+        this.y = y;
     }
 
     @Override
@@ -43,5 +48,17 @@ public class PlaceHolderTextFieldWidget extends EditBox {
     @Override
     public void setFormatter(BiFunction<String, Integer, FormattedCharSequence> renderTextProvider) {
         super.setFormatter(renderTextProvider);
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        this.y = y;
     }
 }

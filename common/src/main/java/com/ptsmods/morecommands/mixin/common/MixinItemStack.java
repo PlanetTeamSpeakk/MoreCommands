@@ -1,15 +1,17 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.unelevated.PowerToolCommand;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
+import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -20,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Objects;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack {
@@ -44,10 +48,10 @@ public abstract class MixinItemStack {
 
         CompoundTag spawnData = thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData");
         cbi.setReturnValue("block.minecraft.spawner_" +
-                Registry.ENTITY_TYPE.get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) &&
+                Objects.requireNonNull(Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type").get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) &&
                         thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ?
                         new ResourceLocation(spawnData.contains("entity", 10) ? spawnData.getCompound("entity").getString("id") : spawnData.getString("id")) :
-                        Registry.ENTITY_TYPE.getDefaultKey()).getDescriptionId());
+                        ((DefaultedRegistry<EntityType<?>>) Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type")).getDefaultKey())).getDescriptionId());
     }
 
     @Inject(at = @At("TAIL"), method = "getHoverName", cancellable = true)

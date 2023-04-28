@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.commands.elevated;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Registry;
@@ -55,7 +56,7 @@ public class ReachCommand extends Command {
     }
 
     private void addModifier(String id, ServerPlayer player, double reach) {
-        Optional.ofNullable(Registry.ATTRIBUTE.get(new ResourceLocation(id)))
+        Optional.ofNullable(Compat.get().<Attribute>getBuiltInRegistry("attribute").get(new ResourceLocation(id)))
                 .map(player::getAttribute)
                 .ifPresent(atr -> {
                     atr.removePermanentModifier(morecommandsModifier);

@@ -2,16 +2,14 @@ package com.ptsmods.morecommands.client.mixin;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
-import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IDeathTracker;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
-import com.ptsmods.morecommands.api.callbacks.PlayerListEvent;
+import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.client.commands.PtimeCommand;
 import com.ptsmods.morecommands.client.commands.PweatherCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
@@ -22,10 +20,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Map;
 import java.util.Objects;
 
 @Mixin(ClientPacketListener.class)
@@ -79,19 +75,5 @@ public class MixinClientPacketListener {
                 cbi.cancel();
             }
         }
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "handlePlayerInfo")
-    public Object onPlayerList_remove(Map<?, ?> map, Object key) {
-        Object entry = map.remove(key);
-        PlayerListEvent.REMOVE.invoker().call((PlayerInfo) entry);
-        return entry;
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", remap = false), method = "handlePlayerInfo")
-    public Object onPlayerList_put(Map<Object, Object> map, Object key, Object value) {
-        map.put(key, value);
-        PlayerListEvent.ADD.invoker().call((PlayerInfo) value);
-        return value;
     }
 }

@@ -9,6 +9,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "MoreCommands-common_Compat_Compat17-refmap.json"
+  }
 }

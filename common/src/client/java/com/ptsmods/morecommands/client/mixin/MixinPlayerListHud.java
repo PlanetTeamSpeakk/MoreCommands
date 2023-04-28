@@ -27,7 +27,8 @@ public class MixinPlayerListHud {
             int latency = playerListEntry.getLatency();
             float p = latency < 0 ? 100f : Math.min(100f / 900f * Math.max(latency-100, 0), 100f);
             if (p > 0) p = p / 100f;
-            Minecraft.getInstance().font.drawShadow(matrixStack, "" + latency, j + i - 11, k, new Color((int) (p*255), (int) ((1f-p)*255), 0).getRGB());
+            Minecraft.getInstance().font.drawShadow(matrixStack, String.valueOf(latency), j + i - 11, k,
+                    new Color((int) (p*255), (int) ((1f-p)*255), 0).getRGB());
             thiz.setBlitOffset(thiz.getBlitOffset() - 100);
         }
     }

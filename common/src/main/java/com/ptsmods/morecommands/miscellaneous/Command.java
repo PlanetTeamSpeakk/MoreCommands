@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.Compat;
@@ -16,8 +18,12 @@ import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -307,5 +313,20 @@ public abstract class Command {
         if (delay < 0) throw new IllegalArgumentException("Delay must be at least 0.");
         AtomicInteger atomicDelay = new AtomicInteger(delay);
         scheduledTasks.add(new Tuple<>(task, atomicDelay));
+    }
+
+    public <S> RequiredArgumentBuilder<S, ?> newResourceArgument(String argName, String registryName) {
+        MappedRegistry<?> r = Compat.get().getBuiltInRegistry(registryName);
+        return RequiredArgumentBuilder.<S, ResourceLocation>argument(argName, ResourceLocationArgument.id())
+                .suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(r.keySet(), builder));
+    }
+
+    public <T> T getResource(CommandContext<?> ctx, String argName, String registryName) throws CommandSyntaxException {
+        MappedRegistry<T> registry = Compat.get().getBuiltInRegistry(registryName);
+        ResourceLocation location = ctx.getArgument(argName, ResourceLocation.class);
+        if (!registry.containsKey(location)) throw new SimpleCommandExceptionType(LiteralTextBuilder.literal(
+                "The given resource could not be found.")).create();
+
+        return registry.get(location);
     }
 }

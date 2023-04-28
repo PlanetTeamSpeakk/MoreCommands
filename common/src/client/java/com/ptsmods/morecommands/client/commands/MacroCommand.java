@@ -111,7 +111,7 @@ public class MacroCommand extends ClientCommand {
                             String macro = ctx.getArgument("macro", String.class);
                             if (!macros.containsKey(macro)) sendMsg(ChatFormatting.RED + "A macro by the given name could not be found.");
                             else {
-                                for (String msg : macros.get(macro)) ClientCompat.get().sendMessageOrCommand(msg);
+                                for (String msg : macros.get(macro)) ClientCompat.get().sendChatOrCmd(msg);
                                 return macros.get(macro).size();
                             }
                             return 0;

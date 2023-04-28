@@ -12,6 +12,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import org.jetbrains.annotations.NotNull;
 
 public class InvseeCommand extends Command {
     @Override
@@ -34,7 +35,7 @@ public class InvseeCommand extends Command {
     public static void openInventory(Player player, Player target) {
         player.openMenu(new MenuProvider() {
             @Override
-            public Component getDisplayName() {
+            public @NotNull Component getDisplayName() {
                 return emptyText()
                         .append(Compat.get().builderFromText(target.getDisplayName()))
                         .append(literalText("'" + (IMoreCommands.get().textToString(target.getDisplayName(), null, false).endsWith("s") ? "" : "s") + " inventory"))

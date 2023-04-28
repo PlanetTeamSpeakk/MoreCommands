@@ -63,7 +63,7 @@ public class ClientCompat19 extends ClientCompat17 {
     }
 
     @Override
-    public void sendMessageOrCommand(String msg) {
+    public void sendChatOrCmd(String msg, boolean forceChat) {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         if (msg.startsWith("/")) player.command(msg.substring(1));
         else player.chat(msg);

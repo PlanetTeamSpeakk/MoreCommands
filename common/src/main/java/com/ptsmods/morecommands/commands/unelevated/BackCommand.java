@@ -21,8 +21,7 @@ public class BackCommand extends Command {
     @Override
     public void preinit(boolean serverOnly) {
         EntityTeleportEvent.EVENT.register((entity, worldFrom, worldTo, from, to) -> {
-            if (entity instanceof ServerPlayer) {
-                ServerPlayer player = (ServerPlayer) entity;
+            if (entity instanceof ServerPlayer player) {
                 Location<ServerLevel> loc = new Location<>((ServerLevel) worldFrom, from, player.getRotationVector());
                 Tuple<Location<ServerLevel>, Boolean> lastLoc = lastLocations.get(Compat.get().getUUID(player));
                 Tuple<Location<ServerLevel>, Boolean> pair;

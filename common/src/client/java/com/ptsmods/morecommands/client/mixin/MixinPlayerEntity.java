@@ -19,7 +19,8 @@ public class MixinPlayerEntity {
     @Inject(at = @At("RETURN"), method = "getBlockSpeedFactor", cancellable = true)
     protected void getVelocityMultiplier(CallbackInfoReturnable<Float> cbi) {
         Player thiz = ReflectionHelper.cast(this);
-        cbi.setReturnValue(thiz instanceof LocalPlayer && ((LocalPlayer) thiz).input.forwardImpulse == 0 && ((LocalPlayer) thiz).input.leftImpulse == 0 && ClientOptions.Tweaks.immediateMoveStop.getValue() ? 0f : cbi.getReturnValueF());
+        cbi.setReturnValue(thiz instanceof LocalPlayer && ((LocalPlayer) thiz).input.forwardImpulse == 0 &&
+                ((LocalPlayer) thiz).input.leftImpulse == 0 && ClientOptions.Tweaks.immediateMoveStop.getValue() ? 0f : cbi.getReturnValueF());
     }
 
     @Inject(at = @At("RETURN"), method = "getName", cancellable = true)

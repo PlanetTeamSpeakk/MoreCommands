@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.compat;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
+import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
@@ -26,19 +27,24 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.decoration.Motive;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -65,7 +71,7 @@ public class Compat17 implements Compat {
     }
 
     @Override
-    public CompoundTag writeSpawnerLogicNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
+    public CompoundTag writeBaseSpawnerNbt(BaseSpawner logic, Level world, BlockPos pos, CompoundTag nbt) {
         return logic.save(world, pos, nbt);
     }
 
@@ -126,13 +132,19 @@ public class Compat17 implements Compat {
     }
 
     @Override
-    public Object getPaintingVariant(Painting painting) {
-        return painting.motive;
+    public ResourceLocation getPaintingVariant(Painting painting) {
+        return Registry.MOTIVE.getKey(painting.motive);
     }
 
     @Override
-    public void setPaintingVariant(Painting entity, Object variant) {
-        entity.motive = (Motive) variant;
+    public ResourceLocation nextPaintingVariant(ResourceLocation variant) {
+        return Registry.MOTIVE.getKey(Registry.MOTIVE.byId((int) ((Registry.MOTIVE.getId(Registry.MOTIVE.get(variant)) + 1) %
+                Registry.MOTIVE.stream().count())));
+    }
+
+    @Override
+    public void setPaintingVariant(Painting entity, ResourceLocation variant) {
+        entity.motive = Registry.MOTIVE.get(variant);
     }
 
     @Override
@@ -203,5 +215,35 @@ public class Compat17 implements Compat {
     @Override
     public BlockPos blockPosition(Entity entity) {
         return entity.blockPosition();
+    }
+
+    @Override
+    public <T> MappedRegistry<T> getBuiltInRegistry(String name) {
+        return ReflectionHelper.cast(Registry.REGISTRY.get(new ResourceLocation(name)));
+    }
+
+    @Override
+    public SoundEvent newSoundEvent(ResourceLocation resource) {
+        return new SoundEvent(resource);
+    }
+
+    @Override
+    public void setBaseSpawnerEntityId(BaseSpawner baseSpawner, EntityType<?> type, Level level, BlockPos pos) {
+        baseSpawner.setEntityId(type);
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> newClientboundPlayerInfoUpdatePacket(String action, ServerPlayer... players) {
+        return new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.valueOf(action), players);
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> newClientboundPlayerInfoRemovePacket(ServerPlayer... players) {
+        return newClientboundPlayerInfoUpdatePacket("REMOVE_PLAYER", players);
+    }
+
+    @Override
+    public Explosion explode(Level level, Entity entity, double x, double y, double z, float power, boolean fire, Explosion.BlockInteraction interaction) {
+        return level.explode(entity, x, y, z, power, fire, interaction);
     }
 }

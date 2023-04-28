@@ -12,10 +12,12 @@ import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Version;
+import com.ptsmods.morecommands.api.addons.AbstractButtonAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.callbacks.ChatMessageSendEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientEntityEvent;
+import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
@@ -24,6 +26,7 @@ import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.client.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.client.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.client.miscellaneous.VexParticle;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinParticleManagerAccessor;
 import com.ptsmods.morecommands.client.util.DeathTracker;
 import com.ptsmods.morecommands.client.util.PTClientImpl;
@@ -63,7 +66,10 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -152,6 +158,8 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         Holder.setMoreCommandsClient(new MoreCommandsClient());
         Holder.setClientCompat(determineCurrentCompat());
 
+        ClientCompat.get().registerUnobtainableItemsTab();
+
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
@@ -160,7 +168,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         MixinParticleManagerAccessor.setRenderOrder(list);
 
         List<ItemLike> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
-        Registry.BLOCK.getOptional(new ResourceLocation("water_cauldron")).ifPresent(waterItems::add);
+        Compat.get().<Block>getBuiltInRegistry("block").getOptional(new ResourceLocation("water_cauldron")).ifPresent(waterItems::add);
         ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> 0x3e76e4, waterItems.toArray(new ItemLike[0]));
 
         Holder.setDeathTracker(DeathTracker.INSTANCE);
@@ -176,6 +184,18 @@ public class MoreCommandsClient implements IMoreCommandsClient {
             CommandSourceStack source = server.createCommandSourceStack();
             if (wicWarmup.get() > 0 && wicWarmup.decrementAndGet() == 0) getWorldInitCommands()
                     .forEach(cmd -> Compat.get().performCommand(server.getCommands(), source, cmd));
+        });
+
+        PostInitEvent.EVENT.register(() -> {
+            for (Block block : Compat.get().<Block>getBuiltInRegistry("block")) {
+                ResourceLocation id = Compat.get().<Block>getBuiltInRegistry("block").getKey(block);
+                if (id == null) continue;
+
+                if (!Compat.get().registryContainsId(Compat.get().<Item>getBuiltInRegistry("item"), id)) Registry.register(Compat.get().<Item>getBuiltInRegistry("item"),
+                        new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
+            }
+
+            ClientCompat.get().fillUnobtainableItemsTab();
         });
 
         if (!Platform.isForge()) KeyMappingRegistry.register(TOGGLE_INFO_HUD_BINDING);
@@ -378,7 +398,8 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     }
 
     // Frodo on da beat
-    public static void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener) {
+    @Override
+    public void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener) {
         boolean initOpened0 = initOpened || ClientOptions.Tweaks.colourPickerOpen.getValue();
         final int buttonWidth = 24;
         final int wideButtonWidth = (int) (buttonWidth / 0.75f);
@@ -387,30 +408,34 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         List<Button> btns = new ArrayList<>();
         for (int i = 0; i < formattings.length; i++) {
             int x = i; // Has to be effectively final cuz lambda
-            btns.add(((ScreenAddon) screen).mc$addButton(Util.make(new Button(xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
-                    yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
-                    LiteralTextBuilder.builder(formattings[x].toString().replace('\u00A7', '&'))
-                            .withStyle(Style.EMPTY.applyFormat(formattings[x]))
-                            .build(),
-                    btn0 -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
-                    /*Rainbow formatting*/ i == 22 ? (button, matrices, mouseX, mouseY) -> screen.renderTooltip(matrices,
-                    LiteralTextBuilder.literal(ChatFormatting.RED + "Only works on servers with MoreCommands installed."), mouseX, mouseY) : Button.NO_TOOLTIP) {
-                public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                    return false;
-                }
-            }, btn -> btn.visible = initOpened0)));
+            btns.add(((ScreenAddon) screen).mc$addButton(Util.make(
+                    ClientCompat.get().newButton(screen, xOffset + (i < 16 ? (buttonWidth+2) * (i%4) : (wideButtonWidth+3) * (i%3)),
+                            yOffset + (buttonHeight+2) * ((i < 16 ? i/4 : 4 + (i-16)/3) + 1), i < 16 ? buttonWidth : wideButtonWidth, buttonHeight,
+                            LiteralTextBuilder.builder(formattings[x].toString().replace('\u00A7', '&'))
+                                    .withStyle(Style.EMPTY.applyFormat(formattings[x]))
+                                    .build(),
+                            btn -> appender.accept(formattings[x].toString().replace('\u00A7', '&')),
+                            i == 22 ? LiteralTextBuilder.literal(ChatFormatting.RED + "Only works on servers with MoreCommands installed.") : null),
+                    btn -> {
+                        btn.visible = initOpened0;
+                        ((AbstractButtonAddon) btn).setIgnoreKeys(true);
+                    }
+            )));
         }
-        Objects.requireNonNull(((ScreenAddon) screen).mc$addButton(new Button(xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
-                50, 20, LiteralTextBuilder.literal("Colours", Command.DS), btn -> {
-            boolean b = !btns.get(0).visible;
-            if (doCenter) btn.y = b ? yOffset : yOffset + 22 * 7 / 2;
-            btns.forEach(btn0 -> btn0.visible = b);
-            if (stateListener != null) stateListener.accept(b);
-        }) {
-            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                return false;
-            }
-        })).visible = ClientOptions.Tweaks.textColourPicker.getValue();
+
+        ((ScreenAddon) screen).mc$addButton(Util.make(ClientCompat.get().newButton(screen,
+                xOffset + (buttonWidth+2) * 2 - 26, yOffset + (doCenter && !initOpened0 ? (buttonHeight+2) * 7 / 2 : 0),
+                50, 20, LiteralTextBuilder.literal("Colours", Command.DS),
+                btn -> {
+                    boolean b = !btns.get(0).visible;
+                    if (doCenter) ((MixinAbstractWidgetAccessor) btn).setY_(b ? yOffset : yOffset + 22 * 7 / 2);
+
+                    btns.forEach(btn0 -> btn0.visible = b);
+                    if (stateListener != null) stateListener.accept(b);
+                }, null), btn -> {
+                    ((AbstractButtonAddon) btn).setIgnoreKeys(true);
+                    btn.visible = ClientOptions.Tweaks.textColourPicker.getValue();
+                }));
     }
 
     public static void clearDisabledCommands() {
@@ -473,8 +498,12 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
         ClientCompat compat = switch (minor) {
             case 17, 18 -> new ClientCompat17();
-            default ->
-                    rev >= 2 ? new ClientCompat192() : rev == 1 ? new ClientCompat191() : rev == 0 ? new ClientCompat190() : new ClientCompat19();
+            default -> switch (rev) {
+                case 0 -> new ClientCompat190();
+                case 1 -> new ClientCompat191();
+                case 2 -> new ClientCompat192();
+                default -> new ClientCompat193();
+            };
         };
         LOG.info("Determined client compat: " + compat.getClass().getSimpleName());
 

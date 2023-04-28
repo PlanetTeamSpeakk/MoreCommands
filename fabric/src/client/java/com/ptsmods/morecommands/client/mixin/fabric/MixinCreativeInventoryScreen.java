@@ -3,9 +3,10 @@ package com.ptsmods.morecommands.client.mixin.fabric;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.addons.CreativeInventoryScreenAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinClickableWidgetAccessor;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
-import net.fabricmc.fabric.impl.client.item.group.FabricCreativeGuiComponents;
+import net.fabricmc.fabric.impl.client.itemgroup.FabricCreativeGuiComponents;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -50,8 +51,10 @@ public abstract class MixinCreativeInventoryScreen extends EffectRenderingInvent
             if (!ClientOptions.Rendering.bigTabPager.getValue()) continue;
             ((MixinClickableWidgetAccessor) button).setHeight(22);
             button.setWidth(22);
-            button.x = thiz.width / 2 - (type == FabricCreativeGuiComponents.Type.PREVIOUS ? button.getWidth() : 0);
-            button.y = topPos - 50;
+
+            MixinAbstractWidgetAccessor accessor = (MixinAbstractWidgetAccessor) button;
+            accessor.setX_(thiz.width / 2 - (type == FabricCreativeGuiComponents.Type.PREVIOUS ? button.getWidth() : 0));
+            accessor.setY_(topPos - 50);
         }
     }
 }

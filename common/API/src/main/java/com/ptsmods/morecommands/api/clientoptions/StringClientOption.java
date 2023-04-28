@@ -5,7 +5,6 @@ import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import lombok.experimental.ExtensionMethod;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
 import java.util.function.BiConsumer;
@@ -62,10 +61,10 @@ public class StringClientOption extends ClientOption<String> {
     }
 
     @Override
-    public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        Object widget = new PlaceHolderTextFieldWidget(Minecraft.getInstance().font, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
-        ((EditBox) widget).setValue(getValueRaw());
-        ((EditBox) widget).setResponder(s -> {
+    public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
+        PlaceHolderTextFieldWidget widget = new PlaceHolderTextFieldWidget(Minecraft.getInstance().font, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
+        widget.setValue(getValueRaw());
+        widget.setResponder(s -> {
             if (!predicate.test(s)) return;
 
             setValue(s);

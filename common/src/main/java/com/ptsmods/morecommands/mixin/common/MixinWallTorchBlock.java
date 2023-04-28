@@ -1,8 +1,9 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
-import net.minecraft.core.Registry;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.WallTorchBlock;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,8 +20,8 @@ public class MixinWallTorchBlock {
     @Overwrite
     public String getDescriptionId() {
         if (mc_translationKey == null) {
-            ResourceLocation id = Registry.BLOCK.getKey(ReflectionHelper.<WallSignBlock>cast(this));
-            mc_translationKey = Registry.BLOCK.get(new ResourceLocation(id.getNamespace(), id.getPath().replace("wall_", ""))).getDescriptionId();
+            ResourceLocation id = Compat.get().<Block>getBuiltInRegistry("block").getKey(ReflectionHelper.<WallSignBlock>cast(this));
+            mc_translationKey = Compat.get().<Block>getBuiltInRegistry("block").get(new ResourceLocation(id.getNamespace(), id.getPath().replace("wall_", ""))).getDescriptionId();
         }
         return mc_translationKey;
     }

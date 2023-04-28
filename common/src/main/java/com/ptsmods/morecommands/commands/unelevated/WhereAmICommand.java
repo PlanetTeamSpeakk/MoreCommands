@@ -5,7 +5,8 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 public class WhereAmICommand extends Command {
@@ -17,7 +18,8 @@ public class WhereAmICommand extends Command {
                     BlockPos pos = Compat.get().blockPosition(ctx.getSource().getEntityOrException());
                     sendMsg(ctx, "You're currently in world " + SF + world.dimension().location().toString() + DF + " at " +
                             SF + pos.getX() + DF + ", " + SF + pos.getY() + DF + ", " + SF + pos.getZ() + DF + " in biome " + SF +
-                            Compat.get().getRegistry(world.registryAccess(), Registry.BIOME_REGISTRY).getKey(Compat.get().getBiome(world, pos)) + DF + ".");
+                            Compat.get().getRegistry(world.registryAccess(), ResourceKey.createRegistryKey(new ResourceLocation("biome")))
+                                    .getKey(Compat.get().getBiome(world, pos)) + DF + ".");
                     return 1;
                 }));
     }

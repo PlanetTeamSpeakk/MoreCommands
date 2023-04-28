@@ -47,7 +47,7 @@ public class DoubleClientOption extends ClientOption<Double> {
     }
 
     @Override
-    public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
+    public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
         return new AbstractSliderButton(x, y, 150, 20, LiteralTextBuilder.literal(name + " : " + getValueString()), Mth.clamp((getValueRaw() - min) / (max - min), 0.0D, 1.0D)) {
             @Override
             protected void updateMessage() {

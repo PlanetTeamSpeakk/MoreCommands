@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptsmods.morecommands.mixin.compat.compat193",
+  "plugin": "com.ptsmods.morecommands.plugin.Plugin193",
+  "compatibilityLevel": "JAVA_16",
+  "client": [
+    "plus.MixinClientPacketListener",
+    "plus.MixinItemModelGenerator",
+    "plus.MixinModelBakery",
+    "plus.MixinScreen",
+    "plus.MixinSignEditScreen",
+    "plus.MixinWorldOpenFlows"
+  ],
+  "mixins": [
+    "plus.MixinEntitySelector",
+    "plus.MixinFlowingFluid",
+    "plus.MixinServerPlayerGameMode"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

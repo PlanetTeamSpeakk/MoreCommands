@@ -2,8 +2,8 @@ package com.ptsmods.morecommands.client.mixin;
 
 import com.mojang.blaze3d.platform.ClipboardManager;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.api.IMoreCommands;
+import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.MessageHistory;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.addons.ChatComponentAddon;
@@ -34,7 +34,8 @@ public class MixinChatScreen {
     @Inject(at = @At("TAIL"), method = "init()V")
     private void init(CallbackInfo cbi) {
         Screen thiz = ReflectionHelper.cast(this);
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, colourPickerOpen, input::insertText, b -> colourPickerOpen = b);
+        IMoreCommandsClient.get().addColourPicker(thiz, thiz.width - 117, 5, false,
+                colourPickerOpen, input::insertText, b -> colourPickerOpen = b);
     }
 
     @Inject(at = @At("TAIL"), method = "mouseClicked(DDI)Z", cancellable = true)

@@ -6,12 +6,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.arguments.HexIntegerArgumentType;
-import com.ptsmods.morecommands.arguments.PotionArgumentType;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.MobEffectArgument;
-import net.minecraft.core.Registry;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffect;
@@ -29,50 +28,58 @@ public class PotionCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-         dispatcher.register(literalReqOp("potion")
-                 .then(literal("add")
-                         .then(argument("effect", MobEffectArgument.effect())
-                                 .executes(ctx -> executeAdd(ctx, 60*20, (byte) 0, false, true))
-                                 .then(argument("duration", IntegerArgumentType.integer(1))
-                                         .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true))
-                                         .then(argument("amplifier", IntegerArgumentType.integer(0, 255))
-                                                 .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true))
-                                                 .then(argument("ambient", BoolArgumentType.bool())
-                                                         .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(),
-                                                                 ctx.getArgument("ambient", Boolean.class), true))
-                                                         .then(argument("showParticles", BoolArgumentType.bool())
-                                                                 .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(),
-                                                                         ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
-                 .then(literal("remove")
-                         .then(argument("index", IntegerArgumentType.integer(1))
-                                 .executes(ctx -> {
+        dispatcher.register(literalReqOp("potion")
+                .then(literal("add")
+                        .then(this.<CommandSourceStack>newResourceArgument("effect", "mob_effect")
+                                .executes(ctx -> executeAdd(ctx, 60 * 20, (byte) 0, false, true))
+                                .then(argument("duration", IntegerArgumentType.integer(1))
+                                        .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), (byte) 0, false, true))
+                                        .then(argument("amplifier", IntegerArgumentType.integer(0, 255))
+                                                .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(), false, true))
+                                                .then(argument("ambient", BoolArgumentType.bool())
+                                                        .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(),
+                                                                ctx.getArgument("ambient", Boolean.class), true))
+                                                        .then(argument("showParticles", BoolArgumentType.bool())
+                                                                .executes(ctx -> executeAdd(ctx, ctx.getArgument("duration", Integer.class), ctx.getArgument("amplifier", Integer.class).byteValue(),
+                                                                        ctx.getArgument("ambient", Boolean.class), ctx.getArgument("showParticles", Boolean.class)))))))))
+                .then(literal("remove")
+                        .then(argument("index", IntegerArgumentType.integer(1))
+                                .executes(ctx -> {
                                     ItemStack stack = checkHeldItem(ctx);
                                     List<MobEffectInstance> effects = PotionUtils.getCustomEffects(stack);
-                                    int index = ctx.getArgument("index", Integer.class)-1;
-                                    if (index >= effects.size()) sendError(ctx, "The given index was greater than the amount of custom potion effects this potion has (" + SF + effects.size() + DF + ").");
+
+                                    int index = ctx.getArgument("index", Integer.class) - 1;
+                                    if (index >= effects.size())
+                                        sendError(ctx, "The given index was greater than the amount of custom potion effects this potion has (" + SF + effects.size() + DF + ").");
                                     else {
                                         effects.remove(index);
                                         PotionUtils.setCustomEffects(stack, effects);
                                         sendMsg(ctx, "Your potion now has " + SF + effects.size() + DF + " custom potion effect" + (effects.size() == 1 ? "" : "s") + ".");
-                                        return effects.size()+1;
+                                        return effects.size() + 1;
                                     }
+
                                     return 0;
                                 })))
-                 .then(literal("settype")
-                         .then(argument("type", PotionArgumentType.potion())
-                                 .executes(ctx -> {
+                .then(literal("settype")
+                        .then(this.<CommandSourceStack>newResourceArgument("type", "potion")
+                                .executes(ctx -> {
+                                    MappedRegistry<Potion> potionRegistry = Compat.get().getBuiltInRegistry("potion");
+                                    Potion potion = getResource(ctx, "type", "potion");
+
                                     ItemStack stack = checkHeldItem(ctx);
                                     Potion old = PotionUtils.getPotion(stack);
-                                    PotionUtils.setPotion(stack, PotionArgumentType.getPotion(ctx, "type"));
-                                    sendMsg(ctx, "The type of the potion has been set from " + SF + Registry.POTION.getId(old) + DF + " to " + SF + Registry.POTION.getId(PotionUtils.getPotion(stack)) + DF + ".");
+                                    PotionUtils.setPotion(stack, potion);
+
+                                    sendMsg(ctx, "The type of the potion has been set from " + SF + potionRegistry.getKey(old) +
+                                            DF + " to " + SF + potionRegistry.getKey(potion) + DF + ".");
                                     return 1;
                                 })))
-                 .then(literal("setcolour")
-                         .then(argument("colour", HexIntegerArgumentType.hexInt())
-                                 .executes(this::executeSetColour)))
-                 .then(literal("setcolor")
-                         .then(argument("colour", HexIntegerArgumentType.hexInt())
-                                 .executes(this::executeSetColour))));
+                .then(literal("setcolour")
+                        .then(argument("colour", HexIntegerArgumentType.hexInt())
+                                .executes(this::executeSetColour)))
+                .then(literal("setcolor")
+                        .then(argument("colour", HexIntegerArgumentType.hexInt())
+                                .executes(this::executeSetColour))));
     }
 
     @Override
@@ -92,7 +99,7 @@ public class PotionCommand extends Command {
     }
 
     private int executeAdd(CommandContext<CommandSourceStack> ctx, int duration, byte amplifier, boolean ambient, boolean showParticles) throws CommandSyntaxException {
-        MobEffect effect = ctx.getArgument("effect", MobEffect.class);
+        MobEffect effect = getResource(ctx, "effect", "mob_effect");
         ItemStack stack = checkHeldItem(ctx);
         List<MobEffectInstance> effects = PotionUtils.getCustomEffects(stack);
         effects.add(new MobEffectInstance(effect, duration, amplifier, ambient, showParticles));

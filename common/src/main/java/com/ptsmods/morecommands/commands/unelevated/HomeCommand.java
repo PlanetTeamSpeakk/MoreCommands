@@ -12,7 +12,6 @@ import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -121,7 +120,9 @@ public class HomeCommand extends Command {
     }
 
     private int tpHome(Player player, Home home) {
-        MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, home.dimension)), home.x, home.y, home.z, home.yaw, home.pitch);
+        MoreCommands.teleport(player, Objects.requireNonNull(player.getServer()).getLevel(ResourceKey.create(
+                ResourceKey.createRegistryKey(new ResourceLocation("dimension")), home.dimension)),
+                home.x, home.y, home.z, home.yaw, home.pitch);
         ResourceKey<Level> registryKey = player.getCommandSenderWorld().dimension();
         if (Level.NETHER.equals(registryKey)) return 9;
         else if (Level.OVERWORLD.equals(registryKey)) return 10;

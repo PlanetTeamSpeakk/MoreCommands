@@ -2,13 +2,13 @@ package com.ptsmods.morecommands.forge.compat;
 
 import com.ptsmods.morecommands.api.IMoreGameRules;
 import com.ptsmods.morecommands.api.Version;
-import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapater;
+import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 
-public class ForgeCompat18 extends ForgeCompatAdapater {
+public class ForgeCompat18 extends ForgeCompatAdapter {
 
     @Override
     public boolean shouldRegisterListeners() {

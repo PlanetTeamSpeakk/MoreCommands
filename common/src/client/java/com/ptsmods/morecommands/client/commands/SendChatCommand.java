@@ -16,7 +16,7 @@ public class SendChatCommand extends ClientCommand {
         dispatcher.register(cLiteral("sendchat")
                 .then(cArgument("msg", StringArgumentType.greedyString())
                         .executes(ctx -> {
-                            getPlayer().connection.send(ClientCompat.get().newChatMessagePacket(getPlayer(), ctx.getArgument("msg", String.class), true));
+                            ClientCompat.get().sendChatOrCmd(ctx.getArgument("msg", String.class), true);
                             return 1;
                         })));
     }

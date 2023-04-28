@@ -36,7 +36,6 @@ import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
-import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.netty.buffer.Unpooled;
@@ -48,14 +47,13 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -77,9 +75,7 @@ import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -126,8 +122,6 @@ public enum MoreCommands implements IMoreCommands {
     public static final boolean SERVER_ONLY;
     public static final Set<Block> blockBlacklist = new HashSet<>();
     public static final Set<Block> blockWhitelist = new HashSet<>();
-    public static final CreativeModeTab unobtainableItems = CreativeTabRegistry.create(new ResourceLocation("morecommands:unobtainable_items"),
-        () -> new ItemStack(Registry.ITEM.get(new ResourceLocation("morecommands:locked_chest"))));
     public static MinecraftServer serverInstance = null;
     public static final ObjectiveCriteria LATENCY;
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -213,7 +207,7 @@ public enum MoreCommands implements IMoreCommands {
         PostInitEvent.EVENT.register(() -> {
             blockBlacklist.clear();
             blockWhitelist.clear();
-            Registry.BLOCK.forEach(block -> {
+            Compat.get().<Block>getBuiltInRegistry("block").forEach(block -> {
                 if (block instanceof LiquidBlock || !((MixinAbstractBlockAccessor) block).isHasCollision()) blockBlacklist.add(block);
                 try {
                     VoxelShape shape = block.defaultBlockState().getCollisionShape(null, null);
@@ -248,23 +242,6 @@ public enum MoreCommands implements IMoreCommands {
             PlayerEvent.PLAYER_QUIT.register(targetedEntities::remove);
 
             registerPacketReceivers();
-
-            PostInitEvent.EVENT.register(() -> {
-                NonNullList<ItemStack> defaultedList = NonNullList.create();
-                for (Item item : Registry.ITEM) item.fillItemCategory(CreativeModeTab.TAB_SEARCH, defaultedList);
-
-                for (Block block : Registry.BLOCK) {
-                    ResourceLocation id = Registry.BLOCK.getKey(block);
-                    if (!Compat.get().registryContainsId(Registry.ITEM, id)) Registry.register(Registry.ITEM,
-                            new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
-                }
-
-                for (Item item : Registry.ITEM)
-                    if (item.getItemCategory() == null) ((MixinItemAccessor) item).setCategory(unobtainableItems);
-
-                defaultedList = NonNullList.create();
-                for (Item item : Registry.ITEM) item.fillItemCategory(CreativeModeTab.TAB_SEARCH, defaultedList);
-            });
         } else {
             InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
                 Level world = player.level;
@@ -319,16 +296,16 @@ public enum MoreCommands implements IMoreCommands {
 
     public static void registerStuff() {
         if (INSTANCE.isServerOnly() || registeredStuff) return;
-        DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, Registry.SOUND_EVENT_REGISTRY);
-        DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, Registry.BLOCK_REGISTRY);
-        DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, Registry.ITEM_REGISTRY);
-        DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, Registry.ATTRIBUTE_REGISTRY);
+        DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(MOD_ID, ResourceKey.createRegistryKey(new ResourceLocation("sound_event")));
+        DeferredRegister<Block> blockRegistry = DeferredRegister.create(MOD_ID, ResourceKey.createRegistryKey(new ResourceLocation("block")));
+        DeferredRegister<Item> itemRegistry = DeferredRegister.create(MOD_ID, ResourceKey.createRegistryKey(new ResourceLocation("item")));
+        DeferredRegister<Attribute> attributeRegistry = DeferredRegister.create(MOD_ID, ResourceKey.createRegistryKey(new ResourceLocation("attribute")));
 
         ResourceLocation lockedChestLocation = new ResourceLocation("morecommands:locked_chest");
         copySound = soundEventRegistry.register(new ResourceLocation("morecommands:copy"),
-                () -> new SoundEvent(new ResourceLocation("morecommands:copy")));
+                () -> Compat.get().newSoundEvent(new ResourceLocation("morecommands:copy")));
         eeSound = soundEventRegistry.register(new ResourceLocation("morecommands:ee"),
-                () -> new SoundEvent(new ResourceLocation("morecommands:ee")));
+                () -> Compat.get().newSoundEvent(new ResourceLocation("morecommands:ee")));
         RegistrySupplier<Block> lockedChest = blockRegistry.register(lockedChestLocation,
                 () -> new Block(BlockBehaviour.Properties.of(Material.WOOD)));
         itemRegistry.register(lockedChestLocation, () -> new BlockItem(lockedChest.get(), new Item.Properties()));
@@ -345,15 +322,14 @@ public enum MoreCommands implements IMoreCommands {
         attributeRegistry.register();
 
         Compat compat = Compat.get();
-        DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ? DeferredRegister.create(MOD_ID, Registry.COMMAND_ARGUMENT_TYPE_REGISTRY) : null;
+        DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegistry = Version.getCurrent().isNewerThanOrEqual(Version.V1_19) ?
+                DeferredRegister.create(MOD_ID, ResourceKey.createRegistryKey(new ResourceLocation("command_argument_type"))) : null;
 
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:enum_argument", EnumArgumentType.class, EnumArgumentType.SERIALISER);
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:cramped_string", CrampedStringArgumentType.class, CrampedStringArgumentType.SERIALISER);
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:time_argument", TimeArgumentType.class, TimeArgumentType.SERIALISER);
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:hexinteger", HexIntegerArgumentType.class, HexIntegerArgumentType.SERIALISER);
         compat.registerArgumentType(argumentTypeRegistry, "morecommands:ignorant_string", IgnorantStringArgumentType.class, IgnorantStringArgumentType.SERIALISER);
-        compat.registerArgumentType(argumentTypeRegistry, "morecommands:painting_variant", PaintingVariantArgumentType.class, PaintingVariantArgumentType.SERIALISER);
-        compat.registerArgumentType(argumentTypeRegistry, "morecommands:potion", PotionArgumentType.class, PotionArgumentType.SERIALISER);
 
         if (argumentTypeRegistry != null) argumentTypeRegistry.register();
         registeredStuff = true;
@@ -994,7 +970,9 @@ public enum MoreCommands implements IMoreCommands {
 
     public static CompoundTag getDefaultTag(EntityType<?> type) {
         CompoundTag tag = new CompoundTag();
-        tag.putString("id", Registry.ENTITY_TYPE.getKey(type).toString());
+        tag.putString("id", Optional.ofNullable(Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type").getKey(type))
+                .map(ResourceLocation::toString)
+                .orElse(null));
         return tag;
     }
 
@@ -1287,7 +1265,7 @@ public enum MoreCommands implements IMoreCommands {
         Compat compat = switch (minor) {
             case 17 -> new Compat17();
             case 18 -> rev >= 2 ? new Compat182() : new Compat18();
-            default -> rev >= 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
+            default -> rev >= 3 ? new Compat193() : rev == 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
         };
         LOG.info("Determined compat: " + compat.getClass().getSimpleName());
 
@@ -1315,11 +1293,13 @@ public enum MoreCommands implements IMoreCommands {
 
 
         instances.put(reach, new AttributeInstance(reach, i -> {
-            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + Registry.ATTRIBUTE.getKey(reach));
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + 
+                    Compat.get().<Attribute>getBuiltInRegistry("attribute").getKey(reach));
         }));
 
         instances.put(swimSpeed, new AttributeInstance(swimSpeed, i -> {
-            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + Registry.ATTRIBUTE.getKey(swimSpeed));
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + 
+                    Compat.get().<Attribute>getBuiltInRegistry("attribute").getKey(swimSpeed));
         }));
 
         supplierAccessor.setInstances(ImmutableMap.copyOf(instances));

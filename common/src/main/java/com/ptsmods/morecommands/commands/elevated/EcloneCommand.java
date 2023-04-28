@@ -41,7 +41,9 @@ public class EcloneCommand extends Command {
                                 else fail++;
                             }
 
-                            sendMsg(ctx, SF + "" + success + " entit" + (success == 1 ? "y " + DF + "was " : "ies " + DF + "were ") + ChatFormatting.GREEN + "successfully" + DF + " cloned" + (fail == 0 ? "." : " while " + SF + "" + fail + " entit" + (fail == 1 ? "y " + DF + "was " : "ies " + DF + "were ") + ChatFormatting.RED + "not" + DF + "."));
+                            sendMsg(ctx, SF + String.valueOf(success) + " entit" + (success == 1 ? "y " + DF + "was " : "ies " + DF + "were ") +
+                                    ChatFormatting.GREEN + "successfully" + DF + " cloned" + (fail == 0 ? "." : " while " + SF + fail +
+                                    " entit" + (fail == 1 ? "y " + DF + "was " : "ies " + DF + "were ") + ChatFormatting.RED + "not" + DF + "."));
                             return success;
                         })));
     }

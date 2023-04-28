@@ -3,7 +3,7 @@ package com.ptsmods.morecommands.forge.compat;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.Version;
-import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapater;
+import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ForgeCompat17 extends ForgeCompatAdapater {
+public class ForgeCompat17 extends ForgeCompatAdapter {
     private boolean initialised = false;
     private final Queue<Triple<String, Integer, String>> permissionQueue = new ConcurrentLinkedQueue<>();
 

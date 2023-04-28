@@ -17,7 +17,6 @@ import com.ptsmods.morecommands.mixin.common.accessor.MixinEntityAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.Registry;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
@@ -108,7 +107,7 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("chunkZ", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getZ()) >> 4);
         keysBuilder.put("yaw", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), decimals));
         keysBuilder.put("pitch", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getXRot_()), decimals));
-        keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().registryAccess(), Registry.BIOME_REGISTRY)
+        keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().registryAccess(),"worldgen/biome")
                 .getKey(Compat.get().getBiome(ctx.getWorld(), Compat.get().blockPosition(ctx.getPlayer())))));
         keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelData().getDifficulty().name());
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");

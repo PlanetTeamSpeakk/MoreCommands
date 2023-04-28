@@ -22,12 +22,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FireballCommand extends Command {
-    public static final Map<LargeFireball, Triple<Vec3, AtomicInteger, Integer>> fireballs = new HashMap<>();
+    public static final Map<LargeFireball, Triple<Vec3, AtomicInteger, Integer>> fireballs = new WeakHashMap<>();
     private static final SimpleCommandExceptionType ONLY_LIVING = new SimpleCommandExceptionType(literalText("Only living entities may run this command.").build());
 
     @Override
@@ -62,13 +62,19 @@ public class FireballCommand extends Command {
                 if (type == HitResult.Type.ENTITY) this.onHitEntity((EntityHitResult) result);
                 else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult) result);
                 if (!this.level.isClientSide) {
-                    this.level.explode(this, this.getX(), this.getY(), this.getZ(), power, true, Explosion.BlockInteraction.DESTROY);
+                    Explosion explosion = new Explosion(getLevel(), this, null, null,
+                            getX(), getY(), getZ(), power, true, Explosion.BlockInteraction.DESTROY);
+                    explosion.explode();
+                    explosion.finalizeExplosion(true);
                     if (impactsDone.addAndGet(1) >= impacts) setRemoved(RemovalReason.DISCARDED);
                 }
             }
         } : new LargeFireball(ctx.getSource().getLevel(), entity, velocity0.x, velocity0.y, velocity0.z, (int) power);
         fireball.setDeltaMovement(velocity0);
 
+        if (fireball instanceof LargeFireball lf) fireballs.put(lf, Triple.of(velocity0, impactsDone, impacts));
+
+        @SuppressWarnings("DataFlowIssue")
         MixinEntityAccessor accessor = (MixinEntityAccessor) fireball;
         accessor.setXRot_(ctx.getSource().getRotation().x);
         accessor.setYRot_(ctx.getSource().getRotation().y);

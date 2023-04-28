@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class WipeOutCommand extends Command {
@@ -47,7 +46,7 @@ public class WipeOutCommand extends Command {
         List<Entity> entities = StreamSupport.stream(ctx.getSource().getServer().getAllLevels().spliterator(), false)
                 .flatMap(world -> StreamSupport.stream(world.getAllEntities().spliterator(), false))
                 .filter(predicate)
-                .collect(Collectors.toList());
+                .toList();
         entities.forEach(entity -> entity.setRemoved(Entity.RemovalReason.DISCARDED));
         sendMsg(ctx, SF.toString() + entities.size() + " " + DF + "entities have been killed.");
         return entities.size();

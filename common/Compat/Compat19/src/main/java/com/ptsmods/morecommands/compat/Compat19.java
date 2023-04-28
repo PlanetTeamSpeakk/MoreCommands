@@ -6,6 +6,7 @@ import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
@@ -20,7 +21,7 @@ import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -36,6 +37,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -62,8 +64,7 @@ public class Compat19 extends Compat182 {
 
     @Override
     public BlockStateArgument createBlockStateArgumentType() {
-        return BlockStateArgument.block(new CommandBuildContext(IMoreCommands.get().getServer() == null ?
-                RegistryAccess.builtinCopy().freeze() : IMoreCommands.get().getServer().registryAccess()));
+        return BlockStateArgument.block((CommandBuildContext) Compat.get().newCommandBuildContext());
     }
 
     @Override
@@ -72,13 +73,20 @@ public class Compat19 extends Compat182 {
     }
 
     @Override
-    public Object getPaintingVariant(Painting painting) {
-        return painting.getVariant().value();
+    public ResourceLocation getPaintingVariant(Painting painting) {
+        return Compat.get().<PaintingVariant>getBuiltInRegistry("painting_variant").getKey(painting.getVariant().value());
     }
 
     @Override
-    public void setPaintingVariant(Painting entity, Object variant) {
-        ((PaintingEntityAddon) entity).mc$setVariant(variant);
+    public ResourceLocation nextPaintingVariant(ResourceLocation variant) {
+        MappedRegistry<PaintingVariant> registry = Compat.get().getBuiltInRegistry("painting_variant");
+        return registry.getKey(registry.byId((registry.getId(registry.get(variant)) + 1) % registry.size()));
+    }
+
+    @Override
+    public void setPaintingVariant(Painting entity, ResourceLocation variant) {
+        ((PaintingEntityAddon) entity).mc$setVariant(Compat.get().<PaintingVariant>getBuiltInRegistry("painting_variant")
+                .get(variant));
     }
 
     @Override
@@ -130,7 +138,8 @@ public class Compat19 extends Compat182 {
 
     @Override
     public void broadcast(PlayerList playerManager, Tuple<Integer, ResourceLocation> type, Component message) {
-        playerManager.broadcastSystemMessage(message, ResourceKey.create(Registry.CHAT_TYPE_REGISTRY, type.getB()));
+        playerManager.broadcastSystemMessage(message, ResourceKey.create(
+                ResourceKey.createRegistryKey(new ResourceLocation("chat_type")), type.getB()));
     }
 
     @Override
@@ -171,5 +180,11 @@ public class Compat19 extends Compat182 {
     @Override
     public ServerPlayer newServerPlayerEntity(MinecraftServer server, ServerLevel world, GameProfile profile) {
         return new ServerPlayer(server, world, profile, null);
+    }
+
+    @Override
+    public Object newCommandBuildContext() {
+        return new CommandBuildContext(IMoreCommands.get().getServer() == null ?
+                RegistryAccess.builtinCopy().freeze() : IMoreCommands.get().getServer().registryAccess());
     }
 }

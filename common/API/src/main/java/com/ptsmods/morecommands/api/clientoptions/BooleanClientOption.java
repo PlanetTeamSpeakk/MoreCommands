@@ -1,10 +1,12 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.util.Util;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import java.util.function.BiConsumer;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+
+import java.util.function.BiConsumer;
 
 public class BooleanClientOption extends ClientOption<Boolean> {
     public BooleanClientOption(ClientOptionCategory category, String name, boolean defaultValue) {
@@ -34,13 +36,13 @@ public class BooleanClientOption extends ClientOption<Boolean> {
     }
 
     @Override
-    public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        return new Button(x, y, 150, 20, createButtonText(name), btn -> {
+    public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
+        return ClientCompat.get().newButton((Screen) screen, x, y, 150, 20, createButtonText(name), btn -> {
             setValue(!getValueRaw());
             btn.setMessage(createButtonText(name));
             init.run();
             save.run();
-        });
+        }, null);
     }
 
     @Override

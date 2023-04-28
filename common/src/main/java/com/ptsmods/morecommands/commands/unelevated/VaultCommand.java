@@ -10,12 +10,6 @@ import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import com.ptsmods.morecommands.miscellaneous.MoreGameRules;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -30,6 +24,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class VaultCommand extends Command {
     public static final List<MenuType<ChestMenu>> types = ImmutableList.of(MenuType.GENERIC_9x1, MenuType.GENERIC_9x2,
@@ -59,7 +60,7 @@ public class VaultCommand extends Command {
         else {
             int rows = getCountFromPerms(ctx.getSource(), "morecommands.vault.rows.", ctx.getSource().getLevel().getGameRules().getInt(MoreGameRules.get().vaultRowsRule()));
             ctx.getSource().getPlayerOrException().openMenu(new SimpleMenuProvider((syncId, inv, player) -> new ChestMenu(types.get(rows - 1), syncId, inv,
-                    Objects.requireNonNull(getVault(vault, owner)), rows), literalText("" + DF + ChatFormatting.BOLD + "Vault " + SF + ChatFormatting.BOLD + vault).build()));
+                    Objects.requireNonNull(getVault(vault, owner)), rows), literalText(String.valueOf(DF) + ChatFormatting.BOLD + "Vault " + SF + ChatFormatting.BOLD + vault).build()));
             return 1;
         }
         return 0;

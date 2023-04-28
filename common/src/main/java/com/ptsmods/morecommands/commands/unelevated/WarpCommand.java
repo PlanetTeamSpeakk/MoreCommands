@@ -61,7 +61,7 @@ public class WarpCommand extends Command {
                 List<Warp> warpList = new ArrayList<>();
                 for (String name : data.keySet())
                     warpList.add(fromMap(server, name, owner, data.get(name)));
-                allWarps.addAll(warpList.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+                allWarps.addAll(warpList.stream().filter(Objects::nonNull).toList());
                 warps.put(owner, warpList);
             }
             allWarps.sort(Comparator.comparing(Warp::getCreationDate));

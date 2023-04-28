@@ -11,23 +11,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Biome.class)
 public class MixinBiome {
 
-    @Inject(at = @At("RETURN"), method = "getSkyColor()I")
-    public int getSkyColor(CallbackInfoReturnable<Integer> cbi) {
-        return getColour(cbi);
+    @Inject(at = @At("RETURN"), method = "getSkyColor()I", cancellable = true)
+    public void getSkyColor(CallbackInfoReturnable<Integer> cbi) {
+        cbi.setReturnValue(getColour(cbi));
     }
 
-    @Inject(at = @At("RETURN"), method = "getFogColor()I")
-    public int getFogColor(CallbackInfoReturnable<Integer> cbi) {
-        return getColour(cbi);
+    @Inject(at = @At("RETURN"), method = "getFogColor()I", cancellable = true)
+    public void getFogColor(CallbackInfoReturnable<Integer> cbi) {
+        cbi.setReturnValue(getColour(cbi));
     }
 
-    @Inject(at = @At("RETURN"), method = "getWaterFogColor()I")
-    public int getWaterFogColor(CallbackInfoReturnable<Integer> cbi) {
-        return getColour(cbi);
+    @Inject(at = @At("RETURN"), method = "getWaterFogColor()I", cancellable = true)
+    public void getWaterFogColor(CallbackInfoReturnable<Integer> cbi) {
+        cbi.setReturnValue(getColour(cbi));
     }
 
     private int getColour(CallbackInfoReturnable<Integer> cbi) {
         return ClientOptions.EasterEggs.rainbows.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().getRainbowColour(false) : cbi.getReturnValueI();
     }
-
 }

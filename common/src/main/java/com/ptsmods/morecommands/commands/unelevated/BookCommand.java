@@ -26,7 +26,8 @@ public class BookCommand extends Command {
                             ListTag pages = tag.getList("pages", 8);
                             ListTag pages0 = new ListTag();
                             for (Tag page : pages)
-                                pages0.add(StringTag.valueOf(IMoreCommands.get().textToString(Component.Serializer.fromJson(page.getAsString()), null, true).replaceAll("\u00A7", "&")));
+                                pages0.add(StringTag.valueOf(IMoreCommands.get().textToString(Component.Serializer.fromJson(
+                                        page.getAsString()), null, true).replaceAll("\u00A7", "&")));
                             tag.put("pages", pages0);
                         }
                         stack.setTag(tag);

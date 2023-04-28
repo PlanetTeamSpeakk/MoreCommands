@@ -90,7 +90,7 @@ public abstract class ClientOption<T> {
         return comments;
     }
 
-    public abstract Object createButton(int x, int y, String name, Runnable init, Runnable save);
+    public abstract Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save);
 
     public abstract Component createButtonText(String name);
 

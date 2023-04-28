@@ -14,7 +14,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerEntity;
@@ -71,7 +70,7 @@ public class VanishCommand extends Command {
     public static void vanish(ServerPlayer player, boolean sendMsg) {
         player.getEntityData().set(IDataTrackerHelper.get().vanish(), true);
         player.getEntityData().set(IDataTrackerHelper.get().vanishToggled(), true);
-        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, player));
+        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newClientboundPlayerInfoRemovePacket(player));
         ((ServerChunkCache) player.getCommandSenderWorld().getChunkSource()).removeEntity(player);
 
         if (player.getServer().isDedicatedServer() && sendMsg && MoreGameRules.get().checkBooleanWithPerm(player.getCommandSenderWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))
@@ -83,7 +82,7 @@ public class VanishCommand extends Command {
         if (!player.getEntityData().get(IDataTrackerHelper.get().vanish())) return;
 
         player.getEntityData().set(IDataTrackerHelper.get().vanish(), false);
-        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, player));
+        Objects.requireNonNull(player.getServer()).getPlayerList().broadcastAll(Compat.get().newClientboundPlayerInfoUpdatePacket("ADD_PLAYER", player));
         trackers.remove(player);
         ((ServerChunkCache) player.getCommandSenderWorld().getChunkSource()).addEntity(player);
         if (player.getServer().isDedicatedServer() && MoreGameRules.get().checkBooleanWithPerm(player.getCommandSenderWorld().getGameRules(), MoreGameRules.get().doJoinMessageRule(), player))

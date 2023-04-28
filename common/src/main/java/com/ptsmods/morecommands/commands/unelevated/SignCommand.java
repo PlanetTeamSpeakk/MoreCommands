@@ -18,8 +18,7 @@ public class SignCommand extends Command {
                 .executes(ctx -> {
                     BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrException(), 160, true, true);
                     BlockEntity be = ctx.getSource().getLevel().getBlockEntity(result.getBlockPos());
-                    if (Compat.get().tagContains(new ResourceLocation("minecraft:signs"), ctx.getSource().getLevel().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity) {
-                        SignBlockEntity sbe = (SignBlockEntity) be;
+                    if (Compat.get().tagContains(new ResourceLocation("minecraft:signs"), ctx.getSource().getLevel().getBlockState(result.getBlockPos()).getBlock()) && be instanceof SignBlockEntity sbe) {
                         ((MixinSignBlockEntityAccessor) sbe).setIsEditable(true);
                         sbe.setAllowedPlayerEditor(Compat.get().getUUID(ctx.getSource().getPlayerOrException()));
                         ctx.getSource().getPlayerOrException().openTextEdit(sbe); // Copying content onto edit screen is handled in MixinSignEditScreen.

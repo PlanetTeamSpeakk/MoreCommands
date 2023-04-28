@@ -24,7 +24,7 @@ public class ServerOnlyCommand extends Command {
                     Properties props = new Properties();
                     try {
                         if (file.exists()) props.load(new FileReader(file));
-                        props.setProperty("serverOnly", "" + !Boolean.parseBoolean(props.getProperty("serverOnly", "false")));
+                        props.setProperty("serverOnly", String.valueOf(!Boolean.parseBoolean(props.getProperty("serverOnly", "false"))));
                         props.store(new PrintWriter(file), "Set the below value to true to enable server-only mode for MoreCommands.\n" +
                                 "Clients will not need the mod to join the server when enabled.");
                     } catch (IOException e) {

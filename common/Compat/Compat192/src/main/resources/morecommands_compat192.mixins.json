@@ -5,8 +5,17 @@
   "plugin": "com.ptsmods.morecommands.plugin.Plugin192",
   "compatibilityLevel": "JAVA_16",
   "client": [
+    "min.MixinClientPacketListener",
+    "min.MixinItemModelGenerator",
+    "min.MixinModelBakery",
+    "min.MixinScreen",
+    "min.MixinSignEditScreen"
   ],
   "mixins": [
+    "min.MixinEntitySelector",
+    "min.MixinFlowingFluid",
+    "min.MixinItem",
+    "min.MixinServerPlayerGameMode"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -47,7 +47,8 @@
     "morecommands_compat19.mixins.json",
     "morecommands_compat190.mixins.json",
     "morecommands_compat191.mixins.json",
-    "morecommands_compat192.mixins.json"
+    "morecommands_compat192.mixins.json",
+    "morecommands_compat193.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.7.4",

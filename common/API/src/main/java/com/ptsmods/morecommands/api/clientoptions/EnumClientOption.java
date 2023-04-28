@@ -1,13 +1,16 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
+import com.ptsmods.morecommands.api.addons.AbstractWidgetAddon;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+
+import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     private final Class<T> type;
@@ -46,21 +49,18 @@ public class EnumClientOption<T extends Enum<T>> extends ClientOption<T> {
     }
 
     @Override
-    public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
-        AtomicInteger btn = new AtomicInteger();
-        return new Button(x, y, 150, 20, createButtonText(name), button -> {
+    public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
+        Button btn = ClientCompat.get().newButton((Screen) screen, x, y, 150, 20, createButtonText(name), button -> {
             T[] values = type.getEnumConstants();
-            int index = (getValue() == null ? btn.get() == 0 ? -1 : 1 : getValue().ordinal()) + (btn.get() == 0 ? 1 : -1);
+            int mouseBtn = ((AbstractWidgetAddon) button).getLastMouseButton();
+            int index = (getValue() == null ? mouseBtn == 0 ? -1 : 1 : getValue().ordinal()) + (mouseBtn == 0 ? 1 : -1);
             setValue(values[(index + (index < 0 ? values.length : 0)) % values.length]);
             button.setMessage(createButtonText(name));
             save.run();
-        }) {
-            @Override
-            protected boolean isValidClickButton(int button) {
-                btn.set(button);
-                return button == 0 || button == 1;
-            }
-        };
+        }, null);
+
+        ((AbstractWidgetAddon) btn).setValidButtons(0, 1);
+        return btn;
     }
 
     @Override

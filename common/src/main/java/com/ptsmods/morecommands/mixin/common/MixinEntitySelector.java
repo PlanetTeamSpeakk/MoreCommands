@@ -37,13 +37,6 @@ public class MixinEntitySelector implements EntitySelectorAddon {
         this.targetOnly = targetOnly;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelector;isWorldLimited()Z"), method = "findEntities", cancellable = true)
-    public void getEntities(CommandSourceStack source, CallbackInfoReturnable<List<? extends Entity>> cbi) throws CommandSyntaxException {
-        if (!targetOnly) return;
-
-        cbi.setReturnValue(Lists.newArrayList(getTarget(source, false)));
-    }
-
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelector;isWorldLimited()Z"), method = "findPlayers", cancellable = true)
     public void getPlayers(CommandSourceStack source, CallbackInfoReturnable<List<ServerPlayer>> cbi) throws CommandSyntaxException {
         if (!targetOnly) return;
@@ -51,7 +44,7 @@ public class MixinEntitySelector implements EntitySelectorAddon {
         cbi.setReturnValue(Lists.newArrayList((ServerPlayer) getTarget(source, true)));
     }
 
-    private @Unique Entity getTarget(CommandSourceStack source, boolean playerOnly) throws CommandSyntaxException {
+    public Entity getTarget(CommandSourceStack source, boolean playerOnly) throws CommandSyntaxException {
         Entity target;
         if (IMoreCommands.get().isServerOnly() || !(source.getEntityOrException() instanceof Player)) {
             EntityHitResult hit = MoreCommands.getEntityRayTraceTarget(source.getEntityOrException(), 160);

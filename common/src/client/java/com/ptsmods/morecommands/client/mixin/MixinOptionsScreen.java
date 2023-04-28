@@ -2,11 +2,12 @@ package com.ptsmods.morecommands.client.mixin;
 
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.client.gui.ClientOptionsScreen;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -31,14 +32,17 @@ public class MixinOptionsScreen extends Screen {
             y = this.height / 6 + 24 - 6;
         }
 
-        ((ScreenAddon) this).mc$addButton(new Button(x, y, 150, 20, LiteralTextBuilder.literal("MoreCommands", MoreCommands.DS),
-                button -> Minecraft.getInstance().setScreen(new ClientOptionsScreen(this))));
+        ((ScreenAddon) this).mc$addButton(ClientCompat.get().newButton(this, x, y, 150, 20,
+                LiteralTextBuilder.literal("MoreCommands", MoreCommands.DS), btn ->
+                        Minecraft.getInstance().setScreen(new ClientOptionsScreen(this)), null));
     }
 
     @Unique
     private AbstractWidget getButtonAt(int x, int y) {
-        for (AbstractWidget b : ((ScreenAddon) this).mc$getButtons())
-            if (b.x == x && b.y == y) return b;
+        for (AbstractWidget b : ((ScreenAddon) this).mc$getButtons()) {
+            MixinAbstractWidgetAccessor accessor = (MixinAbstractWidgetAccessor) b;
+            if (accessor.getX_() == x && accessor.getY_() == y) return b;
+        }
         return null;
     }
 }

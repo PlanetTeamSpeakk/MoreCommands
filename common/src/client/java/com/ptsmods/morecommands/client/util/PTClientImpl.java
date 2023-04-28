@@ -75,7 +75,7 @@ public class PTClientImpl implements PTClient {
         if (player != null && action == 1 && Minecraft.getInstance().screen == null) {
             String cmd = PowerToolCommand.getCurrentPowerTool(player, button);
             if (cmd != null) {
-                ClientCompat.get().sendMessageOrCommand("/" + cmd);
+                ClientCompat.get().sendChatOrCmd("/" + cmd);
                 player.swing(Objects.requireNonNull(PowerToolCommand.getPowerToolHand(player)));
                 return true;
             }

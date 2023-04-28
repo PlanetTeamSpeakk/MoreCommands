@@ -2,15 +2,16 @@ package com.ptsmods.morecommands.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.client.MoreCommandsClient;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinCommandSuggestorAccessor;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinSuggestionWindowAccessor;
 import lombok.NonNull;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -53,11 +54,13 @@ public class WorldInitCommandsScreen extends Screen {
         ((ScreenAddon) this).mc$clear();
         MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
         addField("");
-        ((ScreenAddon) this).mc$addButton(new Button(width / 4 - 30, height / 6 + 168, 120, 20, LiteralTextBuilder.literal("Reset"), (buttonWidget) -> {
-            MoreCommandsClient.clearWorldInitCommands();
-            init();
-        }));
-        ((ScreenAddon) this).mc$addButton(new Button(width / 2 + width / 4 - 90, height / 6 + 168, 120, 20, CommonComponents.GUI_DONE, (buttonWidget) -> onClose()));
+        ((ScreenAddon) this).mc$addButton(ClientCompat.get().newButton(this, width / 4 - 30, height / 6 + 168,
+                120, 20, LiteralTextBuilder.literal("Reset"), btn -> {
+                    MoreCommandsClient.clearWorldInitCommands();
+                    init();
+                }, null));
+        ((ScreenAddon) this).mc$addButton(ClientCompat.get().newButton(this, width / 2 + width / 4 - 90, height / 6 + 168,
+                120, 20, CommonComponents.GUI_DONE, btn -> onClose(), null));
         setInitialFocus(fields.get(0).getLeft());
     }
 
@@ -111,7 +114,8 @@ public class WorldInitCommandsScreen extends Screen {
                     int i = 0;
                     for (Iterator<FormattedCharSequence> var5 = accessor.getCommandUsage().iterator(); var5.hasNext(); ++i) {
                         FormattedCharSequence orderedText = var5.next();
-                        int j = field.y + field.getHeight() + 12 * i + 1;
+
+                        int j = ((MixinAbstractWidgetAccessor) field).getY_() + field.getHeight() + 12 * i + 1;
                         fill(matrices, accessor.getCommandUsagePosition() - 1, j, accessor.getCommandUsagePosition() + accessor.getCommandUsageWidth() + 1, j + 12, -805306368);
                         font.drawShadow(matrices, orderedText, accessor.getCommandUsagePosition(), (float)(j + 2), -1);
                     }
@@ -124,7 +128,8 @@ public class WorldInitCommandsScreen extends Screen {
                 SuggestionsList window = ((MixinCommandSuggestorAccessor) thiz).getSuggestions();
                 if (window != null) {
                     MixinSuggestionWindowAccessor accessor = (MixinSuggestionWindowAccessor) window;
-                    accessor.setRect(new Rect2i(accessor.getRect().getX(), field.y + field.getHeight() + 1, accessor.getRect().getWidth(), accessor.getRect().getHeight()));
+                    accessor.setRect(new Rect2i(accessor.getRect().getX(), ((MixinAbstractWidgetAccessor) field).getY_() + field.getHeight() + 1,
+                            accessor.getRect().getWidth(), accessor.getRect().getHeight()));
                 }
             }
         };

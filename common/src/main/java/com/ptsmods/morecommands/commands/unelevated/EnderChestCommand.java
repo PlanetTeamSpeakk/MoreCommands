@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import org.jetbrains.annotations.NotNull;
 
 public class EnderChestCommand extends Command {
     @Override
@@ -35,7 +36,7 @@ public class EnderChestCommand extends Command {
         Player player = p == null ? ctx.getSource().getPlayerOrException() : p;
         ctx.getSource().getPlayerOrException().openMenu(new MenuProvider() {
             @Override
-            public Component getDisplayName() {
+            public @NotNull Component getDisplayName() {
                 return literalText("")
                         .append(Compat.get().builderFromText(player.getDisplayName()))
                         .append(literalText("'" + (IMoreCommands.get().textToString(player.getDisplayName(), null, true).endsWith("s") ? "" : "s") + " enderchest"))

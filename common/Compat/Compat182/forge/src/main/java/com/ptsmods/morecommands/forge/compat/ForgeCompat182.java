@@ -1,7 +1,7 @@
 package com.ptsmods.morecommands.forge.compat;
 
 import com.ptsmods.morecommands.api.Version;
-import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapater;
+import com.ptsmods.morecommands.api.util.compat.ForgeCompatAdapter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -13,7 +13,7 @@ import net.minecraftforge.server.permission.nodes.PermissionTypes;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ForgeCompat182 extends ForgeCompatAdapater {
+public class ForgeCompat182 extends ForgeCompatAdapter {
     private final Map<String, PermissionNode<?>> permissions = new HashMap<>();
 
     @Override

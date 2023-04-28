@@ -26,6 +26,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
             .filter(v -> v instanceof SemanticVersion sv && sv.getVersionComponentCount() >= 3)
             .map(v -> (SemanticVersion) v)
             .filter(v -> v.getVersionComponent(2) >= 34 || v.getVersionComponent(1) > 3 || v.getVersionComponent(0) > 0)
+            .map(v -> (Object) v) // Don't care about the type, just whether it exists or not.
+            .or(() -> FabricLoader.getInstance().getModContainer("fabric-item-group-api-v1")) // v1 has always been split.
             .isPresent();
 
     @Override
@@ -45,9 +47,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
         // (that being the creative inventory key pager and the big pager buttons tweaks) will just simply
         // only work on Fabric API 0.67.0+ (and only the one for 1.19.2 and above, they did not make this
         // change on 1.18.2).
-        if (postSplitMixins.stream().anyMatch(mixinClassName::contains)) return isPostSplit();
+        if (!isPostSplit() && postSplitMixins.stream().anyMatch(mixinClassName::contains)) return false;
 
-        return !mixinClassName.contains("MixinHopperBlockEntity") || Version.getCurrent().isNewerThanOrEqual(Version.V1_17);
+        // They renamed the package the FabricCreativeGuiComponents class is in and there's no Fabric-specific
+        // compat in this mod, so can't really fix that other than to not load it on older versions.
+        return !mixinClassName.contains(".client.") || mixinClassName.contains("MixinMinecraftClient") || Version.getCurrent().isNewerThanOrEqual(Version.V1_19_3);
     }
 
     @Override

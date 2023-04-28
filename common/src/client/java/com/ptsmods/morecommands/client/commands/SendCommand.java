@@ -12,7 +12,7 @@ public class SendCommand extends ClientCommand {
         dispatcher.register(cLiteral("send")
                 .then(cArgument("msg", StringArgumentType.greedyString())
                         .executes(ctx -> {
-                            getPlayer().connection.send(ClientCompat.get().newChatMessagePacket(getPlayer(), ctx.getArgument("msg", String.class), false));
+                            ClientCompat.get().sendChatOrCmd(ctx.getArgument("msg", String.class), false);
                             return 1;
                         })));
     }

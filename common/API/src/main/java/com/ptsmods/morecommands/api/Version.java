@@ -32,6 +32,7 @@ public class Version implements Comparable<Version> {
     public static final Version V1_19_0 = new Version(19, 0);
     public static final Version V1_19_1 = new Version(19, 1);
     public static final Version V1_19_2 = new Version(19, 2);
+    public static final Version V1_19_3 = new Version(19, 3);
 
     static {
         Version current0;
@@ -67,9 +68,18 @@ public class Version implements Comparable<Version> {
                     .orElseThrow(() -> new NoSuchElementException("Could not find jar containing version.json, MoreCommands cannot be loaded."));
             jarStream.close();
 
-            current0 = parse(new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
-                            jar.getInputStream(jar.getEntry("version.json")))), JsonObject.class)
-                    .get("release_target").getAsString());
+            JsonObject versionObj = new Gson().fromJson(new InputStreamReader(Objects.requireNonNull(
+                    jar.getInputStream(jar.getEntry("version.json")))), JsonObject.class);
+
+            if (versionObj.has("release_target"))
+                current0 = parse(versionObj.get("release_target").getAsString());
+            else try {
+                current0 = parse(versionObj.get("name").getAsString());
+            } catch (IllegalArgumentException e) {
+                // Name is probably of a snapshot. Since we don't support snapshots anymore in version 4
+                // (because Forge doesn't support em), we can simply ignore it.
+                throw new IllegalStateException("This Minecraft version is not supported.");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (AssertionError e) {

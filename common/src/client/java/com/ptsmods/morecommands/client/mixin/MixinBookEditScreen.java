@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.client.mixin;
 
-import com.ptsmods.morecommands.client.MoreCommandsClient;
+import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +22,7 @@ public class MixinBookEditScreen {
     @Inject(at = @At("TAIL"), method = "init()V")
     private void init(CallbackInfo cbi) {
         Screen thiz = ReflectionHelper.cast(this);
-        MoreCommandsClient.addColourPicker(thiz, thiz.width - 117, 5, false, mc_colourPickerOpen, s -> (isSigning ? titleEdit : pageEdit).insertText(s), b -> mc_colourPickerOpen = b);
+        IMoreCommandsClient.get().addColourPicker(thiz, thiz.width - 117, 5, false,
+                mc_colourPickerOpen, s -> (isSigning ? titleEdit : pageEdit).insertText(s), b -> mc_colourPickerOpen = b);
     }
 }

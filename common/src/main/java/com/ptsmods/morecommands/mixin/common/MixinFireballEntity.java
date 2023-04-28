@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.mixin.common;
 
 import com.ptsmods.morecommands.api.ReflectionHelper;
+import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.commands.elevated.FireballCommand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Fireball;
@@ -32,18 +33,21 @@ public class MixinFireballEntity extends Fireball {
     }
 
     @Inject(at = @At("HEAD"), method = "onHit", cancellable = true)
-    private void onCollision(HitResult result, CallbackInfo cbi) {
+    private void onHit(HitResult result, CallbackInfo cbi) {
         LargeFireball thiz = ReflectionHelper.cast(this);
-        if (FireballCommand.fireballs.containsKey(thiz)) {
-            cbi.cancel();
-            HitResult.Type type = result.getType();
-            if (type == HitResult.Type.ENTITY) this.onHitEntity((EntityHitResult) result);
-            else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult) result);
-            if (!this.level.isClientSide) {
-                this.level.explode(null, this.getX(), this.getY(), this.getZ(), explosionPower, true, Explosion.BlockInteraction.DESTROY);
-                if (FireballCommand.fireballs.get(thiz).getMiddle().addAndGet(1) >= FireballCommand.fireballs.get(thiz).getRight())
-                    setRemoved(RemovalReason.DISCARDED);
-            }
-        }
+        if (!FireballCommand.fireballs.containsKey(thiz)) return;
+
+        cbi.cancel();
+        HitResult.Type type = result.getType();
+        if (type == HitResult.Type.ENTITY) this.onHitEntity((EntityHitResult) result);
+        else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult) result);
+
+        if (this.level.isClientSide) return;
+
+        Compat.get().explode(level, this, getX(), getY(), getZ(), explosionPower, true, Explosion.BlockInteraction.DESTROY);
+
+        if (FireballCommand.fireballs.get(thiz).getMiddle().addAndGet(1) < FireballCommand.fireballs.get(thiz).getRight()) return;
+        setRemoved(RemovalReason.DISCARDED);
+        FireballCommand.fireballs.remove(thiz);
     }
 }

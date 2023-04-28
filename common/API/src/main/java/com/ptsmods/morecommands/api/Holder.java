@@ -7,6 +7,10 @@ import lombok.Getter;
 import net.minecraft.network.chat.ClickEvent;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @ApiStatus.Internal
 public class Holder {
     @Getter(AccessLevel.PACKAGE)
@@ -84,6 +88,29 @@ public class Holder {
     }
 
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
+        String[] parts = mixinClassName.split("\\.");
+
+        // Neither of these are true. Not a clue why I'm getting these.
+        @SuppressWarnings({"ConstantValue", "RedundantOperationOnEmptyContainer"})
+        Version max = Arrays.stream(parts)
+                .filter(p -> p.startsWith("until"))
+                .map(v -> v.substring(5))
+                .map(v -> switch (v.length()) {
+                    case 2 -> new Version(Integer.parseInt(v));
+                    case 3 -> new Version(Integer.parseInt(v.substring(0, 2)), Character.digit(v.charAt(2), 10));
+                    default -> throw new IllegalStateException("Invalid version string: " + v.length());
+                })
+                .collect(() -> new ArrayList<Version>(), (list, v) -> {
+                    if (!list.isEmpty())
+                        throw new IllegalArgumentException("Mixin class name contains multiple max versions.");
+                    list.add(v);
+                }, List::addAll)
+                .stream()
+                .findFirst()
+                .orElse(null);
+        //noinspection ConstantValue // Still not true
+        if (max != null && max.isNewerThan(Version.getCurrent())) return Version.getCurrent().isNewerThanOrEqual(version);
+
         return mixinClassName.contains(".plus.") ? Version.getCurrent().isNewerThanOrEqual(version) :
                 mixinClassName.contains(".min.") ? Version.getCurrent().isOlderThanOrEqual(version.revision == null ? version.withRevision(9999) : version) :
                         Version.getCurrent().equals(version);

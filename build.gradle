@@ -34,6 +34,12 @@ allprojects {
         maven { url 'https://maven.terraformersmc.com/releases/' }
     }
 
+    configurations.all {
+        resolutionStrategy {
+            force("net.fabricmc:fabric-loader:$fabric_loader_version")
+        }
+    }
+
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
     }
@@ -57,7 +63,7 @@ forgix {
     }
 }
 
-task doMerge {
+tasks.register('doMerge') {
     dependsOn(":fabric:build", ":forge:build")
     finalizedBy(mergeJars)
 }

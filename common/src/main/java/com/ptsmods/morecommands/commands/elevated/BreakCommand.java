@@ -16,7 +16,7 @@ public class BreakCommand extends Command {
                 .executes(ctx -> {
                     BlockPos block = ((BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getPlayerOrException(), 160, true, true)).getBlockPos();
                     Player player = ctx.getSource().getPlayerOrException();
-                    if (block == null || player.getCommandSenderWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
+                    if (player.getCommandSenderWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
                     else {
                         player.getCommandSenderWorld().destroyBlock(block, false);
                         sendMsg(ctx, "The block at " + SF + "X: " + block.getX() + DF + ", " + SF + "Y: " + block.getY() + DF + ", " + SF + "Z: " + block.getZ() + DF + " has been broken.");

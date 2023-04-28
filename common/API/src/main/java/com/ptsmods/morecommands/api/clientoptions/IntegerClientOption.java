@@ -1,10 +1,11 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
-import java.util.function.BiConsumer;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+
+import java.util.function.BiConsumer;
 
 public class IntegerClientOption extends ClientOption<Integer> {
     private final int min, max;
@@ -44,7 +45,7 @@ public class IntegerClientOption extends ClientOption<Integer> {
     }
 
     @Override
-    public Object createButton(int x, int y, String name, Runnable init, Runnable save) {
+    public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
         return new AbstractSliderButton(x, y, 150, 20, LiteralTextBuilder.literal(name + " : " + getValueRaw()), Mth.clamp((double) (getValueRaw() - min) / (double) (max - min), 0.0D, 1.0D)) {
             @Override
             protected void updateMessage() {

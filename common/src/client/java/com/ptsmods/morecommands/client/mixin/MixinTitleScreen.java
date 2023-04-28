@@ -17,6 +17,7 @@ public class MixinTitleScreen {
     @Inject(at = @At("HEAD"), method = "init()V")
     private void init(CallbackInfo cbi) { // Couldn't get it to work with ModifyVariable for whatever reason.
         if (splash == null) splash = Minecraft.getInstance().getSplashManager().getSplash();
-        if (splash != null) splash = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ? Rainbow.getInstance().RAINBOW + splash : splash;
+        if (splash != null) splash = ClientOptions.Tweaks.rainbowSplash.getValue() && Rainbow.getInstance() != null ?
+                Rainbow.getInstance().RAINBOW + splash : splash;
     }
 }

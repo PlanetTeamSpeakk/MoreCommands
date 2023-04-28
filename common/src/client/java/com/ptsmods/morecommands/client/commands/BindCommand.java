@@ -48,7 +48,7 @@ public class BindCommand extends ClientCommand {
         } else if (action > 0 && Minecraft.getInstance().screen == null) { // Either press or hold, but not release.
             String key = MoreCommandsClient.getKeyForKeyCode(keyCode);
             if (key != null && bindings.containsKey(key)) {
-                ClientCompat.get().sendMessageOrCommand(bindings.get(key));
+                ClientCompat.get().sendChatOrCmd(bindings.get(key));
                 return true;
             }
         }

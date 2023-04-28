@@ -1,8 +1,10 @@
 package com.ptsmods.morecommands.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import com.ptsmods.morecommands.miscellaneous.EnumRule;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -23,10 +25,10 @@ public final class EnumRuleWidget<E extends Enum<E>> extends EditGameRulesScreen
         gameRuleScreen.super(description, name);
 
         this.rootTranslationKey = translationKey;
-        this.buttonWidget = new Button(10, 5, 88, 20, this.getValueText(rule.get()), (buttonWidget) -> {
+        this.buttonWidget = ClientCompat.get().newButton(gameRuleScreen, 10, 5, 88, 20, this.getValueText(rule.get()), btn -> {
             rule.cycle();
-            buttonWidget.setMessage(this.getValueText(rule.get()));
-        });
+            btn.setMessage(this.getValueText(rule.get()));
+        }, null);
 
         this.children.add(this.buttonWidget);
     }
@@ -39,8 +41,9 @@ public final class EnumRuleWidget<E extends Enum<E>> extends EditGameRulesScreen
     public void render(PoseStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
         this.renderLabel(matrices, y, x);
 
-        this.buttonWidget.x = x + entryWidth - 89;
-        this.buttonWidget.y = y;
+        MixinAbstractWidgetAccessor accessor = (MixinAbstractWidgetAccessor) this.buttonWidget;
+        accessor.setX_(x + entryWidth - 89);
+        accessor.setY_(y);
         this.buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
     }
 }

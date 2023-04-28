@@ -7,13 +7,12 @@
   "client": [
     "plus.MixinBackgroundRenderer",
     "plus.MixinClientPlayerInteractionManager",
-    "plus.MixinIntegratedServerLoader",
     "plus.MixinLightmapTextureManager",
     "plus.MixinTitleScreen",
     "plus.MixinWorldRenderer",
     "plus.MixinKeybindTranslationsAccessor",
     "plus.MixinMinecraft",
-    "plus.MixinWorldOpenFlows"
+    "until193.MixinWorldOpenFlows"
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",
@@ -25,6 +24,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "MoreCommands-common_Compat_Compat19-refmap.json"
+  }
 }
