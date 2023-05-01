@@ -56,6 +56,7 @@
     "accessor.MixinEntityAccessor",
     "accessor.MixinEntityTrackerAccessor",
     "accessor.MixinFormattingAccessor",
+    "accessor.MixinGameModeCommandAccessor",
     "accessor.MixinGameRulesAccessor",
     "accessor.MixinHopperBlockEntityAccessor",
     "accessor.MixinIntegerValueAccessor",
