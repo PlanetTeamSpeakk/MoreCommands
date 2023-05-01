@@ -11,6 +11,7 @@ import dev.architectury.registry.CreativeTabRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -120,5 +121,10 @@ public class ClientCompat17 implements ClientCompat {
 
         for (Item item : Compat.get().<Item>getBuiltInRegistry("item"))
             if (item.getItemCategory() == null) ((ItemTabAddon) item).setTab(unobtainableItemsTab);
+    }
+
+    @Override
+    public void setFocused(EditBox editBox, boolean focused) {
+        editBox.setFocus(focused);
     }
 }

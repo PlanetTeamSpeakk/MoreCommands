@@ -24,5 +24,4 @@ public class MixinEntityTrackerEntry {
     public void sendPackets(Consumer<Packet<?>> sender, CallbackInfo cbi) {
         if (entity instanceof Player && entity.getEntityData().get(IDataTrackerHelper.get().vanish())) cbi.cancel();
     }
-
 }

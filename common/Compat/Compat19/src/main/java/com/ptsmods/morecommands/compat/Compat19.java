@@ -106,7 +106,7 @@ public class Compat19 extends Compat182 {
         return buildText(ComponentContents.EMPTY, builder);
     }
 
-    private MutableComponent buildText(ComponentContents content, TextBuilder<?> builder) {
+    protected MutableComponent buildText(ComponentContents content, TextBuilder<?> builder) {
         MutableComponent text = MutableComponent.create(content).setStyle(builder.getStyle());
         builder.getChildren().forEach(child -> text.append(child.build()));
         return text;

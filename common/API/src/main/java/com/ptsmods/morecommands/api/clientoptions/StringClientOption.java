@@ -1,6 +1,6 @@
 package com.ptsmods.morecommands.api.clientoptions;
 
-import com.ptsmods.morecommands.api.gui.PlaceHolderTextFieldWidget;
+import com.ptsmods.morecommands.api.gui.PlaceholderEditBox;
 import com.ptsmods.morecommands.api.util.extensions.ObjectExtensions;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import lombok.experimental.ExtensionMethod;
@@ -62,7 +62,7 @@ public class StringClientOption extends ClientOption<String> {
 
     @Override
     public Object createButton(Object screen, int x, int y, String name, Runnable init, Runnable save) {
-        PlaceHolderTextFieldWidget widget = new PlaceHolderTextFieldWidget(Minecraft.getInstance().font, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
+        PlaceholderEditBox widget = new PlaceholderEditBox(Minecraft.getInstance().font, x, y, 150, 20, LiteralTextBuilder.literal(getName()));
         widget.setValue(getValueRaw());
         widget.setResponder(s -> {
             if (!predicate.test(s)) return;

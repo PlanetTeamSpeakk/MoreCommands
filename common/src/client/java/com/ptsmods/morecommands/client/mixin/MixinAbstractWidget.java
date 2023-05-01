@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.client.mixin;
 
 import com.ptsmods.morecommands.api.addons.AbstractWidgetAddon;
+import com.ptsmods.morecommands.api.addons.ScalableWidget;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.client.gui.components.AbstractWidget;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,9 +11,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractWidget.class)
-public class MixinAbstractWidget implements AbstractWidgetAddon {
+public class MixinAbstractWidget implements AbstractWidgetAddon, ScalableWidget {
     private @Unique IntSet validButtons = IntSet.of(0);
     private @Unique int lastMouseButton;
+    private @Unique boolean autoScale = false;
 
     @Override
     public void setValidButtons(int... buttons) {
@@ -28,5 +30,15 @@ public class MixinAbstractWidget implements AbstractWidgetAddon {
     private void isValidClickButton(int btn, CallbackInfoReturnable<Boolean> cbi) {
         lastMouseButton = btn;
         cbi.setReturnValue(validButtons.contains(btn));
+    }
+
+    @Override
+    public void setAutoScale(boolean autoScale) {
+        this.autoScale = autoScale;
+    }
+
+    @Override
+    public boolean isAutoScale() {
+        return autoScale;
     }
 }

@@ -55,4 +55,6 @@ public interface IMoreCommandsClient {
     void setScheduleWorldInitCommands(boolean scheduleWorldInitCommands);
 
     void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener);
+
+    Screen newWorldInitScreen(Screen parent);
 }

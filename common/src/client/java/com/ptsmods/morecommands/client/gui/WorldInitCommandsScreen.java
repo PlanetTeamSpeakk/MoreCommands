@@ -93,9 +93,9 @@ public class WorldInitCommandsScreen extends Screen {
                     update();
                     init();
                     if (index < fields.size() && index != -1) {
-                        fields.forEach(pair -> pair.getLeft().setFocus(false));
+                        fields.forEach(pair -> ClientCompat.get().setFocused(pair.getLeft(), false));
                         EditBox field0 = fields.get(index).getLeft();
-                        field0.setFocus(true);
+                        ClientCompat.get().setFocused(field0, true);
                         field0.moveCursorToEnd();
                         WorldInitCommandsScreen.this.setFocused(field0);
                     }
@@ -166,8 +166,8 @@ public class WorldInitCommandsScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_ENTER) {
             EditBox field = fields.get((fields.stream().filter(pair -> pair.getLeft().isFocused()).findFirst().map(fields::indexOf).orElse(-1) + 1) % fields.size()).getLeft();
-            fields.forEach(pair -> pair.getLeft().setFocus(false));
-            field.setFocus(true);
+            fields.forEach(pair -> ClientCompat.get().setFocused(pair.getLeft(), false));
+            ClientCompat.get().setFocused(field, true);
             setFocused(field);
             return true;
         } else if (fields.stream().filter(pair -> pair.getLeft().isFocused() && pair.getRight() != null).findFirst().map(pair -> pair.getRight().keyPressed(keyCode, scanCode, modifiers)).orElse(false)) return true;
@@ -197,7 +197,7 @@ public class WorldInitCommandsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        fields.forEach(pair -> pair.getLeft().setFocus(false));
+        fields.forEach(pair -> ClientCompat.get().setFocused(pair.getLeft(), false));
         boolean b = fields.stream()
                 .filter(pair -> pair.getLeft().isFocused() && pair.getRight() != null)
                 .anyMatch(pair -> pair.getRight().mouseClicked(mouseX, mouseY, button)) || super.mouseClicked(mouseX, mouseY, button);

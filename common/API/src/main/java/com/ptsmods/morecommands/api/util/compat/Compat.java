@@ -29,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.Painting;
@@ -139,4 +140,8 @@ public interface Compat {
     }
 
     Explosion explode(Level level, Entity entity, double x, double y, double z, float power, boolean fire, Explosion.BlockInteraction interaction);
+
+    DamageSource getSuicideDamageSource(Entity cause);
+
+    void registerVersionSpecificCommands(CommandDispatcher<CommandSourceStack> dispatcher);
 }

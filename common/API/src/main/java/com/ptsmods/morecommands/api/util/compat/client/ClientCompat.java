@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.api.util.compat.client;
 import com.ptsmods.morecommands.api.Holder;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -57,4 +58,6 @@ public interface ClientCompat {
     void registerUnobtainableItemsTab();
 
     void fillUnobtainableItemsTab();
+
+    void setFocused(EditBox editBox, boolean focused);
 }

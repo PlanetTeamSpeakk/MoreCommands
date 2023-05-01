@@ -1,5 +1,6 @@
 package com.ptsmods.morecommands.miscellaneous;
 
+import com.ptsmods.morecommands.api.Version;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
@@ -29,11 +30,17 @@ public class BetterLanguage extends Language {
     }
 
     @Override
-    public String getOrDefault(@NotNull String key) {
+    public @NotNull String getOrDefault(@NotNull String key) {
+        return getOrDefault(key, key);
+    }
+
+    @Override
+    public @NotNull String getOrDefault(String key, String string2) {
         return "null".equals(key) ?
-                null : key.startsWith("block.minecraft.spawner_") && key.indexOf('_') != key.length()-1 ?
+                key : key.startsWith("block.minecraft.spawner_") && key.indexOf('_') != key.length()-1 ?
                 getOrDefault(key.split("_", 2)[1]) + " " + getOrDefault("block.minecraft.spawner") : key.startsWith("enchantment.level.") ?
-                toRoman(Integer.parseInt(key.split("\\.")[2])) : parent.getOrDefault(key);
+                toRoman(Integer.parseInt(key.split("\\.")[2])) :
+                Version.getCurrent().isNewerThanOrEqual(Version.V1_19_4) ? parent.getOrDefault(key, string2) : parent.getOrDefault(key);
     }
 
     @Override

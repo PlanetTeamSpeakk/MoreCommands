@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
@@ -184,12 +185,12 @@ public abstract class Command {
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> literalReqOp(String literal) {
-        MoreCommands.registerPermission("morecommands." + literal, false);
+        IMoreCommands.get().registerPermission("morecommands." + literal, false);
         return literal(literal).requires(hasPermissionOrOp("morecommands." + literal));
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> literalReq(String literal) {
-        MoreCommands.registerPermission("morecommands." + literal, true);
+        IMoreCommands.get().registerPermission("morecommands." + literal, true);
         return literal(literal).requires(hasPermission("morecommands." + literal));
     }
 

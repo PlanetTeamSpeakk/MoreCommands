@@ -63,7 +63,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -127,7 +126,6 @@ public enum MoreCommands implements IMoreCommands {
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public static final Map<Player, String> discordTags = new WeakHashMap<>();
     public static final Set<Player> discordTagNoPerm = Collections.newSetFromMap(new WeakHashMap<>());
-    public static final Map<String, DamageSource> DAMAGE_SOURCES = new HashMap<>();
     public static boolean creatingWorld = false;
     private static final Executor executor = Executors.newCachedThreadPool();
     private static final DecimalFormat sizeFormat = new DecimalFormat("#.###");
@@ -409,6 +407,8 @@ public enum MoreCommands implements IMoreCommands {
              serverCommands.stream()
                      .filter(cmd -> (!cmd.isDedicatedOnly() || dedicated) && cmd.doLateInit())
                      .forEach(cmd -> registerer.registerCommand(cmd, dedicated, dispatcher, false));
+
+             Compat.get().registerVersionSpecificCommands(dispatcher);
          });
     }
 
@@ -786,7 +786,7 @@ public enum MoreCommands implements IMoreCommands {
     // Blatantly copied from TeleportCommand#teleport.
     public static void teleport(Entity target, ServerLevel world, double x, double y, double z, float yaw, float pitch) {
         if (target instanceof ServerPlayer) {
-            ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
+            ChunkPos chunkPos = new ChunkPos(new BlockPos((int) x, (int) y, (int) z));
             world.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkPos, 1, target.getId());
             target.stopRiding();
             if (((ServerPlayer) target).isSleeping()) ((ServerPlayer) target).stopSleepInBed(true, true);
@@ -1007,9 +1007,9 @@ public enum MoreCommands implements IMoreCommands {
         boolean blockAbove = world.canSeeSky(Compat.get().blockPosition(entity));
         if (!world.isClientSide) while (!found && !blockAbove) {
             for (y = entity.position().y + 1; y < entity.getCommandSenderWorld().getHeight(); y += 1) {
-                Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
-                Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
-                if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.canSeeSky(new BlockPos(x, y, z)))) {
+                Block block = world.getBlockState(new BlockPos((int) x, (int) (y - 1), (int) z)).getBlock();
+                Block tpblock = world.getBlockState(new BlockPos((int) x, (int) y, (int) z)).getBlock();
+                if (!blockBlacklist.contains(block) && blockWhitelist.contains(tpblock) && (blockAbove = world.canSeeSky(new BlockPos((int) x, (int) y, (int) z)))) {
                     entity.absMoveTo(x + 0.5, y, z + 0.5);
                     found = true;
                     break;
@@ -1254,21 +1254,28 @@ public enum MoreCommands implements IMoreCommands {
         return ImmutableMap.copyOf(permissions);
     }
 
-    public static void registerPermission(String permission, boolean defaultValue) {
+    public void registerPermission(String permission, boolean defaultValue) {
         permissions.put(permission.toLowerCase(Locale.ROOT), defaultValue);
     }
 
     private static Compat determineCurrentCompat() {
         Version v = Version.getCurrent();
-        int minor = v.minor, rev = v.revision == null ? -1 : v.revision;
+        int minor = v.minor, rev = v.revision == null ? 0 : v.revision;
 
         Compat compat = switch (minor) {
             case 17 -> new Compat17();
             case 18 -> rev >= 2 ? new Compat182() : new Compat18();
-            default -> rev >= 3 ? new Compat193() : rev == 2 ? new Compat192() : rev == 1 ? new Compat191() : new Compat19();
+            default -> switch (rev) {
+                // 1.19 really needs one for every version. :pensive:
+                case 0 -> new Compat19();
+                case 1 -> new Compat191();
+                case 2 -> new Compat192();
+                case 3 -> new Compat193();
+                default -> new Compat194();
+            };
         };
-        LOG.info("Determined compat: " + compat.getClass().getSimpleName());
 
+        LOG.info("Determined compat: " + compat.getClass().getSimpleName());
         return compat;
     }
 
@@ -1303,5 +1310,10 @@ public enum MoreCommands implements IMoreCommands {
         }));
 
         supplierAccessor.setInstances(ImmutableMap.copyOf(instances));
+    }
+
+    @Override
+    public double getReach(Player player, boolean squared) {
+        return ReachCommand.getReach(player, squared);
     }
 }

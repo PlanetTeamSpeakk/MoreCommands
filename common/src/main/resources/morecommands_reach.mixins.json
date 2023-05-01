@@ -7,15 +7,18 @@
   "mixins": [
     "MixinAbstractFurnaceBlockEntity",
     "MixinBrewingStandBlockEntity",
-    "MixinForgingScreenHandler",
+    "MixinContainer",
+    "MixinItemCombinerMenu",
     "MixinItem",
-    "MixinLootableContainerBlockEntity",
+    "MixinRandomizableContainerBlockEntity",
     "MixinReachEntityAttributes",
-    "MixinScreenHandler",
+    "MixinAbstractContainerMenu",
     "MixinServerPlayerGameMode",
-    "MixinServerGamePacketListenerImpl"
+    "MixinServerGamePacketListenerImpl",
+    "MixinServerGamePacketListenerImpl17",
+    "MixinServerGamePacketListenerImpl19"
   ],
   "injectors": {
-	"defaultRequire": 1
+    "defaultRequire": 1
   }
 }

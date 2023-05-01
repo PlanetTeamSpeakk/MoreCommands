@@ -1,57 +1,32 @@
 package com.ptsmods.morecommands.mixin.compat.compat193.plus;
 
 import com.google.common.collect.Lists;
-import com.ptsmods.morecommands.api.addons.BlockModelAddon;
+import com.ptsmods.morecommands.api.addons.ItemModelGeneratorAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.model.BlockElement;
+import net.minecraft.client.renderer.block.model.BlockElementFace;
+import net.minecraft.client.renderer.block.model.BlockFaceUV;
+import net.minecraft.client.renderer.block.model.ItemModelGenerator;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 // Seems like they split TextureAtlasSprite up into two classes in 1.19.3.
 // Almost all of what we need of it was moved to a new class called SpriteContents.
 @Mixin(ItemModelGenerator.class)
-public abstract class MixinItemModelGenerator {
-    private @Unique boolean ignoreNext = false;
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;processFrames(ILjava/lang/String;Lnet/minecraft/client/renderer/texture/SpriteContents;)Ljava/util/List;"), method = "generateBlockModel")
-    private List<BlockElement> create_addLayerElements(ItemModelGenerator instance, int layer, String key, SpriteContents sprite, Function<Material, TextureAtlasSprite> function, BlockModel blockModel) {
-        ItemTransforms transformations = ((BlockModelAddon) blockModel).getRawTransforms();
-
-        for (ItemTransforms.TransformType mode : ItemTransforms.TransformType.values())
-            if (transformations.hasTransform(mode)) {
-                // Items that have a display tag in their model (generally items that look bigger in the hand)
-                // completely break using my method, and I have no idea why.
-                //
-                // I can only assume it has something to do with them not being of a normal size or some kind
-                // of atlas issue, but if anyone has any insight as to why it happens and how to approach a
-                // fix, please let me know.
-                // P.s. the problem looks like this: https://github.com/PlanetTeamSpeakk/MoreCommands/issues/35
-                ignoreNext = true;
-                break;
-            }
-
-        return !ignoreNext && ClientOption.getBoolean("fixItemSeams") && (ClientOption.getBoolean("fixAnimItemSeams") || sprite.getUniqueFrames().max().orElse(1) == 1) ?
-                createSideElements(sprite, key, layer) : processFrames(layer, key, sprite); // Skip front and back layer, those are created as subcomponents now too.
-    }
+public abstract class MixinItemModelGenerator implements ItemModelGeneratorAddon {
 
     /**
      * @reason Removes the seam found in item models generated from 2D images by making every pixel its own individual cube.
@@ -59,7 +34,12 @@ public abstract class MixinItemModelGenerator {
      */
     @Inject(at = @At("HEAD"), method = "createSideElements", cancellable = true)
     private void createSideElements(SpriteContents sprite, String key, int layer, CallbackInfoReturnable<List<BlockElement>> cbi) {
-        if (ignoreNext || !ClientOption.getBoolean("fixItemSeams") || (!ClientOption.getBoolean("fixAnimItemSeams") &&
+        if (shouldIgnore()) {
+            resetIgnore();
+            return;
+        }
+
+        if (!ClientOption.getBoolean("fixItemSeams") || (!ClientOption.getBoolean("fixAnimItemSeams") &&
                 sprite.getUniqueFrames().max().orElse(1) != 1)) return;
 
         // Basically just does what the Vanilla Tweaks resource pack does programmatically.
@@ -94,9 +74,4 @@ public abstract class MixinItemModelGenerator {
 
         cbi.setReturnValue(list);
     }
-
-    @Shadow
-    protected abstract List<BlockElement> createSideElements(SpriteContents sprite, String key, int layer);
-
-    @Shadow protected abstract List<BlockElement> processFrames(int layer, String key, SpriteContents sprite);
 }

@@ -24,5 +24,4 @@ public class MixinExplosion {
     public void affectWorld(boolean bl, CallbackInfo cbi) {
         if (!level.getGameRules().getBoolean(MoreGameRules.get().doExplosionsRule())) cbi.cancel();
     }
-
 }

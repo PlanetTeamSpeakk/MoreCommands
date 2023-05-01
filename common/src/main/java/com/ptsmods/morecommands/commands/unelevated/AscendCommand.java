@@ -28,9 +28,9 @@ public class AscendCommand extends Command {
         double y = pos.y + 2;
         double z = pos.z;
         for (; y < world.getHeight(); y++) {
-            Block block = world.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
-            Block tpblock = world.getBlockState(new BlockPos(x, y, z)).getBlock();
-            Block tpblock2 = world.getBlockState(new BlockPos(x, y + 1, z)).getBlock();
+            Block block = world.getBlockState(new BlockPos((int) x, (int) (y - 1), (int) z)).getBlock();
+            Block tpblock = world.getBlockState(new BlockPos((int) x, (int) y, (int) z)).getBlock();
+            Block tpblock2 = world.getBlockState(new BlockPos((int) x, (int) (y + 1), (int) z)).getBlock();
             if (!MoreCommands.blockBlacklist.contains(block) && MoreCommands.blockWhitelist.contains(tpblock) && MoreCommands.blockWhitelist.contains(tpblock2)) {
                 entity.teleportToWithTicket(x + 0.5, y, z + 0.5);
                 sendMsg(ctx, "You have been teleported through the roof.");

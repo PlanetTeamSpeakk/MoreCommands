@@ -4,9 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.client.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinMapColorAccessor;
-import org.apache.commons.lang3.ArrayUtils;
-
-import javax.imageio.ImageIO;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.core.BlockPos;
@@ -20,6 +17,9 @@ import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -50,7 +50,7 @@ public class MapPicCommand extends ClientCommand {
                                 sendMsg(ChatFormatting.RED + "The image could not be saved.");
                                 return 0;
                             }
-                            sendMsg("The image has been saved.");
+                            sendMsg("The image has been saved to the maps folder in your .minecraft directory.");
                             return 1;
                         }
                     } else sendMsg(ChatFormatting.RED + "You must be holding a filled map or looking at an itemframe containing one.");
@@ -98,10 +98,13 @@ public class MapPicCommand extends ClientCommand {
         if (getMapLookingAt() != null) {
             HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), 160d, false, true);
             if (result instanceof EntityHitResult && ((EntityHitResult) result).getEntity() instanceof ItemFrame && ((ItemFrame) ((EntityHitResult) result).getEntity()).getItem().getItem() == Items.FILLED_MAP) {
-                BlockPos pos = new BlockPos(result.getLocation().x() < 0 ? Math.ceil(result.getLocation().x()) : result.getLocation().x(), result.getLocation().y(), result.getLocation().z() < 0 ? Math.ceil(result.getLocation().z()) : result.getLocation().z());
+                BlockPos pos = new BlockPos((int) (result.getLocation().x() < 0 ? Math.ceil(result.getLocation().x()) : result.getLocation().x()),
+                        (int) result.getLocation().y(), (int) (result.getLocation().z() < 0 ? Math.ceil(result.getLocation().z()) : result.getLocation().z()));
+
                 if (corner == 0) c1 = pos;
                 else c2 = pos;
-                sendMsg(SF + "Corner " + (corner == 0 ? "1" : "2") + DF + " has been set to " + SF + String.join(DF + ", " + SF, "" + pos.getX(), "" + pos.getY(), "" + pos.getZ()) + DF + ".");
+                sendMsg(SF + "Corner " + (corner == 0 ? "1" : "2") + DF + " has been set to " + SF + String.join(DF + ", " + SF,
+                        String.valueOf(pos.getX()), String.valueOf(pos.getY()), String.valueOf(pos.getZ())) + DF + ".");
                 return 1;
             } else sendMsg(ChatFormatting.RED + "You are not looking at an itemframe holding a filled map.");
         } else sendMsg(ChatFormatting.RED + "You do not appear to be looking at a map.");
@@ -228,14 +231,11 @@ public class MapPicCommand extends ClientCommand {
 
     private ItemStack getMapLookingAt() {
         HitResult result = MoreCommands.getRayTraceTarget(getPlayer(), 160d, false, true);
-        if (result instanceof EntityHitResult) {
-            EntityHitResult eresult = (EntityHitResult) result;
-            if (eresult.getEntity() instanceof ItemFrame) {
-                ItemStack stack = ((ItemFrame) eresult.getEntity()).getItem();
-                if (stack.getItem() == Items.FILLED_MAP) return stack;
-            }
+        if (result instanceof EntityHitResult eresult && eresult.getEntity() instanceof ItemFrame) {
+            ItemStack stack = ((ItemFrame) eresult.getEntity()).getItem();
+            if (stack.getItem() == Items.FILLED_MAP) return stack;
         }
+
         return null;
     }
-
 }

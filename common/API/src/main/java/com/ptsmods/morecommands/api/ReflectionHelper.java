@@ -135,7 +135,7 @@ public class ReflectionHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Constructor<T> getCtor(Class<T> clazz, Class<?>... classes) {
+    public static <T> Constructor<T> getCtor(Class<? extends T> clazz, Class<?>... classes) {
         return (Constructor<T>) cachedConstructors.computeIfAbsent(clazz, c -> new HashMap<>()).computeIfAbsent(getMethodKey("<init>", classes), k -> {
             try {
                 return clazz.getConstructor(classes);
@@ -163,9 +163,11 @@ public class ReflectionHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Class<? extends T> getMcClass(String name, String mojName) {
+    public static <T> Class<? extends T> getMcClass(String yarnIntermediaryName, String mojName) {
         try {
-            String clazz = Platform.isFabric() ? FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", "net.minecraft." + name) : mojName.replace('/', '.');
+            String clazz = Platform.isFabric() && !Platform.isDevelopmentEnvironment() ?
+                    FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", "net.minecraft." + yarnIntermediaryName) :
+                    mojName.replace('/', '.');
             return (Class<? extends T>) Class.forName(clazz);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

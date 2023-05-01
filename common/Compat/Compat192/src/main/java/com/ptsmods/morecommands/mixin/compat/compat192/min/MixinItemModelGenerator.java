@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.mixin.compat.compat192.min;
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
 import com.ptsmods.morecommands.api.addons.BlockModelAddon;
+import com.ptsmods.morecommands.api.addons.ItemModelGeneratorAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.client.renderer.block.model.*;
@@ -13,7 +14,6 @@ import net.minecraft.util.Mth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -26,8 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Mixin(ItemModelGenerator.class)
-public abstract class MixinItemModelGenerator {
-    private @Unique boolean ignoreNext = false;
+public abstract class MixinItemModelGenerator implements ItemModelGeneratorAddon {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;processFrames(ILjava/lang/String;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)Ljava/util/List;"), method = "generateBlockModel")
     private List<BlockElement> create_addLayerElements(ItemModelGenerator itemModelGenerator, int layer, String key, TextureAtlasSprite sprite, Function<Material, TextureAtlasSprite> textureGetter, BlockModel blockModel) {
@@ -42,11 +41,11 @@ public abstract class MixinItemModelGenerator {
                 // of atlas issue, but if anyone has any insight as to why it happens and how to approach a
                 // fix, please let me know.
                 // P.s. the problem looks like this: https://github.com/PlanetTeamSpeakk/MoreCommands/issues/35
-                ignoreNext = true;
+                ignoreNext();
                 break;
             }
 
-        return !ignoreNext && ClientOption.getBoolean("fixItemSeams") && (ClientOption.getBoolean("fixAnimItemSeams") || sprite.getUniqueFrames().max().orElse(1) == 1) ?
+        return !shouldIgnore() && ClientOption.getBoolean("fixItemSeams") && (ClientOption.getBoolean("fixAnimItemSeams") || sprite.getUniqueFrames().max().orElse(1) == 1) ?
                 createSideElements(sprite, key, layer) : processFrames(layer, key, sprite); // Skip front and back layer, those are created as subcomponents now too.
     }
 
@@ -56,7 +55,12 @@ public abstract class MixinItemModelGenerator {
      */
     @Inject(at = @At("HEAD"), method = "createSideElements", cancellable = true)
     private void createSideElements(TextureAtlasSprite sprite, String key, int layer, CallbackInfoReturnable<List<BlockElement>> cbi) {
-        if (ignoreNext || !ClientOption.getBoolean("fixItemSeams") || (!ClientOption.getBoolean("fixAnimItemSeams") &&
+        if (shouldIgnore()) {
+            resetIgnore();
+            return;
+        }
+
+        if (!ClientOption.getBoolean("fixItemSeams") || (!ClientOption.getBoolean("fixAnimItemSeams") &&
                 sprite.getUniqueFrames().max().orElse(1) != 1)) return;
 
         // Basically just does what the Vanilla Tweaks resource pack does programmatically.

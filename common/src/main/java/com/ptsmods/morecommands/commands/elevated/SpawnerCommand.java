@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
@@ -29,7 +30,9 @@ public class SpawnerCommand extends Command {
                             BlockHitResult result = (BlockHitResult) MoreCommands.getRayTraceTarget(ctx.getSource().getEntityOrException(), 160, true, true);
                             BlockState state = ctx.getSource().getLevel().getBlockState(result.getBlockPos());
                             EntityType<?> type = getResource(ctx, "type", "entity_type");
-                            BlockPos pos = new BlockPos(ctx.getSource().getPosition());
+
+                            Vec3 posVec = ctx.getSource().getPosition();
+                            BlockPos pos = new BlockPos((int) posVec.x, (int) posVec.y, (int) posVec.z);
                             if (!state.is(Blocks.SPAWNER)) {
                                 if (ctx.getSource().getPlayerOrException().getMainHandItem().getItem() == Items.SPAWNER) {
                                     BaseSpawner logic = new DummyBaseSpawner();

@@ -36,7 +36,6 @@ public class VexParticle extends Particle {
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(770, 771, 1, 0);
             RenderSystem.lineWidth(2.0F);
-            RenderSystem.disableTexture();
             builder.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
         }
 
@@ -44,7 +43,6 @@ public class VexParticle extends Particle {
         public void end(Tesselator tessellator) {
             tessellator.end();
             RenderSystem.disableBlend();
-            RenderSystem.enableTexture();
         }
     };
     private final Entity entity;

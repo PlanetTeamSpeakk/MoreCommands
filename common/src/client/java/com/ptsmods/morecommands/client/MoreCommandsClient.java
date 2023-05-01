@@ -23,6 +23,7 @@ import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.client.gui.WorldInitCommandsScreen;
 import com.ptsmods.morecommands.client.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.client.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.client.miscellaneous.VexParticle;
@@ -494,7 +495,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
     private static ClientCompat determineCurrentCompat() {
         Version v = Version.getCurrent();
-        int minor = v.minor, rev = v.revision == null ? -1 : v.revision;
+        int minor = v.minor, rev = v.revision == null ? 0 : v.revision;
 
         ClientCompat compat = switch (minor) {
             case 17, 18 -> new ClientCompat17();
@@ -502,11 +503,17 @@ public class MoreCommandsClient implements IMoreCommandsClient {
                 case 0 -> new ClientCompat190();
                 case 1 -> new ClientCompat191();
                 case 2 -> new ClientCompat192();
-                default -> new ClientCompat193();
+                case 3 -> new ClientCompat193();
+                default -> new ClientCompat194();
             };
         };
         LOG.info("Determined client compat: " + compat.getClass().getSimpleName());
 
         return compat;
+    }
+
+    @Override
+    public Screen newWorldInitScreen(Screen parent) {
+        return new WorldInitCommandsScreen(parent);
     }
 }

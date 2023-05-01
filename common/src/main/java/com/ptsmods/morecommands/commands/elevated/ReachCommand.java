@@ -6,7 +6,6 @@ import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -44,6 +43,7 @@ public class ReachCommand extends Command {
                             addModifier("pehkui:reach", player, reach);
                             addModifier("reach-entity-attributes:reach", player, reach);
                             addModifier("forge:reach_distance", player, reach);
+                            addModifier("forge:entity_reach", player, reach);
                             addModifier("forge:attack_range", player, reach);
                             sendMsg(ctx, "Your reach has been set from " + SF + oldReach + DF + " to " + SF + reach + DF + ".");
                             return (int) reach;

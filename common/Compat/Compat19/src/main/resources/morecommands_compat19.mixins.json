@@ -8,7 +8,7 @@
     "plus.MixinBackgroundRenderer",
     "plus.MixinClientPlayerInteractionManager",
     "plus.MixinLightmapTextureManager",
-    "plus.MixinTitleScreen",
+    "until194.MixinTitleScreen",
     "plus.MixinWorldRenderer",
     "plus.MixinKeybindTranslationsAccessor",
     "plus.MixinMinecraft",

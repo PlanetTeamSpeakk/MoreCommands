@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.mixin.forge;
 
 import com.ptsmods.morecommands.api.addons.CreativeInventoryScreenAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -36,8 +37,10 @@ public abstract class MixinCreativeInventoryScreen extends EffectRenderingInvent
     private void init(CallbackInfo cbi) {
         for (AbstractWidget button : ((ScreenAddon) this).mc$getButtons()) {
             if (!(button instanceof Button)) continue;
-            if (button.x == leftPos && button.y == topPos - 50) pagerPrev = (Button) button;
-            else if (button.x == leftPos + imageWidth - 20 && button.y == topPos - 50) pagerNext = (Button) button;
+
+            MixinAbstractWidgetAccessor accessor = (MixinAbstractWidgetAccessor) button;
+            if (accessor.getX_() == leftPos && accessor.getY_() == topPos - 50) pagerPrev = (Button) button;
+            else if (accessor.getX_() == leftPos + imageWidth - 20 && accessor.getY_() == topPos - 50) pagerNext = (Button) button;
         }
     }
 }

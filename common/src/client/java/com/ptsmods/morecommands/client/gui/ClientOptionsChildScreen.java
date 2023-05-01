@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.MoreCommands;
-import com.ptsmods.morecommands.api.addons.ScalableClickableWidget;
+import com.ptsmods.morecommands.api.addons.ScalableWidget;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.clientoptions.ClientOption;
 import com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory;
@@ -64,7 +64,7 @@ public class ClientOptionsChildScreen extends Screen {
             }, ClientOptions::write));
 
             if (btn != null) {
-                ((ScalableClickableWidget) btn).setAutoScale(true);
+                ((ScalableWidget) btn).setAutoScale(true);
                 page.add(new Tuple<>(btn, option.getValue()));
                 btnFields.put(btn, option.getValue());
             }

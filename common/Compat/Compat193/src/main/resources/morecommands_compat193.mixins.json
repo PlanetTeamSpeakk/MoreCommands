@@ -5,6 +5,15 @@
   "plugin": "com.ptsmods.morecommands.plugin.Plugin193",
   "compatibilityLevel": "JAVA_16",
   "client": [
+    "MixinItemModelGenerator",
+    "min.MixinAbstractWidget",
+    "min.MixinCreativeModeInventoryScreen",
+    "min.MixinEditBox",
+    "min.MixinHandledScreen",
+    "min.MixinInventoryScreen",
+    "min.MixinItemRenderer",
+    "min.MixinMoreOptionsDialog",
+    "min.MixinPlayerTabOverlay",
     "plus.MixinClientPacketListener",
     "plus.MixinItemModelGenerator",
     "plus.MixinModelBakery",
@@ -13,6 +22,8 @@
     "plus.MixinWorldOpenFlows"
   ],
   "mixins": [
+    "min.MixinDamageSource",
+    "min.MixinFarmBlock",
     "plus.MixinEntitySelector",
     "plus.MixinFlowingFluid",
     "plus.MixinServerPlayerGameMode"

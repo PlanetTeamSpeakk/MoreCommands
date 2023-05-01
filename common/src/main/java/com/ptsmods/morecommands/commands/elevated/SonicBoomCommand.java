@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -123,7 +122,7 @@ public class SonicBoomCommand extends Command {
             }
 
             serverWorld.playSound(null, pos.x(), pos.y(), pos.z(), SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, 3.0F, 1.0F);
-            target.hurt(DamageSource.sonicBoom(attacker), 10.0F);
+//            target.hurt(DamageSource.sonicBoom(attacker), 10.0F);
 
             double kbRes = target instanceof LivingEntity ? ((LivingEntity) target).getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0f;
             double vertical = 0.5 * (1.0 - kbRes);

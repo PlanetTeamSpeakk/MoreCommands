@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.miscellaneous;
 import com.google.common.collect.ImmutableMap;
 import com.ptsmods.morecommands.MoreCommands;
 import com.ptsmods.morecommands.api.Holder;
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.IMoreGameRules;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
@@ -67,7 +68,7 @@ public class MoreGameRules implements IMoreGameRules {
         GameRules.Key<GameRules.BooleanValue> key = MixinGameRulesAccessor.callRegister(name, category, MixinBooleanValueAccessor.callCreate(defaultValue));
         if (doPermCheck) {
             pendingPermChecks.add(key);
-            MoreCommands.registerPermission("morecommands.gamerule." + key.getId(), true);
+            IMoreCommands.get().registerPermission("morecommands.gamerule." + key.getId(), true);
         }
 
         allRules.put(name, key);

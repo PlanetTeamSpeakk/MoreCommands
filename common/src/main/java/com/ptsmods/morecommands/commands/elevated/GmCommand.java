@@ -3,9 +3,10 @@ package com.ptsmods.morecommands.commands.elevated;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.miscellaneous.Command;
-import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.level.GameType;
+
+import java.util.Map;
 
 public class GmCommand extends Command {
     @Override
@@ -18,7 +19,11 @@ public class GmCommand extends Command {
         );
 
         modes.forEach((literal, gameMode) -> dispatcher.register(literalReqOp(literal)
-                .executes(ctx -> ctx.getSource().getServer().getCommands().getDispatcher().getRoot().getChild("gamemode").getChild(gameMode.getName()).getCommand().run(ctx))));
+                .executes(ctx -> ctx.getSource().getServer().getCommands().getDispatcher().getRoot()
+                        .getChild("gamemode")
+                        .getChild(gameMode.getName())
+                        .getCommand()
+                        .run(ctx))));
     }
 
     @Override

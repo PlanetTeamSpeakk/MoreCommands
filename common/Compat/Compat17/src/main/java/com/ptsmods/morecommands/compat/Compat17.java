@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.compat;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.ReflectionHelper;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
@@ -16,6 +17,7 @@ import com.ptsmods.morecommands.miscellaneous.LegacyCompatArgumentSerializer;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.registry.registries.DeferredRegister;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import lombok.Getter;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -39,6 +41,7 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.Painting;
@@ -51,6 +54,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -59,6 +63,12 @@ import java.util.stream.DoubleStream;
 
 public class Compat17 implements Compat {
     private static Map<ResourceLocation, Object> blockTags = null;
+    // For some reason, I cannot reference this class directly. Arch transformer throws an error saying
+    // the class doesn't exist (which is true in the runtime version) if I do.
+    @Getter(lazy = true)
+    private static final Constructor<DamageSource> entityDamageSourceCtor = ReflectionHelper.<DamageSource>getCtor(
+            ReflectionHelper.<DamageSource>getMcClass("class_1285",
+            "net.minecraft.world.damagesource.EntityDamageSource"), String.class, Entity.class);
 
     @Override
     public boolean isRemoved(Entity entity) {
@@ -245,5 +255,15 @@ public class Compat17 implements Compat {
     @Override
     public Explosion explode(Level level, Entity entity, double x, double y, double z, float power, boolean fire, Explosion.BlockInteraction interaction) {
         return level.explode(entity, x, y, z, power, fire, interaction);
+    }
+
+    @Override
+    public DamageSource getSuicideDamageSource(Entity cause) {
+        return IMoreCommands.get().isServerOnly() ? DamageSource.OUT_OF_WORLD : ReflectionHelper.newInstance(getEntityDamageSourceCtor(), "suicide", cause);
+    }
+
+    @Override
+    public void registerVersionSpecificCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        DamageCommand.register(dispatcher);
     }
 }
