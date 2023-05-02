@@ -13,6 +13,7 @@ import com.ptsmods.morecommands.api.IMoreCommandsClient;
 import com.ptsmods.morecommands.api.MoreCommandsArch;
 import com.ptsmods.morecommands.api.Version;
 import com.ptsmods.morecommands.api.addons.AbstractButtonAddon;
+import com.ptsmods.morecommands.api.addons.AbstractWidgetAddon;
 import com.ptsmods.morecommands.api.addons.ScreenAddon;
 import com.ptsmods.morecommands.api.callbacks.ChatMessageSendEvent;
 import com.ptsmods.morecommands.api.callbacks.ClientCommandRegistrationEvent;
@@ -420,6 +421,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
                     btn -> {
                         btn.visible = initOpened0;
                         ((AbstractButtonAddon) btn).setIgnoreKeys(true);
+                        ((AbstractWidgetAddon) btn).setFocusable(false);
                     }
             )));
         }
@@ -434,8 +436,9 @@ public class MoreCommandsClient implements IMoreCommandsClient {
                     btns.forEach(btn0 -> btn0.visible = b);
                     if (stateListener != null) stateListener.accept(b);
                 }, null), btn -> {
-                    ((AbstractButtonAddon) btn).setIgnoreKeys(true);
                     btn.visible = ClientOptions.Tweaks.textColourPicker.getValue();
+                    ((AbstractButtonAddon) btn).setIgnoreKeys(true);
+                    ((AbstractWidgetAddon) btn).setFocusable(false);
                 }));
     }
 

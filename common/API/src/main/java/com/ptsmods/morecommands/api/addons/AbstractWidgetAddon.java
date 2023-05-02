@@ -4,4 +4,6 @@ public interface AbstractWidgetAddon {
     void setValidButtons(int... buttons);
 
     int getLastMouseButton();
+
+    void setFocusable(boolean focusable);
 }
