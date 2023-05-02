@@ -19,7 +19,8 @@ public class BreakCommand extends Command {
                     if (player.getCommandSenderWorld().getBlockState(block).getBlock() == Blocks.AIR) sendMsg(ctx, "You cannot break air.");
                     else {
                         player.getCommandSenderWorld().destroyBlock(block, false);
-                        sendMsg(ctx, "The block at " + SF + "X: " + block.getX() + DF + ", " + SF + "Y: " + block.getY() + DF + ", " + SF + "Z: " + block.getZ() + DF + " has been broken.");
+                        sendMsg(ctx, "The block at " + SF + block.getX() + DF + ", " + SF + block.getY() +
+                                DF + ", " + SF + block.getZ() + DF + " has been broken.");
                         return 1;
                     }
                     return 0;
