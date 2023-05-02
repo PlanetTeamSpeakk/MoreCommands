@@ -14,6 +14,7 @@ public class MixinTimeCommand {
     // Applies a fix so the time immediately updates on clients once the command is run.
     @Inject(at = @At("RETURN"), method = "setTime")
     private static void executeSet(CommandSourceStack source, int time, CallbackInfoReturnable<Integer> cbi) {
-        source.getServer().getPlayerList().broadcastAll(new ClientboundSetTimePacket(source.getLevel().getGameTime(), source.getLevel().getDayTime(), source.getLevel().getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
+        source.getServer().getPlayerList().broadcastAll(new ClientboundSetTimePacket(source.getLevel().getGameTime(),
+                source.getLevel().getDayTime(), source.getLevel().getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
     }
 }
