@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "plus.MixinAbstractButton",
+    "plus.MixinChatScreen",
     "plus.MixinCreativeModeInventoryScreen",
     "plus.MixinEditBox",
     "plus.MixinHandledScreen",
