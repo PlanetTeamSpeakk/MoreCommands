@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.commands.elevated;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
+import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.util.Util;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
@@ -10,7 +11,12 @@ import net.minecraft.world.entity.Entity;
 public class JesusCommand extends Command {
     @Override
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) throws Exception {
-        dispatcher.register(literalReqOp("jesus")
+        if (IMoreCommands.get().isServerOnly()) dispatcher.register(literalReqOp("reach")
+                .executes(ctx -> {
+                    sendError(ctx, "Jesus cannot be used in server only mode.");
+                    return 0;
+                }));
+        else dispatcher.register(literalReqOp("jesus")
                 .executes(ctx -> {
                     Entity entity = ctx.getSource().getEntityOrException();
                     entity.getEntityData().set(IDataTrackerHelper.get().jesus(), !entity.getEntityData().get(IDataTrackerHelper.get().jesus()));
