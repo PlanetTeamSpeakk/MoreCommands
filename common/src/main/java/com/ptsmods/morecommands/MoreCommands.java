@@ -376,11 +376,23 @@ public enum MoreCommands implements IMoreCommands {
                  }
 
                  try {
-                     CommandDispatcher<CommandSourceStack> tempDispatcher = new CommandDispatcher<>();
-                     cmd.register(tempDispatcher, dedicated);
+                     if (cmd.nodeNames() != null) {
+                         // Commands that redirect to the dispatcher root cannot be
+                         // registered on a temporary dispatcher.
+                         Set<String> nodeNames = Objects.requireNonNull(cmd.nodeNames());
+                         cmd.register(dispatcher, dedicated);
+                         nodes.put(cmd, dispatcher.getRoot().getChildren().stream()
+                                 .filter(node -> nodeNames.contains(node.getName()))
+                                 .collect(ImmutableList.toImmutableList()));
+                     } else {
+                         CommandDispatcher<CommandSourceStack> tempDispatcher = new CommandDispatcher<>();
+                         cmd.register(tempDispatcher, dedicated);
 
-                     for (CommandNode<CommandSourceStack> child : tempDispatcher.getRoot().getChildren()) dispatcher.getRoot().addChild(child);
-                     nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
+                         for (CommandNode<CommandSourceStack> child : tempDispatcher.getRoot().getChildren())
+                             dispatcher.getRoot().addChild(child);
+                         nodes.put(cmd, ImmutableList.copyOf(tempDispatcher.getRoot().getChildren()));
+                     }
+
                      permissions.putAll(cmd.getExtraPermissions());
                  } catch (Exception e) {
                      LOG.error("Could not register command " + cmd.getClass().getName() + ".", e);

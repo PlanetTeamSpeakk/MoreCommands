@@ -31,6 +31,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -113,6 +114,10 @@ public abstract class Command {
 
     public boolean doLateInit() {
         return false;
+    }
+
+    public @Nullable Set<String> nodeNames() {
+        return null;
     }
 
     public Collection<String> getRegisteredNodes() {
