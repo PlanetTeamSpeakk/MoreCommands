@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinServerPlayerInteractionManager {
     @Shadow protected ServerLevel level;
     @Final @Shadow protected ServerPlayer player;
-    private boolean mc_isFlying = false;
+    private @Unique boolean isFlying = false;
 
     @Inject(at = @At("HEAD"), method = "setGameModeForPlayer")
     public void setGameModePre(GameType gameMode, GameType gameMode2, CallbackInfo cbi) {
-        mc_isFlying = ((MixinPlayerEntityAccessor) player).getAbilities_().flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
+        isFlying = ((MixinPlayerEntityAccessor) player).getAbilities_().flying; // Making sure you don't fall down while flying when going from creative to survival or when joining.
     }
 
     @Inject(at = @At("TAIL"), method = "setGameModeForPlayer")
@@ -32,7 +33,7 @@ public class MixinServerPlayerInteractionManager {
         MixinPlayerEntityAccessor accessor = (MixinPlayerEntityAccessor) player;
 
         if (player.getEntityData().get(IDataTrackerHelper.get().mayFly()) || gameMode == GameType.SPECTATOR) accessor.getAbilities_().mayfly = true;
-        if (accessor.getAbilities_().mayfly) accessor.getAbilities_().flying = mc_isFlying;
+        if (accessor.getAbilities_().mayfly) accessor.getAbilities_().flying = isFlying;
         else accessor.getAbilities_().flying = false;
         if (player.getEntityData().get(IDataTrackerHelper.get().invulnerable())) accessor.getAbilities_().invulnerable = true;
         player.onUpdateAbilities();
