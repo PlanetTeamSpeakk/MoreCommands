@@ -24,4 +24,9 @@ public class SuperPickaxeCommand extends Command {
     public String getDocsPath() {
         return "/elevated/super-pickaxe";
     }
+
+    @Override
+    public boolean registerInServerOnly() {
+        return false;
+    }
 }

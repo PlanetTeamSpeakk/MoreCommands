@@ -22,12 +22,7 @@ public class ReachCommand extends Command {
 
     @Override
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        if (IMoreCommands.get().isServerOnly()) dispatcher.register(literalReqOp("reach")
-                .executes(ctx -> {
-                    sendError(ctx, "Reach cannot be used in server only mode.");
-                    return 0;
-                }));
-        else dispatcher.register(literalReqOp("reach")
+        dispatcher.register(literalReqOp("reach")
                 .executes(ctx -> {
                     double reach = ctx.getSource().getPlayerOrException().getAttributeValue(getReachAttribute());
                     double base = ctx.getSource().getPlayerOrException().getAttributeBaseValue(getReachAttribute());
@@ -53,6 +48,11 @@ public class ReachCommand extends Command {
     @Override
     public String getDocsPath() {
         return "/elevated/reach";
+    }
+
+    @Override
+    public boolean registerInServerOnly() {
+        return false;
     }
 
     private void addModifier(String id, ServerPlayer player, double reach) {

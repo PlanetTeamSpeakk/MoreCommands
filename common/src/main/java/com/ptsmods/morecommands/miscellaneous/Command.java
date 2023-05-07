@@ -120,6 +120,10 @@ public abstract class Command {
         return null;
     }
 
+    public boolean registerInServerOnly() {
+        return true;
+    }
+
     public Collection<String> getRegisteredNodes() {
         return null; // Default implementation just checks what nodes appear after registering this command.
     }

@@ -354,9 +354,10 @@ public enum MoreCommands implements IMoreCommands {
 
      private static void doCommandRegistration() {
          List<Command> serverCommands = getCommandClasses(EnvType.SERVER, Command.class).stream()
-                .map(MoreCommands::getInstance)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                 .map(MoreCommands::getInstance)
+                 .filter(Objects::nonNull)
+                 .filter(cmd -> cmd.registerInServerOnly() || !INSTANCE.isServerOnly())
+                 .collect(Collectors.toList());
 
          Map<Command, Collection<CommandNode<CommandSourceStack>>> nodes = new LinkedHashMap<>();
 
