@@ -5,7 +5,7 @@
   "block.morecommands.locked_chest": "§dLocked Chest",
   "attribute.morecommands.reach": "Reach",
   "attribute.morecommands.swim_speed": "Swim Speed",
-  "death.attack.suicide": "%s took their own life.",
+  "death.attack.suicide": "%s took their own life",
   "commands.weather.set.clear": "Can't you tell I got news for you? The sun is shining and so are you.",
   "gamerule.defaultFormatting": "Default Formatting",
   "gamerule.defaultFormatting.description": "The colour used mainly for feedback from commands.",

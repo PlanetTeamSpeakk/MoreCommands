@@ -21,7 +21,6 @@ public class MoreCommandsForge {
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
 
         MoreCommands.registerStuff(); // Make sure reachAttribute and swimSpeedAttribute are initialised.
-        MoreCommandsClient.setInstance();
 
         Compat.INSTANCE.registerListeners();
     }

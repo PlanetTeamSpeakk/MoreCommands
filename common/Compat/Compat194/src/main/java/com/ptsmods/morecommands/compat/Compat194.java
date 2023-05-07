@@ -17,9 +17,9 @@ import java.util.Arrays;
 public class Compat194 extends Compat193 {
 
     @Override
-    public DamageSource getSuicideDamageSource(Entity cause) {
-        return new DamageSource(cause.level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
-                .getHolderOrThrow(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("morecommands:suicide"))), cause);
+    public DamageSource getSuicideDamageSource(Entity entity) {
+        return new DamageSource(entity.level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                .getHolderOrThrow(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("morecommands:suicide"))));
     }
 
     @Override // Don't register the damage command as vanilla has one now.
