@@ -39,7 +39,7 @@ public class CyclePaintingCommand extends Command {
         ResourceLocation oldArt = Compat.get().getPaintingVariant(painting);
         Compat.get().setPaintingVariant(painting, variant == null ? Compat.get().nextPaintingVariant(oldArt) : variant);
 
-        if (Version.getCurrent().isOlderThan(Version.V1_19)) return 1; // Below code only necessary on old versions
+        if (Version.getCurrent().isNewerThanOrEqual(Version.V1_19)) return 1; // Below code only necessary on old versions
         BlockPos pos = Compat.get().blockPosition(painting);
         Entity painting0 = MoreCommands.cloneEntity(painting, false);
         painting.kill();
