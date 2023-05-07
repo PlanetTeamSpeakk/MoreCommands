@@ -13,7 +13,6 @@
   ],
   "mixins": [
     "min.MixinEnchantmentScreenHandler",
-    "min.MixinPaintingEntity",
     "min.MixinSnowBlock",
     "plus.MixinServerWorld",
     "min.MixinServerPlayNetworkHandler",

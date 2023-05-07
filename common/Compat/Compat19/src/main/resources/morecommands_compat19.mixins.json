@@ -7,20 +7,21 @@
   "client": [
     "plus.MixinBackgroundRenderer",
     "plus.MixinClientPlayerInteractionManager",
-    "plus.MixinLightmapTextureManager",
-    "until194.MixinTitleScreen",
-    "plus.MixinWorldRenderer",
     "plus.MixinKeybindTranslationsAccessor",
+    "plus.MixinLightmapTextureManager",
     "plus.MixinMinecraft",
-    "until193.MixinWorldOpenFlows"
+    "plus.MixinWorldRenderer",
+    "until193.MixinWorldOpenFlows",
+    "until194.MixinTitleScreen"
   ],
   "mixins": [
     "plus.MixinArgumentTypesAccessor",
-    "plus.MixinEnchantmentScreenHandler",
-    "plus.MixinSnowBlock",
     "plus.MixinBlock",
+    "plus.MixinClientboundCommandsPacket",
     "plus.MixinClientboundCommandsPacketArgumentNodeStub",
-    "plus.MixinClientboundCommandsPacket"
+    "plus.MixinEnchantmentScreenHandler",
+    "plus.MixinPainting",
+    "plus.MixinSnowBlock"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,7 +2,7 @@ package com.ptsmods.morecommands.compat;
 
 import com.mojang.authlib.GameProfile;
 import com.ptsmods.morecommands.api.IMoreCommands;
-import com.ptsmods.morecommands.api.addons.PaintingEntityAddon;
+import com.ptsmods.morecommands.api.addons.PaintingAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
@@ -74,18 +74,18 @@ public class Compat19 extends Compat182 {
 
     @Override
     public ResourceLocation getPaintingVariant(Painting painting) {
-        return Compat.get().<PaintingVariant>getBuiltInRegistry("painting_variant").getKey(painting.getVariant().value());
+        return this.<PaintingVariant>getBuiltInRegistry("painting_variant").getKey(painting.getVariant().value());
     }
 
     @Override
     public ResourceLocation nextPaintingVariant(ResourceLocation variant) {
-        MappedRegistry<PaintingVariant> registry = Compat.get().getBuiltInRegistry("painting_variant");
+        MappedRegistry<PaintingVariant> registry = getBuiltInRegistry("painting_variant");
         return registry.getKey(registry.byId((registry.getId(registry.get(variant)) + 1) % registry.size()));
     }
 
     @Override
     public void setPaintingVariant(Painting entity, ResourceLocation variant) {
-        ((PaintingEntityAddon) entity).mc$setVariant(Compat.get().<PaintingVariant>getBuiltInRegistry("painting_variant")
+        ((PaintingAddon) entity).mc$setVariant(this.<PaintingVariant>getBuiltInRegistry("painting_variant")
                 .get(variant));
     }
 
