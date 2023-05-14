@@ -69,13 +69,13 @@ public class FillCommand extends Command {
         dispatcher.register(literalReqOp("fill")
                 .then(Commands.argument("from", BlockPosArgument.blockPos())
                         .then(Commands.argument("to", BlockPosArgument.blockPos())
-                                .then(Commands.argument("block", compat.createBlockStateArgumentType())
+                                .then(Commands.argument("block", compat.createBlockStateArgument())
                                         .executes((commandContext) -> execute(commandContext, newBlockBox(BlockPosArgument.getLoadedBlockPos(commandContext, "from"),
                                                 BlockPosArgument.getLoadedBlockPos(commandContext, "to")), BlockStateArgument.getBlock(commandContext, "block"), Mode.REPLACE, null))
                                         .then(literal("replace")
                                                 .executes((commandContext) -> execute(commandContext, newBlockBox(BlockPosArgument.getLoadedBlockPos(commandContext, "from"),
                                                         BlockPosArgument.getLoadedBlockPos(commandContext, "to")), BlockStateArgument.getBlock(commandContext, "block"), Mode.REPLACE, null))
-                                                .then(Commands.argument("filter", compat.createBlockStateArgumentType())
+                                                .then(Commands.argument("filter", compat.createBlockStateArgument())
                                                         .executes((commandContext) -> execute(commandContext, newBlockBox(BlockPosArgument.getLoadedBlockPos(commandContext, "from"),
                                                                 BlockPosArgument.getLoadedBlockPos(commandContext, "to")), BlockStateArgument.getBlock(commandContext, "block"), Mode.REPLACE,
                                                                 BlockPredicateArgument.getBlockPredicate(commandContext, "filter")))))

@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.arguments.item.ItemPredicateArgument;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -81,7 +82,9 @@ public interface Compat {
 
     Biome getBiome(Level world, BlockPos pos);
 
-    BlockStateArgument createBlockStateArgumentType();
+    BlockStateArgument createBlockStateArgument();
+
+    ItemPredicateArgument createItemPredicateArgument();
 
     Direction randomDirection();
 

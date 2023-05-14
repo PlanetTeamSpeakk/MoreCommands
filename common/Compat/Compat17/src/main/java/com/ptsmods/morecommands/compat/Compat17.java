@@ -22,6 +22,7 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.arguments.item.ItemPredicateArgument;
 import net.minecraft.commands.synchronization.ArgumentSerializer;
 import net.minecraft.commands.synchronization.ArgumentTypes;
 import net.minecraft.core.*;
@@ -119,8 +120,13 @@ public class Compat17 implements Compat {
     }
 
     @Override
-    public BlockStateArgument createBlockStateArgumentType() {
+    public BlockStateArgument createBlockStateArgument() {
         return BlockStateArgument.block();
+    }
+
+    @Override
+    public ItemPredicateArgument createItemPredicateArgument() {
+        return ItemPredicateArgument.itemPredicate();
     }
 
     @Override

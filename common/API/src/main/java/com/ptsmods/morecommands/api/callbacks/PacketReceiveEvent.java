@@ -6,19 +6,22 @@ import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 
 public interface PacketReceiveEvent {
-    Event<PacketReceiveEvent> PRE = EventFactory.of(callbacks -> (packet, listener) -> {
-        for (PacketReceiveEvent callback : callbacks)
+    Event<PacketReceiveEvent.Pre> PRE = EventFactory.of(callbacks -> (packet, listener) -> {
+        for (PacketReceiveEvent.Pre callback : callbacks)
             if (callback.onReceive(packet, listener))
                 return true;
         return false;
     });
-    Event<PacketReceiveEvent> POST = EventFactory.of(callbacks -> (packet, listener) -> {
-        for (PacketReceiveEvent callback : callbacks)
-            if (callback.onReceive(packet, listener))
-                return true;
-        return false;
+    Event<PacketReceiveEvent.Post> POST = EventFactory.of(callbacks -> (packet, listener) -> {
+        for (PacketReceiveEvent.Post callback : callbacks)
+            callback.onReceive(packet, listener);
     });
 
-    boolean onReceive(Packet<?> packet, PacketListener listener);
+    interface Pre {
+        boolean onReceive(Packet<?> packet, PacketListener listener);
+    }
 
+    interface Post {
+        void onReceive(Packet<?> packet, PacketListener listener);
+    }
 }

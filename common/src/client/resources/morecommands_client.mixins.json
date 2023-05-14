@@ -46,6 +46,8 @@
     "MixinTextColor",
     "MixinTextVisitFactory",
     "MixinTitleScreen",
+    "MixinLevelRenderer",
+    "MixinBaseContainerBlockEntity",
     "accessor.MixinAbstractWidgetAccessor",
     "accessor.MixinClickableWidgetAccessor",
     "accessor.MixinCommandSuggestorAccessor",

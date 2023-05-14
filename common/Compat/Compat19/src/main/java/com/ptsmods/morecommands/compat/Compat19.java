@@ -6,7 +6,6 @@ import com.ptsmods.morecommands.api.addons.PaintingAddon;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeProperties;
 import com.ptsmods.morecommands.api.arguments.ArgumentTypeSerialiser;
 import com.ptsmods.morecommands.api.arguments.CompatArgumentType;
-import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.text.EmptyTextBuilder;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.api.util.text.TextBuilder;
@@ -18,6 +17,7 @@ import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindTranslati
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.arguments.item.ItemPredicateArgument;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,8 +63,13 @@ public class Compat19 extends Compat182 {
     }
 
     @Override
-    public BlockStateArgument createBlockStateArgumentType() {
-        return BlockStateArgument.block((CommandBuildContext) Compat.get().newCommandBuildContext());
+    public BlockStateArgument createBlockStateArgument() {
+        return BlockStateArgument.block((CommandBuildContext) newCommandBuildContext());
+    }
+
+    @Override
+    public ItemPredicateArgument createItemPredicateArgument() {
+        return ItemPredicateArgument.itemPredicate((CommandBuildContext) newCommandBuildContext());
     }
 
     @Override
