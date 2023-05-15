@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.client.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
 import com.ptsmods.morecommands.api.addons.CachedContainerBlockEntity;
 import com.ptsmods.morecommands.api.callbacks.PacketReceiveEvent;
 import com.ptsmods.morecommands.api.util.compat.Compat;
@@ -55,12 +56,8 @@ public class SearchItemCommand extends ClientCommand {
     @Override
     public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) throws Exception {
         dispatcher.register(cLiteral("searchitem")
-                .then(cLiteral("clear").executes(ctx -> {
-                    RESULTS.clear();
-                    currentPredicate = null;
-
-                    return sendMsg("Results cleared.");
-                }))
+                .then(cLiteral("clear").executes(SearchItemCommand::executeClear))
+                .then(cLiteral("off").executes(SearchItemCommand::executeClear)) // Alias
                 .then(cArgument("item", Compat.get().createItemPredicateArgument())
                         .executes(ctx -> {
                             RESULTS.clear();
@@ -94,6 +91,13 @@ public class SearchItemCommand extends ClientCommand {
     @Override
     public String getDocsPath() {
         return "/search-item";
+    }
+
+    private static int executeClear(CommandContext<ClientSuggestionProvider> ctx) {
+        RESULTS.clear();
+        currentPredicate = null;
+
+        return sendMsg("Results cleared.");
     }
 
     public enum SearchItemResultType {
