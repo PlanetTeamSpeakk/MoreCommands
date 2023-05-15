@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IRainbow;
 import com.ptsmods.morecommands.mixin.common.accessor.MixinTextColorAccessor;
+import lombok.Getter;
+import lombok.Setter;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TextColor;
 import org.apache.logging.log4j.LogManager;
 
 import java.awt.*;
@@ -11,10 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TextColor;
 
-// Also take a look at MixinTextVisitFactory and MixinTextColor
+// Also take a look at MixinStringDecomposer and MixinTextColor
 public class Rainbow implements IRainbow {
     private static boolean checked = false;
     private static Rainbow instance = null;
@@ -33,7 +35,9 @@ public class Rainbow implements IRainbow {
     }
 
     public int rainbowIndex = 0;
-    public final List<Color> rainbowColours;
+    private final List<Color> rainbowColours;
+    @Getter @Setter
+    private double speed;
     public final ChatFormatting RAINBOW = ChatFormatting.valueOf("RAINBOW"); // Should've been registered in MixinPlugin.
     public final TextColor RAINBOW_TC = MixinTextColorAccessor.newInstance(0, "rainbow");
 
@@ -48,7 +52,7 @@ public class Rainbow implements IRainbow {
         for (int b=100; b>=0; b--) colours.add(new Color(        0,       255, b*255/100));
         rainbowColours = ImmutableList.copyOf(colours); // Looks better than just going through hue with HSB imho.
 
-        Map<ChatFormatting, TextColor> formattingToColor = new HashMap<>(MixinTextColorAccessor.getLegacyFormatToColor());//new HashMap<>(ReflectionHelper.getFieldValue(f, null));
+        Map<ChatFormatting, TextColor> formattingToColor = new HashMap<>(MixinTextColorAccessor.getLegacyFormatToColor());
         formattingToColor.put(RAINBOW, RAINBOW_TC);
         MixinTextColorAccessor.setLegacyFormatToColor(formattingToColor);
 
@@ -62,8 +66,8 @@ public class Rainbow implements IRainbow {
     }
 
     public int getRainbowColour(boolean includeIndex, float transparency) {
-        Color c = rainbowColours.get((int) ((System.currentTimeMillis() + (includeIndex ? 20 * rainbowIndex : 0)) % rainbowColours.size()));
-        if (transparency < 1f) c = new Color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, transparency);
+        Color c = rainbowColours.get((int) ((long) ((System.currentTimeMillis() + (includeIndex ? 20L * rainbowIndex : 0)) * speed) % rainbowColours.size()));
+        if (transparency < 1f) c = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (transparency * 255));
         return c.getRGB(); /*Color.HSBtoRGB((System.currentTimeMillis() + 20 * rainbowIndex) % 720 / 720f, 1, 1)*/
     }
 }

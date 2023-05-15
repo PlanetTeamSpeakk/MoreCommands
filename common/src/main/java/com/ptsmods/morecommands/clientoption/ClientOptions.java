@@ -5,16 +5,19 @@ import com.ptsmods.morecommands.api.IMoreCommands;
 import com.ptsmods.morecommands.api.clientoptions.*;
 import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.commands.unelevated.PowerToolCommand;
+import com.ptsmods.morecommands.util.Rainbow;
 import dev.architectury.platform.Platform;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.Properties;
 
 import static com.ptsmods.morecommands.api.clientoptions.ClientOptionCategory.*;
 
+@SuppressWarnings("unused")
 public class ClientOptions {
     public static class Rendering {
         public static final BooleanClientOption seeTagSneaking = new BooleanClientOption(RENDERING, "See Tag Sneaking", true,
@@ -33,6 +36,9 @@ public class ClientOptions {
                 "Removes transparent lines in item models", "generated from 2D textures.", "\u00A7cRequires restart");
         public static final BooleanClientOption fixAnimItemSeams = new BooleanClientOption(RENDERING, "Fix Anim Item Seams", false,
                 "Removes transparent lines in animated item models", "generated from 2D textures.", "\u00A7cDisabled by default for performance reasons", "\u00A7cRequires restart");
+        public static final DoubleClientOption rainbowSpeed = new DoubleClientOption(RENDERING, "Rainbow Speed", 1, 0.1, 10,
+                (oldValue, newValue) -> Optional.ofNullable(Rainbow.getInstance()).ifPresent(r -> r.setSpeed(newValue)),
+                "Determines the speed at which text using", "\u00A7uthe rainbow formatting \u00A7rcycles through", "its colours.");
 
         static void init() {}
     }
