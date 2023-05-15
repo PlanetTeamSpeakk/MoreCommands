@@ -48,6 +48,8 @@
     "MixinTitleScreen",
     "MixinLevelRenderer",
     "MixinBaseContainerBlockEntity",
+    "MixinAbstractContainerScreen",
+    "MixinSlot",
     "accessor.MixinAbstractWidgetAccessor",
     "accessor.MixinClickableWidgetAccessor",
     "accessor.MixinCommandSuggestorAccessor",

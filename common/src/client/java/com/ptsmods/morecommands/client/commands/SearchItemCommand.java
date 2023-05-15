@@ -25,6 +25,8 @@ import java.util.function.Predicate;
 
 public class SearchItemCommand extends ClientCommand {
     public static Map<BlockPos, SearchItemResultType> RESULTS = new HashMap<>();
+    @Getter
+    private static Predicate<ItemStack> currentPredicate;
 
     @Override
     public void preinit() {
@@ -50,17 +52,18 @@ public class SearchItemCommand extends ClientCommand {
 
     @Override
     public void cRegister(CommandDispatcher<ClientSuggestionProvider> dispatcher) throws Exception {
-        // TODO add overlay in inventory on slots whose content doesn't match the predicate.
         dispatcher.register(cLiteral("searchitem")
                 .then(cLiteral("clear").executes(ctx -> {
                     RESULTS.clear();
+                    currentPredicate = null;
+
                     return sendMsg("Results cleared.");
                 }))
                 .then(cArgument("item", Compat.get().createItemPredicateArgument())
                         .executes(ctx -> {
                             RESULTS.clear();
 
-                            Predicate<ItemStack> item = ctx.getArgument("item", ItemPredicateArgument.Result.class);
+                            Predicate<ItemStack> item = currentPredicate = ctx.getArgument("item", ItemPredicateArgument.Result.class);
                             BlockPos ppos = getPlayer().blockPosition();
                             final int range = 8;
                             BlockPos min = ppos.offset(-range, -range, -range);
