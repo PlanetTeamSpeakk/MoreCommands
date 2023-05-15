@@ -44,7 +44,7 @@
     "MixinStyle",
     "MixinSuspiciousStewItem",
     "MixinTextColor",
-    "MixinTextVisitFactory",
+    "MixinStringDecomposer",
     "MixinTitleScreen",
     "MixinLevelRenderer",
     "MixinBaseContainerBlockEntity",

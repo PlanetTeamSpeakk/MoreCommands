@@ -10,9 +10,13 @@ import net.minecraft.util.StringDecomposer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(StringDecomposer.class)
-public class MixinTextVisitFactory {
+public class MixinStringDecomposer {
 
     /**
      * @author PlanetTeamSpeak
@@ -69,5 +73,10 @@ public class MixinTextVisitFactory {
 
     @Shadow private static boolean feedChar(Style style, FormattedCharSink visitor, int index, char c) {
         return false;
+    }
+
+    @Inject(method = "iterate", at = @At(value = "INVOKE", target = "Ljava/lang/String;charAt(I)C", ordinal = 0), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private static void storeIndex(String string, Style style, FormattedCharSink formattedCharSink, CallbackInfoReturnable<Boolean> cir, int i, int j) {
+        if (Rainbow.getInstance() != null) Rainbow.getInstance().rainbowIndex = j;
     }
 }
