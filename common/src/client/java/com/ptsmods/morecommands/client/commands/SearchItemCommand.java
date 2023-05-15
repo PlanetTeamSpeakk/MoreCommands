@@ -37,16 +37,18 @@ public class SearchItemCommand extends ClientCommand {
             return EventResult.pass();
         });
 
-        // FIXME this doesn't seem to work.
-        // (At least not on singleplayer, but maybe it does on multiplayer)
         PacketReceiveEvent.POST.register((packet, listener) -> {
             if (!(packet instanceof ClientboundContainerSetContentPacket scp) || CachedContainerBlockEntity.WAITING.get() == null)
                 return;
 
             BlockEntity be = Objects.requireNonNull(Minecraft.getInstance().level)
                     .getBlockEntity(CachedContainerBlockEntity.WAITING.get());
-            if (!(be instanceof CachedContainerBlockEntity)) return;
-            ((CachedContainerBlockEntity) be).setCache(scp.getItems());
+            if (!(be instanceof CachedContainerBlockEntity cbe)) return;
+
+            cbe.setCache(scp.getItems());
+
+            if (currentPredicate != null)
+                RESULTS.put(be.getBlockPos(), SearchItemResultType.values()[cbe.contains(currentPredicate)]);
         });
     }
 

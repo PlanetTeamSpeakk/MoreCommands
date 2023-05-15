@@ -29,6 +29,7 @@
     "MixinLivingEntity",
     "MixinLivingEntityOriginsCompat",
     "MixinMinecraftServer",
+    "MixinPacketUtils",
     "MixinPlayerEntity",
     "MixinPlayerInventory",
     "MixinPlayerManager",
