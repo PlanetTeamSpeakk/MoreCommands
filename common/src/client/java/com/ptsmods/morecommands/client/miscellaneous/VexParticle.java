@@ -10,10 +10,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,19 +32,18 @@ import java.util.Random;
 public class VexParticle extends Particle {
     private static final Random random = new Random();
     public static final float r = 214f / 255, g = 104f / 255, b = 14f / 255;
-    public static final ParticleRenderType pts = new ParticleRenderType() {
+    public static final ParticleRenderType prt = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager manager) {
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(770, 771, 1, 0);
-            RenderSystem.lineWidth(2.0F);
-            builder.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
+            RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+            RenderSystem.lineWidth(2);
+            builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         }
 
         @Override
-        public void end(Tesselator tessellator) {
-            tessellator.end();
-            RenderSystem.disableBlend();
+        public void end(Tesselator tesselator) {
+            tesselator.end();
+            RenderSystem.setShader(GameRenderer::getParticleShader);
         }
     };
     private final Entity entity;
@@ -61,6 +62,7 @@ public class VexParticle extends Particle {
         }
         calculateLines();
         lifetime = Integer.MAX_VALUE;
+        gravity = 0;
     }
 
     @Override
@@ -82,30 +84,67 @@ public class VexParticle extends Particle {
 
     @Override
     public void render(VertexConsumer vertex, Camera camera, float tickDelta) {
-        if (entity instanceof LocalPlayer && Minecraft.getInstance().player == entity && Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON && entity.position().add(0, 1, 0).distanceToSqr(x, y, z) < 3)
+        if (lines.size() <= 1 || // Can't render a point as a line
+                entity instanceof LocalPlayer && Minecraft.getInstance().player == entity &&
+                Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON &&
+                entity.getEyePosition().distanceToSqr(x, y, z) < 3)
             return;
+
+        PoseStack stack = new PoseStack();
         Vec3 cam = camera.getPosition();
-        double x = entity.xo + (cam.x - entity.xo);
-        double y = entity.yo + (cam.y - entity.yo);
-        double z = entity.zo + (cam.z - entity.zo);
-        for (int i = 0; i < lines.size(); i++) {
+
+        for (int i = 0; i < lines.size() - 1; i++) {
+            stack.pushPose();
             Vec3 line = lines.get(i);
-            vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 0f).uv2(240, 240).endVertex();
-            if (i != lines.size() - 1) {
-                line = lines.get(i + 1);
-                vertex.vertex(line.x - x, line.y - y, line.z - z).color(r, g, b, 1f).uv2(240, 240).endVertex();
-            }
+            Vec3 next = lines.get(i + 1);
+
+            stack.translate(line.x - cam.x, line.y - cam.y, line.z - cam.z);
+            PoseStack.Pose pose = stack.last();
+
+            double dx = next.x - line.x;
+            double dy = next.y - line.y;
+            double dz = next.z - line.z;
+            double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            float nx = (float) (dx / length);
+            float ny = (float) (dy / length);
+            float nz = (float) (dz / length);
+
+            // For now, no lightmap.
+            // Since 1.17, lines now need a normal in order to actually render,
+            // there is, however, no shader and no vertex format that uses
+            // position, color, normal and lightmap which means that either,
+            // we have no lightmap (which means the particle will look bright in the dark)
+            // or I make my own shader.
+            // Currently not feeling like the latter, so we'll leave it at this.
+            vertex.vertex(pose.pose(), 0, 0, 0)
+                    .color(r, g, b, 1f)
+                    .normal(pose.normal(), nx, ny, nz)
+//                    .uv2(getLightColor(tickDelta))
+                    .endVertex();
+
+            vertex.vertex(pose.pose(), (float) dx, (float) dy, (float) dz)
+                    .color(r, g, b, 1f)
+                    .normal(pose.normal(), nx, ny, nz)
+//                    .uv2(getLightColor(tickDelta))
+                    .endVertex();
+
+            stack.popPose();
         }
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return pts;
+    public void move(double d, double e, double f) {}
+
+    @Override
+    public @NotNull ParticleRenderType getRenderType() {
+        return prt;
     }
 
     private Direction getRandomFacing(Direction opposite) {
-        Direction facing = Compat.get().randomDirection();
-        while (facing.getOpposite().equals(opposite)) facing = Compat.get().randomDirection();
+        Direction facing;
+        do facing = Compat.get().randomDirection();
+        while (facing.getOpposite().equals(opposite));
         return facing;
     }
 

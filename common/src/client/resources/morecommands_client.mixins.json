@@ -34,7 +34,6 @@
     "MixinMinecraft",
     "MixinMouse",
     "MixinOptionsScreen",
-    "MixinParticleManager",
     "MixinPlayerEntity",
     "MixinPlayerEntityModel",
     "MixinPlayerRenderer",

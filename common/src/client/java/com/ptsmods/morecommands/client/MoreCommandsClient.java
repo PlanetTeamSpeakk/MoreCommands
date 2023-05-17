@@ -166,7 +166,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
         List<ParticleRenderType> list = new ArrayList<>(MixinParticleManagerAccessor.getRenderOrder());
-        list.add(VexParticle.pts);
+        list.add(VexParticle.prt);
         MixinParticleManagerAccessor.setRenderOrder(list);
 
         List<ItemLike> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
@@ -286,14 +286,14 @@ public class MoreCommandsClient implements IMoreCommandsClient {
             if (index < 0) return;
             ChatFormatting colour = FormattingColour.values()[index].asFormatting();
             switch (id) {
-                case 0:
+                case 0 -> {
                     MoreCommands.DF = Command.DF = colour;
                     MoreCommands.DS = Command.DS = MoreCommands.DS.withColor(MoreCommands.DF);
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     MoreCommands.SF = Command.SF = colour;
                     MoreCommands.SS = Command.SS = MoreCommands.SS.withColor(MoreCommands.SF);
-                    break;
+                }
             }
         });
 
@@ -335,7 +335,6 @@ public class MoreCommandsClient implements IMoreCommandsClient {
 
         MoreCommands.execute(() -> {
             try {
-                @SuppressWarnings("UnstableApiUsage")
                 List<Map<String, String>> friends = new Gson().fromJson(getSSLLenientHTML("https://api.namemc.com/profile/" + Minecraft.getInstance().getUser().getUuid() + "/friends"),
                         new TypeToken<List<Map<String, String>>>() {}.getType());
                 // SSL lenient because the certificate of api.namemc.com is not recognised on Java 8 for some reason.
@@ -361,13 +360,6 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     @Override
     public CommandDispatcher<ClientSuggestionProvider> getClientCommandDispatcher() {
         return clientCommandDispatcher;
-    }
-
-    public static String getWorldName() {
-        // MinecraftClient#getServer() null check to fix https://github.com/PlanetTeamSpeakk/MoreCommands/issues/25
-        return Minecraft.getInstance().level == null ? null : Minecraft.getInstance().getCurrentServer() == null ?
-                Minecraft.getInstance().getSingleplayerServer() == null ? null : Objects.requireNonNull(Minecraft.getInstance().getSingleplayerServer()).getWorldData().getLevelName() :
-                Minecraft.getInstance().getCurrentServer().ip;
     }
 
     public static void updateTag() {
