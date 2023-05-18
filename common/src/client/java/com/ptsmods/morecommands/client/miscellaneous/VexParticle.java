@@ -27,9 +27,6 @@ import java.util.Random;
 // And I fixed the rendering since that wasn't working properly. (See the if-statement in the for-loop in #buildGeometry)
 // https://github.com/InnovativeOnlineIndustries/Industrial-Foregoing/blob/1.16/src/main/java/com/buuz135/industrial/proxy/client/particle/ParticleVex.java
 // Only for the cool kids tho, have a look at MoreCommands#isCool.
-//
-// Currently not working for whatever reason, already looked at what Industrial Foregoing
-// changed, but that didn't fix anything here.
 public class VexParticle extends Particle {
     private static final Random random = new Random();
     public static final float r = 214f / 255, g = 104f / 255, b = 14f / 255;
