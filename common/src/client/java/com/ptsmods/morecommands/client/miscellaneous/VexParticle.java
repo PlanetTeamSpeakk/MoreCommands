@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,15 @@ public class VexParticle extends Particle {
         public void begin(BufferBuilder builder, TextureManager manager) {
             RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
             RenderSystem.lineWidth(2);
+
+            PoseStack mvStack = RenderSystem.getModelViewStack();
+            mvStack.pushPose();
+            PoseStack.Pose pose = mvStack.last();
+            pose.pose().setRow(0, new Vector4f());
+            pose.pose().setRow(1, new Vector4f());
+            pose.pose().setRow(2, new Vector4f());
+            pose.pose().setRow(3, new Vector4f());
+
             builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         }
 
@@ -44,6 +54,7 @@ public class VexParticle extends Particle {
         public void end(Tesselator tesselator) {
             tesselator.end();
             RenderSystem.setShader(GameRenderer::getParticleShader);
+            RenderSystem.getModelViewStack().popPose();
         }
     };
     private final Entity entity;
@@ -54,13 +65,14 @@ public class VexParticle extends Particle {
     public VexParticle(Entity entity) {
         super((ClientLevel) entity.level, entity.getX() + random.nextDouble() - 0.5, entity.getY() + 1f + random.nextInt(200) / 100f, entity.getZ() + random.nextDouble() - 0.5);
         this.entity = entity;
-        Direction prev = Direction.NORTH;
-        directions.add(0, prev);
-        for (int i = 1; i < 50; i++) {
-            prev = directions.get(i - 1);
-            directions.add(i, random.nextDouble() < 0.05 ? getRandomFacing(prev) : prev);
-        }
+
+        Direction d = Compat.get().randomDirection();
+        // Begin with a short single line in some arbitrary direction.
+        directions.add(d);
+        directions.add(d);
+
         calculateLines();
+
         lifetime = Integer.MAX_VALUE;
         gravity = 0;
     }
@@ -68,11 +80,14 @@ public class VexParticle extends Particle {
     @Override
     public void tick() {
         super.tick();
-        if (entity.position().distanceToSqr(x, y, z) > 2 || age == 200) isDying = true;
+        if (entity.position().distanceToSqr(x, y, z) > 2 && directions.size() >= 25 || age == 200) isDying = true;
         if (!isDying && !removed) {
+            // Make the particle slowly grow over a period of 50 ticks (2.5 seconds).
+            // After this time, the start will begin to deteriorate.
             directions.add(0, random.nextDouble() < 0.05 ? getRandomFacing(directions.get(0)) : directions.get(0));
-            directions.remove(50);
-            Vec3 directionVector = new Vec3(directions.get(0).getNormal().getX(), directions.get(0).getNormal().getY(), directions.get(0).getNormal().getZ()).scale(0.01);
+            if (directions.size() > 50) directions.remove(50);
+
+            Vec3 directionVector = Vec3.atLowerCornerOf(directions.get(0).getNormal()).scale(0.01);
             this.setPos(x - directionVector.x, y - directionVector.y, z - directionVector.z);
             calculateLines();
         } else {
@@ -151,19 +166,28 @@ public class VexParticle extends Particle {
     private void calculateLines() {
         lines.clear();
         if (directions.size() == 0) return;
+
         Direction prev = directions.get(0);
         int currentPosition = 0;
-        Vec3 prevBlockPos = new Vec3(x, y, z);
-        lines.add(prevBlockPos);
+        Vec3 prevPos = new Vec3(x, y, z);
+        lines.add(prevPos);
+
         for (int i = 1; i < directions.size(); i++) {
-            if (!directions.get(i).equals(prev) || i == directions.size() - 1) {
-                Vec3 directionVector = new Vec3(prev.getNormal().getX(), prev.getNormal().getY(), prev.getNormal().getZ()).scale(0.01);
-                Vec3 endBlockPos = new Vec3(prevBlockPos.x + directionVector.x * (i - currentPosition), prevBlockPos.y + directionVector.y * (i - currentPosition), prevBlockPos.z + directionVector.z * (i - currentPosition));
-                lines.add(endBlockPos);
-                prev = directions.get(i);
-                currentPosition = i;
-                prevBlockPos = endBlockPos;
-            }
+            // If this is not the last element, and it's the same as the previous one,
+            // we don't have to make a separate line for this one.
+            if (directions.get(i).equals(prev) && i != directions.size() - 1) continue;
+
+            // Get the normal of the previous direction, turn it into a Vec3 and scale it down.
+            Vec3 directionVector = Vec3.atLowerCornerOf(prev.getNormal()).scale(0.01);
+
+            // We may have skipped a couple elements (see if-statement at beginning of this loop),
+            // this means that this line will be very short. Compensate for that by multiplying it
+            // by the amount of elements we've skipped.
+            int coe = i - currentPosition;
+            lines.add(prevPos = prevPos.add(directionVector.multiply(coe, coe, coe)));
+
+            prev = directions.get(i);
+            currentPosition = i;
         }
     }
 }
