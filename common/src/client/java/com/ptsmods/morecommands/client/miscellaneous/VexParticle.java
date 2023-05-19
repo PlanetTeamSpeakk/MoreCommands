@@ -16,14 +16,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 // Huge thanks to Industrial Foregoing for this particle. :3
-// I only changed the colour the lines are and the class name and ported it to yarn mappings.
+// ~~I only changed the colour the lines are and the class name and ported it to yarn mappings.~~
+// Actually, it's no longer Yarn mappings, and I've since then
 // And I fixed the rendering since that wasn't working properly. (See the if-statement in the for-loop in #buildGeometry)
 // https://github.com/InnovativeOnlineIndustries/Industrial-Foregoing/blob/1.16/src/main/java/com/buuz135/industrial/proxy/client/particle/ParticleVex.java
 // Only for the cool kids tho, have a look at MoreCommands#isCool.
@@ -36,14 +36,6 @@ public class VexParticle extends Particle {
             RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
             RenderSystem.lineWidth(2);
 
-            PoseStack mvStack = RenderSystem.getModelViewStack();
-            mvStack.pushPose();
-            PoseStack.Pose pose = mvStack.last();
-            pose.pose().setRow(0, new Vector4f());
-            pose.pose().setRow(1, new Vector4f());
-            pose.pose().setRow(2, new Vector4f());
-            pose.pose().setRow(3, new Vector4f());
-
             builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         }
 
@@ -51,7 +43,6 @@ public class VexParticle extends Particle {
         public void end(Tesselator tesselator) {
             tesselator.end();
             RenderSystem.setShader(GameRenderer::getParticleShader);
-            RenderSystem.getModelViewStack().popPose();
         }
     };
     private final Entity entity;
