@@ -29,7 +29,7 @@ import com.ptsmods.morecommands.client.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.client.miscellaneous.ClientCommand;
 import com.ptsmods.morecommands.client.miscellaneous.VexParticle;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
-import com.ptsmods.morecommands.client.mixin.accessor.MixinParticleManagerAccessor;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinParticleEngineAccessor;
 import com.ptsmods.morecommands.client.util.DeathTracker;
 import com.ptsmods.morecommands.client.util.PTClientImpl;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
@@ -165,9 +165,9 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         ClientOptions.init();
         MoreCommands.setFormattings(ClientOptions.Tweaks.defColour.getValue().asFormatting(), ClientOptions.Tweaks.secColour.getValue().asFormatting());
 
-        List<ParticleRenderType> list = new ArrayList<>(MixinParticleManagerAccessor.getRenderOrder());
+        List<ParticleRenderType> list = new ArrayList<>(MixinParticleEngineAccessor.getRenderOrder());
         list.add(VexParticle.prt);
-        MixinParticleManagerAccessor.setRenderOrder(list);
+        MixinParticleEngineAccessor.setRenderOrder(list);
 
         List<ItemLike> waterItems = Lists.newArrayList(Blocks.WATER, Blocks.BUBBLE_COLUMN);
         Compat.get().<Block>getBuiltInRegistry("block").getOptional(new ResourceLocation("water_cauldron")).ifPresent(waterItems::add);
