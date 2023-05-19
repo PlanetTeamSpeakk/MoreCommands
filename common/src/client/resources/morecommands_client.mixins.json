@@ -56,7 +56,7 @@
     "accessor.MixinMapColorAccessor",
     "accessor.MixinMinecraftClientAccessor",
     "accessor.MixinMouseAccessor",
-    "accessor.MixinParticleManagerAccessor",
+    "accessor.MixinParticleEngineAccessor",
     "accessor.MixinSuggestionWindowAccessor",
     "accessor.MixinWindowAccessor"
   ],

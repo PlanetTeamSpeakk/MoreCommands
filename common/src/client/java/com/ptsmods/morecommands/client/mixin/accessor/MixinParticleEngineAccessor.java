@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.List;
 
 @Mixin(ParticleEngine.class)
-public interface MixinParticleManagerAccessor {
+public interface MixinParticleEngineAccessor {
 
     @Accessor("RENDER_ORDER")
     static List<ParticleRenderType> getRenderOrder() {
