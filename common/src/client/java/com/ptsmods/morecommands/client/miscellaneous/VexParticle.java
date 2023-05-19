@@ -1,7 +1,10 @@
 package com.ptsmods.morecommands.client.miscellaneous;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -11,6 +14,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -33,15 +37,19 @@ public class VexParticle extends Particle {
     public static final ParticleRenderType prt = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager manager) {
-            RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
-            RenderSystem.lineWidth(2);
+            RenderType.lines().setupRenderState();
 
-            builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+            builder.begin(RenderType.lines().mode(), RenderType.lines().format());
         }
 
         @Override
         public void end(Tesselator tesselator) {
             tesselator.end();
+
+            RenderType.lines().clearRenderState();
+            // For any particles that render after the vex particles.
+            // (This is the default shader for particles, and it is only
+            // set once before the particles get rendered)
             RenderSystem.setShader(GameRenderer::getParticleShader);
         }
     };
