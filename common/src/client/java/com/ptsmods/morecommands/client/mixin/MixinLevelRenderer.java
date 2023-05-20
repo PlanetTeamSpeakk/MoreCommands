@@ -4,6 +4,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import com.ptsmods.morecommands.client.commands.SearchItemCommand;
+import com.ptsmods.morecommands.client.util.VertexConsumerExtensions;
+import lombok.experimental.ExtensionMethod;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
@@ -24,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
+@ExtensionMethod(VertexConsumerExtensions.class)
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRenderer {
     private static final @Unique ResourceLocation unknownContentsTexture = new ResourceLocation("morecommands", "textures/unknown_contents.png");
@@ -124,8 +127,7 @@ public abstract class MixinLevelRenderer {
                                 float x, float y, float z,
                                 float r, float g, float b, float a,
                                 float u, float v, boolean isTex) {
-        // TODO compat version of VertexConsumer#vertex
-        buff.vertex(pose.pose(), x, y, z);
+        buff.compVertex(pose, x, y, z);
         if (isTex) buff.uv(u, v);
         else buff.color(r, g, b, a);
         buff.endVertex();

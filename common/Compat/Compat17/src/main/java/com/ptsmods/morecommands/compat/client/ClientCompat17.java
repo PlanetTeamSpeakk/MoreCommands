@@ -1,5 +1,7 @@
 package com.ptsmods.morecommands.compat.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.addons.ItemTabAddon;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
@@ -126,5 +128,15 @@ public class ClientCompat17 implements ClientCompat {
     @Override
     public void setFocused(EditBox editBox, boolean focused) {
         editBox.setFocus(focused);
+    }
+
+    @Override
+    public VertexConsumer vertex(VertexConsumer vertex, PoseStack.Pose pose, float x, float y, float z) {
+        return vertex.vertex(pose.pose(), x, y, z);
+    }
+
+    @Override
+    public VertexConsumer normal(VertexConsumer vertex, PoseStack.Pose pose, float nx, float ny, float nz) {
+        return vertex.normal(pose.normal(), nx, ny, nz);
     }
 }

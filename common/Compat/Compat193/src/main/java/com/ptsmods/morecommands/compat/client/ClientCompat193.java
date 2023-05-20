@@ -1,5 +1,7 @@
 package com.ptsmods.morecommands.compat.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import dev.architectury.registry.CreativeTabRegistry;
 import net.minecraft.client.Minecraft;
@@ -58,5 +60,16 @@ public class ClientCompat193 extends ClientCompat192 {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         if (!msg.startsWith("/") || forceChat) player.connection.sendChat(msg);
         else player.connection.sendCommand(msg.substring(1));
+    }
+
+    @Override
+    public VertexConsumer vertex(VertexConsumer vertex, PoseStack.Pose pose, float x, float y, float z) {
+        // They now use JOML for their math instead of com.mojang.math.
+        return vertex.vertex(pose.pose(), x, y, z);
+    }
+
+    @Override
+    public VertexConsumer normal(VertexConsumer vertex, PoseStack.Pose pose, float nx, float ny, float nz) {
+        return vertex.normal(pose.normal(), nx, ny, nz);
     }
 }

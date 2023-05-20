@@ -1,5 +1,7 @@
 package com.ptsmods.morecommands.api.util.compat.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.Holder;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
@@ -60,4 +62,8 @@ public interface ClientCompat {
     void fillUnobtainableItemsTab();
 
     void setFocused(EditBox editBox, boolean focused);
+
+    VertexConsumer vertex(VertexConsumer vertex, PoseStack.Pose pose, float x, float y, float z);
+
+    VertexConsumer normal(VertexConsumer vertex, PoseStack.Pose pose, float nx, float ny, float nz);
 }

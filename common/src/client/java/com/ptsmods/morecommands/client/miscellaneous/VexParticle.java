@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ptsmods.morecommands.api.util.compat.Compat;
+import com.ptsmods.morecommands.client.util.VertexConsumerExtensions;
+import lombok.experimental.ExtensionMethod;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -31,6 +33,7 @@ import java.util.Random;
 // And I fixed the rendering since that wasn't working properly. (See the if-statement in the for-loop in #buildGeometry)
 // https://github.com/InnovativeOnlineIndustries/Industrial-Foregoing/blob/1.16/src/main/java/com/buuz135/industrial/proxy/client/particle/ParticleVex.java
 // Only for the cool kids tho, have a look at MoreCommands#isCool.
+@ExtensionMethod(VertexConsumerExtensions.class)
 public class VexParticle extends Particle {
     private static final Random random = new Random();
     public static final float r = 214f / 255, g = 104f / 255, b = 14f / 255;
@@ -128,15 +131,15 @@ public class VexParticle extends Particle {
             // we have no lightmap (which means the particle will look bright in the dark)
             // or I make my own shader.
             // Currently not feeling like the latter, so we'll leave it at this.
-            vertex.vertex(pose.pose(), 0, 0, 0)
+            vertex.compVertex(pose, 0, 0, 0)
                     .color(r, g, b, 1f)
-                    .normal(pose.normal(), nx, ny, nz)
+                    .compNormal(pose, nx, ny, nz)
 //                    .uv2(getLightColor(tickDelta))
                     .endVertex();
 
-            vertex.vertex(pose.pose(), (float) dx, (float) dy, (float) dz)
+            vertex.compVertex(pose, (float) dx, (float) dy, (float) dz)
                     .color(r, g, b, 1f)
-                    .normal(pose.normal(), nx, ny, nz)
+                    .compNormal(pose, nx, ny, nz)
 //                    .uv2(getLightColor(tickDelta))
                     .endVertex();
 
