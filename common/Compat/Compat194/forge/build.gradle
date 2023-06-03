@@ -4,10 +4,10 @@ architectury {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.19.3"
+    minecraft "com.mojang:minecraft:1.19.4"
     mappings loom.officialMojangMappings()
 
-    forge "net.minecraftforge:forge:1.19.3-44.1.0"
+    forge "net.minecraftforge:forge:1.19.4-45.0.66"
 }
 
 remapJar {
@@ -18,6 +18,6 @@ remapJar {
 
 jar {
     destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
-    from zipTree(project(":common:Compat:Compat193").transformProductionForge.archiveFile)
+    from zipTree(project.parent.transformProductionForge.archiveFile)
     classifier null
 }
