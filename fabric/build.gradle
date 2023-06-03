@@ -66,6 +66,8 @@ shadowJar {
     destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     exclude "architectury.common.json"
 
+    from sourceSets.client.output
+
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
 }
