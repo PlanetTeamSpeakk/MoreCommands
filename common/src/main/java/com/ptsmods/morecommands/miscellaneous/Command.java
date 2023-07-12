@@ -339,4 +339,14 @@ public abstract class Command {
 
         return registry.get(location);
     }
+    
+    protected static int runSuccess(Runnable run) {
+        run.run();
+        return 1;
+    }
+    
+    protected static int runError(Runnable run) {
+        run.run();
+        return 0;
+    }
 }
