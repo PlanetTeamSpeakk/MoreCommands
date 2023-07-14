@@ -107,7 +107,7 @@ public class ScreenshotCommand extends ClientCommand {
         dispatcher.register(cLiteral("screenshot")
                 .executes(ctx -> execute(ctx, -1, -1))
                 .then(cArgument("width", IntegerArgumentType.integer(1, 32768))
-                        .then(cArgument("height", IntegerArgumentType.integer(1, 18432))
+                        .then(cArgument("height", IntegerArgumentType.integer(1, 32768))
                                 .executes(ctx -> execute(ctx, ctx.getArgument("width", Integer.class), ctx.getArgument("height", Integer.class))))));
     }
 
