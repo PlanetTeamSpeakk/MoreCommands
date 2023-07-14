@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 architectury {
@@ -69,7 +69,7 @@ shadowJar {
     from sourceSets.client.output
 
     configurations = [project.configurations.shadowCommon]
-    classifier "dev-shadow"
+    archiveClassifier = "dev-shadow"
 }
 
 task shadowCompat(type: Jar) {
@@ -87,12 +87,12 @@ remapJar {
     injectAccessWidener = true
     inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier "dev-shadow-remap"
+    archiveClassifier = "dev-shadow-remap"
 }
 
 jar {
     destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
-    classifier "dev"
+    archiveClassifier = "dev"
 }
 
 sourcesJar {

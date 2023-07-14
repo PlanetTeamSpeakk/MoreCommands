@@ -14,11 +14,11 @@ dependencies {
 remapJar {
     destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     inputFile.set jar.archiveFile
-    classifier "remap"
+    archiveClassifier = "remap"
 }
 
 jar {
     destinationDirectory.set file(destinationDirectory.get().asFile.toPath().resolve("../devlibs"))
     from zipTree(project(":common:Compat:Compat18").transformProductionForge.archiveFile)
-    classifier null
+    archiveClassifier = null
 }
