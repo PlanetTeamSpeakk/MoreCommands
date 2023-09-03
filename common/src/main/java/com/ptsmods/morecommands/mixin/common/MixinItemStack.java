@@ -6,7 +6,6 @@ import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.clientoption.ClientOptions;
 import com.ptsmods.morecommands.commands.unelevated.PowerToolCommand;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -48,10 +47,12 @@ public abstract class MixinItemStack {
 
         CompoundTag spawnData = thiz.getTag().getCompound("BlockEntityTag").getCompound("SpawnData");
         cbi.setReturnValue("block.minecraft.spawner_" +
-                Objects.requireNonNull(Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type").get(thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) &&
-                        thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ?
-                        new ResourceLocation(spawnData.contains("entity", 10) ? spawnData.getCompound("entity").getString("id") : spawnData.getString("id")) :
-                        ((DefaultedRegistry<EntityType<?>>) Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type")).getDefaultKey())).getDescriptionId());
+                Objects.requireNonNull(Compat.get().<EntityType<?>>getBuiltInRegistry("entity_type").get(new ResourceLocation(
+                        thiz.getTag() != null && thiz.getTag().contains("BlockEntityTag", 10) && 
+                                thiz.getTag().getCompound("BlockEntityTag").contains("SpawnData", 10) ? 
+                                spawnData.contains("entity", 10) ? spawnData.getCompound("entity").getString("id") : 
+                                        spawnData.getString("id") : "pig")))
+                        .getDescriptionId());
     }
 
     @Inject(at = @At("TAIL"), method = "getHoverName", cancellable = true)
