@@ -10,3 +10,15 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 }
+
+subprojects {
+    if (name != "forge") {
+        tasks.register("fixRefmap", RefmapFixTask) {
+            dependsOn(tasks.remapJar)
+        }
+
+        remapJar {
+            finalizedBy fixRefmap
+        }
+    }
+}

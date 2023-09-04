@@ -69,3 +69,11 @@ tasks.register('doMerge') {
 }
 
 tasks.build.dependsOn(tasks.doMerge)
+
+tasks.register("fixMergedJarRefmaps", MergedJarRefmapFixTask) {
+    inputJar = new File(forgix.outputDir, forgix.mergedJarName)
+}
+
+mergeJars {
+    finalizedBy fixMergedJarRefmaps
+}

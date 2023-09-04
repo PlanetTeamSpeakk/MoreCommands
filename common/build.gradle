@@ -31,3 +31,21 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+tasks.register("fixClientRefmapFabric", RefmapFixTask) {
+    dependsOn transformProductionFabric
+    inputJar.set(transformProductionFabric.archiveFile)
+}
+
+transformProductionFabric {
+    finalizedBy fixClientRefmapFabric
+}
+
+tasks.register("fixClientRefmapForge", RefmapFixTask) {
+    dependsOn transformProductionForge
+    inputJar.set(transformProductionForge.archiveFile)
+}
+
+transformProductionForge {
+    finalizedBy fixClientRefmapForge
+}
