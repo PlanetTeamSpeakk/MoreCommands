@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.reach;
+package com.ptsmods.morecommands.mixin.compat.compat19.plus.reach;
 
 import com.ptsmods.morecommands.api.IMoreCommands;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class MixinServerGamePacketListenerImpl19 {
+public class MixinServerGamePacketListenerImpl {
     @Shadow public ServerPlayer player;
 
     @Redirect(at = @At(value = "FIELD", opcode = Opcodes.GETSTATIC, target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D"),

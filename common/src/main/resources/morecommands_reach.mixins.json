@@ -13,10 +13,7 @@
     "MixinRandomizableContainerBlockEntity",
     "MixinReachEntityAttributes",
     "MixinAbstractContainerMenu",
-    "MixinServerPlayerGameMode",
-    "MixinServerGamePacketListenerImpl",
-    "MixinServerGamePacketListenerImpl17",
-    "MixinServerGamePacketListenerImpl19"
+    "MixinServerPlayerGameMode"
   ],
   "injectors": {
     "defaultRequire": 1

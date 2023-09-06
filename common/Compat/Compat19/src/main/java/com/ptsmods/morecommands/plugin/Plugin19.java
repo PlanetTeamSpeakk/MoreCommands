@@ -2,6 +2,7 @@ package com.ptsmods.morecommands.plugin;
 
 import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.Version;
+import com.ptsmods.morecommands.api.util.ReachLoaderHelper;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -20,7 +21,8 @@ public class Plugin19 implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return Holder.shouldApplyMixin(Version.V1_19, mixinClassName);
+        return Holder.shouldApplyMixin(Version.V1_19, mixinClassName) && (
+                !mixinClassName.contains(".reach.") || ReachLoaderHelper.shouldApplyReachMixin(mixinClassName));
     }
 
     @Override

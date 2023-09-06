@@ -42,7 +42,7 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
     modApi "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
     modImplementation "com.terraformersmc:modmenu:5.1.0-beta.4"
-    modImplementation "com.ptsmods:devlogin:3.2.2"
+    modImplementation "com.ptsmods:devlogin:3.3.2"
 
     clientImplementation project(":common").sourceSets.client.output
     common(project(path: ":common", configuration: "namedElements")) { transitive false }

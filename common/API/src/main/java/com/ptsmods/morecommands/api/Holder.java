@@ -90,7 +90,7 @@ public class Holder {
     public static boolean shouldApplyMixin(Version version, String mixinClassName) {
         String[] parts = mixinClassName.split("\\.");
 
-        // Neither of these are true. Not a clue why I'm getting these.
+        // Neither of these is true. Not a clue why I'm getting these.
         @SuppressWarnings({"ConstantValue", "RedundantOperationOnEmptyContainer"})
         Version max = Arrays.stream(parts)
                 .filter(p -> p.startsWith("until"))

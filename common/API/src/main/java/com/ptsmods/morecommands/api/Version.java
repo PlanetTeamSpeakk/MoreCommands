@@ -3,6 +3,7 @@ package com.ptsmods.morecommands.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.ptsmods.morecommands.api.util.extensions.URLExtensions;
+import lombok.Getter;
 import lombok.With;
 import lombok.experimental.ExtensionMethod;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import java.util.zip.ZipFile;
 
 @ExtensionMethod(URLExtensions.class)
 public class Version implements Comparable<Version> {
+    @Getter
     private static final Version current;
 
     public static final Version V1_17 = new Version(17);
@@ -110,10 +112,6 @@ public class Version implements Comparable<Version> {
         this.revision = revision;
     }
 
-    public static Version getCurrent() {
-        return current;
-    }
-
     public static Version parse(String version) {
         String[] parts = version.split("\\.");
 
@@ -161,7 +159,7 @@ public class Version implements Comparable<Version> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(major, minor, revision);
+        return (major * 31 + minor) * 31 + (revision == null ? 0 : revision);
     }
 
     @Override

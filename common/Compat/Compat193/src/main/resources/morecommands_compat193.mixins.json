@@ -19,7 +19,8 @@
     "plus.MixinModelBakery",
     "plus.MixinScreen",
     "plus.MixinSignEditScreen",
-    "plus.MixinWorldOpenFlows"
+    "plus.MixinWorldOpenFlows",
+    "plus.MixinMinecraft"
   ],
   "mixins": [
     "min.MixinDamageSource",

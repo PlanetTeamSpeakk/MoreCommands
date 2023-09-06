@@ -11,7 +11,8 @@
     "MixinLocalPlayerAccessor",
     "min.MixinChatScreen",
     "min.MixinChatComponentAccessor",
-    "MixinLocalPlayer"
+    "MixinLocalPlayer",
+    "until192.MixinMinecraft"
   ],
   "mixins": [
     "MixinServerGamePacketListenerImpl",

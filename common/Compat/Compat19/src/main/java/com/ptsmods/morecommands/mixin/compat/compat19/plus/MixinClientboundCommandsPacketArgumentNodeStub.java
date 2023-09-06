@@ -23,7 +23,7 @@ public class MixinClientboundCommandsPacketArgumentNodeStub {
                 ((CompatArgumentType<?, ?, ?>) argumentType).toVanillaArgumentType() : argumentType;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/ArgumentCommandNode;getCustomSuggestions()Lcom/mojang/brigadier/suggestion/SuggestionProvider;"),
+    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/ArgumentCommandNode;getCustomSuggestions()Lcom/mojang/brigadier/suggestion/SuggestionProvider;", remap = false),
             method = "<init>(Lcom/mojang/brigadier/tree/ArgumentCommandNode;)V")
     private static SuggestionProvider<?> init_getSuggestionsId(ArgumentCommandNode<?, ?> node) {
         return IMoreCommands.get().isServerOnly() && node.getType() instanceof CompatArgumentType<?, ?, ?> ?

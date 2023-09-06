@@ -14,7 +14,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinClientboundCommandsPacket {
     private static final @Unique SuggestionProvider<?> emptyProvider = (context, builder) -> builder.buildFuture();
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/ArgumentCommandNode;getCustomSuggestions()Lcom/mojang/brigadier/suggestion/SuggestionProvider;"), method = "createEntry")
+    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/ArgumentCommandNode;getCustomSuggestions()" +
+            "Lcom/mojang/brigadier/suggestion/SuggestionProvider;", remap = false), method = "createEntry")
     private static SuggestionProvider<?> createEntry_getCustomSuggestions(ArgumentCommandNode<?, ?> node) {
         return IMoreCommands.get().isServerOnly() && node.getType() instanceof CompatArgumentType<?, ?, ?> ?
                 emptyProvider : node.getCustomSuggestions();

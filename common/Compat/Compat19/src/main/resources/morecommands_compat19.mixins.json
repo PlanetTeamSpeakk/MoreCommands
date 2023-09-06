@@ -9,7 +9,6 @@
     "plus.MixinClientPlayerInteractionManager",
     "plus.MixinKeybindTranslationsAccessor",
     "plus.MixinLightmapTextureManager",
-    "plus.MixinMinecraft",
     "plus.MixinWorldRenderer",
     "until193.MixinWorldOpenFlows",
     "until194.MixinTitleScreen"
