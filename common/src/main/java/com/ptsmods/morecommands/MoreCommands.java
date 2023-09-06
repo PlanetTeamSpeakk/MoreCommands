@@ -77,6 +77,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -747,12 +748,21 @@ public enum MoreCommands implements IMoreCommands {
         }.parse();
     }
 
-    // Blatantly copied from GameRenderer, can raytrace both entities and blocks.
     public static HitResult getRayTraceTarget(Entity entity, double reach, boolean ignoreEntities, boolean ignoreLiquids) {
+        return getRayTraceTarget(entity, reach, ignoreEntities, ignoreLiquids, false);
+    }
+
+    public static HitResult getRayTraceTarget(Entity entity, double reach, boolean ignoreEntities, boolean ignoreLiquids,
+                                              boolean collidableOnly) {
         if (entity == null) return null;
 
         float td = ClientOnly.get().getFrameTime();
-        HitResult crosshairTarget = entity.pick(reach, td, !ignoreLiquids);
+        Vec3 eyePos = entity.getEyePosition(td);
+        Vec3 viewVec = entity.getViewVector(td);
+        Vec3 max = eyePos.add(viewVec.x * reach, viewVec.y * reach, viewVec.z * reach);
+        HitResult crosshairTarget = entity.level.clip(new ClipContext(eyePos, max,
+                collidableOnly ? ClipContext.Block.COLLIDER : ClipContext.Block.OUTLINE,
+                ignoreLiquids ? ClipContext.Fluid.NONE : ClipContext.Fluid.ANY, entity));
         if (ignoreEntities) return crosshairTarget;
 
         EntityHitResult entityHit = getEntityRayTraceTarget(entity, reach);
@@ -1313,12 +1323,12 @@ public enum MoreCommands implements IMoreCommands {
 
 
         instances.put(reach, new AttributeInstance(reach, i -> {
-            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + 
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " +
                     Compat.get().<Attribute>getBuiltInRegistry("attribute").getKey(reach));
         }));
 
         instances.put(swimSpeed, new AttributeInstance(swimSpeed, i -> {
-            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + 
+            throw new UnsupportedOperationException("Tried to change value for default attribute instance: " +
                     Compat.get().<Attribute>getBuiltInRegistry("attribute").getKey(swimSpeed));
         }));
 
