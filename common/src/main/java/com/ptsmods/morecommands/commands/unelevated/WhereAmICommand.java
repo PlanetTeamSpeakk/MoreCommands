@@ -5,9 +5,9 @@ import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.miscellaneous.Command;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 
 public class WhereAmICommand extends Command {
     @Override
@@ -16,10 +16,14 @@ public class WhereAmICommand extends Command {
                 .executes(ctx -> {
                     Level world = ctx.getSource().getEntityOrException().getCommandSenderWorld();
                     BlockPos pos = Compat.get().blockPosition(ctx.getSource().getEntityOrException());
-                    sendMsg(ctx, "You're currently in world " + SF + world.dimension().location().toString() + DF + " at " +
+
+                    Registry<Biome> registry = Compat.get().getRegistry(world.registryAccess(), "worldgen/biome");
+                    Biome biome = Compat.get().getBiome(world, pos);
+
+                    sendMsg(ctx, "You're currently in world " + SF + world.dimension().location() + DF + " at " +
                             SF + pos.getX() + DF + ", " + SF + pos.getY() + DF + ", " + SF + pos.getZ() + DF + " in biome " + SF +
-                            Compat.get().getRegistry(world.registryAccess(), ResourceKey.createRegistryKey(new ResourceLocation("biome")))
-                                    .getKey(Compat.get().getBiome(world, pos)) + DF + ".");
+                            Compat.get().getKeyFromRegistry(registry, biome) + DF + ".");
+
                     return 1;
                 }));
     }

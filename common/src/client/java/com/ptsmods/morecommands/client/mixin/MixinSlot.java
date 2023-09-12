@@ -20,7 +20,8 @@ public abstract class MixinSlot implements SlotAddon {
     private @Unique ItemStack lastCheckedStack = ItemStack.EMPTY;
 
     @Override
-    public boolean matchesCurrentSearchItemPredicate() {
+    public boolean mc$matchesCurrentSearchItemPredicate() {
+        if (SearchItemCommand.getCurrentPredicate() == null) return true;
         if (lastCheckedPredicate != SearchItemCommand.getCurrentPredicate() || !Util.stackEquals(getItem(), lastCheckedStack)) {
             lastCheckedPredicate = SearchItemCommand.getCurrentPredicate();
             lastCheckedStack = getItem().copy();

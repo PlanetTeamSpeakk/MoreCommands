@@ -1,4 +1,4 @@
-package com.ptsmods.morecommands.mixin.common;
+package com.ptsmods.morecommands.mixin.compat.compat192.min;
 
 import net.minecraft.server.commands.EnchantCommand;
 import net.minecraft.world.item.ItemStack;

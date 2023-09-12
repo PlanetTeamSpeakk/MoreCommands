@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "MixinItemModelGenerator",
+    "min.MixinAbstractContainerScreen",
     "min.MixinAbstractWidget",
     "min.MixinCreativeModeInventoryScreen",
     "min.MixinEditBox",
@@ -16,15 +17,17 @@
     "min.MixinPlayerTabOverlay",
     "plus.MixinClientPacketListener",
     "plus.MixinItemModelGenerator",
+    "plus.MixinLevelRenderer",
+    "plus.MixinMinecraft",
     "plus.MixinModelBakery",
     "plus.MixinScreen",
     "plus.MixinSignEditScreen",
-    "plus.MixinWorldOpenFlows",
-    "plus.MixinMinecraft"
+    "plus.MixinWorldOpenFlows"
   ],
   "mixins": [
     "min.MixinDamageSource",
     "min.MixinFarmBlock",
+    "plus.MixinEnchantCommand",
     "plus.MixinEntitySelector",
     "plus.MixinFlowingFluid",
     "plus.MixinServerPlayerGameMode"

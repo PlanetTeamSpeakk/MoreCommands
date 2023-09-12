@@ -1,6 +1,7 @@
 package com.ptsmods.morecommands.forge;
 
 import com.ptsmods.morecommands.MoreCommands;
+import com.ptsmods.morecommands.api.callbacks.PostInitEvent;
 import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.forge.compat.Compat;
 import dev.architectury.platform.forge.EventBuses;
@@ -38,6 +39,7 @@ public class MoreCommandsForge {
     @SubscribeEvent
     public void onPostInit(FMLLoadCompleteEvent event) {
         MoreCommands.getPermissions().forEach((permission, defaultValue) -> Compat.INSTANCE.registerPermission(permission, defaultValue ? 0 : 2, ""));
+        PostInitEvent.EVENT.invoker().postInit();
     }
 
     public static boolean checkPermission(ServerPlayer player, String permission) {

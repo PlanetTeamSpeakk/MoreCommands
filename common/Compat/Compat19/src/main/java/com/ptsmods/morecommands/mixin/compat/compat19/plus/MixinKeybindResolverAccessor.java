@@ -9,10 +9,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Mixin(KeybindResolver.class)
-public interface MixinKeybindTranslationsAccessor {
+public interface MixinKeybindResolverAccessor {
 
-    @Accessor("keyResolver")
-    static Function<String, Supplier<Component>> getFactory() {
+    @Accessor
+    static Function<String, Supplier<Component>> getKeyResolver() {
         throw new AssertionError("This shouldn't happen.");
     }
 }

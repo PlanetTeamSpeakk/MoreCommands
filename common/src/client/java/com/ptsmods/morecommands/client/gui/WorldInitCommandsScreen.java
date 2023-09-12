@@ -7,7 +7,7 @@ import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import com.ptsmods.morecommands.client.MoreCommandsClient;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinAbstractWidgetAccessor;
-import com.ptsmods.morecommands.client.mixin.accessor.MixinCommandSuggestorAccessor;
+import com.ptsmods.morecommands.client.mixin.accessor.MixinCommandSuggestionsAccessor;
 import com.ptsmods.morecommands.client.mixin.accessor.MixinSuggestionWindowAccessor;
 import lombok.NonNull;
 import net.minecraft.ChatFormatting;
@@ -49,7 +49,7 @@ public class WorldInitCommandsScreen extends Screen {
     protected void init() {
         fields.stream()
                 .filter(pair -> pair.getRight() != null)
-                .forEach(pair -> ((MixinCommandSuggestorAccessor) pair.getRight()).setSuggestions(null));
+                .forEach(pair -> ((MixinCommandSuggestionsAccessor) pair.getRight()).setSuggestions(null));
         fields.clear();
         ((ScreenAddon) this).mc$clear();
         MoreCommandsClient.getWorldInitCommands().forEach(this::addField);
@@ -108,7 +108,7 @@ public class WorldInitCommandsScreen extends Screen {
         CommandSuggestions suggestor = minecraft == null || minecraft.player == null ? null : new CommandSuggestions(minecraft, this, field, font, true, true, 1, 10, false, -805306368) {
             public void render(@NonNull PoseStack matrices, int mouseX, int mouseY) {
                 CommandSuggestions thiz = this;
-                MixinCommandSuggestorAccessor accessor = (MixinCommandSuggestorAccessor) thiz; // Can't cast directly.
+                MixinCommandSuggestionsAccessor accessor = (MixinCommandSuggestionsAccessor) thiz; // Can't cast directly.
                 if (accessor.getSuggestions() != null) accessor.getSuggestions().render(matrices, mouseX, mouseY);
                 else {
                     int i = 0;
@@ -125,7 +125,7 @@ public class WorldInitCommandsScreen extends Screen {
             public void showSuggestions(boolean narrateFirstSuggestion) {
                 super.showSuggestions(narrateFirstSuggestion);
                 CommandSuggestions thiz = this;
-                SuggestionsList window = ((MixinCommandSuggestorAccessor) thiz).getSuggestions();
+                SuggestionsList window = ((MixinCommandSuggestionsAccessor) thiz).getSuggestions();
                 if (window != null) {
                     MixinSuggestionWindowAccessor accessor = (MixinSuggestionWindowAccessor) window;
                     accessor.setRect(new Rect2i(accessor.getRect().getX(), ((MixinAbstractWidgetAccessor) field).getY_() + field.getHeight() + 1,

@@ -7,11 +7,13 @@
   "client": [
     "min.MixinClientPacketListener",
     "min.MixinItemModelGenerator",
+    "min.MixinLevelRenderer",
     "min.MixinModelBakery",
     "min.MixinScreen",
     "min.MixinSignEditScreen"
   ],
   "mixins": [
+    "min.MixinEnchantCommand",
     "min.MixinEntitySelector",
     "min.MixinFlowingFluid",
     "min.MixinItem",

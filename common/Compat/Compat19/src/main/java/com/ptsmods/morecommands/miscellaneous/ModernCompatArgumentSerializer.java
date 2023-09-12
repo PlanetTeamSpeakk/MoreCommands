@@ -17,7 +17,7 @@ public class ModernCompatArgumentSerializer<A extends CompatArgumentType<A, T, P
 
     @Override
     public void serializeToNetwork(ArgumentTypePropertiesImpl<A, T, P> template, FriendlyByteBuf buf) {
-        template.getProperties().write(buf);
+        template.properties().write(buf);
     }
 
     @SuppressWarnings("unchecked")
@@ -29,7 +29,7 @@ public class ModernCompatArgumentSerializer<A extends CompatArgumentType<A, T, P
     @SuppressWarnings("unchecked")
     @Override
     public void serializeToJson(ArgumentTypePropertiesImpl<A, T, P> template, JsonObject jsonObject) {
-        serialiser.writeJson((P) template.getProperties(), jsonObject);
+        serialiser.writeJson((P) template.properties(), jsonObject);
     }
 
     @SuppressWarnings("unchecked")

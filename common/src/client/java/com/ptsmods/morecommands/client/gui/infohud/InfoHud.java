@@ -55,8 +55,8 @@ public class InfoHud extends GuiComponent {
     private static int decimals = 2;
 
     static {
-        registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0, 0)));
-        registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0, val, 0)));
+        registerVariable(new IntVariable("xOffset", 2, (matrixStack, val) -> matrixStack.translate(val, 0d, 0d)));
+        registerVariable(new IntVariable("yOffset", 2, (matrixStack, val) -> matrixStack.translate(0d, val, 0d)));
         registerVariable(new DoubleVariable("scale", 0.75, (matrixStack, val) -> matrixStack.scale(val.floatValue(), val.floatValue(), val.floatValue())));
         registerVariable(new IntVariable("decimals", 2, (matrixStack, val) -> decimals = val).clamped(0, 7));
 
@@ -95,6 +95,7 @@ public class InfoHud extends GuiComponent {
     }
 
     private static Map<String, Function<KeyContext, Object>> registerKeys() {
+        Compat compat = Compat.get();
         ImmutableMap.Builder<String, Function<KeyContext, Object>> keysBuilder = ImmutableMap.builder();
         keysBuilder.put("DF", ctx -> MoreCommands.DF);
         keysBuilder.put("SF", ctx -> MoreCommands.SF);
@@ -102,13 +103,13 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("x", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().x(), decimals));
         keysBuilder.put("y", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().y(), decimals));
         keysBuilder.put("z", ctx -> MoreCommands.formatDouble(ctx.getPlayer().position().z(), decimals));
-        keysBuilder.put("chunkX", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getX()) >> 4);
-        keysBuilder.put("chunkY", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getY()) >> 4);
-        keysBuilder.put("chunkZ", ctx -> (Compat.get().blockPosition(ctx.getPlayer()).getZ()) >> 4);
+        keysBuilder.put("chunkX", ctx -> (compat.blockPosition(ctx.getPlayer()).getX()) >> 4);
+        keysBuilder.put("chunkY", ctx -> (compat.blockPosition(ctx.getPlayer()).getY()) >> 4);
+        keysBuilder.put("chunkZ", ctx -> (compat.blockPosition(ctx.getPlayer()).getZ()) >> 4);
         keysBuilder.put("yaw", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getYRot_()), decimals));
         keysBuilder.put("pitch", ctx -> MoreCommands.formatDouble(Mth.wrapDegrees(((MixinEntityAccessor) ctx.getPlayer()).getXRot_()), decimals));
-        keysBuilder.put("biome", ctx -> Objects.requireNonNull(Compat.get().getRegistry(ctx.getWorld().registryAccess(),"worldgen/biome")
-                .getKey(Compat.get().getBiome(ctx.getWorld(), Compat.get().blockPosition(ctx.getPlayer())))));
+        keysBuilder.put("biome", ctx -> Objects.requireNonNull(compat.getKeyFromRegistry(compat.getRegistry(ctx.getWorld().registryAccess(),"worldgen/biome"),
+                compat.getBiome(ctx.getWorld(), compat.blockPosition(ctx.getPlayer())))));
         keysBuilder.put("difficulty", ctx -> ctx.getWorld().getLevelData().getDifficulty().name());
         keysBuilder.put("blocksPerSec", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
         keysBuilder.put("speed", ctx -> MoreCommands.formatDouble(MoreCommandsClient.getSpeed(), decimals) + " blocks/sec");
@@ -124,8 +125,8 @@ public class InfoHud extends GuiComponent {
         keysBuilder.put("xpLevel", ctx -> ctx.getPlayer().experienceLevel);
         keysBuilder.put("gamemode", ctx -> ctx.getInteractionManager().getPlayerMode().name());
         keysBuilder.put("fps", ctx -> MixinMinecraftClientAccessor.getFps());
-        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(Compat.get().blockPosition(ctx.getPlayer())));
-        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(Compat.get().blockPosition(ctx.getPlayer())));
+        keysBuilder.put("blockLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(compat.blockPosition(ctx.getPlayer())));
+        keysBuilder.put("skyLight", ctx -> ctx.getWorld().getChunkSource().getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(compat.blockPosition(ctx.getPlayer())));
         keysBuilder.put("lookingAtX", ctx -> ctx.hit().map(bHit -> bHit.getBlockPos().getX(), eHit -> eHit.getLocation().x()));
         keysBuilder.put("lookingAtY", ctx -> ctx.hit().map(bHit -> bHit.getBlockPos().getY(), eHit -> eHit.getLocation().y()));
         keysBuilder.put("lookingAtZ", ctx -> ctx.hit().map(bHit -> bHit.getBlockPos().getZ(), eHit -> eHit.getLocation().z()));

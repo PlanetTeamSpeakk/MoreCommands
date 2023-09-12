@@ -23,7 +23,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.item.ItemPredicateArgument;
-import net.minecraft.commands.synchronization.ArgumentSerializer;
 import net.minecraft.commands.synchronization.ArgumentTypes;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
@@ -97,15 +96,19 @@ public class Compat17 implements Compat {
     }
 
     @Override
+    public <E> ResourceLocation getKeyFromRegistry(Registry<? super E> registry, E object) {
+        return registry.getKey(object);
+    }
+
+    @Override
     public CompoundTag writeBENBT(BlockEntity be) {
         return be.save(new CompoundTag());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-        ArgumentTypes.register(identifier, clazz, (ArgumentSerializer<A>) serialiser.toVanillaSerialiser());
+        ArgumentTypes.register(identifier, clazz, new LegacyCompatArgumentSerializer<>(serialiser));
     }
 
     @SuppressWarnings("unchecked")
@@ -271,5 +274,10 @@ public class Compat17 implements Compat {
     @Override
     public void registerVersionSpecificCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         DamageCommand.register(dispatcher);
+    }
+
+    @Override
+    public <V, T extends V> T register(Registry<V> registry, ResourceLocation resourceLocation, T object) {
+        return Registry.register(registry, resourceLocation, object);
     }
 }

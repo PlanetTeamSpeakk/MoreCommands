@@ -69,6 +69,8 @@ public interface Compat {
 
     <T> boolean registryContainsId(MappedRegistry<T> registry, ResourceLocation id);
 
+    <E> ResourceLocation getKeyFromRegistry(Registry<? super E> registry, E object);
+
     CompoundTag writeBENBT(BlockEntity be);
 
     <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
@@ -147,4 +149,6 @@ public interface Compat {
     DamageSource getSuicideDamageSource(Entity cause);
 
     void registerVersionSpecificCommands(CommandDispatcher<CommandSourceStack> dispatcher);
+
+    <V, T extends V> T register(Registry<V> registry, ResourceLocation resourceLocation, T object);
 }

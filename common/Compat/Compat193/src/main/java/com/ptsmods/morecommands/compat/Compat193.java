@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.ReflectionHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.Packet;
@@ -66,5 +67,16 @@ public class Compat193 extends Compat192 {
             case KEEP -> Level.ExplosionInteraction.NONE;
             case DESTROY, DESTROY_WITH_DECAY -> Level.ExplosionInteraction.TNT;
         });
+    }
+
+    @Override
+    public <V, T extends V> T register(Registry<V> registry, ResourceLocation resourceLocation, T object) {
+        // Registry is an interface now, meaning the OP-code of this call is different.
+        return Registry.register(registry, resourceLocation, object);
+    }
+
+    @Override
+    public <E> ResourceLocation getKeyFromRegistry(Registry<? super E> registry, E object) {
+        return registry.getKey(object);
     }
 }

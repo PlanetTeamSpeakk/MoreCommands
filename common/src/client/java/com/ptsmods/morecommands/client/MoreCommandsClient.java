@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import com.ptsmods.morecommands.MoreCommands;
@@ -24,6 +26,7 @@ import com.ptsmods.morecommands.api.miscellaneous.FormattingColour;
 import com.ptsmods.morecommands.api.util.compat.Compat;
 import com.ptsmods.morecommands.api.util.compat.client.ClientCompat;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
+import com.ptsmods.morecommands.client.commands.SearchItemCommand;
 import com.ptsmods.morecommands.client.gui.WorldInitCommandsScreen;
 import com.ptsmods.morecommands.client.gui.infohud.InfoHud;
 import com.ptsmods.morecommands.client.miscellaneous.ClientCommand;
@@ -53,6 +56,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -60,9 +64,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.Registry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -73,6 +79,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.config.RegistryBuilder;
@@ -84,7 +91,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.spongepowered.asm.mixin.Unique;
 
 import javax.net.ssl.SSLContext;
 import java.io.File;
@@ -117,6 +126,7 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     private static final Map<String, String> nameMCFriends = new HashMap<>();
     private static final HttpClient sslLenientHttpClient;
     private static final Map<ClientCommand, Collection<CommandNode<ClientSuggestionProvider>>> nodes = new LinkedHashMap<>();
+    private static final ResourceLocation unknownContentsTexture = new ResourceLocation("morecommands", "textures/unknown_contents.png");
 
     static {
         for (Field f : GLFW.class.getFields())
@@ -189,12 +199,16 @@ public class MoreCommandsClient implements IMoreCommandsClient {
         });
 
         PostInitEvent.EVENT.register(() -> {
+            if (Platform.isForge()) return; // This doesn't work on Forge cuz of their ridiculous registry handling.
+
             for (Block block : Compat.get().<Block>getBuiltInRegistry("block")) {
                 ResourceLocation id = Compat.get().<Block>getBuiltInRegistry("block").getKey(block);
                 if (id == null) continue;
 
-                if (!Compat.get().registryContainsId(Compat.get().<Item>getBuiltInRegistry("item"), id)) Registry.register(Compat.get().<Item>getBuiltInRegistry("item"),
-                        new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()), new BlockItem(block, new Item.Properties()));
+                MappedRegistry<Item> itemRegistry = Compat.get().getBuiltInRegistry("item");
+                if (!Compat.get().registryContainsId(itemRegistry, id))
+                    Compat.get().register(itemRegistry, new ResourceLocation(id.getNamespace(), "mcsynthetic_" + id.getPath()),
+                            new BlockItem(block, new Item.Properties()));
             }
 
             ClientCompat.get().fillUnobtainableItemsTab();
@@ -510,5 +524,98 @@ public class MoreCommandsClient implements IMoreCommandsClient {
     @Override
     public Screen newWorldInitScreen(Screen parent) {
         return new WorldInitCommandsScreen(parent);
+    }
+
+    @Override
+    public void renderSearchItemResults(PoseStack stack, Camera camera) {
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+
+        Tesselator tess = Tesselator.getInstance();
+        BufferBuilder buff = tess.getBuilder();
+
+        // Begin our buffer.
+        buff.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        BufferBuilder finalBuff = buff;
+        SearchItemCommand.RESULTS.forEach((pos, res) -> renderBlockOverlay(stack, camera, finalBuff, pos,
+                res.r, res.g, res.b, 0.33f, null));
+        tess.end();
+
+        RenderSystem.disableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        buff = tess.getBuilder();
+        buff.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+
+        BufferBuilder finalBuff1 = buff;
+        SearchItemCommand.RESULTS.forEach((pos, res) -> {
+            if (res.isUnknown()) renderBlockOverlay(stack, camera, finalBuff1, pos, 0, 0, 0, 1, unknownContentsTexture);
+        });
+        tess.end();
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+    }
+
+    private @Unique void renderBlockOverlay(PoseStack stack, Camera cam, BufferBuilder buff, BlockPos pos, float r, float g, float b, float a,
+                                            @Nullable ResourceLocation texture) {
+        stack.pushPose();
+        Vec3 renderPos = new Vec3(pos.getX(), pos.getY(), pos.getZ()).subtract(cam.getPosition());
+        stack.translate(renderPos.x, renderPos.y, renderPos.z);
+
+        PoseStack.Pose pose = stack.last();
+        boolean isTex = texture != null;
+
+        if (texture != null) RenderSystem.setShaderTexture(0, texture);
+
+        // Up
+        vertex(buff, pose, 0, 1, 0, r, g, b, a, 0, 0, isTex);
+        vertex(buff, pose, 1, 1, 0, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 1, 1, 1, r, g, b, a, 1, 1, isTex);
+        vertex(buff, pose, 0, 1, 1, r, g, b, a, 0, 1, isTex);
+
+        // Down
+        vertex(buff, pose, 0, 0, 0, r, g, b, a, 0, 1, isTex);
+        vertex(buff, pose, 1, 0, 0, r, g, b, a, 1, 1, isTex);
+        vertex(buff, pose, 1, 0, 1, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 0, 0, 1, r, g, b, a, 0, 0, isTex);
+
+        // North
+        vertex(buff, pose, 0, 0, 0, r, g, b, a, 1, 1, isTex);
+        vertex(buff, pose, 0, 1, 0, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 1, 1, 0, r, g, b, a, 0, 0, isTex);
+        vertex(buff, pose, 1, 0, 0, r, g, b, a, 0, 1, isTex);
+
+        // East
+        vertex(buff, pose, 1, 0, 0, r, g, b, a, 1, 1, isTex);
+        vertex(buff, pose, 1, 1, 0, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 1, 1, 1, r, g, b, a, 0, 0, isTex);
+        vertex(buff, pose, 1, 0, 1, r, g, b, a, 0, 1, isTex);
+
+        // South
+        vertex(buff, pose, 0, 0, 1, r, g, b, a, 0, 1, isTex);
+        vertex(buff, pose, 0, 1, 1, r, g, b, a, 0, 0, isTex);
+        vertex(buff, pose, 1, 1, 1, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 1, 0, 1, r, g, b, a, 1, 1, isTex);
+
+        // West
+        vertex(buff, pose, 0, 0, 0, r, g, b, a, 0, 1, isTex);
+        vertex(buff, pose, 0, 1, 0, r, g, b, a, 0, 0, isTex);
+        vertex(buff, pose, 0, 1, 1, r, g, b, a, 1, 0, isTex);
+        vertex(buff, pose, 0, 0, 1, r, g, b, a, 1, 1, isTex);
+
+        stack.popPose();
+    }
+
+    private @Unique void vertex(VertexConsumer buff, PoseStack.Pose pose,
+                                float x, float y, float z,
+                                float r, float g, float b, float a,
+                                float u, float v, boolean isTex) {
+        ClientCompat.get().vertex(buff, pose, x, y, z);
+        if (isTex) buff.uv(u, v);
+        else buff.color(r, g, b, a);
+        buff.endVertex();
     }
 }

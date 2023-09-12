@@ -1,10 +1,12 @@
 package com.ptsmods.morecommands.api;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ptsmods.morecommands.api.util.text.LiteralTextBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -57,4 +59,6 @@ public interface IMoreCommandsClient {
     void addColourPicker(Screen screen, int xOffset, int yOffset, boolean doCenter, boolean initOpened, Consumer<String> appender, Consumer<Boolean> stateListener);
 
     Screen newWorldInitScreen(Screen parent);
+
+    void renderSearchItemResults(PoseStack stack, Camera camera);
 }

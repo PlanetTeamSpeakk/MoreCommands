@@ -5,6 +5,7 @@ import com.ptsmods.morecommands.api.Holder;
 import com.ptsmods.morecommands.api.IDataTrackerHelper;
 import com.ptsmods.morecommands.util.tuples.TriConsumer;
 import com.ptsmods.morecommands.util.tuples.TriFunction;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -126,8 +127,11 @@ public enum DataTrackerHelper implements IDataTrackerHelper {
     }
 
     public static class DataTrackerEntry<T> {
+        @Getter
         private final EntityDataAccessor<T> data;
+        @Getter
         private final T defaultValue;
+        @Getter
         private final String tagKey;
         private final BiFunction<CompoundTag, String, T> reader;
         private final TriFunction<CompoundTag, String, LivingEntity, T> entityReader;
@@ -150,18 +154,6 @@ public enum DataTrackerHelper implements IDataTrackerHelper {
             this.reader = null;
             this.entityReader = (nbt, key, entity) -> reader.apply(nbt, key, (E) entity);
             this.writer = writer;
-        }
-
-        public EntityDataAccessor<T> getData() {
-            return data;
-        }
-
-        public T getDefaultValue() {
-            return defaultValue;
-        }
-
-        public String getTagKey() {
-            return tagKey;
         }
 
         public T read(CompoundTag nbt, LivingEntity entity) {

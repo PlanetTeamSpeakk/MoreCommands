@@ -15,7 +15,9 @@
     "plus.MixinItemModelGenerator",
     "plus.MixinItemRenderer",
     "plus.MixinMoreTab",
-    "plus.MixinPlayerTabOverlay"
+    "plus.MixinPlayerTabOverlay",
+    "MixinAbstractContainerScreen",
+    "plus.MixinClientLanguage"
   ],
   "mixins": [
     "plus.MixinFarmBlock",

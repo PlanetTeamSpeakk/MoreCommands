@@ -7,7 +7,7 @@
   "client": [
     "plus.MixinBackgroundRenderer",
     "plus.MixinClientPlayerInteractionManager",
-    "plus.MixinKeybindTranslationsAccessor",
+    "plus.MixinKeybindResolverAccessor",
     "plus.MixinLightmapTextureManager",
     "plus.MixinWorldRenderer",
     "until193.MixinWorldOpenFlows",

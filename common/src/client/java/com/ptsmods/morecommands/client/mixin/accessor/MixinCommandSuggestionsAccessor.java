@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Mixin(CommandSuggestions.class)
-public interface MixinCommandSuggestorAccessor {
+public interface MixinCommandSuggestionsAccessor {
     @Accessor CommandSuggestions.SuggestionsList getSuggestions();
     @Accessor void setSuggestions(CommandSuggestions.SuggestionsList suggestions);
 

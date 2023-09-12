@@ -13,7 +13,7 @@ import com.ptsmods.morecommands.api.util.text.TranslatableTextBuilder;
 import com.ptsmods.morecommands.miscellaneous.ArgumentTypePropertiesImpl;
 import com.ptsmods.morecommands.miscellaneous.ModernCompatArgumentSerializer;
 import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinArgumentTypesAccessor;
-import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindTranslationsAccessor;
+import com.ptsmods.morecommands.mixin.compat.compat19.plus.MixinKeybindResolverAccessor;
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
@@ -50,14 +50,15 @@ public class Compat19 extends Compat182 {
 
     @Override
     public boolean isRemoved(Entity entity) {
-        return entity.isRemoved(); // Method did not change or move, but since 1.19, srg calls it m_213877_ instead of m_146910_.
+        return entity.isRemoved(); // This method did not change or move,
+        // but since 1.19, srg calls it m_213877_ instead of m_146910_.
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <A extends CompatArgumentType<A, T, P>, T, P extends ArgumentTypeProperties<A, T, P>> void registerArgumentType
             (DeferredRegister<?> registry, String identifier, Class<A> clazz, ArgumentTypeSerialiser<A, T, P> serialiser) {
-        ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>> serializer = (ArgumentTypeInfo<A, ArgumentTypeInfo.Template<A>>) serialiser.toVanillaSerialiser();
+        ArgumentTypeInfo<A, ? extends ArgumentTypeInfo.Template<A>> serializer = new ModernCompatArgumentSerializer<>(serialiser);
         ((DeferredRegister<ArgumentTypeInfo<?, ?>>) registry).register(new ResourceLocation(identifier), () -> serializer);
         MixinArgumentTypesAccessor.getClassMap().put(clazz, serializer);
     }
@@ -128,9 +129,11 @@ public class Compat19 extends Compat182 {
                     .map(o -> o instanceof Component ? builderFromText((Component) o) : o)
                     .toArray(Object[]::new));
         else if (content instanceof KeybindContents)
-            builder = builderFromText(MixinKeybindTranslationsAccessor.getFactory().apply(((KeybindContents) content).getName()).get());
-        else if (content instanceof ScoreContents || content instanceof NbtContents || content instanceof SelectorContents)
-            builder = LiteralTextBuilder.builder(content.toString()); // Not sure how to handle this.
+            builder = builderFromText(MixinKeybindResolverAccessor.getKeyResolver().apply(((KeybindContents) content).getName()).get());
+        else if (content instanceof SelectorContents selector)
+            builder = LiteralTextBuilder.builder(selector.getPattern());
+        else if (content instanceof ScoreContents || content instanceof NbtContents)
+            builder = LiteralTextBuilder.builder(content.toString());
         else if (content == ComponentContents.EMPTY) builder = EmptyTextBuilder.builder();
         else throw new IllegalArgumentException("Given text is not supported.");
 

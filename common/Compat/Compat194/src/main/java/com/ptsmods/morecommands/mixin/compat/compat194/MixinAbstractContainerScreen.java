@@ -1,9 +1,8 @@
-package com.ptsmods.morecommands.client.mixin;
+package com.ptsmods.morecommands.mixin.compat.compat194;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ptsmods.morecommands.api.addons.SlotAddon;
-import com.ptsmods.morecommands.client.commands.SearchItemCommand;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -22,7 +21,7 @@ public class MixinAbstractContainerScreen extends Screen {
 
     @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
     private void renderSlotSearchOverlay(PoseStack poseStack, Slot slot, CallbackInfo ci) {
-        if (SearchItemCommand.getCurrentPredicate() == null || ((SlotAddon) slot).matchesCurrentSearchItemPredicate()) return;
+        if (((SlotAddon) slot).mc$matchesCurrentSearchItemPredicate()) return;
 
         RenderSystem.disableDepthTest();
         RenderSystem.colorMask(true, true, true, false);
